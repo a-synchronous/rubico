@@ -1,0 +1,12 @@
+{
+  "name": "fnal",
+  "version": "0.1.0",
+  "description": "Functional composition in an async world",
+  "author": "Richard Tong",
+  "license": "ISC",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "github:richytong/fnal"
+  }
+}
