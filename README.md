@@ -16,13 +16,22 @@ _.promisifyAll({ a: callbackTakingFn }) // => { a: promiseReturningFn }
 _.callbackifyAll({ a: promiseReturningFn }) // => { a: callbackTakingFn }
 
 _.map(x => x + 1)([1, 2, 3]) // => Promise([2, 3, 4])
-
 _.map(x => x + 1)(new Set([1, 2, 3])) // => Promise(new Set(2, 3, 4))
-
 _.map(x => x + 1)({ a: 1, b: 2, c: 3 }) // => Promise({ a: 2, b: 3, c: 4 })
-
 _.map(x => x + 1)(new Map([['a', 1], ['b', 2], ['c', 3]]))
 // => Promise(new Map([['a', 2], ['b', 3], ['c', 3]])))
+
+_.syncMap(x => x + 1)([1, 2, 3]) // => [2, 3, 4]
+_.syncMap(x => x + 1)(new Set([1, 2, 3])) // => new Set(2, 3, 4)
+_.syncMap(x => x + 1)({ a: 1, b: 2, c: 3 }) // => ({ a: 2, b: 3, c: 4 })
+_.syncMap(x => x + 1)(new Map([['a', 1], ['b', 2], ['c', 3]]))
+// => new Map([['a', 2], ['b', 3], ['c', 3]]))
+
+_.reduce((a, b) => a + b)()([1, 2, 3]) // => Promise(6)
+_.reduce((a, b) => a + b)(10)([1, 2, 3]) // => Promise(16)
+
+_.syncReduce((a, b) => a + b)()([1, 2, 3]) // => 6
+_.syncReduce((a, b) => a + b)(10)([1, 2, 3]) // => 16
 
 _.flow(
   x => x + 1,

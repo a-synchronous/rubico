@@ -7,6 +7,7 @@ const hi = x => x + 'hi'
 const ho = async x => x + 'ho'
 const hey = x => new Promise(res => setTimeout(() => res(x + 'hey'), 10))
 const add = (a, b) => a + b
+const add1 = x => add(1, x)
 const delayedAdd1 = x => new Promise(res => setTimeout(() => res(add(1, x)), 10))
 const range = (start, end) => {
   const arr = Array(end - start)
@@ -48,6 +49,63 @@ describe('rubico', () => {
         { a: 2, b: 3, c: 4 },
       )
     }).timeout(5000)
+  })
+
+  describe('_.syncMap', () => {
+    it('a -> b', async () => {
+      assert.deepEqual(
+        _.syncMap(add1)([1, 2, 3]),
+        [2, 3, 4],
+      )
+      assert.deepEqual(
+        _.syncMap(add1)(new Set([1,2,3])),
+        new Set([2, 3, 4]),
+      )
+      assert.deepEqual(
+        _.syncMap(add1)(new Map([['a', 1], ['b', 2], ['c', 3]])),
+        new Map([['a', 2], ['b', 3], ['c', 4]]),
+      )
+      assert.deepEqual(
+        _.syncMap(add1)({ a: 1, b: 2, c: 3 }),
+        { a: 2, b: 3, c: 4 },
+      )
+    }).timeout(5000)
+  })
+
+  describe('_.reduce', () => {
+    it('can add 1 2 3', async () => {
+      assert.strictEqual(await _.reduce(add)()([1, 2, 3]), 6)
+    })
+
+    it('can add 1 2 3 starting with 10', async () => {
+      assert.strictEqual(await _.reduce(add)(10)([1, 2, 3]), 6 + 10)
+    })
+
+    it('=> first element for array length 1', async () => {
+      assert.strictEqual(await _.reduce(add)()([1]), 1)
+    })
+
+    it('=> memo for []', async () => {
+      assert.strictEqual(await _.reduce(add)('yoyoyo')([]), 'yoyoyo')
+    })
+
+    it('=> undefined for []', async () => {
+      assert.strictEqual(await _.reduce(add)()([]), undefined)
+    })
+
+    it('many calls', async () => {
+      assert.strictEqual(await _.reduce(add)()(range(0, 10000)), 49995000)
+    })
+  })
+
+  describe('_.syncReduce', () => {
+    it('can add 1 2 3', async () => {
+      assert.strictEqual(_.syncReduce(add)()([1, 2, 3]), 6)
+    })
+
+    it('can add 1 2 3 starting with 10', async () => {
+      assert.strictEqual(_.syncReduce(add)(10)([1, 2, 3]), 6 + 10)
+    })
   })
 
   describe('_.flow', () => {

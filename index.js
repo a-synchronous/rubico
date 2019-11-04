@@ -59,6 +59,43 @@ _.map = fn => async x => {
   }
 }
 
+_.syncMap = fn => x => {
+  if (x instanceof Array) return x.map(fn)
+  if (x instanceof Set) {
+    const y = new Set()
+    for (const a of x) y.add(fn(a))
+    return y
+  }
+  if (x instanceof Map) {
+    const y = new Map()
+    for (const [k, v] of x) y.set(k, fn(v))
+    return y
+  }
+  if (x instanceof Object) {
+    const y = {}
+    for (const k in x) y[k] = fn(x[k])
+    return y
+  }
+}
+
+_.reduce = fn => x0 => async x => {
+  let [y, i] = x0 ? [x0, 0] : [x[0], 1]
+  while (i < x.length) {
+    y = await fn(y, x[i])
+    i += 1
+  }
+  return y
+}
+
+_.syncReduce = fn => x0 => x => {
+  let [y, i] = x0 ? [x0, 0] : [x[0], 1]
+  while (i < x.length) {
+    y = fn(y, x[i])
+    i += 1
+  }
+  return y
+}
+
 const argsOut = x => x.length <= 1 ? x[0] : x
 
 _.flow = (...fns) => async (...x) => {
