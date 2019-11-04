@@ -1,5 +1,5 @@
 {
-  "name": "rubicon",
+  "name": "rubico",
   "version": "0.1.1",
   "description": "Functional composition in an async world",
   "author": "Richard Tong",
@@ -7,6 +7,6 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "github:richytong/rubicon"
+    "url": "github:richytong/rubico"
   }
 }
