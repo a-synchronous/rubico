@@ -8,5 +8,20 @@
   "repository": {
     "type": "git",
     "url": "github:richytong/rubico"
-  }
+  },
+  "keywords": [
+    "rubico",
+    "callback",
+    "async",
+    "await",
+    "functional",
+    "fp",
+    "point-free",
+    "promise",
+    "promises",
+    "toolkit",
+    "tacit",
+    "utils",
+    "utility"
+  ]
 }
