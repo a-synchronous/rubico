@@ -131,12 +131,14 @@ _.amp = (...fns) => async (...x) => {
 }
 
 _.alt = (...fns) => async (...x) => {
+  let y = argsOut(x)
   let i = 0
   while (i < fns.length) {
-    const y = await fns[i](...x)
+    y = await fns[i](...x)
     if (y) return y
     i += 1
   }
+  return y
 }
 
 _.parallel = (...fns) => x => _.map(fn => fn(x))(fns)

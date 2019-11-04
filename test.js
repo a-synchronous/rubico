@@ -162,8 +162,8 @@ describe('rubico', () => {
       assert.strictEqual(await _.alt(hey)('yo'), await hey('yo'))
     })
 
-    it('alternating no fns => undefined', async () => {
-      assert.strictEqual(await _.alt()('yo'), undefined)
+    it('alternating no fns => x', async () => {
+      assert.strictEqual(await _.alt()('yo'), 'yo')
     })
   })
 
