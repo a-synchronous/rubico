@@ -104,18 +104,29 @@ _.alt = (...fns) => async (...x) => {
 
 _.parallel = (...fns) => x => _.map(fn => fn(x))(fns)
 
-_.sideEffect = fn => async (...x) => {
-  await fn(...x)
-  return argsOut(x)
-}
-
-_.trace = tag => _.sideEffect(x => console.log(tag, x))
-
 _.props = async x => {
   const tasks = []
   for (const k in x) tasks.push((async () => [k, await x[k]])())
   const y = {}
   for (const [k, v] of await Promise.all(tasks)) y[k] = v
+  return y
+}
+
+_.sideEffect = (fn, errFn) => async (...x) => {
+  try {
+    await fn(...x)
+  } catch (e) {
+    if (errFn) errFn(...x)(e)
+  }
+  return argsOut(x)
+}
+
+_.trace = tag => _.sideEffect(x => console.log(tag, x))
+
+_.benchmark = fn => tag => async x => {
+  const st = Date.now()
+  const y = await fn(x)
+  console.log(tag, `${Date.now() - st}ms`)
   return y
 }
 

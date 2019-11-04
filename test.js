@@ -13,6 +13,20 @@ const range = (start, end) => {
   for (let i = start; i < end; i++) arr[i - start] = i
   return arr
 }
+const traceError = (...args) => err => {
+  const name = err && (
+    err.name || err.code || err.errCode || (
+      err.toString && err.toString()
+    )
+  )
+  console.log(JSON.stringify({
+    name,
+    message: err && err.message,
+    arguments: args,
+    stack: new Error().stack,
+  }))
+  return err
+}
 
 describe('rubico', () => {
   describe('_.map', () => {
@@ -108,6 +122,19 @@ describe('rubico', () => {
     })
   })
 
+  describe('_.props', () => {
+    it('awaits promise props in parallel', async () => {
+      assert.deepEqual(
+        await _.props({ hey: hey('hey'), ho: ho('ho') }),
+        { hey: 'heyhey', ho: 'hoho' },
+      )
+    })
+
+    it('{} => {}', async () => {
+      assert.deepEqual(await _.props({}), {})
+    })
+  })
+
   describe('_.sideEffect', () => {
     it('executes a function but returns arguments', async () => {
       assert.strictEqual(await _.sideEffect(console.log)('hey'), 'hey')
@@ -119,6 +146,13 @@ describe('rubico', () => {
         ['yo', 'yo'],
       )
     })
+
+    it('handles errors with second fn', async () => {
+      assert.strictEqual(
+        await _.sideEffect(() => { throw new Error() }, x => e => console.log(x, e))('hey'),
+        'hey',
+      )
+    })
   })
 
   describe('_.trace', () => {
@@ -127,16 +161,12 @@ describe('rubico', () => {
     })
   })
 
-  describe('_.props', () => {
-    it('awaits promise props in parallel', async () => {
-      assert.deepEqual(
-        await _.props({ hey: hey('hey'), ho: ho('ho') }),
-        { hey: 'heyhey', ho: 'hoho' },
+  describe('_.benchmark', () => {
+    it('times the execution of the given function', async () => {
+      assert.strictEqual(
+        await _.benchmark(hey)('benchmark for hey')('hey'),
+        'heyhey',
       )
-    })
-
-    it('{} => {}', async () => {
-      assert.deepEqual(await _.props({}), {})
     })
   })
 })
