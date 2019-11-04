@@ -24,7 +24,7 @@ _.callbackifyAll = x => {
   const y = {}
   if (!x) return y
   for (k in x) {
-    if (typeof x[k] !== 'function') return
+    if (typeof x[k] !== 'function') continue
     y[k] = callbackify(x[k].bind(x))
   }
   for (k in x.__proto__ || {}) {
