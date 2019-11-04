@@ -5,13 +5,13 @@ functional composition that builds in promises by default
 
 # Usage
 ```javascript
-_.promisify(callbackReturningFn) // => promiseReturningFn
+_.promisify(callbackTakingFn) // => promiseReturningFn
 
-_.callbackify(promiseReturningFn) // => callbackReturningFn
+_.callbackify(promiseReturningFn) // => callbackTakingFn
 
-_.promisifyAll({ a: callbackReturningFn }) // => { a: promiseReturningFn }
+_.promisifyAll({ a: callbackTakingFn }) // => { a: promiseReturningFn }
 
-_.callbackifyAll({ a: promiseReturningFn }) // => { a: callbackReturningFn }
+_.callbackifyAll({ a: promiseReturningFn }) // => { a: callbackTakingFn }
 
 _.map(x => x + 1)([1, 2, 3]) // => Promise([2, 3, 4])
 
