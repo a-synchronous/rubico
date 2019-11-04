@@ -5,6 +5,8 @@ functional composition that builds in promises by default
 
 # Usage
 ```javascript
+const _ = require('rubico')
+
 _.promisify(callbackTakingFn) // => promiseReturningFn
 
 _.callbackify(promiseReturningFn) // => callbackTakingFn
