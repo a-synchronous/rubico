@@ -2,6 +2,68 @@ const { promisify, callbackify } = require('util')
 
 const _ = {}
 
+_.is = t => x => {
+  if (typeof t === 'string') return typeof x === t
+  if (typeof t === 'function') return x instanceof t
+  if (Number.isNaN(t)) return Number.isNaN(x)
+  return false
+}
+
+_.get = (...keys) => x => {
+  if (!_.is(Object)(x)) return undefined
+  let y = x
+  for (const k of keys) {
+    if (!y.hasOwnProperty(k)) return undefined
+    y = y[k]
+  }
+  return y
+}
+
+_.parseJSON = x => {
+  if (_.is(Object)(x)) return x
+  try {
+    return JSON.parse(x)
+  } catch (e) {
+    return undefined
+  }
+}
+
+_.stringifyJSON = x => {
+  try {
+    return JSON.stringify(_.parseJSON(x))
+  } catch (e) {
+    return undefined
+  }
+}
+
+_.prettifyJSON = spaces => x => {
+  try {
+    return JSON.stringify(_.parseJSON(x), null, spaces)
+  } catch (e) {
+    return undefined
+  }
+}
+
+_.split = d => x => {
+  if (!_.is('string')(x)) return undefined
+  return x.split(d)
+}
+
+_.toLowerCase = x => {
+  if (!_.is('string')(x)) return undefined
+  return x.toLowerCase()
+}
+
+_.toUpperCase = x => {
+  if (!_.is('string')(x)) return undefined
+  return x.toUpperCase()
+}
+
+_.capitalize = x => {
+  if (!_.is('string')(x)) return undefined
+  return x[0].toUpperCase() + x.slice(1)
+}
+
 _.promisify = promisify
 
 _.callbackify = callbackify
@@ -10,12 +72,12 @@ _.promisifyAll = x => {
   const y = {}
   if (!x) return y
   for (k in x) {
-    if (typeof x[k] !== 'function') continue
-    y[k] = promisify(x[k].bind(x))
+    if (!_.is('function')(_.prop(k)(x))) continue
+    y[k] = promisify(_.prop(k)(x).bind(x))
   }
   for (k in x.__proto__ || {}) {
-    if (typeof x[k] !== 'function') continue
-    y[k] = promisify(x[k].bind(x))
+    if (!_.is('function')(_.prop(k)(x))) continue
+    y[k] = promisify(_.prop(k)(x).bind(x))
   }
   return y
 }
@@ -24,33 +86,35 @@ _.callbackifyAll = x => {
   const y = {}
   if (!x) return y
   for (k in x) {
-    if (typeof x[k] !== 'function') continue
-    y[k] = callbackify(x[k].bind(x))
+    if (!_.is('function')(_.prop(k)(x))) continue
+    y[k] = callbackify(_.prop(k)(x).bind(x))
   }
   for (k in x.__proto__ || {}) {
-    if (typeof x[k] !== 'function') continue
-    y[k] = callbackify(x[k].bind(x))
+    if (!_.is('function')(_.prop(k)(x))) continue
+    y[k] = callbackify(_.prop(k)(x).bind(x))
   }
   return y
 }
 
+_.id = x => x
+
 _.map = fn => async x => {
-  if (x instanceof Array) {
+  if (_.is(Array)(x)) {
     const tasks = []
     for (const a of x) tasks.push(fn(a))
     return await Promise.all(tasks)
   }
-  if (x instanceof Set) {
+  if (_.is(Set)(x)) {
     const tasks = []
     for (const a of x) tasks.push(fn(a))
     return new Set(await Promise.all(tasks))
   }
-  if (x instanceof Map) {
+  if (_.is(Map)(x)) {
     const tasks = []
     for (const [k, v] of x) tasks.push((async () => [k, await fn(v)])())
     return new Map(await Promise.all(tasks))
   }
-  if (x instanceof Object) {
+  if (_.is(Object)(x)) {
     const tasks = []
     for (const k in x) tasks.push((async () => [k, await fn(x[k])])())
     const y = {}
@@ -60,18 +124,18 @@ _.map = fn => async x => {
 }
 
 _.syncMap = fn => x => {
-  if (x instanceof Array) return x.map(fn)
-  if (x instanceof Set) {
+  if (_.is(Array)(x)) return x.map(fn)
+  if (_.is(Set)(x)) {
     const y = new Set()
     for (const a of x) y.add(fn(a))
     return y
   }
-  if (x instanceof Map) {
+  if (_.is(Map)(x)) {
     const y = new Map()
     for (const [k, v] of x) y.set(k, fn(v))
     return y
   }
-  if (x instanceof Object) {
+  if (_.is(Object)(x)) {
     const y = {}
     for (const k in x) y[k] = fn(x[k])
     return y
@@ -142,14 +206,6 @@ _.alt = (...fns) => async (...x) => {
 }
 
 _.parallel = (...fns) => x => _.map(fn => fn(x))(fns)
-
-_.props = async x => {
-  const tasks = []
-  for (const k in x) tasks.push((async () => [k, await x[k]])())
-  const y = {}
-  for (const [k, v] of await Promise.all(tasks)) y[k] = v
-  return y
-}
 
 _.sideEffect = (fn, errFn) => async (...x) => {
   try {

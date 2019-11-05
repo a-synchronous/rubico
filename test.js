@@ -30,6 +30,117 @@ const traceError = (...args) => err => {
 }
 
 describe('rubico', () => {
+  describe('_.is', () => {
+    it('string -> typeof', async () => {
+      assert.strictEqual(_.is('string')('hey'), true)
+      assert.strictEqual(_.is('string')(null), false)
+      assert.strictEqual(_.is('number')(1), true)
+      assert.strictEqual(_.is('number')(NaN), true)
+      assert.strictEqual(_.is('number')({}), false)
+      assert.strictEqual(_.is('object')({}), true)
+    })
+
+    it('function -> instanceof', async () => {
+      assert.strictEqual(_.is(Array)([]), true)
+      assert.strictEqual(_.is(Array)({}), false)
+      assert.strictEqual(_.is(Set)(new Set()), true)
+      assert.strictEqual(_.is(Set)({}), false)
+      assert.strictEqual(_.is(WeakSet)(new WeakSet()), true)
+      assert.strictEqual(_.is(WeakSet)({}), false)
+      assert.strictEqual(_.is(Map)(new Map()), true)
+      assert.strictEqual(_.is(Map)({}), false)
+      assert.strictEqual(_.is(NaN)(NaN), true)
+      assert.strictEqual(_.is(NaN)(1), false)
+      assert.strictEqual(_.is(NaN)(), false)
+    })
+  })
+
+  describe('_.get', () => {
+    const x = { a: { b: { c: 1 } } }
+    const y = [1, 2, [3, [4]]]
+    it('safely gets a property', async () => {
+      assert.strictEqual(_.get('a')({ a: 1 }), 1)
+      assert.strictEqual(_.get('b')({ a: 1 }), undefined)
+      assert.strictEqual(_.get('b')({}), undefined)
+      assert.strictEqual(_.get('b')(), undefined)
+      assert.strictEqual(_.get('a', 'b', 'c')(x), 1)
+      assert.strictEqual(_.get('a', 'b', 'd')(x), undefined)
+      assert.strictEqual(_.get('a', 'b', 'd')({}), undefined)
+      assert.strictEqual(_.get('a', 'b', 'd')(), undefined)
+      assert.strictEqual(_.get(0)(y), 1)
+      assert.deepEqual(_.get(2)(y), [3, [4]])
+      assert.strictEqual(_.get(2, 0)(y), 3)
+      assert.strictEqual(_.get(2, 1, 0)(y), 4)
+      assert.strictEqual(_.get(3)(y), undefined)
+      assert.strictEqual(_.get('a')('hey'), undefined)
+      assert.strictEqual(_.get('a')(1), undefined)
+    })
+  })
+
+  describe('_.parseJSON', () => {
+    it('safely parses JSON', async () => {
+      assert.deepEqual(_.parseJSON('{"a":1}'), { a: 1 })
+      assert.deepEqual(_.parseJSON('{}'), {})
+      assert.strictEqual(_.parseJSON('{hey}'), undefined)
+      assert.strictEqual(_.parseJSON(''), undefined)
+      assert.strictEqual(_.parseJSON(), undefined)
+    })
+  })
+
+  describe('_.stringifyJSON', () => {
+    const circular = {}
+    circular.circular = circular
+    it('safely stringifies JSON', async () => {
+      assert.strictEqual(_.stringifyJSON({ a: 1 }), '{"a":1}')
+      assert.strictEqual(_.stringifyJSON({}), '{}')
+      assert.strictEqual(_.stringifyJSON(circular), undefined)
+      assert.strictEqual(_.stringifyJSON('hey'), undefined)
+      assert.strictEqual(_.stringifyJSON(), undefined)
+      console.log(_.prettifyJSON(2)({ a: 1 }))
+    })
+  })
+
+  describe('_.split', () => {
+    it('splits a string into an array from given delimiter', async () => {
+      assert.deepEqual(_.split('.')('a.b.c'), ['a', 'b', 'c'])
+      assert.deepEqual(_.split(1)('a1b'), ['a', 'b'])
+      assert.deepEqual(_.split('.')(1), undefined)
+      assert.deepEqual(_.split()('a.b.c'), ['a.b.c'])
+      assert.deepEqual(_.split('.')(), undefined)
+      assert.deepEqual(_.split('.')(1), undefined)
+      assert.deepEqual(_.split()(), undefined)
+    })
+  })
+
+  describe('_.toLowerCase', () => {
+    it('lowercases', async () => {
+      assert.strictEqual(_.toLowerCase('AAA'), 'aaa')
+      assert.strictEqual(_.toLowerCase('Aaa'), 'aaa')
+      assert.strictEqual(_.toLowerCase('Aaa '), 'aaa ')
+      assert.strictEqual(_.toLowerCase(null), undefined)
+      assert.strictEqual(_.toLowerCase(), undefined)
+    })
+  })
+
+  describe('_.toUpperCase', () => {
+    it('uppercases', async () => {
+      assert.strictEqual(_.toUpperCase('aaa'), 'AAA')
+      assert.strictEqual(_.toUpperCase('Aaa'), 'AAA')
+      assert.strictEqual(_.toUpperCase('Aaa '), 'AAA ')
+      assert.strictEqual(_.toUpperCase(null), undefined)
+      assert.strictEqual(_.toUpperCase(), undefined)
+    })
+  })
+
+  describe('_.capitalize', () => {
+    it('capitalizes', async () => {
+      assert.strictEqual(_.capitalize('george'), 'George')
+      assert.strictEqual(_.capitalize('george benson'), 'George benson')
+      assert.strictEqual(_.capitalize(null), undefined)
+      assert.strictEqual(_.capitalize(), undefined)
+    })
+  })
+
   describe('_.map', () => {
     it('async a -> b', async () => {
       assert.deepEqual(
@@ -177,19 +288,6 @@ describe('rubico', () => {
 
     it('no fns => []', async () => {
       assert.deepEqual(await _.parallel()('yo'), [])
-    })
-  })
-
-  describe('_.props', () => {
-    it('awaits promise props in parallel', async () => {
-      assert.deepEqual(
-        await _.props({ hey: hey('hey'), ho: ho('ho') }),
-        { hey: 'heyhey', ho: 'hoho' },
-      )
-    })
-
-    it('{} => {}', async () => {
-      assert.deepEqual(await _.props({}), {})
     })
   })
 
