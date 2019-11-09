@@ -144,6 +144,7 @@ _.map = fn => async x => {
 }
 
 _.smap = fn => x => {
+  console.log(x)
   if (_.is(Array)(x)) return x.map(fn)
   if (_.is(Set)(x)) {
     const y = new Set()
@@ -297,9 +298,9 @@ _.salt = (...fns) => (...x) => {
 }
 
 
-_.diverge = (...fns) => x => _.map(fn => fn(x))(fns)
+_.diverge = (...fns) => (...x) => _.map(fn => fn(...x))(fns)
 
-_.sdiverge = (...fns) => x => _.smap(fn => fn(x))(fns)
+_.sdiverge = (...fns) => (...x) => _.smap(fn => fn(...x))(fns)
 
 _.sideEffect = (fn, errFn) => async (...x) => {
   try {

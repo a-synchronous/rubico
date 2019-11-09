@@ -459,6 +459,19 @@ describe('rubico', () => {
     })
   })
 
+  describe('_.sdiverge', () => {
+    it('runs fns in diverge', async () => {
+      assert.deepEqual(
+        _.sdiverge(x => x, x => x + 1)(1),
+        [1, 2],
+      )
+    })
+
+    it('no fns => []', async () => {
+      assert.deepEqual(await _.sdiverge()('yo'), [])
+    })
+  })
+
   describe('_.sideEffect', () => {
     it('executes a function but returns arguments', async () => {
       assert.strictEqual(await _.sideEffect(console.log)('hey'), 'hey')
