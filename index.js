@@ -91,12 +91,14 @@ _.promisifyAll = x => {
   const y = {}
   if (!x) return y
   for (k in x) {
-    if (_.isNot('function')(_.get(k)(x))) { y[k] = _.get(k)(x); continue }
-    y[k] = _.promisify(_.get(k)(x).bind(x))
+    const v = x[k]
+    if (_.isNot('function')(v)) { y[k] = v; continue }
+    y[k] = _.promisify(v.bind(x))
   }
   for (k in x.__proto__ || {}) {
-    if (_.isNot('function')(_.get(k)(x))) { y[k] = _.get(k)(x); continue }
-    y[k] = _.promisify(_.get(k)(x).bind(x))
+    const v = x.__proto__[k]
+    if (_.isNot('function')(v)) { y[k] = v; continue }
+    y[k] = _.promisify(v.bind(x))
   }
   return y
 }
@@ -105,12 +107,14 @@ _.callbackifyAll = x => {
   const y = {}
   if (!x) return y
   for (k in x) {
-    if (_.isNot('function')(_.get(k)(x))) { y[k] = _.get(k)(x); continue }
-    y[k] = _.callbackify(_.get(k)(x).bind(x))
+    const v = x[k]
+    if (_.isNot('function')(v)) { y[k] = v; continue }
+    y[k] = _.callbackify(v.bind(x))
   }
   for (k in x.__proto__ || {}) {
-    if (_.isNot('function')(_.get(k)(x))) { y[k] = _.get(k)(x); continue }
-    y[k] = _.callbackify(_.get(k)(x).bind(x))
+    const v = x.__proto__[k]
+    if (_.isNot('function')(v)) { y[k] = v; continue }
+    y[k] = _.callbackify(v.bind(x))
   }
   return y
 }
@@ -144,7 +148,6 @@ _.map = fn => async x => {
 }
 
 _.smap = fn => x => {
-  console.log(x)
   if (_.is(Array)(x)) return x.map(fn)
   if (_.is(Set)(x)) {
     const y = new Set()
@@ -297,10 +300,9 @@ _.salt = (...fns) => (...x) => {
   return y
 }
 
+_.diverge = (...fns) => async (...x) => await Promise.all(fns.map(fn => fn(...x)))
 
-_.diverge = (...fns) => (...x) => _.map(fn => fn(...x))(fns)
-
-_.sdiverge = (...fns) => (...x) => _.smap(fn => fn(...x))(fns)
+_.sdiverge = (...fns) => (...x) => fns.map(fn => fn(...x))
 
 _.sideEffect = (fn, errFn) => async (...x) => {
   try {
