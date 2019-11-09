@@ -38,6 +38,11 @@ describe('rubico', () => {
       assert.strictEqual(_.is('number')(NaN), true)
       assert.strictEqual(_.is('number')({}), false)
       assert.strictEqual(_.is('object')({}), true)
+      assert.strictEqual(_.is('nil')(null), true)
+      assert.strictEqual(_.is('nil')(undefined), true)
+      assert.strictEqual(_.is('nil')(0), false)
+      assert.strictEqual(_.is('int')(1), true)
+      assert.strictEqual(_.is('int')(1.1), false)
     })
 
     it('function -> instanceof', async () => {
@@ -52,6 +57,66 @@ describe('rubico', () => {
       assert.strictEqual(_.is(NaN)(NaN), true)
       assert.strictEqual(_.is(NaN)(1), false)
       assert.strictEqual(_.is(NaN)(), false)
+      assert.strictEqual(_.is(Object)({}), true)
+      assert.strictEqual(_.is(Object)(new Set()), true)
+      assert.strictEqual(_.is(Object)([]), true)
+      assert.strictEqual(_.is(Object)('hey'), false)
+      assert.strictEqual(_.is(Object)(1), false)
+    })
+  })
+
+  describe('_.isNot', () => {
+    it('string -> typeof', async () => {
+      assert.strictEqual(_.isNot('string')('hey'), false)
+      assert.strictEqual(_.isNot('string')(null), true)
+      assert.strictEqual(_.isNot('number')(1), false)
+      assert.strictEqual(_.isNot('number')(NaN), false)
+      assert.strictEqual(_.isNot('number')({}), true)
+      assert.strictEqual(_.isNot('object')({}), false)
+    })
+
+    it('function -> instanceof', async () => {
+      assert.strictEqual(_.isNot(Array)([]), false)
+      assert.strictEqual(_.isNot(Array)({}), true)
+      assert.strictEqual(_.isNot(Set)(new Set()), false)
+      assert.strictEqual(_.isNot(Set)({}), true)
+      assert.strictEqual(_.isNot(WeakSet)(new WeakSet()), false)
+      assert.strictEqual(_.isNot(WeakSet)({}), true)
+      assert.strictEqual(_.isNot(Map)(new Map()), false)
+      assert.strictEqual(_.isNot(Map)({}), true)
+      assert.strictEqual(_.isNot(NaN)(NaN), false)
+      assert.strictEqual(_.isNot(NaN)(1), true)
+      assert.strictEqual(_.isNot(NaN)(), true)
+      assert.strictEqual(_.isNot(Object)({}), false)
+      assert.strictEqual(_.isNot(Object)(new Set()), false)
+      assert.strictEqual(_.isNot(Object)([]), false)
+      assert.strictEqual(_.isNot(Object)('hey'), true)
+      assert.strictEqual(_.isNot(Object)(1), true)
+    })
+  })
+
+  describe('_.toString', () => {
+    it('converts to string', async () => {
+      assert.strictEqual(_.toString('hey'), 'hey')
+      assert.strictEqual(_.toString(null), '')
+      assert.strictEqual(_.toString(undefined), '')
+      assert.strictEqual(_.toString({}), '[object Object]')
+      assert.strictEqual(_.toString([]), '')
+      assert.strictEqual(_.toString(1), '1')
+    })
+  })
+
+  describe('_.toNumber', () => {
+    it('converts to number', async () => {
+      assert.strictEqual(_.toNumber(1), 1)
+      assert.strictEqual(_.toNumber(1.1), 1.1)
+      assert.strictEqual(_.toNumber('1'), 1)
+      assert.strictEqual(_.toNumber('1.1'), 1.1)
+      assert.strictEqual(_.toNumber(Infinity), Infinity)
+      assert.strictEqual(_.toNumber(), 0)
+      assert.strictEqual(_.toNumber(null), 0)
+      assert.strictEqual(_.toNumber([]), 0)
+      assert.strictEqual(_.toNumber({}), NaN)
     })
   })
 
@@ -104,11 +169,10 @@ describe('rubico', () => {
     it('splits a string into an array from given delimiter', async () => {
       assert.deepEqual(_.split('.')('a.b.c'), ['a', 'b', 'c'])
       assert.deepEqual(_.split(1)('a1b'), ['a', 'b'])
-      assert.deepEqual(_.split('.')(1), undefined)
+      assert.deepEqual(_.split('.')(1), ['1'])
       assert.deepEqual(_.split()('a.b.c'), ['a.b.c'])
-      assert.deepEqual(_.split('.')(), undefined)
-      assert.deepEqual(_.split('.')(1), undefined)
-      assert.deepEqual(_.split()(), undefined)
+      assert.deepEqual(_.split('.')(), [''])
+      assert.deepEqual(_.split()(), [''])
     })
   })
 
@@ -117,8 +181,8 @@ describe('rubico', () => {
       assert.strictEqual(_.toLowerCase('AAA'), 'aaa')
       assert.strictEqual(_.toLowerCase('Aaa'), 'aaa')
       assert.strictEqual(_.toLowerCase('Aaa '), 'aaa ')
-      assert.strictEqual(_.toLowerCase(null), undefined)
-      assert.strictEqual(_.toLowerCase(), undefined)
+      assert.strictEqual(_.toLowerCase(null), '')
+      assert.strictEqual(_.toLowerCase(), '')
     })
   })
 
@@ -127,8 +191,8 @@ describe('rubico', () => {
       assert.strictEqual(_.toUpperCase('aaa'), 'AAA')
       assert.strictEqual(_.toUpperCase('Aaa'), 'AAA')
       assert.strictEqual(_.toUpperCase('Aaa '), 'AAA ')
-      assert.strictEqual(_.toUpperCase(null), undefined)
-      assert.strictEqual(_.toUpperCase(), undefined)
+      assert.strictEqual(_.toUpperCase(null), '')
+      assert.strictEqual(_.toUpperCase(), '')
     })
   })
 
@@ -136,8 +200,56 @@ describe('rubico', () => {
     it('capitalizes', async () => {
       assert.strictEqual(_.capitalize('george'), 'George')
       assert.strictEqual(_.capitalize('george benson'), 'George benson')
-      assert.strictEqual(_.capitalize(null), undefined)
-      assert.strictEqual(_.capitalize(), undefined)
+      assert.strictEqual(_.capitalize(null), '')
+      assert.strictEqual(_.capitalize(), '')
+    })
+  })
+
+  describe('_.promisify', () => {
+    const cbHey = cb => setTimeout(() => cb(null, 'hey'), 10)
+    it('promisifies', async () => {
+      assert.strictEqual(await _.promisify(cbHey)(), 'hey')
+      try {
+        const fn = _.promisify('wut')
+        assert(!fn)
+      } catch (e) {
+        assert(e instanceof TypeError)
+      }
+    })
+  })
+
+  describe('_.callbackify', () => {
+    const promiseHey = () => new Promise(res => setTimeout(() => res('hey'), 10))
+    it('callbackifies', (done) => {
+      _.callbackify(promiseHey)((err, hey) => {
+        assert.ifError(err)
+        assert.strictEqual(hey, 'hey')
+        done()
+      })
+    })
+  })
+
+  describe('_.promisifyAll', () => {
+    function cbModule(){}
+    cbModule.cbHey = cb => setTimeout(() => cb(null, 'hey'), 10)
+    cbModule.hey = 'hey'
+    it('promisifies an entire module', async () => {
+      assert.strictEqual(await _.promisifyAll(cbModule).cbHey(), 'hey')
+      assert.strictEqual(_.promisifyAll(cbModule).hey, 'hey')
+    })
+  })
+
+  describe('_.callbackifyAll', () => {
+    function promiseModule(){}
+    promiseModule.promiseHey = () => new Promise(res => setTimeout(() => res('hey'), 10))
+    promiseModule.hey = 'hey'
+    it('callbackifies an entire module', (done) => {
+      assert.strictEqual(_.callbackifyAll(promiseModule).hey, 'hey')
+      _.callbackifyAll(promiseModule).promiseHey((err, hey) => {
+        assert.ifError(err)
+        assert.strictEqual(hey, 'hey')
+        done()
+      })
     })
   })
 
@@ -152,11 +264,15 @@ describe('rubico', () => {
         new Set([2, 3, 4]),
       )
       assert.deepEqual(
-        await _.map(delayedAdd1)(new Map([['a', 1], ['b', 2], ['c', 3]])),
+        await _.map(async ([k, v]) => [k, await delayedAdd1(v)])(
+          new Map([['a', 1], ['b', 2], ['c', 3]])
+        ),
         new Map([['a', 2], ['b', 3], ['c', 4]]),
       )
       assert.deepEqual(
-        await _.map(delayedAdd1)({ a: 1, b: 2, c: 3 }),
+        await _.map(async ([k, v]) => [k, await delayedAdd1(v)])(
+          { a: 1, b: 2, c: 3 }
+        ),
         { a: 2, b: 3, c: 4 },
       )
     }).timeout(5000)
@@ -173,49 +289,95 @@ describe('rubico', () => {
         new Set([2, 3, 4]),
       )
       assert.deepEqual(
-        _.syncMap(add1)(new Map([['a', 1], ['b', 2], ['c', 3]])),
+        _.syncMap(([k, v]) => [k, add1(v)])(
+          new Map([['a', 1], ['b', 2], ['c', 3]])
+        ),
         new Map([['a', 2], ['b', 3], ['c', 4]]),
       )
       assert.deepEqual(
-        _.syncMap(add1)({ a: 1, b: 2, c: 3 }),
-        { a: 2, b: 3, c: 4 },
+        _.syncMap(([k, v]) => [`${k}${k}`, add1(v)])(
+          { a: 1, b: 2, c: 3 }
+        ),
+        { aa: 2, bb: 3, cc: 4 },
       )
     }).timeout(5000)
   })
 
+  describe('_.filter', () => {
+    it('filters x by fn', async () => {
+      assert.deepEqual(
+        await _.filter(x => x === 1)([1,2,3]),
+        [1],
+      )
+      assert.deepEqual(
+        await _.filter(x => x === 1)(new Set([1,2,3])),
+        new Set([1]),
+      )
+      assert.deepEqual(
+        await _.filter(([k, v]) => v === 1)(new Map([['a', 1],['b', 2]])),
+        new Map([['a', 1]]),
+      )
+      assert.deepEqual(
+        await _.filter(([k, v]) => v === 1)({ a: 1, b: 2 }),
+        ({ a: 1 }),
+      )
+    })
+  })
+
+  describe('_.syncFilter', () => {
+    it('filters x by fn', async () => {
+      assert.deepEqual(
+        _.syncFilter(x => x === 1)([1,2,3]),
+        [1],
+      )
+      assert.deepEqual(
+        _.syncFilter(x => x === 1)(new Set([1,2,3])),
+        new Set([1]),
+      )
+      assert.deepEqual(
+        _.syncFilter(([k, v]) => v === 1)(new Map([['a', 1],['b', 2]])),
+        new Map([['a', 1]]),
+      )
+      assert.deepEqual(
+        _.syncFilter(([k, v]) => v === 1)({ a: 1, b: 2 }),
+        ({ a: 1 }),
+      )
+    })
+  })
+
   describe('_.reduce', () => {
     it('can add 1 2 3', async () => {
-      assert.strictEqual(await _.reduce(add)()([1, 2, 3]), 6)
+      assert.strictEqual(await _.reduce(add)([1, 2, 3]), 6)
     })
 
     it('can add 1 2 3 starting with 10', async () => {
-      assert.strictEqual(await _.reduce(add)(10)([1, 2, 3]), 6 + 10)
+      assert.strictEqual(await _.reduce(add, 10)([1, 2, 3]), 6 + 10)
     })
 
     it('=> first element for array length 1', async () => {
-      assert.strictEqual(await _.reduce(add)()([1]), 1)
+      assert.strictEqual(await _.reduce(add)([1]), 1)
     })
 
     it('=> memo for []', async () => {
-      assert.strictEqual(await _.reduce(add)('yoyoyo')([]), 'yoyoyo')
+      assert.strictEqual(await _.reduce(add, 'yoyoyo')([]), 'yoyoyo')
     })
 
     it('=> undefined for []', async () => {
-      assert.strictEqual(await _.reduce(add)()([]), undefined)
+      assert.strictEqual(await _.reduce(add)([]), undefined)
     })
 
     it('many calls', async () => {
-      assert.strictEqual(await _.reduce(add)()(range(0, 10000)), 49995000)
+      assert.strictEqual(await _.reduce(add)(range(0, 10000)), 49995000)
     })
   })
 
   describe('_.syncReduce', () => {
     it('can add 1 2 3', async () => {
-      assert.strictEqual(_.syncReduce(add)()([1, 2, 3]), 6)
+      assert.strictEqual(_.syncReduce(add)([1, 2, 3]), 6)
     })
 
     it('can add 1 2 3 starting with 10', async () => {
-      assert.strictEqual(_.syncReduce(add)(10)([1, 2, 3]), 6 + 10)
+      assert.strictEqual(_.syncReduce(add, 10)([1, 2, 3]), 6 + 10)
     })
   })
 
