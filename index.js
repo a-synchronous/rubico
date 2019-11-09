@@ -115,8 +115,6 @@ _.callbackifyAll = x => {
 
 _.id = x => x
 
-_.aside = fn => async x => [x, await fn(x)]
-
 _.map = fn => async x => {
   if (_.is(Array)(x)) {
     const tasks = []
@@ -143,7 +141,7 @@ _.map = fn => async x => {
   return await fn(x)
 }
 
-_.syncMap = fn => x => {
+_.smap = fn => x => {
   if (_.is(Array)(x)) return x.map(fn)
   if (_.is(Set)(x)) {
     const y = new Set()
@@ -192,7 +190,7 @@ _.filter = fn => async x => {
   return (await fn(x)) ? x : undefined
 }
 
-_.syncFilter = fn => x => {
+_.sfilter = fn => x => {
   if (_.is(Array)(x)) return x.filter(fn)
   if (_.is(Set)(x)) {
     const y = new Set()
@@ -221,7 +219,7 @@ _.reduce = (fn, x0) => async x => {
   return y
 }
 
-_.syncReduce = (fn, x0) => x => {
+_.sreduce = (fn, x0) => x => {
   let [y, i] = x0 ? [x0, 0] : [x[0], 1]
   while (i < x.length) {
     y = fn(y, x[i])
@@ -234,7 +232,7 @@ const argsOut = x => x.length <= 1 ? x[0] : x
 
 _.flow = (...fns) => async (...x) => {
   if (fns.length === 0) return argsOut(x)
-  let [y, i] = [await fns[0](...x), 1]
+  let y = await fns[0](...x), i = 1
   while (i < fns.length) {
     y = await fns[i](y)
     i += 1
@@ -242,9 +240,9 @@ _.flow = (...fns) => async (...x) => {
   return y
 }
 
-_.syncFlow = (...fns) => (...x) => {
+_.sflow = (...fns) => (...x) => {
   if (fns.length === 0) return argsOut(x)
-  let [y, i] = [fns[0](...x), 1]
+  let y = fns[0](...x), i = 1
   while (i < fns.length) {
     y = fns[i](y)
     i += 1
@@ -254,7 +252,7 @@ _.syncFlow = (...fns) => (...x) => {
 
 _.amp = (...fns) => async (...x) => {
   if (fns.length === 0) return argsOut(x)
-  let [y, i] = [await fns[0](...x), 1]
+  let y = await fns[0](...x), i = 1
   if (!y) return y
   while (i < fns.length) {
     y = await fns[i](y)
@@ -264,9 +262,20 @@ _.amp = (...fns) => async (...x) => {
   return y
 }
 
+_.samp = (...fns) => (...x) => {
+  if (fns.length === 0) return argsOut(x)
+  let y = fns[0](...x), i = 1
+  if (!y) return y
+  while (i < fns.length) {
+    y = fns[i](y)
+    if (!y) return y
+    i += 1
+  }
+  return y
+}
+
 _.alt = (...fns) => async (...x) => {
-  let y = argsOut(x)
-  let i = 0
+  let y = argsOut(x), i = 0
   while (i < fns.length) {
     y = await fns[i](...x)
     if (y) return y
@@ -275,7 +284,20 @@ _.alt = (...fns) => async (...x) => {
   return y
 }
 
+_.salt = (...fns) => (...x) => {
+  let y = argsOut(x), i = 0
+  while (i < fns.length) {
+    y = fns[i](...x)
+    if (y) return y
+    i += 1
+  }
+  return y
+}
+
+
 _.diverge = (...fns) => x => _.map(fn => fn(x))(fns)
+
+_.sdiverge = (...fns) => x => _.smap(fn => fn(x))(fns)
 
 _.sideEffect = (fn, errFn) => async (...x) => {
   try {

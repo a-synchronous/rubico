@@ -278,24 +278,24 @@ describe('rubico', () => {
     }).timeout(5000)
   })
 
-  describe('_.syncMap', () => {
+  describe('_.smap', () => {
     it('a -> b', async () => {
       assert.deepEqual(
-        _.syncMap(add1)([1, 2, 3]),
+        _.smap(add1)([1, 2, 3]),
         [2, 3, 4],
       )
       assert.deepEqual(
-        _.syncMap(add1)(new Set([1,2,3])),
+        _.smap(add1)(new Set([1,2,3])),
         new Set([2, 3, 4]),
       )
       assert.deepEqual(
-        _.syncMap(([k, v]) => [k, add1(v)])(
+        _.smap(([k, v]) => [k, add1(v)])(
           new Map([['a', 1], ['b', 2], ['c', 3]])
         ),
         new Map([['a', 2], ['b', 3], ['c', 4]]),
       )
       assert.deepEqual(
-        _.syncMap(([k, v]) => [`${k}${k}`, add1(v)])(
+        _.smap(([k, v]) => [`${k}${k}`, add1(v)])(
           { a: 1, b: 2, c: 3 }
         ),
         { aa: 2, bb: 3, cc: 4 },
@@ -324,22 +324,22 @@ describe('rubico', () => {
     })
   })
 
-  describe('_.syncFilter', () => {
+  describe('_.sfilter', () => {
     it('filters x by fn', async () => {
       assert.deepEqual(
-        _.syncFilter(x => x === 1)([1,2,3]),
+        _.sfilter(x => x === 1)([1,2,3]),
         [1],
       )
       assert.deepEqual(
-        _.syncFilter(x => x === 1)(new Set([1,2,3])),
+        _.sfilter(x => x === 1)(new Set([1,2,3])),
         new Set([1]),
       )
       assert.deepEqual(
-        _.syncFilter(([k, v]) => v === 1)(new Map([['a', 1],['b', 2]])),
+        _.sfilter(([k, v]) => v === 1)(new Map([['a', 1],['b', 2]])),
         new Map([['a', 1]]),
       )
       assert.deepEqual(
-        _.syncFilter(([k, v]) => v === 1)({ a: 1, b: 2 }),
+        _.sfilter(([k, v]) => v === 1)({ a: 1, b: 2 }),
         ({ a: 1 }),
       )
     })
@@ -371,13 +371,13 @@ describe('rubico', () => {
     })
   })
 
-  describe('_.syncReduce', () => {
+  describe('_.sreduce', () => {
     it('can add 1 2 3', async () => {
-      assert.strictEqual(_.syncReduce(add)([1, 2, 3]), 6)
+      assert.strictEqual(_.sreduce(add)([1, 2, 3]), 6)
     })
 
     it('can add 1 2 3 starting with 10', async () => {
-      assert.strictEqual(_.syncReduce(add, 10)([1, 2, 3]), 6 + 10)
+      assert.strictEqual(_.sreduce(add, 10)([1, 2, 3]), 6 + 10)
     })
   })
 
@@ -399,9 +399,9 @@ describe('rubico', () => {
     })
   })
 
-  describe('_.syncFlow', () => {
+  describe('_.sflow', () => {
     it('chains regular functions only', async () => {
-      assert.strictEqual(_.syncFlow(hi, hi, hi)('hi'), 'hihihihi')
+      assert.strictEqual(_.sflow(hi, hi, hi)('hi'), 'hihihihi')
     })
   })
 
