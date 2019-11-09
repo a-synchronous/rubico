@@ -67,9 +67,11 @@ _.prettifyJSON = spaces => x => {
   }
 }
 
-_.split = d => x => _.toString(x).split(d)
+_.flip = pair => x => _.get(0)(_.sfilter(y => y !== x)(pair))
 
 _.join = d => x => x.join(d)
+
+_.split = d => x => _.toString(x).split(d)
 
 _.toLowerCase = x => _.toString(x).toLowerCase()
 

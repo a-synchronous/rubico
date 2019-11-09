@@ -165,6 +165,12 @@ describe('rubico', () => {
     })
   })
 
+  describe('_.flip', () => {
+    it('flips a value given arr', async () => {
+      assert.strictEqual(_.flip(['heads', 'tails'])('heads'), 'tails')
+    })
+  })
+
   describe('_.split', () => {
     it('splits a string into an array from given delimiter', async () => {
       assert.deepEqual(_.split('.')('a.b.c'), ['a', 'b', 'c'])
