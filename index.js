@@ -115,6 +115,8 @@ _.callbackifyAll = x => {
 
 _.id = x => x
 
+_.aside = fn => async x => [x, await fn(x)]
+
 _.map = fn => async x => {
   if (_.is(Array)(x)) {
     const tasks = []
@@ -273,7 +275,7 @@ _.alt = (...fns) => async (...x) => {
   return y
 }
 
-_.parallel = (...fns) => x => _.map(fn => fn(x))(fns)
+_.diverge = (...fns) => x => _.map(fn => fn(x))(fns)
 
 _.sideEffect = (fn, errFn) => async (...x) => {
   try {

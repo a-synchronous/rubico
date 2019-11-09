@@ -440,16 +440,16 @@ describe('rubico', () => {
     })
   })
 
-  describe('_.parallel', () => {
-    it('runs fns in parallel', async () => {
+  describe('_.diverge', () => {
+    it('runs fns in diverge', async () => {
       assert.deepEqual(
-        await _.parallel(hi, ho, hey)('yo'),
+        await _.diverge(hi, ho, hey)('yo'),
         ['yohi', 'yoho', 'yohey'],
       )
     })
 
     it('no fns => []', async () => {
-      assert.deepEqual(await _.parallel()('yo'), [])
+      assert.deepEqual(await _.diverge()('yo'), [])
     })
   })
 
