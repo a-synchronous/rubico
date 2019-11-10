@@ -447,28 +447,62 @@ describe('rubico', () => {
   })
 
   describe('_.diverge', () => {
-    it('runs fns in diverge', async () => {
+    it('diverges flow to provided container', async () => {
       assert.deepEqual(
-        await _.diverge(hi, ho, hey)('yo'),
+        await _.diverge([hi, ho, hey])('yo'),
         ['yohi', 'yoho', 'yohey'],
+      )
+      assert.deepEqual(
+        await _.diverge(new Set([hi, ho, hey]))('yo'),
+        new Set(['yohi', 'yoho', 'yohey']),
+      )
+      assert.deepEqual(
+        await _.diverge(new Map([['a', hi], ['b', ho], ['c', hey]]))('yo'),
+        new Map([['a', 'yohi'], ['b', 'yoho'], ['c', 'yohey']])
+      )
+      assert.deepEqual(
+        await _.diverge({ a: hi, b: ho, c: hey })('yo'),
+        ({ a: 'yohi', b: 'yoho', c: 'yohey' }),
       )
     })
 
-    it('no fns => []', async () => {
-      assert.deepEqual(await _.diverge()('yo'), [])
+    it('throws a TypeError', async () => {
+      try {
+        x = await _.diverge('ayelmao')('yo')
+        assert(!x)
+      } catch (e) {
+        assert(e instanceof TypeError)
+      }
     })
   })
 
   describe('_.sdiverge', () => {
-    it('runs fns in diverge', async () => {
+    it('diverges flow to provided container', async () => {
       assert.deepEqual(
-        _.sdiverge(x => x, x => x + 1)(1),
-        [1, 2],
+        _.sdiverge([hi, hi, hi])('yo'),
+        ['yohi', 'yohi', 'yohi'],
+      )
+      assert.deepEqual(
+        _.sdiverge(new Set([hi, hi, hi]))('yo'),
+        new Set(['yohi', 'yohi', 'yohi']),
+      )
+      assert.deepEqual(
+        _.sdiverge(new Map([['a', hi], ['b', hi], ['c', hi]]))('yo'),
+        new Map([['a', 'yohi'], ['b', 'yohi'], ['c', 'yohi']])
+      )
+      assert.deepEqual(
+        _.sdiverge({ a: hi, b: hi, c: hi })('yo'),
+        ({ a: 'yohi', b: 'yohi', c: 'yohi' }),
       )
     })
 
-    it('no fns => []', async () => {
-      assert.deepEqual(await _.sdiverge()('yo'), [])
+    it('throws a TypeError', async () => {
+      try {
+        x = _.sdiverge('ayelmao')('yo')
+        assert(!x)
+      } catch (e) {
+        assert(e instanceof TypeError)
+      }
     })
   })
 

@@ -300,9 +300,60 @@ _.salt = (...fns) => (...x) => {
   return y
 }
 
-_.diverge = (...fns) => async (...x) => await Promise.all(fns.map(fn => fn(...x)))
+_.diverge = fns => async (...x) => {
+  if (_.is(Array)(fns)) return await Promise.all(fns.map(fn => fn(...x)))
+  if (_.is(Set)(fns)) {
+    const y = new Set(), tasks = []
+    for (const fn of fns) {
+      const p = fn(...x)
+      if (_.is(Promise)(p)) tasks.push(p.then(a => y.add(a)))
+      else y.add(p)
+    }
+    await Promise.all(tasks)
+    return y
+  }
+  if (_.is(Map)(fns)) {
+    const y = new Map(), tasks = []
+    for (const [k, fn] of fns) {
+      const p = fn(...x)
+      if (_.is(Promise)(p)) tasks.push(p.then(a => y.set(k, a)))
+      else y.set(k, p)
+    }
+    await Promise.all(tasks)
+    return y
+  }
+  if (_.is(Object)(fns)) {
+    const y = {}, tasks = []
+    for (const k in fns) {
+      const p = fns[k](...x)
+      if (_.is(Promise)(p)) tasks.push(p.then(a => { y[k] = a }))
+      else { y[k] = p }
+    }
+    await Promise.all(tasks)
+    return y
+  }
+  throw new TypeError('fns must be a container')
+}
 
-_.sdiverge = (...fns) => (...x) => fns.map(fn => fn(...x))
+_.sdiverge = fns => (...x) => {
+  if (_.is(Array)(fns)) return fns.map(fn => fn(...x))
+  if (_.is(Set)(fns)) {
+    const y = new Set()
+    for (const fn of fns) y.add(fn(...x))
+    return y
+  }
+  if (_.is(Map)(fns)) {
+    const y = new Map()
+    for (const [k, fn] of fns) y.set(k, fn(...x))
+    return y
+  }
+  if (_.is(Object)(fns)) {
+    const y = {}
+    for (const k in fns) y[k] = fns[k](...x)
+    return y
+  }
+  throw new TypeError('fns must be a container')
+}
 
 _.sideEffect = (fn, errFn) => async (...x) => {
   try {
