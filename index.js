@@ -42,6 +42,10 @@ _.get = (...keys) => x => {
   return y
 }
 
+_.lookup = x => k => _.get(k)(x)
+
+_.default = d => x => x || d
+
 _.parseJSON = (x, d) => {
   if (_.is(Object)(x)) return x
   try {
@@ -301,10 +305,13 @@ _.salt = (...fns) => (...x) => {
 }
 
 _.diverge = fns => async (...x) => {
-  if (_.is(Array)(fns)) return await Promise.all(fns.map(fn => fn(...x)))
+  if (_.is(Array)(fns)) return await Promise.all(fns.map(
+    fn => _.isNot(Function)(fn) ? fn : fn(...x)
+  ))
   if (_.is(Set)(fns)) {
     const y = new Set(), tasks = []
     for (const fn of fns) {
+      if (_.isNot(Function)(fn)) { y.add(fn); continue }
       const p = fn(...x)
       if (_.is(Promise)(p)) tasks.push(p.then(a => y.add(a)))
       else y.add(p)
@@ -315,6 +322,7 @@ _.diverge = fns => async (...x) => {
   if (_.is(Map)(fns)) {
     const y = new Map(), tasks = []
     for (const [k, fn] of fns) {
+      if (_.isNot(Function)(fn)) { y.set(k, fn); continue }
       const p = fn(...x)
       if (_.is(Promise)(p)) tasks.push(p.then(a => y.set(k, a)))
       else y.set(k, p)
@@ -325,6 +333,7 @@ _.diverge = fns => async (...x) => {
   if (_.is(Object)(fns)) {
     const y = {}, tasks = []
     for (const k in fns) {
+      if (_.isNot(Function)(fns[k])) { y[k] = fns[k]; continue }
       const p = fns[k](...x)
       if (_.is(Promise)(p)) tasks.push(p.then(a => { y[k] = a }))
       else { y[k] = p }
@@ -336,20 +345,31 @@ _.diverge = fns => async (...x) => {
 }
 
 _.sdiverge = fns => (...x) => {
-  if (_.is(Array)(fns)) return fns.map(fn => fn(...x))
+  if (_.is(Array)(fns)) return fns.map(
+    fn => _.isNot(Function)(fn) ? fn : fn(...x)
+  )
   if (_.is(Set)(fns)) {
     const y = new Set()
-    for (const fn of fns) y.add(fn(...x))
+    for (const fn of fns) {
+      if (_.isNot(Function)(fn)) { y.add(fn); continue }
+      y.add(fn(...x))
+    }
     return y
   }
   if (_.is(Map)(fns)) {
     const y = new Map()
-    for (const [k, fn] of fns) y.set(k, fn(...x))
+    for (const [k, fn] of fns) {
+      if (_.isNot(Function)(fn)) { y.set(k, fn); continue }
+      y.set(k, fn(...x))
+    }
     return y
   }
   if (_.is(Object)(fns)) {
     const y = {}
-    for (const k in fns) y[k] = fns[k](...x)
+    for (const k in fns) {
+      if (_.isNot(Function)(fns[k])) { y[k] = fns[k]; continue }
+      y[k] = fns[k](...x)
+    }
     return y
   }
   throw new TypeError('fns must be a container')
