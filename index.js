@@ -32,14 +32,18 @@ _.entriesToObject = x => {
   return y
 }
 
-_.get = (...keys) => x => {
+_.get = key => x => {
   if (_.isNot(Object)(x)) return undefined
-  let y = x
-  for (const k of keys) {
-    if (!y.hasOwnProperty(k)) return undefined
-    y = y[k]
+  if (_.is('string')(key)) {
+    let y = x
+    for (const k of _.split('.')(key)) {
+      if (!y.hasOwnProperty(k)) return undefined
+      y = y[k]
+    }
+    return y
   }
-  return y
+  if (_.is('number')(key)) return x[key]
+  return undefined
 }
 
 _.lookup = x => k => _.get(k)(x)
