@@ -223,7 +223,7 @@ _.sfilter = fn => x => {
 _.reduce = (fn, x0) => async x => {
   let [y, i] = x0 ? [x0, 0] : [x[0], 1]
   while (i < x.length) {
-    y = await fn(y, x[i])
+    y = await fn(y, x[i], i)
     i += 1
   }
   return y
@@ -232,7 +232,7 @@ _.reduce = (fn, x0) => async x => {
 _.sreduce = (fn, x0) => x => {
   let [y, i] = x0 ? [x0, 0] : [x[0], 1]
   while (i < x.length) {
-    y = fn(y, x[i])
+    y = fn(y, x[i], i)
     i += 1
   }
   return y
