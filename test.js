@@ -154,6 +154,22 @@ describe('rubico', () => {
     })
   })
 
+  describe('_.pick', () => {
+    it('makes a new object using picked properties', async () => {
+      assert.deepEqual(_.pick(['a', 'b'])({ a: 1, b: 2, c: 2 }), { a: 1, b: 2 })
+      assert.deepEqual(_.pick(['d'])({ a: 1, b: 2, c: 2 }), {})
+    })
+
+    it('throws a TypeError', async () => {
+      try {
+        const y = _.pick(['a', 'b'])('hey')
+        assert(!y)
+      } catch (e) {
+        assert(e instanceof TypeError)
+      }
+    })
+  })
+
   describe('_.parseJSON', () => {
     it('safely parses JSON', async () => {
       assert.deepEqual(_.parseJSON('{"a":1}'), { a: 1 })

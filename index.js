@@ -50,6 +50,16 @@ _.lookup = x => k => _.get(k)(x)
 
 _.default = d => x => x || d
 
+_.pick = keys => x => {
+  if (_.isNot(Object)(x)) throw new TypeError('point must be an object')
+  const y = {}
+  for (const k of keys) {
+    if (!x.hasOwnProperty(k)) continue
+    y[k] = x[k]
+  }
+  return y
+}
+
 _.parseJSON = (x, d) => {
   if (_.is(Object)(x)) return x
   try {
