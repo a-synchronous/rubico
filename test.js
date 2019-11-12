@@ -477,22 +477,20 @@ describe('rubico', () => {
   describe('_.diverge', () => {
     it('diverges flow to provided container', async () => {
       assert.deepEqual(
-        await _.diverge([hi, ho, hey, 'a'])('yo'),
-        ['yohi', 'yoho', 'yohey', 'a'],
+        await _.diverge([hi, ho, hey])('yo'),
+        ['yohi', 'yoho', 'yohey'],
       )
       assert.deepEqual(
-        await _.diverge(new Set([hi, ho, hey, 'a']))('yo'),
-        new Set(['yohi', 'yoho', 'yohey', 'a']),
+        await _.diverge(new Set([hi, ho, hey]))('yo'),
+        new Set(['yohi', 'yoho', 'yohey']),
       )
       assert.deepEqual(
-        await _.diverge(
-          new Map([['a', hi], ['b', ho], ['c', hey], ['d', 1]]),
-        )('yo'),
-        new Map([['a', 'yohi'], ['b', 'yoho'], ['c', 'yohey'], ['d', 1]])
+        await _.diverge(new Map([['a', hi], ['b', ho], ['c', hey]]))('yo'),
+        new Map([['a', 'yohi'], ['b', 'yoho'], ['c', 'yohey']])
       )
       assert.deepEqual(
-        await _.diverge({ a: hi, b: ho, c: hey, d: 1 })('yo'),
-        ({ a: 'yohi', b: 'yoho', c: 'yohey', d: 1 }),
+        await _.diverge({ a: hi, b: ho, c: hey })('yo'),
+        ({ a: 'yohi', b: 'yoho', c: 'yohey' }),
       )
     })
 
@@ -509,20 +507,20 @@ describe('rubico', () => {
   describe('_.sdiverge', () => {
     it('diverges flow to provided container', async () => {
       assert.deepEqual(
-        _.sdiverge([hi, hi, hi, 'a'])('yo'),
-        ['yohi', 'yohi', 'yohi', 'a'],
+        _.sdiverge([hi, hi, hi])('yo'),
+        ['yohi', 'yohi', 'yohi'],
       )
       assert.deepEqual(
-        _.sdiverge(new Set([hi, hi, hi, 'a']))('yo'),
-        new Set(['yohi', 'yohi', 'yohi', 'a']),
+        _.sdiverge(new Set([hi, hi, hi]))('yo'),
+        new Set(['yohi', 'yohi', 'yohi']),
       )
       assert.deepEqual(
-        _.sdiverge(new Map([['a', hi], ['b', hi], ['c', hi], ['d', 1]]))('yo'),
-        new Map([['a', 'yohi'], ['b', 'yohi'], ['c', 'yohi'], ['d', 1]])
+        _.sdiverge(new Map([['a', hi], ['b', hi], ['c', hi]]))('yo'),
+        new Map([['a', 'yohi'], ['b', 'yohi'], ['c', 'yohi']])
       )
       assert.deepEqual(
-        _.sdiverge({ a: hi, b: hi, c: hi, d: 1 })('yo'),
-        ({ a: 'yohi', b: 'yohi', c: 'yohi', d: 1 }),
+        _.sdiverge({ a: hi, b: hi, c: hi })('yo'),
+        ({ a: 'yohi', b: 'yohi', c: 'yohi' }),
       )
     })
 
