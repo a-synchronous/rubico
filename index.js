@@ -152,17 +152,21 @@ _.map = fn => async x => {
   }
   if (_.is(Map)(x)) {
     const tasks = [], y = new Map()
-    for (const [k, v] of x) tasks.push(
-      fn(v).then(a => { y.set(k, a) })
-    )
+    for (const [k, v] of x) {
+      const a = fn(v)
+      if (_.is(Promise)(a)) tasks.push(a.then(b => y.set(k, b)))
+      else y.set(k, a)
+    }
     await Promise.all(tasks)
     return y
   }
   if (_.is(Object)(x)) {
     const tasks = [], y = {}
-    for (const k in x) tasks.push(
-      fn(x[k]).then(a => { y[k] = a })
-    )
+    for (const k in x) {
+      const a = fn(x[k])
+      if (_.is(Promise)(a)) tasks.push(a.then(b => y[k] = b))
+      else y[k] = a
+    }
     await Promise.all(tasks)
     return y
   }
