@@ -151,6 +151,56 @@ _.map = fn => async x => {
     return new Set(await Promise.all(tasks))
   }
   if (_.is(Map)(x)) {
+    const tasks = [], y = new Map()
+    for (const [k, v] of x) tasks.push(
+      fn(v).then(a => { y.set(k, a) })
+    )
+    await Promise.all(tasks)
+    return y
+  }
+  if (_.is(Object)(x)) {
+    const tasks = [], y = {}
+    for (const k in x) tasks.push(
+      fn(x[k]).then(a => { y[k] = a })
+    )
+    await Promise.all(tasks)
+    return y
+  }
+  return await fn(x)
+}
+
+_.smap = fn => x => {
+  if (_.is(Array)(x)) return x.map(fn)
+  if (_.is(Set)(x)) {
+    const y = new Set()
+    for (const a of x) y.add(fn(a))
+    return y
+  }
+  if (_.is(Map)(x)) {
+    const y = new Map()
+    for (const [k, v] of x) y.set(k, fn(v))
+    return y
+  }
+  if (_.is(Object)(x)) {
+    const y = {}
+    for (const k in x) y[k] = fn(x[k])
+    return y
+  }
+  return fn(x)
+}
+
+_.mapEntries = fn => async x => {
+  if (_.is(Array)(x)) {
+    const tasks = []
+    for (const a of x) tasks.push(fn(a))
+    return await Promise.all(tasks)
+  }
+  if (_.is(Set)(x)) {
+    const tasks = []
+    for (const a of x) tasks.push(fn(a))
+    return new Set(await Promise.all(tasks))
+  }
+  if (_.is(Map)(x)) {
     const tasks = []
     for (const a of x) tasks.push(fn(a))
     return new Map(await Promise.all(tasks))
@@ -165,7 +215,7 @@ _.map = fn => async x => {
   return await fn(x)
 }
 
-_.smap = fn => x => {
+_.smapEntries = fn => x => {
   if (_.is(Array)(x)) return x.map(fn)
   if (_.is(Set)(x)) {
     const y = new Set()
@@ -394,7 +444,7 @@ _.benchmark = fn => tag => async x => {
 const getIterator = x => x.values()
 
 _.braid = rates => (x, y = []) => {
-  const iterators = _.smap(getIterator)(x)
+  const iterators = _.smapEntries(getIterator)(x)
   let i = 0
   while (iterators.length > 0) {
     const modi = i % iterators.length

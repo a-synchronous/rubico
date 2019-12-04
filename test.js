@@ -298,13 +298,13 @@ describe('rubico', () => {
         new Set([2, 3, 4]),
       )
       assert.deepEqual(
-        await _.map(async ([k, v]) => [k, await delayedAdd1(v)])(
+        await _.map(delayedAdd1)(
           new Map([['a', 1], ['b', 2], ['c', 3]])
         ),
         new Map([['a', 2], ['b', 3], ['c', 4]]),
       )
       assert.deepEqual(
-        await _.map(async ([k, v]) => [k, await delayedAdd1(v)])(
+        await _.map(delayedAdd1)(
           { a: 1, b: 2, c: 3 }
         ),
         { a: 2, b: 3, c: 4 },
@@ -323,13 +323,63 @@ describe('rubico', () => {
         new Set([2, 3, 4]),
       )
       assert.deepEqual(
-        _.smap(([k, v]) => [k, add1(v)])(
+        _.smap(add1)(
           new Map([['a', 1], ['b', 2], ['c', 3]])
         ),
         new Map([['a', 2], ['b', 3], ['c', 4]]),
       )
       assert.deepEqual(
-        _.smap(([k, v]) => [`${k}${k}`, add1(v)])(
+        _.smap(add1)(
+          { a: 1, b: 2, c: 3 }
+        ),
+        { a: 2, b: 3, c: 4 },
+      )
+    }).timeout(5000)
+  })
+
+  describe('_.mapEntries', () => {
+    it('async a -> b', async () => {
+      assert.deepEqual(
+        await _.mapEntries(delayedAdd1)([1, 2, 3]),
+        [2, 3, 4],
+      )
+      assert.deepEqual(
+        await _.mapEntries(delayedAdd1)(new Set([1,2,3])),
+        new Set([2, 3, 4]),
+      )
+      assert.deepEqual(
+        await _.mapEntries(async ([k, v]) => [k, await delayedAdd1(v)])(
+          new Map([['a', 1], ['b', 2], ['c', 3]])
+        ),
+        new Map([['a', 2], ['b', 3], ['c', 4]]),
+      )
+      assert.deepEqual(
+        await _.mapEntries(async ([k, v]) => [k, await delayedAdd1(v)])(
+          { a: 1, b: 2, c: 3 }
+        ),
+        { a: 2, b: 3, c: 4 },
+      )
+    }).timeout(5000)
+  })
+
+  describe('_.smapEntries', () => {
+    it('a -> b', async () => {
+      assert.deepEqual(
+        _.smapEntries(add1)([1, 2, 3]),
+        [2, 3, 4],
+      )
+      assert.deepEqual(
+        _.smapEntries(add1)(new Set([1,2,3])),
+        new Set([2, 3, 4]),
+      )
+      assert.deepEqual(
+        _.smapEntries(([k, v]) => [k, add1(v)])(
+          new Map([['a', 1], ['b', 2], ['c', 3]])
+        ),
+        new Map([['a', 2], ['b', 3], ['c', 4]]),
+      )
+      assert.deepEqual(
+        _.smapEntries(([k, v]) => [`${k}${k}`, add1(v)])(
           { a: 1, b: 2, c: 3 }
         ),
         { aa: 2, bb: 3, cc: 4 },
