@@ -391,4 +391,24 @@ _.benchmark = fn => tag => async x => {
   return y
 }
 
+const getIterator = x => x.values()
+
+_.braid = rates => (x, y = []) => {
+  const iterators = _.smap(getIterator)(x)
+  let i = 0
+  while (iterators.length > 0) {
+    const modi = i % iterators.length
+    for (let j = 0; j < rates[modi]; j++) {
+      const v = iterators[modi].next()
+      if (v.done) {
+        iterators.splice(modi, 1)
+        break
+      }
+      y.push(v.value)
+    }
+    i += 1
+  }
+  return y
+}
+
 module.exports = _

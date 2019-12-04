@@ -568,5 +568,27 @@ describe('rubico', () => {
       )
     })
   })
+
+  describe('_.braid', () => {
+    it('braids two or more arrays into one single array', async () => {
+      assert.deepEqual(
+        _.braid([1, 2])([
+          Array(2).fill('a'),
+          Array(4).fill('b'),
+        ]),
+        ['a', 'b', 'b', 'a', 'b', 'b'],
+      )
+      assert.deepEqual(
+        _.braid([1, 1])([
+          _.braid([1, 2])([
+            Array(2).fill('a'),
+            Array(4).fill('b'),
+          ]),
+          Array(2).fill('c'),
+        ]),
+        ['a', 'c', 'b', 'c', 'b', 'a', 'b', 'b'],
+      )
+    })
+  })
 })
 
