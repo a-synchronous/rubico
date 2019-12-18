@@ -448,7 +448,7 @@ _.benchmark = fn => tag => async x => {
 const getIterator = x => x.values()
 
 _.braid = rates => (x, y = []) => {
-  const iterators = _.smapEntries(getIterator)(x)
+  const iterators = _.smap(getIterator)(x)
   let i = 0
   while (iterators.length > 0) {
     const modi = i % iterators.length
@@ -461,6 +461,17 @@ _.braid = rates => (x, y = []) => {
       y.push(v.value)
     }
     i += 1
+  }
+  return y
+}
+
+_.uniq = x => {
+  const mem = new Set()
+  const y = []
+  for (const a of x) {
+    if (mem.has(a)) continue
+    mem.add(a)
+    y.push(a)
   }
   return y
 }

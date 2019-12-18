@@ -640,5 +640,14 @@ describe('rubico', () => {
       )
     })
   })
+
+  describe('_.uniq', () => {
+    it('uniques an array', async () => {
+      assert.deepEqual(
+        _.uniq([1, 1, 1, 2, 2, 2, 3, 3, 3]),
+        [1, 2, 3],
+      )
+    })
+  })
 })
 
