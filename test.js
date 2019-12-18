@@ -641,6 +641,15 @@ describe('rubico', () => {
     })
   })
 
+  describe('_.flatten', () => {
+    it('flattens an array of arrays', async () => {
+      assert.deepEqual(
+        _.flatten([[1], [2], [3]]),
+        [1, 2, 3],
+      )
+    })
+  })
+
   describe('_.uniq', () => {
     it('uniques an array', async () => {
       assert.deepEqual(

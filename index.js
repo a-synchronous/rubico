@@ -465,6 +465,8 @@ _.braid = rates => (x, y = []) => {
   return y
 }
 
+_.flatten = _.sreduce((a, b) => a.concat(b), [])
+
 _.uniq = x => {
   const mem = new Set()
   const y = []
