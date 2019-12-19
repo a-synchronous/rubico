@@ -641,6 +641,15 @@ describe('rubico', () => {
     })
   })
 
+  describe('_.unbraid', () => {
+    it('unbraids an array into multiple arrays', async () => {
+      assert.deepEqual(
+        _.unbraid([1, 2])(['a', 'b', 'b', 'a', 'b', 'b']),
+        [Array(2).fill('a'), Array(4).fill('b')],
+      )
+    })
+  })
+
   describe('_.flatten', () => {
     it('flattens an array of arrays', async () => {
       assert.deepEqual(

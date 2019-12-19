@@ -465,6 +465,21 @@ _.braid = rates => (x, y = []) => {
   return y
 }
 
+_.unbraid = rates => x => {
+  const y = []
+  for (let k = 0; k < rates.length; k++) y.push([])
+  let i = 0, ri = 0
+  while (i < x.length) {
+    const modi = ri % rates.length
+    for (let j = 0; j < rates[modi]; j++) {
+      y[modi].push(x[i])
+      i += 1
+    }
+    ri += 1
+  }
+  return y
+}
+
 _.flatten = _.sreduce((a, b) => a.concat(b), [])
 
 _.uniq = x => {
