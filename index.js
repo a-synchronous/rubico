@@ -436,7 +436,9 @@ _.sideEffect = (fn, errFn) => async (...x) => {
   return argsOut(x)
 }
 
-_.trace = tag => _.sideEffect(x => console.log(tag, x))
+_.trace = _.sideEffect(console.log)
+
+_.tracep = p => _.sideEffect(x => console.log(p, _.get(p)(x)))
 
 _.benchmark = fn => tag => async x => {
   const st = Date.now()

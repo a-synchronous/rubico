@@ -605,8 +605,14 @@ describe('rubico', () => {
   })
 
   describe('_.trace', () => {
-    it('console logs a tag and args', async () => {
-      assert.strictEqual(await _.trace('hey')('hey'), 'hey')
+    it('console logs args', async () => {
+      assert.strictEqual(await _.trace('hey'), 'hey')
+    })
+  })
+
+  describe('_.tracep', () => {
+    it('console logs prop and x.prop', async () => {
+      assert.strictEqual(await _.tracep('hey')({ hey: 'hey' }), { hey: 'hey' })
     })
   })
 
