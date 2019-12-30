@@ -48,6 +48,10 @@ _.get = key => x => {
 
 _.lookup = x => k => _.get(k)(x)
 
+_.put = k => fn => async x => ({ ...x, [k]: await fn(x) })
+
+_.sput = k => fn => x => ({ ...x, [k]: fn(x) })
+
 _.default = d => x => x || d
 
 _.pick = keys => x => {

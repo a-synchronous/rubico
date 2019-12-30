@@ -144,6 +144,19 @@ describe('rubico', () => {
     })
   })
 
+  describe('_.put, _.sput', () => {
+    it('puts a property on current payload, passing in payload', async () => {
+      assert.deepEqual(
+        await _.put('hey')(async x => x.ho + 1)({ ho: 1 }),
+        ({ hey: 2, ho: 1 }),
+      )
+      assert.deepEqual(
+        _.sput('hey')(x => x.ho + 1)({ ho: 1 }),
+        ({ hey: 2, ho: 1 }),
+      )
+    })
+  })
+
   describe('_.lookup', () => {
     it('like get but args reversed', async () => {
       assert.strictEqual(_.lookup({ a: 1 })('a'), 1)
