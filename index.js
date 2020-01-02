@@ -49,10 +49,13 @@ _.get = key => x => {
 _.lookup = x => k => _.get(k)(x)
 
 _.put = (...ents) => async x => {
-  const y = { ...x }
+  const y = { ...x }, tasks = []
   for (const [k, fn] of ents) {
-    y[k] = await fn(x)
+    const a = fn(x)
+    if (_.is(Promise)(a)) tasks.push(a.then(b => { y[k] = b }))
+    else { y[k] = a }
   }
+  await Promise.all(tasks)
   return y
 }
 
