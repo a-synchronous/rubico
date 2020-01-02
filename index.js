@@ -48,9 +48,21 @@ _.get = key => x => {
 
 _.lookup = x => k => _.get(k)(x)
 
-_.put = ([k, fn]) => async x => ({ ...x, [k]: await fn(x) })
+_.put = (...ents) => async x => {
+  const y = { ...x }
+  for (const [k, fn] of ents) {
+    y[k] = await fn(x)
+  }
+  return y
+}
 
-_.sput = ([k, fn]) => x => ({ ...x, [k]: fn(x) })
+_.sput = (...ents) => x => {
+  const y = { ...x }
+  for (const [k, fn] of ents) {
+    y[k] = fn(x)
+  }
+  return y
+}
 
 _.default = d => x => x || d
 

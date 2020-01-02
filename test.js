@@ -147,12 +147,18 @@ describe('rubico', () => {
   describe('_.put, _.sput', () => {
     it('puts a property on current payload, passing in payload', async () => {
       assert.deepEqual(
-        await _.put(['hey', async x => x.ho + 1])({ ho: 1 }),
-        ({ hey: 2, ho: 1 }),
+        await _.put(
+          ['hey', async x => x.ho + 1],
+          ['yo', async x => x.ho + 2],
+        )({ ho: 1 }),
+        ({ hey: 2, ho: 1, yo: 3 }),
       )
       assert.deepEqual(
-        _.sput(['hey', x => x.ho + 1])({ ho: 1 }),
-        ({ hey: 2, ho: 1 }),
+        _.sput(
+          ['hey', x => x.ho + 1],
+          ['yo', x => x.ho + 2],
+        )({ ho: 1 }),
+        ({ hey: 2, ho: 1, yo: 3 }),
       )
     })
   })
