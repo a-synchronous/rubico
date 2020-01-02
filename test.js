@@ -147,11 +147,11 @@ describe('rubico', () => {
   describe('_.put, _.sput', () => {
     it('puts a property on current payload, passing in payload', async () => {
       assert.deepEqual(
-        await _.put('hey')(async x => x.ho + 1)({ ho: 1 }),
+        await _.put(['hey', async x => x.ho + 1])({ ho: 1 }),
         ({ hey: 2, ho: 1 }),
       )
       assert.deepEqual(
-        _.sput('hey')(x => x.ho + 1)({ ho: 1 }),
+        _.sput(['hey', x => x.ho + 1])({ ho: 1 }),
         ({ hey: 2, ho: 1 }),
       )
     })
@@ -625,7 +625,7 @@ describe('rubico', () => {
 
   describe('_.tracep', () => {
     it('console logs prop and x.prop', async () => {
-      assert.strictEqual(await _.tracep('hey')({ hey: 'hey' }), { hey: 'hey' })
+      assert.deepEqual(await _.tracep('hey')({ hey: 'hey' }), { hey: 'hey' })
     })
   })
 
