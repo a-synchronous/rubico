@@ -514,4 +514,6 @@ _.uniq = x => {
   return y
 }
 
+_.sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+
 module.exports = _
