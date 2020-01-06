@@ -516,7 +516,9 @@ _.uniq = x => {
   return y
 }
 
-_.sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+_.sleep = ms => _.sideEffect(
+  () => new Promise(resolve => setTimeout(resolve, ms))
+)
 
 _.first = _.get(0)
 
