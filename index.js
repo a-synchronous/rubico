@@ -518,4 +518,8 @@ _.uniq = x => {
 
 _.sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
+_.first = _.get(0)
+
+_.last = x => x[x.length - 1]
+
 module.exports = _
