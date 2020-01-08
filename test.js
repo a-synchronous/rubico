@@ -739,5 +739,17 @@ describe('rubico', () => {
       )
     })
   })
+
+  describe('_.any', () => {
+    it('tests if any elements in arr pass fn', async () => {
+      assert.strictEqual(_.any(x => x === 1)([1, 2, 3]), true)
+    })
+  })
+
+  describe('_.every', () => {
+    it('tests is every element in arr pass fn', async () => {
+      assert.strictEqual(_.every(x => x === 1)([1, 1, 1]), true)
+    })
+  })
 })
 

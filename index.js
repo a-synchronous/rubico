@@ -541,4 +541,8 @@ _.sort = (order = 1) => x => x.sort((a, b) => order * (a - b))
 
 _.sortBy = (k, order = 1) => x => x.sort((a, b) => order * (a[k] - b[k]))
 
+_.any = fn => x => x.some(fn)
+
+_.every = fn => x => x.every(fn)
+
 module.exports = _
