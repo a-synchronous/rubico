@@ -535,4 +535,6 @@ _.first = _.get(0)
 
 _.last = x => x[x.length - 1]
 
+_.reverse = x => x.slice(0).reverse()
+
 module.exports = _
