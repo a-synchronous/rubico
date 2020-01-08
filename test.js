@@ -718,5 +718,26 @@ describe('rubico', () => {
       )
     })
   })
+
+  describe('_.sort', () => {
+    it('sorts an array', async () => {
+      assert.deepEqual(_.sort(-1)([2, 1, 3]), [3, 2, 1])
+      assert.deepEqual(_.sort(1)([2, 1, 3]), [1, 2, 3])
+      assert.deepEqual(_.sort()([2, 1, 3]), [1, 2, 3])
+    })
+  })
+
+  describe('_.sortBy', () => {
+    it('sorts an array of objects by property', async () => {
+      assert.deepEqual(
+        _.sortBy('a', 1)([{ a: 2 }, { a: 1 }, { a: 3 }]),
+        [{ a: 1 }, { a: 2 }, { a: 3 }],
+      )
+      assert.deepEqual(
+        _.sortBy('a', -1)([{ a: 2 }, { a: 1 }, { a: 3 }]),
+        [{ a: 3 }, { a: 2 }, { a: 1 }],
+      )
+    })
+  })
 })
 

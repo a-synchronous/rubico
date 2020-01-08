@@ -537,4 +537,8 @@ _.last = x => x[x.length - 1]
 
 _.reverse = x => x.slice(0).reverse()
 
+_.sort = (order = 1) => x => x.sort((a, b) => order * (a - b))
+
+_.sortBy = (k, order = 1) => x => x.sort((a, b) => order * (a[k] - b[k]))
+
 module.exports = _
