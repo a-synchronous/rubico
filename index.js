@@ -503,6 +503,17 @@ _.unbraid = rates => x => {
   return y
 }
 
+_.transpose = x => {
+  const y = []
+  for (let i = 0; i < x.length; i++) {
+    for (let j = 0; j < x[i].length; j++) {
+      if (!y[j]) y[j] = []
+      y[j][i] = x[i][j]
+    }
+  }
+  return y
+}
+
 _.flatten = _.sreduce((a, b) => a.concat(b), [])
 
 _.uniq = x => {

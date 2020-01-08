@@ -675,6 +675,22 @@ describe('rubico', () => {
     })
   })
 
+  describe('_.transpose', () => {
+    it('transposes a 2d array', async () => {
+      assert.deepEqual(
+        _.transpose([
+          [1, 2, 3],
+          [1, 2, 3],
+          [1, 2, 3],
+        ]), [
+          [1, 1, 1],
+          [2, 2, 2],
+          [3, 3, 3],
+        ]
+      )
+    })
+  })
+
   describe('_.flatten', () => {
     it('flattens an array of arrays', async () => {
       assert.deepEqual(
