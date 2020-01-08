@@ -37,7 +37,7 @@ _.get = key => x => {
   if (_.is('string')(key)) {
     let y = x
     for (const k of _.split('.')(key)) {
-      if (!y.hasOwnProperty(k)) return undefined
+      if (!y || !y.hasOwnProperty(k)) return undefined
       y = y[k]
     }
     return y
