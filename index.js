@@ -455,6 +455,8 @@ _.sideEffect = (fn, errFn) => async (...x) => {
   return argsOut(x)
 }
 
+_.log = tag => _.sideEffect(() => console.log(tag))
+
 _.trace = _.sideEffect(console.log)
 
 _.tracep = (p, tag = '') => _.sideEffect(x => console.log(p, _.get(p)(x)), tag)
