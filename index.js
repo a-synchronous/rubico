@@ -461,7 +461,7 @@ _.trace = _.sideEffect(console.log)
 
 _.tracep = (p, tag = '') => _.sideEffect(x => console.log(p, _.get(p)(x)), tag)
 
-_.tracef = (fn, tag = '') => _.sideEffect(x => console.log(fn(x), tag))
+_.tracef = (fn, tag = '') => _.sideEffect(async x => console.log(await fn(x), tag))
 
 _.benchmark = fn => tag => async x => {
   const st = Date.now()
