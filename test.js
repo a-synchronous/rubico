@@ -760,5 +760,16 @@ describe('rubico', () => {
       assert.strictEqual(_.every(x => x === 1)([1, 1, 1]), true)
     })
   })
+
+  describe('_.exists', () => {
+    it('tests if x is not undefined or not null', async () => {
+      assert.strictEqual(_.exists(undefined), false)
+      assert.strictEqual(_.exists(null), false)
+      assert.strictEqual(_.exists(0), true)
+      assert.strictEqual(_.exists(''), true)
+      assert.strictEqual(_.exists({}), true)
+      assert.strictEqual(_.exists([]), true)
+    })
+  })
 })
 

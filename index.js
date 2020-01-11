@@ -552,4 +552,6 @@ _.any = fn => x => x.some(fn)
 
 _.every = fn => x => x.every(fn)
 
+_.exists = x => x !== undefined && x !== null
+
 module.exports = _
