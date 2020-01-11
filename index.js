@@ -446,6 +446,11 @@ _.sdiverge = fns => (...x) => {
   throw new TypeError('fns must be a container')
 }
 
+_.if = (condFn, fn) => async (...x) => {
+  if (await condFn(...x)) return await fn(...x)
+  return argsOut(x)
+}
+
 _.sideEffect = (fn, errFn) => async (...x) => {
   try {
     await fn(...x)

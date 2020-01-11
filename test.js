@@ -603,6 +603,15 @@ describe('rubico', () => {
     })
   })
 
+  describe('_.if', () => {
+    it('if fn in arg1, do fn in arg2', async () => {
+      assert.deepEqual(
+        await _.if(x => x.a === 1, _.put(['b', () => 2]))({ a: 1 }),
+        { a: 1, b: 2 },
+      )
+    })
+  })
+
   describe('_.sideEffect', () => {
     it('executes a function but returns arguments', async () => {
       assert.strictEqual(await _.sideEffect(console.log)('hey'), 'hey')
