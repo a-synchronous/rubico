@@ -771,5 +771,17 @@ describe('rubico', () => {
       assert.strictEqual(_.exists([]), true)
     })
   })
-})
 
+  describe('_.size', () => {
+    it('gets the size (length)', async () => {
+      assert.strictEqual(_.size([1, 2, 3]), 3)
+      assert.strictEqual(_.size(new Set([1, 2, 3])), 3)
+      assert.strictEqual(_.size(new Map([['a', 1]])), 1)
+      assert.strictEqual(_.size({ a: 1 }), 1)
+      assert.throws(
+        () => _.size(undefined),
+        new Error('cannot size undefined')
+      )
+    })
+  })
+})

@@ -558,4 +558,16 @@ _.every = fn => x => x.every(fn)
 
 _.exists = x => x !== undefined && x !== null
 
+_.size = x => {
+  if (_.is(Array)(x)) return x.length
+  if (_.is(Set)(x)) return x.size
+  if (_.is(Map)(x)) return x.size
+  if (_.is(Object)(x)) {
+    let y = 0
+    for (const k in x) if (x.hasOwnProperty(k)) y += 1
+    return y
+  }
+  throw new Error(`cannot size ${x}`)
+}
+
 module.exports = _
