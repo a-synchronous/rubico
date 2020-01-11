@@ -646,6 +646,15 @@ describe('rubico', () => {
         { a: 1, b: 2 },
       )
     })
+
+    it('throw a meaningful error on non functions', async () => {
+      assert.throws(
+        () => {
+          _.if(() => 1, undefined)
+        },
+        new TypeError('undefined is not a function; 2 items')
+      )
+    })
   })
 
   describe('_.sideEffect', () => {
