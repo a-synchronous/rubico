@@ -500,11 +500,29 @@ describe('rubico', () => {
     it('chaining no fns is identity', async () => {
       assert.strictEqual(await _.flow()('yo'), 'yo')
     })
+
+    it('throw a meaningful error on non functions', async () => {
+      assert.throws(
+        () => {
+          _.flow(() => 1, undefined, () => 2)
+        },
+        new TypeError('undefined is not a function; 3 items')
+      )
+    })
   })
 
   describe('_.sflow', () => {
     it('chains regular functions only', async () => {
       assert.strictEqual(_.sflow(hi, hi, hi)('hi'), 'hihihihi')
+    })
+
+    it('throw a meaningful error on non functions', async () => {
+      assert.throws(
+        () => {
+          _.sflow(() => 1, undefined, () => 2)
+        },
+        new TypeError('undefined is not a function; 3 items')
+      )
     })
   })
 
@@ -524,6 +542,15 @@ describe('rubico', () => {
     it('no fns => x', async () => {
       assert.strictEqual(await _.amp()('yo'), 'yo')
     })
+
+    it('throw a meaningful error on non functions', async () => {
+      assert.throws(
+        () => {
+          _.amp(() => 1, undefined, () => 2)
+        },
+        new TypeError('undefined is not a function; 3 items')
+      )
+    })
   })
 
   describe('_.alt', () => {
@@ -540,6 +567,15 @@ describe('rubico', () => {
 
     it('alternating no fns => x', async () => {
       assert.strictEqual(await _.alt()('yo'), 'yo')
+    })
+
+    it('throw a meaningful error on non functions', async () => {
+      assert.throws(
+        () => {
+          _.alt(() => 1, undefined, () => 2)
+        },
+        new TypeError('undefined is not a function; 3 items')
+      )
     })
   })
 

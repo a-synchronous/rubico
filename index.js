@@ -331,68 +331,93 @@ _.sreduce = (fn, x0) => x => {
 
 const argsOut = x => x.length <= 1 ? x[0] : x
 
-_.flow = (...fns) => async (...x) => {
-  if (fns.length === 0) return argsOut(x)
-  let y = await fns[0](...x), i = 1
-  while (i < fns.length) {
-    y = await fns[i](y)
-    i += 1
+const verifyFunctions = fns => {
+  for (const fn of fns) {
+    if (_.is(Function)(fn)) continue
+    throw new TypeError(`${fn} is not a function; ${fns.length} items`)
   }
-  return y
 }
 
-_.sflow = (...fns) => (...x) => {
-  if (fns.length === 0) return argsOut(x)
-  let y = fns[0](...x), i = 1
-  while (i < fns.length) {
-    y = fns[i](y)
-    i += 1
+_.flow = (...fns) => {
+  verifyFunctions(fns)
+  return async (...x) => {
+    if (fns.length === 0) return argsOut(x)
+    let y = await fns[0](...x), i = 1
+    while (i < fns.length) {
+      y = await fns[i](y)
+      i += 1
+    }
+    return y
   }
-  return y
 }
 
-_.amp = (...fns) => async (...x) => {
-  if (fns.length === 0) return argsOut(x)
-  let y = await fns[0](...x), i = 1
-  if (!y) return y
-  while (i < fns.length) {
-    y = await fns[i](y)
+_.sflow = (...fns) => {
+  verifyFunctions(fns)
+  return (...x) => {
+    if (fns.length === 0) return argsOut(x)
+    let y = fns[0](...x), i = 1
+    while (i < fns.length) {
+      y = fns[i](y)
+      i += 1
+    }
+    return y
+  }
+}
+
+_.amp = (...fns) => {
+  verifyFunctions(fns)
+  return async (...x) => {
+    if (fns.length === 0) return argsOut(x)
+    let y = await fns[0](...x), i = 1
     if (!y) return y
-    i += 1
+    while (i < fns.length) {
+      y = await fns[i](y)
+      if (!y) return y
+      i += 1
+    }
+    return y
   }
-  return y
 }
 
-_.samp = (...fns) => (...x) => {
-  if (fns.length === 0) return argsOut(x)
-  let y = fns[0](...x), i = 1
-  if (!y) return y
-  while (i < fns.length) {
-    y = fns[i](y)
+_.samp = (...fns) => {
+  verifyFunctions(fns)
+  return (...x) => {
+    if (fns.length === 0) return argsOut(x)
+    let y = fns[0](...x), i = 1
     if (!y) return y
-    i += 1
+    while (i < fns.length) {
+      y = fns[i](y)
+      if (!y) return y
+      i += 1
+    }
+    return y
   }
-  return y
 }
 
-_.alt = (...fns) => async (...x) => {
-  let y = argsOut(x), i = 0
-  while (i < fns.length) {
-    y = await fns[i](...x)
-    if (y) return y
-    i += 1
+_.alt = (...fns) => {
+  verifyFunctions(fns)
+  return async (...x) => {
+    let y = argsOut(x), i = 0
+    while (i < fns.length) {
+      y = await fns[i](...x)
+      if (y) return y
+      i += 1
+    }
+    return y
   }
-  return y
 }
 
-_.salt = (...fns) => (...x) => {
-  let y = argsOut(x), i = 0
-  while (i < fns.length) {
-    y = fns[i](...x)
-    if (y) return y
-    i += 1
+_.salt = (...fns) => {
+  verifyFunctions(fns)
+  return (...x) => {
+    let y = argsOut(x), i = 0
+    while (i < fns.length) {
+      y = fns[i](...x)
+      if (y) return y
+      i += 1
+    }
+    return y
   }
-  return y
 }
 
 _.diverge = fns => async (...x) => {
