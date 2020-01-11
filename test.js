@@ -417,11 +417,11 @@ describe('rubico', () => {
         new Set([1]),
       )
       assert.deepEqual(
-        await _.filter(([k, v]) => v === 1)(new Map([['a', 1],['b', 2]])),
+        await _.filter(x => x === 1)(new Map([['a', 1],['b', 2]])),
         new Map([['a', 1]]),
       )
       assert.deepEqual(
-        await _.filter(([k, v]) => v === 1)({ a: 1, b: 2 }),
+        await _.filter(x => x === 1)({ a: 1, b: 2 }),
         ({ a: 1 }),
       )
     })
@@ -438,11 +438,11 @@ describe('rubico', () => {
         new Set([1]),
       )
       assert.deepEqual(
-        _.sfilter(([k, v]) => v === 1)(new Map([['a', 1],['b', 2]])),
+        _.sfilter(x => x === 1)(new Map([['a', 1],['b', 2]])),
         new Map([['a', 1]]),
       )
       assert.deepEqual(
-        _.sfilter(([k, v]) => v === 1)({ a: 1, b: 2 }),
+        _.sfilter(x => x === 1)({ a: 1, b: 2 }),
         ({ a: 1 }),
       )
     })

@@ -273,16 +273,20 @@ _.filter = fn => async x => {
     return new Set((await Promise.all(tasks)).filter(_.id))
   }
   if (_.is(Map)(x)) {
-    const tasks = []
-    for (const a of x) tasks.push((async () => (await fn(a)) && a)())
-    return new Map((await Promise.all(tasks)).filter(_.id))
+    const tasks = [], y = new Map()
+    for (const [k, v] of x) tasks.push(
+      (async () => { if (await fn(v)) { y.set(k, v) } })()
+    )
+    await Promise.all(tasks)
+    return y
   }
   if (_.is(Object)(x)) {
-    const tasks = []
+    const tasks = [], y = {}
     for (const k in x) tasks.push(
-      (async () => (await fn([k, x[k]])) && [k, x[k]])()
+      (async () => { if (await fn(x[k])) { y[k] = x[k] } })()
     )
-    return _.entriesToObject((await Promise.all(tasks)).filter(_.id))
+    await Promise.all(tasks)
+    return y
   }
   return (await fn(x)) ? x : undefined
 }
@@ -296,12 +300,12 @@ _.sfilter = fn => x => {
   }
   if (_.is(Map)(x)) {
     const y = new Map()
-    for (const a of x) { if (!fn(a)) continue; y.set(...a) }
+    for (const [k, v] of x) { if (!fn(v)) continue; y.set(k, v) }
     return y
   }
   if (_.is(Object)(x)) {
     const y = {}
-    for (const k in x) { if (!fn([k, x[k]])) continue; y[k] = x[k] }
+    for (const k in x) { if (!fn(x[k])) continue; y[k] = x[k] }
     return y
   }
   return fn(x) ? x : undefined
