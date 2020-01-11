@@ -559,6 +559,7 @@ _.every = fn => x => x.every(fn)
 _.exists = x => x !== undefined && x !== null
 
 _.size = x => {
+  if (_.is('string')(x)) return x.length
   if (_.is(Array)(x)) return x.length
   if (_.is(Set)(x)) return x.size
   if (_.is(Map)(x)) return x.size
@@ -567,7 +568,7 @@ _.size = x => {
     for (const k in x) if (x.hasOwnProperty(k)) y += 1
     return y
   }
-  throw new Error(`cannot size ${x}`)
+  throw new TypeError(`cannot size ${x}`)
 }
 
 module.exports = _
