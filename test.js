@@ -125,6 +125,7 @@ describe('rubico', () => {
     const y = [1, 2, [3, [4]]]
     it('safely gets a property', async () => {
       assert.strictEqual(_.get('a')({ a: 1 }), 1)
+      assert.strictEqual(_.get('a')(new Map([['a', 1]])), 1)
       assert.strictEqual(_.get('b')({ a: 1 }), undefined)
       assert.strictEqual(_.get('b')({}), undefined)
       assert.strictEqual(_.get('b')(), undefined)

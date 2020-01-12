@@ -33,6 +33,7 @@ _.entriesToObject = x => {
 }
 
 _.get = key => x => {
+  if (_.is(Map)(x)) return x.get(key)
   if (_.isNot(Object)(x)) return undefined
   if (_.is('string')(key)) {
     let y = x
