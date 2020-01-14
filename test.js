@@ -831,4 +831,15 @@ describe('rubico', () => {
       )
     })
   })
+
+  describe('_.once', () => {
+    it('ensures fn is called once', async () => {
+      let i = 0
+      const fn = () => i + 1
+      const onceFn = _.once(fn)
+      assert.strictEqual(onceFn(), 1)
+      assert.strictEqual(onceFn(), 1)
+      assert.strictEqual(onceFn(), 1)
+    })
+  })
 })

@@ -600,4 +600,11 @@ _.size = x => {
   throw new TypeError(`cannot size ${x}`)
 }
 
+_.once = fn => (...args) => {
+  let ret = null
+  if (ret) return ret
+  ret = fn(...args)
+  return ret
+}
+
 module.exports = _
