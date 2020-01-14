@@ -795,15 +795,63 @@ describe('rubico', () => {
     })
   })
 
-  describe('_.any', () => {
+  describe('_.any, _.sany', () => {
     it('tests if any elements in arr pass fn', async () => {
-      assert.strictEqual(_.any(x => x === 1)([1, 2, 3]), true)
+      assert.strictEqual(await _.any(x => x === 1)([1, 2, 3]), true)
+      assert.strictEqual(_.sany(x => x === 1)([1, 2, 3]), true)
+      assert.strictEqual(await _.any(x => x === 1)([3, 3, 3]), false)
+      assert.strictEqual(_.sany(x => x === 1)([3, 3, 3]), false)
     })
   })
 
-  describe('_.every', () => {
+  describe('_.every, _.severy', () => {
     it('tests is every element in arr pass fn', async () => {
-      assert.strictEqual(_.every(x => x === 1)([1, 1, 1]), true)
+      assert.strictEqual(await _.every(x => x === 1)([1, 1, 1]), true)
+      assert.strictEqual(_.severy(x => x === 1)([1, 1, 1]), true)
+      assert.strictEqual(await _.every(x => x === 1)([1, 2, 3]), false)
+      assert.strictEqual(_.severy(x => x === 1)([1, 2, 3]), false)
+    })
+  })
+
+  describe('_.and, _.sand', () => {
+    it('=> true if x passes all fns', async () => {
+      assert.strictEqual(await _.and(
+        x => x.includes(1),
+        x => x.includes(2),
+      )([1, 2, 3]), true)
+      assert.strictEqual(_.sand(
+        x => x.includes(1),
+        x => x.includes(2),
+      )([1, 2, 3]), true)
+      assert.strictEqual(await _.and(
+        x => x.includes(1),
+        x => x.includes(2),
+      )([1, 3, 3]), false)
+      assert.strictEqual(_.sand(
+        x => x.includes(1),
+        x => x.includes(2),
+      )([1, 3, 3]), false)
+    })
+  })
+
+  describe('_.or, _.sor', () => {
+    it('=> true if x passes any fns', async () => {
+      assert.strictEqual(await _.or(
+        x => x.includes(1),
+        x => x.includes(2),
+      )([1, 1, 1]), true)
+      assert.strictEqual(_.sor(
+        x => x.includes(1),
+        x => x.includes(2),
+      )([1, 1, 1]), true)
+      assert.strictEqual(await _.or(
+        x => x.includes(1),
+        x => x.includes(2),
+      )([3, 3, 3]), false)
+      assert.strictEqual(_.sor(
+        x => x.includes(1),
+        x => x.includes(2),
+      )([3, 3, 3]), false)
     })
   })
 

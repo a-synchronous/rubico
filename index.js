@@ -581,9 +581,31 @@ _.sort = (order = 1) => x => x.sort((a, b) => order * (a - b))
 
 _.sortBy = (k, order = 1) => x => x.sort((a, b) => order * (a[k] - b[k]))
 
-_.any = fn => x => x.some(fn)
+_.any = fn => _.flow(_.map(fn), _.sany(_.id))
 
-_.every = fn => x => x.every(fn)
+_.sany = fn => x => {
+  for (const a of x) {
+    if (fn(a)) return true
+  }
+  return false
+}
+
+_.every = fn => _.flow(_.map(fn), _.severy(_.id))
+
+_.severy = fn => x => {
+  for (const a of x) {
+    if (!fn(a)) return false
+  }
+  return true
+}
+
+_.and = (...fns) => (...args) => _.every(fn => fn(...args))(fns)
+
+_.sand = (...fns) => (...args) => _.severy(fn => fn(...args))(fns)
+
+_.or = (...fns) => (...args) => _.any(fn => fn(...args))(fns)
+
+_.sor = (...fns) => (...args) => _.sany(fn => fn(...args))(fns)
 
 _.exists = x => x !== undefined && x !== null
 
