@@ -62,6 +62,8 @@ _.has = k => x => {
 
 _.isMember = x => k => _.has(k)(x)
 
+_.isNotMember = x => k => !_.has(k)(x)
+
 _.put = (...ents) => async x => {
   const y = { ...x }, tasks = []
   for (const [k, fn] of ents) {
