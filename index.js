@@ -26,6 +26,8 @@ _.toInt = x => parseInt(x, 10)
 
 _.toFloat = parseFloat
 
+_.toSet = x => new Set(x)
+
 _.entriesToObject = x => {
   const y = {}
   for (const [k, v] of x) y[k] = v
