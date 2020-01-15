@@ -38,13 +38,22 @@ _.get = key => x => {
   if (_.is('string')(key)) {
     let y = x
     for (const k of _.split('.')(key)) {
-      if (!y || !y.hasOwnProperty(k)) return undefined
+      if (!_.exists(y[k])) return undefined
       y = y[k]
     }
     return y
   }
   if (_.is('number')(key)) return x[key]
   return undefined
+}
+
+_.has = k => x => {
+  if (_.is('string')(x)) return x.includes(k)
+  if (_.is(Array)(x)) return x.includes(k)
+  if (_.is(Set)(x)) return x.has(k)
+  if (_.is(Map)(x)) return x.has(k)
+  if (_.is(Object)(x)) return !!_.get(k)(x)
+  throw new TypeError(`cannot has ${x}`)
 }
 
 _.lookup = x => k => _.get(k)(x)

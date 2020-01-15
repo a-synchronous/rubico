@@ -145,6 +145,21 @@ describe('rubico', () => {
     })
   })
 
+  describe('_.has', () => {
+    it('checks for membership', async () => {
+      assert.strictEqual(_.has('hey')('heyhey'), true)
+      assert.strictEqual(_.has('hey')('yoyo'), false)
+      assert.strictEqual(_.has('hey')(['hey', 1, 2]), true)
+      assert.strictEqual(_.has('hey')(['yo', 1, 2]), false)
+      assert.strictEqual(_.has('hey')(new Set(['hey', 1, 2])), true)
+      assert.strictEqual(_.has('hey')(new Set(['yo', 1, 2])), false)
+      assert.strictEqual(_.has('hey')(new Map([['hey', 1]])), true)
+      assert.strictEqual(_.has('hey')(new Map([['yo', 1]])), false)
+      assert.strictEqual(_.has('hey')({ hey: 1 }), true)
+      assert.strictEqual(_.has('hey')({ yo: 1 }), false)
+    })
+  })
+
   describe('_.put, _.sput', () => {
     it('puts a property on current payload, passing in payload', async () => {
       assert.deepEqual(
