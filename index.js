@@ -49,6 +49,8 @@ _.get = key => x => {
   return undefined
 }
 
+_.lookup = x => k => _.get(k)(x)
+
 _.has = k => x => {
   if (_.is('string')(x)) return x.includes(k)
   if (_.is(Array)(x)) return x.includes(k)
@@ -58,7 +60,7 @@ _.has = k => x => {
   throw new TypeError(`cannot has ${x}`)
 }
 
-_.lookup = x => k => _.get(k)(x)
+_.isMember = x => k => _.has(k)(x)
 
 _.put = (...ents) => async x => {
   const y = { ...x }, tasks = []
