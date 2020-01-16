@@ -582,6 +582,27 @@ _.uniq = x => {
   return y
 }
 
+_.uniqp = k => x => {
+  const mem = new Set()
+  const y = []
+  for (const a of x) {
+    const v = _.get(k)(a)
+    if (mem.has(v)) continue
+    mem.add(v)
+    y.push(a)
+  }
+  return y
+}
+
+/*
+_.suniqf = fn => x => {
+  const mem = {}
+  const y = []
+  for (const a of x) {
+  }
+}
+*/
+
 _.sleep = ms => _.sideEffect(
   () => new Promise(resolve => setTimeout(resolve, ms))
 )

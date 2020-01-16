@@ -789,6 +789,18 @@ describe('rubico', () => {
     })
   })
 
+  describe('_.uniqp', () => {
+    const a1 = () => ({ a: 1 })
+    const a2 = () => ({ a: 2 })
+    const a3 = () => ({ a: 3 })
+    it('uniques an array based on item property', async () => {
+      assert.deepEqual(
+        _.uniqp('a')([a1(), a1(), a1(), a2(), a2(), a3(), a3(), a3()]),
+        [a1(), a2(), a3()],
+      )
+    })
+  })
+
   describe('_.sort', () => {
     it('sorts an array', async () => {
       assert.deepEqual(_.sort(-1)([2, 1, 3]), [3, 2, 1])
