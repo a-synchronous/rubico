@@ -60,6 +60,8 @@ _.has = k => x => {
   throw new TypeError(`cannot has ${x}`)
 }
 
+_.hasNot = k => x => !_.has(k)(x)
+
 _.isMember = x => k => _.has(k)(x)
 
 _.isNotMember = x => k => !_.has(k)(x)
