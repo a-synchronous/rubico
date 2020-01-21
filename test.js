@@ -882,6 +882,31 @@ describe('rubico', () => {
     })
   })
 
+  describe('_.eq, _.seq', () => {
+    it('=> true if all fns return ===', async () => {
+      assert.strictEqual(await _.eq(
+        x => x,
+        async x => x + 1 - 1,
+        async x => x * 1,
+      )(1), true)
+      assert.strictEqual(_.seq(
+        x => x,
+        x => x + 1 - 1,
+        x => x * 1,
+      )(1), true)
+      assert.strictEqual(await _.eq(
+        x => x,
+        async x => x + 1 - 1,
+        async x => x * 2,
+      )(1), false)
+      assert.strictEqual(_.seq(
+        x => x,
+        x => x + 1 - 1,
+        x => x * 2,
+      )(1), false)
+    })
+  })
+
   describe('_.exists', () => {
     it('tests if x is not undefined or not null', async () => {
       assert.strictEqual(_.exists(undefined), false)

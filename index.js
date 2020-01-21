@@ -645,6 +645,28 @@ _.or = (...fns) => (...args) => _.any(fn => fn(...args))(fns)
 
 _.sor = (...fns) => (...args) => _.sany(fn => fn(...args))(fns)
 
+_.eq = (...fns) => _.flow(
+  _.diverge(fns),
+  x => {
+    const x0 = x[0]
+    for (let i = 1; i < x.length; i++) {
+      if (x[i] !== x[0]) return false
+    }
+    return true
+  },
+)
+
+_.seq = (...fns) => _.sflow(
+  _.sdiverge(fns),
+  x => {
+    const x0 = x[0]
+    for (let i = 1; i < x.length; i++) {
+      if (x[i] !== x[0]) return false
+    }
+    return true
+  },
+)
+
 _.exists = x => x !== undefined && x !== null
 
 _.size = x => {
