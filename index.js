@@ -692,10 +692,12 @@ _.once = fn => (...args) => {
   return ret
 }
 
-/*
 _.assert = (...fns) => async x => {
-  const y = await _.map(fn => fn(x))(fns)
+  await _.map(async fn => {
+    if (await fn(x)) return
+    throw new Error(`${_.stringifyJSON(x)} did not pass ${_.toString(fn)}`)
+  })(fns)
+  return x
 }
-*/
 
 module.exports = _
