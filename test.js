@@ -932,6 +932,21 @@ describe('rubico', () => {
     })
   })
 
+  describe('_.isEmpty', () => {
+    it('=> true if empty', async () => {
+      assert.strictEqual(_.isEmpty(''), true)
+      assert.strictEqual(_.isEmpty('a'), false)
+      assert.strictEqual(_.isEmpty([]), true)
+      assert.strictEqual(_.isEmpty([1]), false)
+      assert.strictEqual(_.isEmpty(new Set()), true)
+      assert.strictEqual(_.isEmpty(new Set([1])), false)
+      assert.strictEqual(_.isEmpty(new Map()), true)
+      assert.strictEqual(_.isEmpty(new Map([['a', 1]])), false)
+      assert.strictEqual(_.isEmpty({}), true)
+      assert.strictEqual(_.isEmpty({ a: 1 }), false)
+    })
+  })
+
   describe('_.once', () => {
     it('ensures fn is called once', async () => {
       let i = 0

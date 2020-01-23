@@ -1,4 +1,5 @@
 const util = require('util')
+const assert = require('assert')
 
 const _ = {}
 
@@ -682,11 +683,19 @@ _.size = x => {
   throw new TypeError(`cannot size ${x}`)
 }
 
+_.isEmpty = x => _.size(x) === 0
+
 _.once = fn => (...args) => {
   let ret = null
   if (ret) return ret
   ret = fn(...args)
   return ret
 }
+
+/*
+_.assert = (...fns) => async x => {
+  const y = await _.map(fn => fn(x))(fns)
+}
+*/
 
 module.exports = _
