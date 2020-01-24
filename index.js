@@ -231,6 +231,30 @@ _.smap = fn => x => {
   return fn(x)
 }
 
+_.mapSeries = fn => async x => {
+  if (_.is(Array)(x)) {
+    const y = []
+    for (const a of x) y.push(await fn(a))
+    return y
+  }
+  if (_.is(Set)(x)) {
+    const y = new Set()
+    for (const a of x) y.add(await fn(a))
+    return y
+  }
+  if (_.is(Map)(x)) {
+    const y = new Map()
+    for (const [k, v] of x) y.set(k, await fn(v))
+    return y
+  }
+  if (_.is(Object)(x)) {
+    const y = {}
+    for (const k in x) y[k] = await fn(x[k])
+    return y
+  }
+  return fn(x)
+}
+
 _.mapEntries = fn => async x => {
   if (_.is(Array)(x)) {
     const tasks = []

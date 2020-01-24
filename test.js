@@ -372,6 +372,31 @@ describe('rubico', () => {
     }).timeout(5000)
   })
 
+  describe('_.mapSeries', () => {
+    it('async a -> b', async () => {
+      assert.deepEqual(
+        await _.map(delayedAdd1)([1, 2, 3]),
+        [2, 3, 4],
+      )
+      assert.deepEqual(
+        await _.map(delayedAdd1)(new Set([1,2,3])),
+        new Set([2, 3, 4]),
+      )
+      assert.deepEqual(
+        await _.map(delayedAdd1)(
+          new Map([['a', 1], ['b', 2], ['c', 3]])
+        ),
+        new Map([['a', 2], ['b', 3], ['c', 4]]),
+      )
+      assert.deepEqual(
+        await _.map(delayedAdd1)(
+          { a: 1, b: 2, c: 3 }
+        ),
+        { a: 2, b: 3, c: 4 },
+      )
+    }).timeout(5000)
+  })
+
   describe('_.mapEntries', () => {
     it('async a -> b', async () => {
       assert.deepEqual(
