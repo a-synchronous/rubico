@@ -695,7 +695,9 @@ _.once = fn => (...args) => {
 _.assert = (...fns) => async x => {
   await _.map(async fn => {
     if (await fn(x)) return
-    throw new Error(`${_.stringifyJSON(x)} did not pass ${_.toString(fn)}`)
+    const e = new Error(`${_.stringifyJSON(x)} did not pass ${_.toString(fn)}`)
+    e.name = 'AssertionError'
+    throw e
   })(fns)
   return x
 }

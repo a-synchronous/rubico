@@ -968,7 +968,7 @@ describe('rubico', () => {
         await _.assert(x => x === 1, async x => 2 > x)(2)
         process.exit(1)
       } catch (e) {
-        assert.strictEqual(e.name, 'Error')
+        assert.strictEqual(e.name, 'AssertionError')
         assert.strictEqual(e.message, '2 did not pass x => x === 1')
       }
     })
