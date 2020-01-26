@@ -35,13 +35,13 @@ _.entriesToObject = x => {
   return y
 }
 
-_.get = key => x => {
+_.get = (key, defaultValue) => x => {
   if (_.is(Map)(x)) return x.get(key)
-  if (_.isNot(Object)(x)) return undefined
+  if (_.isNot(Object)(x)) return defaultValue
   if (_.is('string')(key)) {
     let y = x
     for (const k of _.split('.')(key)) {
-      if (!_.exists(y[k])) return undefined
+      if (!_.exists(y[k])) return defaultValue
       y = y[k]
     }
     return y
