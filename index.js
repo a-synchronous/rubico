@@ -125,6 +125,8 @@ _.prettifyJSON = spaces => x => {
 
 _.flip = pair => x => _.get(0)(_.sfilter(y => y !== x)(pair))
 
+_.replace = (...args) => x => x.replace(...args)
+
 _.join = d => x => x.join(d)
 
 _.split = d => x => _.toString(x).split(d)
