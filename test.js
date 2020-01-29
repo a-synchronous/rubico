@@ -1034,4 +1034,11 @@ describe('rubico', () => {
       }
     })
   })
+
+  describe('_.ternary, _.sternary', () => {
+    it('condition ? a : b', async () => {
+      assert.strictEqual(await _.ternary(x => x === 1, 'hey', 'ho')(1), 'hey')
+      assert.strictEqual(_.sternary(x => x === 1, 'hey', 'ho')(0), 'ho')
+    })
+  })
 })

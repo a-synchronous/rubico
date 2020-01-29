@@ -773,13 +773,13 @@ _.assert = (...fns) => async x => {
 }
 
 _.ternary = (cf, lf, rf) => async x => {
-  if (await cf(x)) return await lf(x)
-  return await rf(x)
+  if (await cf(x)) return await _.toFn(lf)(x)
+  return await _.toFn(rf)(x)
 }
 
 _.sternary = (cf, lf, rf) => x => {
-  if (cf(x)) return lf(x)
-  return rf(x)
+  if (cf(x)) return _.toFn(lf)(x)
+  return _.toFn(rf)(x)
 }
 
 module.exports = _
