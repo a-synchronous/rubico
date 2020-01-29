@@ -367,6 +367,13 @@ describe('rubico', () => {
         { a: 2, b: 3, c: 4 },
       )
     }).timeout(5000)
+
+    it('calls fn with an implicit index', async () => {
+      assert.deepEqual(
+        await _.map((x, i) => ({ x, i }))([1, 2, 3]),
+        [{ x: 1, i: 0 }, { x: 2, i: 1 }, { x: 3, i: 2 }],
+      )
+    })
   })
 
   describe('_.smap', () => {
@@ -392,6 +399,13 @@ describe('rubico', () => {
         { a: 2, b: 3, c: 4 },
       )
     }).timeout(5000)
+
+    it('calls fn with an implicit index', async () => {
+      assert.deepEqual(
+        _.smap((x, i) => ({ x, i }))([1, 2, 3]),
+        [{ x: 1, i: 0 }, { x: 2, i: 1 }, { x: 3, i: 2 }],
+      )
+    })
   })
 
   describe('_.mapSeries', () => {
