@@ -14,12 +14,20 @@ _.is = t => x => {
 
 _.isNot = t => x => !_.is(t)(x)
 
+_.isIterable = x => {
+  if (_.dne(x)) return false
+  if (_.is('object')(x)) return true
+  return _.is('function')(_.get(Symbol.iterator)(x))
+}
+
 _.toString = x => {
   if (_.is('string')(x)) return x
   if (_.is('nil')(x)) return ''
   if (_.is(Object)(x)) return x.toString()
   return `${x}`
 }
+
+_.toFn = x => _.is(Function)(x) ? x : () => x
 
 _.toNumber = Number
 
@@ -35,19 +43,31 @@ _.entriesToObject = x => {
   return y
 }
 
-_.get = (key, defaultValue) => x => {
-  if (_.is(Map)(x)) return x.get(key)
+const naiveGet = (key, defaultValue) => x => {
   if (_.isNot(Object)(x)) return defaultValue
-  if (_.is('string')(key)) {
+  if (_.is('symbol')(key)) return x[key]
+  if (_.is(Map)(x)) return x.get(key)
+  return x[key]
+}
+
+_.get = (key, defaultValue) => {
+  if (_.is('string')(key)) return x => {
     let y = x
     for (const k of _.split('.')(key)) {
-      if (!_.exists(y[k])) return defaultValue
-      y = y[k]
+      y = naiveGet(k)(y)
+      if (!_.exists(y)) return defaultValue
     }
     return y
   }
-  if (_.is('number')(key)) return x[key]
-  return undefined
+  if (_.is(Array)(key)) return x => {
+    let y = x
+    for (const k of key) {
+      y = naiveGet(k)(y)
+      if (!_.exists(y)) return defaultValue
+    }
+    return y
+  }
+  return x => naiveGet(key, defaultValue)(x)
 }
 
 _.lookup = x => k => _.get(k)(x)
@@ -378,6 +398,7 @@ const argsOut = x => x.length <= 1 ? x[0] : x
 
 const verifyFunctions = fns => {
   for (const fn of fns) {
+    // if (_.exists(fn)) continue
     if (_.is(Function)(fn)) continue
     throw new TypeError(`${fn} is not a function; ${fns.length} items`)
   }
@@ -465,9 +486,14 @@ _.salt = (...fns) => {
   }
 }
 
-_.diverge = fns => async (...x) => {
-  if (_.is(Array)(fns)) return await Promise.all(fns.map(fn => fn(...x)))
-  if (_.is(Set)(fns)) {
+_.diverge = fns0 => {
+  if (!_.isIterable(fns0)) throw new TypeError('fns must be a container')
+  if (_.sany(_.dne)(fns0)) throw new TypeError('fn dne')
+  const fns = _.smap(_.toFn)(fns0)
+  if (_.is(Array)(fns)) return async (...x) => (
+    await Promise.all(fns.map(fn => fn(...x)))
+  )
+  if (_.is(Set)(fns)) return async (...x) => {
     const y = new Set(), tasks = []
     for (const fn of fns) {
       const p = fn(...x)
@@ -477,7 +503,7 @@ _.diverge = fns => async (...x) => {
     await Promise.all(tasks)
     return y
   }
-  if (_.is(Map)(fns)) {
+  if (_.is(Map)(fns)) return async (...x) => {
     const y = new Map(), tasks = []
     for (const [k, fn] of fns) {
       const p = fn(...x)
@@ -487,7 +513,7 @@ _.diverge = fns => async (...x) => {
     await Promise.all(tasks)
     return y
   }
-  if (_.is(Object)(fns)) {
+  return async (...x) => {
     const y = {}, tasks = []
     for (const k in fns) {
       const p = fns[k](...x)
@@ -497,22 +523,24 @@ _.diverge = fns => async (...x) => {
     await Promise.all(tasks)
     return y
   }
-  throw new TypeError('fns must be a container')
 }
 
-_.sdiverge = fns => (...x) => {
-  if (_.is(Array)(fns)) return fns.map(fn => fn(...x))
-  if (_.is(Set)(fns)) {
+_.sdiverge = fns0 => {
+  if (!_.isIterable(fns0)) throw new TypeError('fns must be a container')
+  if (_.sany(_.dne)(fns0)) throw new TypeError('fn dne')
+  const fns = _.smap(_.toFn)(fns0)
+  if (_.is(Array)(fns)) return (...x) => fns.map(fn => fn(...x))
+  if (_.is(Set)(fns)) return (...x) => {
     const y = new Set()
     for (const fn of fns) y.add(fn(...x))
     return y
   }
-  if (_.is(Map)(fns)) {
+  if (_.is(Map)(fns)) return (...x) => {
     const y = new Map()
     for (const [k, fn] of fns) y.set(k, fn(...x))
     return y
   }
-  if (_.is(Object)(fns)) {
+  return (...x) => {
     const y = {}
     for (const k in fns) y[k] = fns[k](...x)
     return y
@@ -649,8 +677,15 @@ _.sortBy = (k, order = 1) => x => x.sort((a, b) => order * (a[k] - b[k]))
 _.any = fn => _.flow(_.map(fn), _.sany(_.id))
 
 _.sany = fn => x => {
-  for (const a of x) {
-    if (fn(a)) return true
+  if (!_.isIterable(x)) return false
+  if (_.is(Array)(x) || _.is(Set)(x) || _.is(Map)(x)) {
+    for (const a of x) {
+      if (fn(a)) return true
+    }
+  } else {
+    for (const k in x) {
+      if (fn(x[k])) return true
+    }
   }
   return false
 }
@@ -658,8 +693,15 @@ _.sany = fn => x => {
 _.every = fn => _.flow(_.map(fn), _.severy(_.id))
 
 _.severy = fn => x => {
-  for (const a of x) {
-    if (!fn(a)) return false
+  if (!_.isIterable(x)) return false
+  if (_.is(Array)(x) || _.is(Set)(x) || _.is(Map)(x)) {
+    for (const a of x) {
+      if (!fn(a)) return false
+    }
+  } else {
+    for (const k in x) {
+      if (!fn(x[k])) return false
+    }
   }
   return true
 }
@@ -696,6 +738,8 @@ _.seq = (...fns) => _.sflow(
 
 _.exists = x => x !== undefined && x !== null
 
+_.dne = x => x === undefined || x === null
+
 _.size = x => {
   if (_.is('string')(x)) return x.length
   if (_.is(Array)(x)) return x.length
@@ -726,6 +770,16 @@ _.assert = (...fns) => async x => {
     throw e
   })(fns)
   return x
+}
+
+_.ternary = (cf, lf, rf) => async x => {
+  if (await cf(x)) return await lf(x)
+  return await rf(x)
+}
+
+_.sternary = (cf, lf, rf) => x => {
+  if (cf(x)) return lf(x)
+  return rf(x)
 }
 
 module.exports = _

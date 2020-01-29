@@ -95,6 +95,20 @@ describe('rubico', () => {
     })
   })
 
+  describe('_.isIterable', () => {
+    it('=> true if iterable', async () => {
+      assert.strictEqual(_.isIterable([]), true)
+      assert.strictEqual(_.isIterable(new Set()), true)
+      assert.strictEqual(_.isIterable(new Map()), true)
+      assert.strictEqual(_.isIterable({}), true)
+      assert.strictEqual(_.isIterable(1), false)
+      assert.strictEqual(_.isIterable('hey'), false)
+      assert.strictEqual(_.isIterable(null), false)
+      assert.strictEqual(_.isIterable(undefined), false)
+      assert.strictEqual(_.isIterable(() => {}), false)
+    })
+  })
+
   describe('_.toString', () => {
     it('converts to string', async () => {
       assert.strictEqual(_.toString('hey'), 'hey')
@@ -142,6 +156,14 @@ describe('rubico', () => {
       assert.strictEqual(_.get(3)(y), undefined)
       assert.strictEqual(_.get('a')('hey'), undefined)
       assert.strictEqual(_.get('a')(1), undefined)
+    })
+
+    it('works with array keys', async () => {
+      assert.strictEqual(_.get(['a'])({ a: 1 }), 1)
+      assert.strictEqual(_.get(['a.b'])({ 'a.b': 1 }), 1)
+      assert.strictEqual(_.get(['a', 'b', 'c'])(x), 1)
+      assert.strictEqual(_.get(['a', 'b', 'd'])(x), undefined)
+      assert.strictEqual(_.get('b', 'default')({}), 'default')
     })
   })
 
@@ -929,6 +951,20 @@ describe('rubico', () => {
         x => x + 1 - 1,
         x => x * 2,
       )(1), false)
+    })
+
+    it('works for values', async () => {
+      assert.strictEqual(await _.eq(
+        x => x,
+        async x => x + 1 - 1,
+        async x => x * 1,
+        1,
+      )(1), true)
+      assert.strictEqual(await _.eq(
+        x => x,
+        0,
+      )(1), false)
+      assert.strictEqual(_.seq(0, 0)(1), true)
     })
   })
 
