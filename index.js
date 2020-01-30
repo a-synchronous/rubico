@@ -14,8 +14,6 @@ _.is = t => x => {
 
 _.isNot = t => x => !_.is(t)(x)
 
-_.not = x => !x
-
 _.isIterable = x => {
   if (_.dne(x)) return false
   if (_.is('object')(x)) return true
@@ -92,7 +90,7 @@ _.isNotMember = x => k => !_.has(k)(x)
 _.put = (...ents) => async x => {
   const y = { ...x }, tasks = []
   for (const [k, fn] of ents) {
-    const a = fn(x)
+    const a = _.toFn(fn)(x)
     if (_.is(Promise)(a)) tasks.push(a.then(b => { y[k] = b }))
     else { y[k] = a }
   }
@@ -103,7 +101,7 @@ _.put = (...ents) => async x => {
 _.sput = (...ents) => x => {
   const y = { ...x }
   for (const [k, fn] of ents) {
-    y[k] = fn(x)
+    y[k] = _.toFn(fn)(x)
   }
   return y
 }
@@ -699,6 +697,10 @@ _.reverse = x => x.slice(0).reverse()
 _.sort = (order = 1) => x => x.sort((a, b) => order * (a - b))
 
 _.sortBy = (k, order = 1) => x => x.sort((a, b) => order * (a[k] - b[k]))
+
+_.not = fn => async x => !(await _.toFn(fn)(x))
+
+_.snot = fn => x => !_.toFn(fn)(x)
 
 _.any = fn => _.flow(_.map(fn), _.sany(_.id))
 

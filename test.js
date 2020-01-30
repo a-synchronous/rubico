@@ -883,6 +883,15 @@ describe('rubico', () => {
     })
   })
 
+  describe('_.not, _.snot', () => {
+    it('x => !x', async () => {
+      assert.strictEqual(await _.not(_.id)(true), false)
+      assert.strictEqual(await _.not(_.get('a'))({ a: false }), true)
+      assert.strictEqual(_.snot(_.id)(true), false)
+      assert.strictEqual(_.snot(_.get('a'))({ a: false }), true)
+    })
+  })
+
   describe('_.any, _.sany', () => {
     it('tests if any elements in arr pass fn', async () => {
       assert.strictEqual(await _.any(x => x === 1)([1, 2, 3]), true)
