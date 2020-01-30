@@ -517,6 +517,32 @@ _.salt = (...fns) => {
   }
 }
 
+_.series = fns0 => {
+  if (!_.isIterable(fns0)) throw new TypeError('fns must be a container')
+  if (_.sany(_.dne)(fns0)) throw new TypeError('fn dne')
+  const fns = _.smap(_.toFn)(fns0)
+  if (_.is(Array)(fns)) return async (...x) => {
+    const y = []
+    for (const fn of fns) y.push(await fn(...x))
+    return y
+  }
+  if (_.is(Set)(fns)) return async (...x) => {
+    const y = new Set()
+    for (const fn of fns) y.add(await fn(...x))
+    return y
+  }
+  if (_.is(Map)(fns)) return async (...x) => {
+    const y = new Map()
+    for (const [k, fn] of fns) y.set(k, await fn(...x))
+    return y
+  }
+  return async (...x) => {
+    const y = {}
+    for (const k in fns) y[k] = await fns[k](...x)
+    return y
+  }
+}
+
 _.diverge = fns0 => {
   if (!_.isIterable(fns0)) throw new TypeError('fns must be a container')
   if (_.sany(_.dne)(fns0)) throw new TypeError('fn dne')

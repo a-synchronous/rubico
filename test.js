@@ -667,6 +667,36 @@ describe('rubico', () => {
     })
   })
 
+  describe('_.series', () => {
+    it('diverges flow in series to provided container', async () => {
+      assert.deepEqual(
+        await _.series([hi, ho, hey])('yo'),
+        ['yohi', 'yoho', 'yohey'],
+      )
+      assert.deepEqual(
+        await _.series(new Set([hi, ho, hey]))('yo'),
+        new Set(['yohi', 'yoho', 'yohey']),
+      )
+      assert.deepEqual(
+        await _.series(new Map([['a', hi], ['b', ho], ['c', hey]]))('yo'),
+        new Map([['a', 'yohi'], ['b', 'yoho'], ['c', 'yohey']])
+      )
+      assert.deepEqual(
+        await _.series({ a: hi, b: ho, c: hey })('yo'),
+        ({ a: 'yohi', b: 'yoho', c: 'yohey' }),
+      )
+    })
+
+    it('throws a TypeError', async () => {
+      try {
+        x = await _.series('ayelmao')('yo')
+        assert(!x)
+      } catch (e) {
+        assert(e instanceof TypeError)
+      }
+    })
+  })
+
   describe('_.diverge', () => {
     it('diverges flow to provided container', async () => {
       assert.deepEqual(
