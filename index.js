@@ -151,6 +151,13 @@ _.join = d => x => x.join(d)
 
 _.split = d => x => _.toString(x).split(d)
 
+_.slice = (from, to) => x => {
+  if (!_.exists(to)) to = x.length
+  let y = []
+  for (let i = from; i < to; i++) y.push(x[i])
+  return y
+}
+
 _.toLowerCase = x => _.toString(x).toLowerCase()
 
 _.toUpperCase = x => _.toString(x).toUpperCase()

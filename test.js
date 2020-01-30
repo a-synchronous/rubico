@@ -267,6 +267,16 @@ describe('rubico', () => {
     })
   })
 
+  describe('_.slice', () => {
+    it('slices an array from a to b, not including b', async () => {
+      assert.deepEqual(_.slice(0)([1, 2, 3]), [1, 2, 3])
+      assert.deepEqual(_.slice(1)([1, 2, 3]), [2, 3])
+      assert.deepEqual(_.slice(0, 1)([1, 2, 3]), [1])
+      assert.deepEqual(_.slice(0, -5)([1, 2, 3]), [])
+      assert.deepEqual(_.slice(0)([]), [])
+    })
+  })
+
   describe('_.toLowerCase', () => {
     it('lowercases', async () => {
       assert.strictEqual(_.toLowerCase('AAA'), 'aaa')
