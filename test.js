@@ -1005,6 +1005,138 @@ describe('rubico', () => {
     })
   })
 
+  describe('_.lt, _.slt', () => {
+    it('=> true if all lefts < rights', async () => {
+      assert.strictEqual(await _.lt(
+        x => x + 1,
+        x => x + 2,
+      )(1), true)
+      assert.strictEqual(await _.lt(
+        x => x + 2,
+        x => x + 1,
+      )(1), false)
+      assert.strictEqual(await _.lt(
+        x => x + 1,
+        x => x + 1,
+      )(1), false)
+      assert.strictEqual(await _.lt(1, 2, 3)(Infinity), true)
+      assert.strictEqual(await _.lt(3, 2, 1)(Infinity), false)
+      assert.strictEqual(_.slt(
+        x => x + 1,
+        x => x + 2,
+      )(1), true)
+      assert.strictEqual(_.slt(
+        x => x + 2,
+        x => x + 1,
+      )(1), false)
+      assert.strictEqual(_.slt(
+        x => x + 1,
+        x => x + 1,
+      )(1), false)
+      assert.strictEqual(_.slt(1, 2, 3)(Infinity), true)
+      assert.strictEqual(_.slt(3, 2, 1)(Infinity), false)
+    })
+  })
+
+  describe('_.lte, _.slte', () => {
+    it('=> true if all lefts <= rights', async () => {
+      assert.strictEqual(await _.lte(
+        x => x + 1,
+        x => x + 2,
+      )(1), true)
+      assert.strictEqual(await _.lte(
+        x => x + 2,
+        x => x + 1,
+      )(1), false)
+      assert.strictEqual(await _.lte(
+        x => x + 1,
+        x => x + 1,
+      )(1), true)
+      assert.strictEqual(await _.lte(1, 2, 3)(Infinity), true)
+      assert.strictEqual(await _.lte(3, 2, 1)(Infinity), false)
+      assert.strictEqual(_.slte(
+        x => x + 1,
+        x => x + 2,
+      )(1), true)
+      assert.strictEqual(_.slte(
+        x => x + 2,
+        x => x + 1,
+      )(1), false)
+      assert.strictEqual(_.slte(
+        x => x + 1,
+        x => x + 1,
+      )(1), true)
+      assert.strictEqual(_.slte(1, 2, 3)(Infinity), true)
+      assert.strictEqual(_.slte(3, 2, 1)(Infinity), false)
+    })
+  })
+
+  describe('_.gt, _.sgt', () => {
+    it('=> true if all lefts > rights', async () => {
+      assert.strictEqual(await _.gt(
+        x => x + 2,
+        x => x + 1,
+      )(1), true)
+      assert.strictEqual(await _.gt(
+        x => x + 1,
+        x => x + 2,
+      )(1), false)
+      assert.strictEqual(await _.gt(
+        x => x + 1,
+        x => x + 1,
+      )(1), false)
+      assert.strictEqual(await _.gt(3, 2, 1)(Infinity), true)
+      assert.strictEqual(await _.gt(1, 2, 3)(Infinity), false)
+      assert.strictEqual(_.sgt(
+        x => x + 2,
+        x => x + 1,
+      )(1), true)
+      assert.strictEqual(_.sgt(
+        x => x + 1,
+        x => x + 2,
+      )(1), false)
+      assert.strictEqual(_.sgt(
+        x => x + 1,
+        x => x + 1,
+      )(1), false)
+      assert.strictEqual(_.sgt(3, 2, 1)(Infinity), true)
+      assert.strictEqual(_.sgt(1, 2, 3)(Infinity), false)
+    })
+  })
+
+  describe('_.gte, _.sgte', () => {
+    it('=> true if all lefts >= rights', async () => {
+      assert.strictEqual(await _.gte(
+        x => x + 2,
+        x => x + 1,
+      )(1), true)
+      assert.strictEqual(await _.gte(
+        x => x + 1,
+        x => x + 2,
+      )(1), false)
+      assert.strictEqual(await _.gte(
+        x => x + 1,
+        x => x + 1,
+      )(1), true)
+      assert.strictEqual(await _.gte(3, 2, 1)(Infinity), true)
+      assert.strictEqual(await _.gte(1, 2, 3)(Infinity), false)
+      assert.strictEqual(_.sgte(
+        x => x + 2,
+        x => x + 1,
+      )(1), true)
+      assert.strictEqual(_.sgte(
+        x => x + 1,
+        x => x + 2,
+      )(1), false)
+      assert.strictEqual(_.sgte(
+        x => x + 1,
+        x => x + 1,
+      )(1), true)
+      assert.strictEqual(_.sgte(3, 2, 1)(Infinity), true)
+      assert.strictEqual(_.sgte(1, 2, 3)(Infinity), false)
+    })
+  })
+
   describe('_.exists', () => {
     it('tests if x is not undefined or not null', async () => {
       assert.strictEqual(_.exists(undefined), false)

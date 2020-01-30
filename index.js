@@ -745,7 +745,6 @@ _.sor = (...fns) => (...args) => _.sany(fn => _.toFn(fn)(...args))(fns)
 _.eq = (...fns) => _.flow(
   _.diverge(fns),
   x => {
-    const x0 = x[0]
     for (let i = 1; i < x.length; i++) {
       if (x[i] !== x[0]) return false
     }
@@ -756,9 +755,88 @@ _.eq = (...fns) => _.flow(
 _.seq = (...fns) => _.sflow(
   _.sdiverge(fns),
   x => {
-    const x0 = x[0]
     for (let i = 1; i < x.length; i++) {
       if (x[i] !== x[0]) return false
+    }
+    return true
+  },
+)
+
+_.lt = (...fns) => _.flow(
+  _.diverge(fns),
+  x => {
+    for (let i = 1; i < x.length; i++) {
+      if (x[i - 1] >= x[i]) return false
+    }
+    return true
+  },
+)
+
+_.slt = (...fns) => _.sflow(
+  _.sdiverge(fns),
+  x => {
+    for (let i = 1; i < x.length; i++) {
+      if (x[i - 1] >= x[i]) return false
+    }
+    return true
+  },
+)
+
+_.lte = (...fns) => _.flow(
+  _.diverge(fns),
+  x => {
+    for (let i = 1; i < x.length; i++) {
+      if (x[i - 1] > x[i]) return false
+    }
+    return true
+  },
+)
+
+_.slte = (...fns) => _.sflow(
+  _.sdiverge(fns),
+  x => {
+    for (let i = 1; i < x.length; i++) {
+      if (x[i - 1] > x[i]) return false
+    }
+    return true
+  },
+)
+
+_.gt = (...fns) => _.flow(
+  _.diverge(fns),
+  x => {
+    for (let i = 1; i < x.length; i++) {
+      if (x[i - 1] <= x[i]) return false
+    }
+    return true
+  },
+)
+
+_.sgt = (...fns) => _.sflow(
+  _.sdiverge(fns),
+  x => {
+    for (let i = 1; i < x.length; i++) {
+      if (x[i - 1] <= x[i]) return false
+    }
+    return true
+  },
+)
+
+_.gte = (...fns) => _.flow(
+  _.diverge(fns),
+  x => {
+    for (let i = 1; i < x.length; i++) {
+      if (x[i - 1] < x[i]) return false
+    }
+    return true
+  },
+)
+
+_.sgte = (...fns) => _.sflow(
+  _.sdiverge(fns),
+  x => {
+    for (let i = 1; i < x.length; i++) {
+      if (x[i - 1] < x[i]) return false
     }
     return true
   },
