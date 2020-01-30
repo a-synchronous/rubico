@@ -889,6 +889,8 @@ describe('rubico', () => {
       assert.strictEqual(await _.not(_.get('a'))({ a: false }), true)
       assert.strictEqual(_.snot(_.id)(true), false)
       assert.strictEqual(_.snot(_.get('a'))({ a: false }), true)
+      assert.strictEqual(await _.not(true)(Infinity), false)
+      assert.strictEqual(_.snot(true)(Infinity), false)
     })
   })
 
