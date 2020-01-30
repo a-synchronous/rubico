@@ -732,13 +732,13 @@ _.severy = fn => x => {
   return true
 }
 
-_.and = (...fns) => (...args) => _.every(fn => fn(...args))(fns)
+_.and = (...fns) => (...args) => _.every(fn => _.toFn(fn)(...args))(fns)
 
-_.sand = (...fns) => (...args) => _.severy(fn => fn(...args))(fns)
+_.sand = (...fns) => (...args) => _.severy(fn => _.toFn(fn)(...args))(fns)
 
-_.or = (...fns) => (...args) => _.any(fn => fn(...args))(fns)
+_.or = (...fns) => (...args) => _.any(fn => _.toFn(fn)(...args))(fns)
 
-_.sor = (...fns) => (...args) => _.sany(fn => fn(...args))(fns)
+_.sor = (...fns) => (...args) => _.sany(fn => _.toFn(fn)(...args))(fns)
 
 _.eq = (...fns) => _.flow(
   _.diverge(fns),

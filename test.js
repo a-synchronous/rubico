@@ -923,6 +923,10 @@ describe('rubico', () => {
         x => x.includes(1),
         x => x.includes(2),
       )([1, 3, 3]), false)
+      assert.strictEqual(await _.and(true, () => true)([1, 3, 3]), true)
+      assert.strictEqual(await _.and(false, () => true)([1, 3, 3]), false)
+      assert.strictEqual(_.sand(true, () => true)([1, 3, 3]), true)
+      assert.strictEqual(_.sand(false, () => true)([1, 3, 3]), false)
     })
   })
 
@@ -944,6 +948,10 @@ describe('rubico', () => {
         x => x.includes(1),
         x => x.includes(2),
       )([3, 3, 3]), false)
+      assert.strictEqual(await _.or(true, () => false)([3, 3, 3]), true)
+      assert.strictEqual(await _.or(false, () => false)([3, 3, 3]), false)
+      assert.strictEqual(_.sor(true, () => false)([3, 3, 3]), true)
+      assert.strictEqual(_.sor(false, () => false)([3, 3, 3]), false)
     })
   })
 
