@@ -889,6 +889,8 @@ describe('rubico', () => {
       assert.strictEqual(_.sany(x => x === 1)([1, 2, 3]), true)
       assert.strictEqual(await _.any(x => x === 1)([3, 3, 3]), false)
       assert.strictEqual(_.sany(x => x === 1)([3, 3, 3]), false)
+      assert.strictEqual(_.sany(true, () => false)([3, 3, 3]), true)
+      assert.strictEqual(_.sany(false, () => 0)([3, 3, 3]), false)
     })
   })
 
@@ -898,6 +900,8 @@ describe('rubico', () => {
       assert.strictEqual(_.severy(x => x === 1)([1, 1, 1]), true)
       assert.strictEqual(await _.every(x => x === 1)([1, 2, 3]), false)
       assert.strictEqual(_.severy(x => x === 1)([1, 2, 3]), false)
+      assert.strictEqual(_.severy(true)([1, 2, 3]), true)
+      assert.strictEqual(_.severy(false)([1, 2, 3]), false)
     })
   })
 

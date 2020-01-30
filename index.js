@@ -706,11 +706,11 @@ _.sany = fn => x => {
   if (!_.isIterable(x)) return false
   if (_.is(Array)(x) || _.is(Set)(x) || _.is(Map)(x)) {
     for (const a of x) {
-      if (fn(a)) return true
+      if (_.toFn(fn)(a)) return true
     }
   } else {
     for (const k in x) {
-      if (fn(x[k])) return true
+      if (_.toFn(fn)(x[k])) return true
     }
   }
   return false
@@ -722,11 +722,11 @@ _.severy = fn => x => {
   if (!_.isIterable(x)) return false
   if (_.is(Array)(x) || _.is(Set)(x) || _.is(Map)(x)) {
     for (const a of x) {
-      if (!fn(a)) return false
+      if (!_.toFn(fn)(a)) return false
     }
   } else {
     for (const k in x) {
-      if (!fn(x[k])) return false
+      if (!_.toFn(fn)(x[k])) return false
     }
   }
   return true
