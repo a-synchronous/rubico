@@ -14,6 +14,8 @@ _.is = t => x => {
 
 _.isNot = t => x => !_.is(t)(x)
 
+_.not = x => !x
+
 _.isIterable = x => {
   if (_.dne(x)) return false
   if (_.is('object')(x)) return true
