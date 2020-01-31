@@ -3,6 +3,8 @@ const assert = require('assert')
 
 const _ = {}
 
+_.noop = () => {}
+
 _.is = t => x => {
   if (t === 'int') return Number.isInteger(x)
   if (t === 'nil') return x === undefined  || x === null

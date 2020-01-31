@@ -30,6 +30,12 @@ const traceError = (...args) => err => {
 }
 
 describe('rubico', () => {
+  describe('_.noop', () => {
+    it('does nothing', async () => {
+      assert.strictEqual(_.noop(Infinity), undefined)
+    })
+  })
+
   describe('_.is', () => {
     it('string -> typeof', async () => {
       assert.strictEqual(_.is('string')('hey'), true)
