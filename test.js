@@ -1257,4 +1257,11 @@ describe('rubico', () => {
       assert.strictEqual(_.sternary(x => x === 1, 'hey', 'ho')(0), 'ho')
     })
   })
+
+  describe('_.sum, _.ssum', () => {
+    it('adds computations of fns together', async () => {
+      assert.strictEqual(await _.sum(x => x + 1, x => x + 2, 3)(1), 8)
+      assert.strictEqual(_.ssum(x => x + 1, x => x + 2, 3)(1), 8)
+    })
+  })
 })

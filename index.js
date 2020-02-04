@@ -923,4 +923,14 @@ _.sternary = (cf, lf, rf) => x => {
   return _.toFn(rf)(x)
 }
 
+_.sum = (...fns) => _.flow(
+  _.diverge(_.smap(_.toFn)(fns)),
+  _.reduce((a, b) => a + b),
+)
+
+_.ssum = (...fns) => _.sflow(
+  _.sdiverge(_.smap(_.toFn)(fns)),
+  _.sreduce((a, b) => a + b),
+)
+
 module.exports = _
