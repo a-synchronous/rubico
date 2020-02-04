@@ -1264,4 +1264,11 @@ describe('rubico', () => {
       assert.strictEqual(_.ssum(x => x + 1, x => x + 2, 3)(1), 8)
     })
   })
+  describe('_.multiply, _.smultiply', () => {
+    it('multiplies computations of fns together', async () => {
+      assert.strictEqual(await _.multiply(x => x + 1, x => x + 2, 3)(1), 18)
+      assert.strictEqual(_.smultiply(x => x + 1, x => x + 2, 3)(1), 18)
+    })
+  })
+
 })

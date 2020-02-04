@@ -933,4 +933,14 @@ _.ssum = (...fns) => _.sflow(
   _.sreduce((a, b) => a + b),
 )
 
+_.multiply = (...fns) => _.flow(
+  _.diverge(_.smap(_.toFn)(fns)),
+  _.reduce((a, b) => a * b),
+)
+
+_.smultiply = (...fns) => _.sflow(
+  _.sdiverge(_.smap(_.toFn)(fns)),
+  _.sreduce((a, b) => a * b),
+)
+
 module.exports = _
