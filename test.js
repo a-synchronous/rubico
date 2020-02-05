@@ -1258,6 +1258,43 @@ describe('rubico', () => {
     })
   })
 
+  describe('_.switch, _.sswitch', () => {
+    it('switch case using fn order', async () => {
+      assert.strictEqual(
+        await _.switch(x => x === 1, 'hey', x => x === 2, 'ho', 'yo')(1),
+        'hey',
+      )
+      assert.strictEqual(
+        await _.switch(x => x === 1, 'hey', x => x === 2, 'ho', 'yo')(2),
+        'ho',
+      )
+      assert.strictEqual(
+        await _.switch(x => x === 1, 'hey', x => x === 2, 'ho', 'yo')(100),
+        'yo',
+      )
+      assert.strictEqual(
+        await _.switch(x => x === 1, 'hey', x => x === 2, 'ho')(100),
+        undefined,
+      )
+      assert.strictEqual(
+        _.sswitch(x => x === 1, 'hey', x => x === 2, 'ho', 'yo')(1),
+        'hey',
+      )
+      assert.strictEqual(
+        _.sswitch(x => x === 1, 'hey', x => x === 2, 'ho', 'yo')(2),
+        'ho',
+      )
+      assert.strictEqual(
+        _.sswitch(x => x === 1, 'hey', x => x === 2, 'ho', 'yo')(100),
+        'yo',
+      )
+      assert.strictEqual(
+        _.sswitch(x => x === 1, 'hey', x => x === 2, 'ho')(100),
+        undefined,
+      )
+    })
+  })
+
   describe('_.sum, _.ssum', () => {
     it('adds computations of fns together', async () => {
       assert.strictEqual(await _.sum(x => x + 1, x => x + 2, 3)(1), 8)

@@ -923,6 +923,30 @@ _.sternary = (cf, lf, rf) => x => {
   return _.toFn(rf)(x)
 }
 
+_.switch = (...fns) => {
+  const lastFn = fns.length % 2 === 0 ? () => {} : fns.pop()
+  return async x => {
+    let i = 0
+    while (i < fns.length) {
+      if (await _.toFn(fns[i])(x)) return _.toFn(fns[i + 1])(x)
+      i += 2
+    }
+    return _.toFn(lastFn)(x)
+  }
+}
+
+_.sswitch = (...fns) => {
+  const lastFn = fns.length % 2 === 0 ? () => {} : fns.pop()
+  return x => {
+    let i = 0
+    while (i < fns.length) {
+      if (_.toFn(fns[i])(x)) return _.toFn(fns[i + 1])(x)
+      i += 2
+    }
+    return _.toFn(lastFn)(x)
+  }
+}
+
 _.sum = (...fns) => _.flow(
   _.diverge(_.smap(_.toFn)(fns)),
   _.reduce((a, b) => a + b),
