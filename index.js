@@ -155,6 +155,7 @@ _.split = d => x => _.toString(x).split(d)
 
 _.slice = (from, to) => x => {
   if (!_.exists(to)) to = x.length
+  if (to < 0) to = x.length + to
   let y = []
   for (let i = from; i < to; i++) y.push(x[i])
   return y
