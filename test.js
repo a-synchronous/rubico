@@ -1198,32 +1198,51 @@ describe('rubico', () => {
     })
   })
 
-  describe('_.size', () => {
+  describe('_.size, _.ssize', () => {
     it('gets the size (length)', async () => {
-      assert.strictEqual(_.size('hey'), 3)
-      assert.strictEqual(_.size([1, 2, 3]), 3)
-      assert.strictEqual(_.size(new Set([1, 2, 3])), 3)
-      assert.strictEqual(_.size(new Map([['a', 1]])), 1)
-      assert.strictEqual(_.size({ a: 1 }), 1)
+      assert.strictEqual(await _.size(_.id)('hey'), 3)
+      assert.strictEqual(await _.size(_.id)([1, 2, 3]), 3)
+      assert.strictEqual(await _.size(_.id)(new Set([1, 2, 3])), 3)
+      assert.strictEqual(await _.size(_.id)(new Map([['a', 1]])), 1)
+      assert.strictEqual(await _.size(_.id)({ a: 1 }), 1)
+      assert.rejects(
+        () => _.size(_.id)(undefined),
+        new TypeError('cannot size undefined')
+      )
+      assert.strictEqual(_.ssize(_.id)('hey'), 3)
+      assert.strictEqual(_.ssize(_.id)([1, 2, 3]), 3)
+      assert.strictEqual(_.ssize(_.id)(new Set([1, 2, 3])), 3)
+      assert.strictEqual(_.ssize(_.id)(new Map([['a', 1]])), 1)
+      assert.strictEqual(_.ssize(_.id)({ a: 1 }), 1)
       assert.throws(
-        () => _.size(undefined),
+        () => _.ssize(_.id)(undefined),
         new TypeError('cannot size undefined')
       )
     })
   })
 
-  describe('_.isEmpty', () => {
+  describe('_.isEmpty, _.sisEmpty', () => {
     it('=> true if empty', async () => {
-      assert.strictEqual(_.isEmpty(''), true)
-      assert.strictEqual(_.isEmpty('a'), false)
-      assert.strictEqual(_.isEmpty([]), true)
-      assert.strictEqual(_.isEmpty([1]), false)
-      assert.strictEqual(_.isEmpty(new Set()), true)
-      assert.strictEqual(_.isEmpty(new Set([1])), false)
-      assert.strictEqual(_.isEmpty(new Map()), true)
-      assert.strictEqual(_.isEmpty(new Map([['a', 1]])), false)
-      assert.strictEqual(_.isEmpty({}), true)
-      assert.strictEqual(_.isEmpty({ a: 1 }), false)
+      assert.strictEqual(await _.isEmpty(_.id)(''), true)
+      assert.strictEqual(await _.isEmpty(_.id)('a'), false)
+      assert.strictEqual(await _.isEmpty(_.id)([]), true)
+      assert.strictEqual(await _.isEmpty(_.id)([1]), false)
+      assert.strictEqual(await _.isEmpty(_.id)(new Set()), true)
+      assert.strictEqual(await _.isEmpty(_.id)(new Set([1])), false)
+      assert.strictEqual(await _.isEmpty(_.id)(new Map()), true)
+      assert.strictEqual(await _.isEmpty(_.id)(new Map([['a', 1]])), false)
+      assert.strictEqual(await _.isEmpty(_.id)({}), true)
+      assert.strictEqual(await _.isEmpty(_.id)({ a: 1 }), false)
+      assert.strictEqual(_.sisEmpty(_.id)(''), true)
+      assert.strictEqual(_.sisEmpty(_.id)('a'), false)
+      assert.strictEqual(_.sisEmpty(_.id)([]), true)
+      assert.strictEqual(_.sisEmpty(_.id)([1]), false)
+      assert.strictEqual(_.sisEmpty(_.id)(new Set()), true)
+      assert.strictEqual(_.sisEmpty(_.id)(new Set([1])), false)
+      assert.strictEqual(_.sisEmpty(_.id)(new Map()), true)
+      assert.strictEqual(_.sisEmpty(_.id)(new Map([['a', 1]])), false)
+      assert.strictEqual(_.sisEmpty(_.id)({}), true)
+      assert.strictEqual(_.sisEmpty(_.id)({ a: 1 }), false)
     })
   })
 

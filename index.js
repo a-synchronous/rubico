@@ -882,20 +882,35 @@ _.exists = x => x !== undefined && x !== null
 
 _.dne = x => x === undefined || x === null
 
-_.size = x => {
-  if (_.is('string')(x)) return x.length
-  if (_.is(Array)(x)) return x.length
-  if (_.is(Set)(x)) return x.size
-  if (_.is(Map)(x)) return x.size
+_.size = fn => async x => {
+  if (_.is('string')(x)) return _.toFn(fn)(x).length
+  if (_.is(Array)(x)) return _.toFn(fn)(x).length
+  if (_.is(Set)(x)) return _.toFn(fn)(x).size
+  if (_.is(Map)(x)) return _.toFn(fn)(x).size
   if (_.is(Object)(x)) {
     let y = 0
-    for (const k in x) if (x.hasOwnProperty(k)) y += 1
+    for (const k in await _.toFn(fn)(x)) if (x.hasOwnProperty(k)) y += 1
     return y
   }
   throw new TypeError(`cannot size ${x}`)
 }
 
-_.isEmpty = x => _.size(x) === 0
+_.ssize = fn => x => {
+  if (_.is('string')(x)) return _.toFn(fn)(x).length
+  if (_.is(Array)(x)) return _.toFn(fn)(x).length
+  if (_.is(Set)(x)) return _.toFn(fn)(x).size
+  if (_.is(Map)(x)) return _.toFn(fn)(x).size
+  if (_.is(Object)(x)) {
+    let y = 0
+    for (const k in _.toFn(fn)(x)) if (x.hasOwnProperty(k)) y += 1
+    return y
+  }
+  throw new TypeError(`cannot size ${x}`)
+}
+
+_.isEmpty = fn => async x => (await _.size(fn)(x)) === 0
+
+_.sisEmpty = fn => x => _.ssize(fn)(x) === 0
 
 _.once = fn => (...args) => {
   let ret = null
