@@ -688,6 +688,8 @@ _.transpose = x => {
 
 _.flatten = _.sreduce((a, b) => a.concat(b), [])
 
+_.flattenAll = x => x.flat(Infinity)
+
 _.uniq = x => {
   const mem = new Set()
   const y = []
