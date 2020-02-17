@@ -910,9 +910,7 @@ _.ssize = fn => x => {
   throw new TypeError(`cannot size ${x}`)
 }
 
-_.isEmpty = fn => async x => (await _.size(fn)(x)) === 0
-
-_.sisEmpty = fn => x => _.ssize(fn)(x) === 0
+_.isEmpty = x => _.ssize(_.id)(x) === 0
 
 _.once = fn => (...args) => {
   let ret = null
