@@ -1,5 +1,5 @@
 # rubico
-a shallow river in northeastern Italy, just south of Ravenna
+🏞 a shallow river in northeastern Italy, just south of Ravenna
 
 functional composition that builds in promises by default
 
