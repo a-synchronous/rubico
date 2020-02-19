@@ -630,13 +630,13 @@ _.sideEffect = (fn, errFn) => async (...x) => {
   return argsOut(x)
 }
 
-_.log = tag => _.sideEffect(() => console.log(tag))
+_.log = tag => _.effect(() => console.log(tag))
 
-_.trace = _.sideEffect(console.log)
+_.trace = _.effect(console.log)
 
-_.tracep = (p, tag = '') => _.sideEffect(x => console.log(p, _.get(p)(x)), tag)
+_.tracep = (p, tag = '') => _.effect(x => console.log(p, _.get(p)(x)), tag)
 
-_.tracef = (fn, tag = '') => _.sideEffect(async x => console.log(await fn(x), tag))
+_.tracef = (fn, tag = '') => _.effect(async x => console.log(await fn(x), tag))
 
 _.benchmark = fn => tag => async x => {
   const st = Date.now()
@@ -727,7 +727,7 @@ _.suniqf = fn => x => {
 }
 */
 
-_.sleep = ms => _.sideEffect(
+_.sleep = ms => _.effect(
   () => new Promise(resolve => setTimeout(resolve, ms))
 )
 
