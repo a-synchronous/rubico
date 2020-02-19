@@ -748,9 +748,19 @@ _.last = x => x[x.length - 1]
 
 _.reverse = x => x.slice(0).reverse()
 
-_.sort = (order = 1) => x => x.sort((a, b) => order * (a - b))
+_.compare = (a, b) => {
+  if (a < b) return -1
+  if (a > b) return 1
+  return 0
+}
 
-_.sortBy = (k, order = 1) => x => x.sort((a, b) => order * (a[k] - b[k]))
+_.sort = (order = 1) => x => x.sort(
+  (a, b) => order * _.compare(a, b)
+)
+
+_.sortBy = (k, order = 1) => x => x.sort(
+  (a, b) => order * _.compare(_.get(k)(a), _.get(k)(b))
+)
 
 _.not = fn => async x => !(await _.toFn(fn)(x))
 

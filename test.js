@@ -945,6 +945,8 @@ describe('rubico', () => {
       assert.deepEqual(_.sort(-1)([2, 1, 3]), [3, 2, 1])
       assert.deepEqual(_.sort(1)([2, 1, 3]), [1, 2, 3])
       assert.deepEqual(_.sort()([2, 1, 3]), [1, 2, 3])
+      assert.deepEqual(_.sort(1)(['b', 'a', 'c']), ['a', 'b', 'c'])
+      assert.deepEqual(_.sort(-1)(['b', 'a', 'c']), ['c', 'b', 'a'])
     })
   })
 
@@ -957,6 +959,14 @@ describe('rubico', () => {
       assert.deepEqual(
         _.sortBy('a', -1)([{ a: 2 }, { a: 1 }, { a: 3 }]),
         [{ a: 3 }, { a: 2 }, { a: 1 }],
+      )
+      assert.deepEqual(
+        _.sortBy('a', 1)([{ a: 'b' }, { a: 'a' }, { a: 'c' }]),
+        [{ a: 'a' }, { a: 'b' }, { a: 'c' }],
+      )
+      assert.deepEqual(
+        _.sortBy('a', -1)([{ a: 'b' }, { a: 'a' }, { a: 'c' }]),
+        [{ a: 'c' }, { a: 'b' }, { a: 'a' }],
       )
     })
   })
