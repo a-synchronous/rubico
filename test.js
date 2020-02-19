@@ -784,6 +784,16 @@ describe('rubico', () => {
     })
   })
 
+  describe('_.effect', () => {
+    it('executes fn and returns first argument', async () => {
+      assert.strictEqual(await _.effect(x => x + 1)(1), 1)
+      assert.rejects(
+        async () => await _.effect(() => { throw new Error('hey') })(1),
+        new Error('hey'),
+      )
+    })
+  })
+
   describe('_.sideEffect', () => {
     it('executes a function but returns arguments', async () => {
       assert.strictEqual(await _.sideEffect(console.log)('hey'), 'hey')

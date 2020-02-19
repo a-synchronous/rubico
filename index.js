@@ -616,6 +616,11 @@ _.if = (condFn, fn) => {
   }
 }
 
+_.effect = fn => async x => {
+  await _.toFn(fn)(x)
+  return x
+}
+
 _.sideEffect = (fn, errFn) => async (...x) => {
   try {
     await fn(...x)
