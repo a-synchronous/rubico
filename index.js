@@ -983,4 +983,20 @@ _.smultiply = (...fns) => _.sflow(
   _.sreduce((a, b) => a * b),
 )
 
+_.tryCatch = (tryFn, catchFn) => async x => {
+  try {
+    return await _.toFn(tryFn)(x)
+  } catch (e) {
+    return await _.toFn(catchFn)(x, e)
+  }
+}
+
+_.stryCatch = (tryFn, catchFn) => x => {
+  try {
+    return _.toFn(tryFn)(x)
+  } catch (e) {
+    return _.toFn(catchFn)(x, e)
+  }
+}
+
 module.exports = _

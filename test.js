@@ -1329,4 +1329,24 @@ describe('rubico', () => {
     })
   })
 
+  describe('_.tryCatch, _.stryCatch', () => {
+    it('tries a fn and catches with the other fn', async () => {
+      assert.strictEqual(await _.tryCatch(
+        x => x + 1,
+        () => 10,
+      )(1), 2)
+      assert.strictEqual(await _.tryCatch(
+        () => { throw new Error() },
+        () => 10,
+      )(1), 10)
+      assert.strictEqual(_.stryCatch(
+        x => x + 1,
+        () => 10,
+      )(1), 2)
+      assert.strictEqual(_.stryCatch(
+        () => { throw new Error() },
+        () => 10,
+      )(1), 10)
+    })
+  })
 })
