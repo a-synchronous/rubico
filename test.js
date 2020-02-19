@@ -814,15 +814,24 @@ describe('rubico', () => {
     })
   })
 
-  describe('_.trace', () => {
+  describe('_.trace, _.strace', () => {
     it('console logs args', async () => {
-      assert.strictEqual(await _.trace('hey'), 'hey')
+      assert.strictEqual(await _.trace('trace'), 'trace')
+      assert.strictEqual(_.strace('strace'), 'strace')
     })
   })
 
-  describe('_.tracep', () => {
+  describe('_.tracep, _.stracep', () => {
     it('console logs prop and x.prop', async () => {
-      assert.deepEqual(await _.tracep('hey')({ hey: 'hey' }), { hey: 'hey' })
+      assert.deepEqual(await _.tracep('hey')({ hey: 'tracep' }), { hey: 'tracep' })
+      assert.deepEqual(_.stracep('hey')({ hey: 'stracep' }), { hey: 'stracep' })
+    })
+  })
+
+  describe('_.tracef, _.stracef', () => {
+    it('console logs fn(args)', async () => {
+      await _.tracef(_.id)('tracef')
+      _.stracef(_.id)('stracef')
     })
   })
 

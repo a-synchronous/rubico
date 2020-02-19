@@ -616,6 +616,11 @@ _.if = (condFn, fn) => {
   }
 }
 
+_.seffect = fn => x => {
+  _.toFn(fn)(x)
+  return x
+}
+
 _.effect = fn => async x => {
   await _.toFn(fn)(x)
   return x
@@ -634,9 +639,15 @@ _.log = tag => _.effect(() => console.log(tag))
 
 _.trace = _.effect(console.log)
 
+_.strace = _.seffect(console.log)
+
 _.tracep = (p, tag = '') => _.effect(x => console.log(p, _.get(p)(x)), tag)
 
-_.tracef = (fn, tag = '') => _.effect(async x => console.log(await fn(x), tag))
+_.stracep = (p, tag = '') => _.seffect(x => console.log(p, _.get(p)(x)), tag)
+
+_.tracef = (fn, tag = '') => _.effect(async x => console.log(await _.toFn(fn)(x), tag))
+
+_.stracef = (fn, tag = '') => _.seffect(x => console.log(_.toFn(fn)(x)), tag)
 
 _.benchmark = fn => tag => async x => {
   const st = Date.now()
