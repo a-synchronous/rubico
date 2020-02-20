@@ -153,6 +153,38 @@ _.join = d => x => x.join(d)
 
 _.split = d => x => _.toString(x).split(d)
 
+_.newDefault = x => {
+  if (_.is('string')(x)) return ''
+  if (_.is(Array)(x)) return []
+  if (_.is(Set)(x)) return new Set()
+  if (_.is(Map)(x)) return new Map()
+  if (_.is(Object)(x)) return {}
+  throw new TypeError(`cannot newDefault ${x}`)
+}
+
+_.append = item => x => {
+  if (_.is('string')(x)) return `${x}${item}`
+  if (_.is(Array)(x)) return x.concat(item)
+  throw new TypeError(`invalid container ${x}`)
+}
+
+_.chunk = l => {
+  if (l < 1) throw new RangeError(`chunk length must be greater than 0`)
+  return x => {
+    const y = []
+    let cur = _.newDefault(x)
+    for (const item of x) {
+      if (cur.length === l) {
+        y.push(cur)
+        cur = _.newDefault(x)
+      }
+      cur = _.append(item)(cur)
+    }
+    if (_.snot(_.isEmpty)(cur)) y.push(cur)
+    return y
+  }
+}
+
 _.slice = (from, to) => x => {
   if (!_.exists(to)) to = x.length
   if (to < 0) to = x.length + to

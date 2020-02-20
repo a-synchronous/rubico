@@ -273,6 +273,48 @@ describe('rubico', () => {
     })
   })
 
+  describe('_.newDefault', () => {
+    it('=> new default type', async () => {
+      assert.strictEqual(_.newDefault('hey'), '')
+      assert.deepEqual(_.newDefault([1, 2, 3]), [])
+      assert.deepEqual(_.newDefault(new Set([1, 2, 3])), new Set())
+      assert.deepEqual(_.newDefault(new Map([[1, 1], [2, 2]])), new Map())
+      assert.deepEqual(_.newDefault({ a: 1, b: 2 }), {})
+    })
+  })
+
+  describe('_.append', () => {
+    it('appends item to container', async () => {
+      assert.strictEqual(_.append('c')('ab'), 'abc')
+      assert.deepEqual(_.append(3)([1, 2]), [1, 2, 3])
+    })
+
+    it('throws TypeError', async () => {
+      assert.throws(
+        () => _.append(1)(undefined),
+        new TypeError('invalid container undefined')
+      )
+    })
+  })
+
+  describe('_.chunk', () => {
+    it('chunks an iterable into arrays of length l', async () => {
+      assert.deepEqual(_.chunk(1)([1, 2, 3]), [[1], [2], [3]])
+      assert.deepEqual(_.chunk(2)([1, 2, 3]), [[1, 2], [3]])
+      assert.deepEqual(_.chunk(3)([1, 2, 3]), [[1, 2, 3]])
+      assert.deepEqual(_.chunk(1)('abc'), ['a', 'b', 'c'])
+      assert.deepEqual(_.chunk(2)('abc'), ['ab', 'c'])
+      assert.deepEqual(_.chunk(3)('abc'), ['abc'])
+    })
+
+    it('throws RangeError', async () => {
+      assert.throws(
+        () => _.chunk(0)('abc'),
+        new RangeError('chunk length must be greater than 0')
+      )
+    })
+  })
+
   describe('_.slice', () => {
     it('slices an array from a to b, not including b', async () => {
       assert.deepEqual(_.slice(0)([1, 2, 3]), [1, 2, 3])
