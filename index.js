@@ -1057,4 +1057,6 @@ _.stryCatch = (tryFn, catchFn) => x => {
   }
 }
 
+_.spread = fn => x => fn(...x)
+
 module.exports = _

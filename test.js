@@ -1420,4 +1420,13 @@ describe('rubico', () => {
       )(1), 10)
     })
   })
+
+  describe('_.spread', () => {
+    it('spreads args into fn', async () => {
+      assert.strictEqual(
+        _.spread((a, b) => a + b)([1, 2]),
+        3,
+      )
+    })
+  })
 })
