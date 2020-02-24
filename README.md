@@ -86,4 +86,4 @@ The powerful idea here is <b>functions as modules</b>; that you can solve a prob
 name it something you can remember, and use it anywhere you see fit.
 
 That's the gist of it. For more examples, see the `examples` folder.  
-For the full documentation, please visit https://rubico.land
+For the full documentation, please visit [rubico.land](https://rubico.land)
