@@ -1,84 +1,78 @@
 # rubico
 🏞 a shallow river in northeastern Italy, just south of Ravenna
 
-functional composition that builds in promises by default
+functional programming for humans
 
-# Usage
+## Why?
+- [monads are hard to explain](https://stackoverflow.com/questions/44965/what-is-a-monad)
+- but I still want to program functionally
+
+well you can, and rubico can help you do it. And no, you do not need to know what a monad is.
+
+## Okay, show me some stuff
+rubico's `flow` chains functions, sync or async, together. Let's get some json data.
 ```javascript
-const _ = require('rubico')
-
-_.promisify(callbackTakingFn) // => promiseReturningFn
-
-_.callbackify(promiseReturningFn) // => callbackTakingFn
-
-_.promisifyAll({ a: callbackTakingFn }) // => { a: promiseReturningFn }
-
-_.callbackifyAll({ a: promiseReturningFn }) // => { a: callbackTakingFn }
-
-_.map(x => x + 1)([1, 2, 3]) // => Promise([2, 3, 4])
-_.map(x => x + 1)(new Set([1, 2, 3])) // => Promise(new Set(2, 3, 4))
-_.map(x => x + 1)({ a: 1, b: 2, c: 3 }) // => Promise({ a: 2, b: 3, c: 4 })
-_.map(x => x + 1)(new Map([['a', 1], ['b', 2], ['c', 3]]))
-// => Promise(new Map([['a', 2], ['b', 3], ['c', 3]])))
-
-_.syncMap(x => x + 1)([1, 2, 3]) // => [2, 3, 4]
-_.syncMap(x => x + 1)(new Set([1, 2, 3])) // => new Set(2, 3, 4)
-_.syncMap(x => x + 1)({ a: 1, b: 2, c: 3 }) // => ({ a: 2, b: 3, c: 4 })
-_.syncMap(x => x + 1)(new Map([['a', 1], ['b', 2], ['c', 3]]))
-// => new Map([['a', 2], ['b', 3], ['c', 3]]))
-
-_.reduce((a, b) => a + b)()([1, 2, 3]) // => Promise(6)
-_.reduce((a, b) => a + b)(10)([1, 2, 3]) // => Promise(16)
-
-_.syncReduce((a, b) => a + b)()([1, 2, 3]) // => 6
-_.syncReduce((a, b) => a + b)(10)([1, 2, 3]) // => 16
-
-_.flow(
-  x => x + 1,
-  x => x + 2,
-  x => x + 3,
-)(1) // => Promise(7)
-
-_.syncFlow(
-  x => x + 1,
-  x => x + 2,
-  x => x + 3,
-)(1) // => 7
-
-_.amp(
-  x => x + 1,
-  () => null,
-  x => x + 2,
-  x => x + 3,
-)(1) // => Promise(null)
-
-_.alt(
-  () => null,
-  x => x + 1,
-  x => x + 2,
-  () => null,
-  x => x + 3,
-)(1) // => Promise(2)
-
-_.parallel(
-  x => x + 1,
-  x => x + 2,
-  x => x + 3,
-)(1) // => Promise([2, 3, 4])
-
-_.sideEffect(console.log)('hey') // > hey, => Promise('hey')
-
-_.sideEffect(() => { throw new Error() }, x => e => console.log(x, e))('hey')
-// > hey Error
-
-_.flow(
-  x => x + 1,
-  trace('x'),
-  x => x + 2,
-  x => x + 3,
-)(1) // > x 2, => Promise(7)
-
-_.benchmark(
-  x => new Promise(res => setTimeout(() => res(x + 'hey'), 10))
-)('benchmark for hey')('hey') // > benchmark for hey 10ms, => 'heyhey'
+flow(
+  fetch,
+  response => response.json(),
+  console.log,
+)('https://jsonplaceholder.typicode.com/todos/1')
+// > { userId: 1, id: 1, title: 'delectus aut autem', completed: false }
 ```
+
+No variables. the above is a more expressive version of
+```javascript
+void (async (url) => {
+  const response = await fetch(url)
+  const data = await response.json()
+  console.log(data)
+})('https://jsonplaceholder.typicode.com/todos/1')
+// > { userId: 1, id: 1, title: 'delectus aut autem', completed: false }
+```
+
+Chaining functions is cool, but you don't need a whole library to do that.
+
+Let's make a post request. This time, rubico is namespaced to `_`.
+```javascript
+// url (string) => body (object) => response (object)
+const makePostRequest = url => _.flow(
+  JSON.stringify,
+  _.diverge([
+    url,
+    _.diverge({
+      method: 'POST',
+      body: _.id,
+      headers: {
+        "Content-type": "application/json; charset=UTF-8",
+      },
+    }),
+  ]),
+  _.spread(fetch),
+  response => response.json(),
+)
+
+const postToHttpBin = makePostRequest('https://httpbin.org/post')
+
+_.flow(postToHttpBin, _.get('json'), console.log)({ a: 1 })
+```
+
+What's going on at a high level:
+1. make a post request with body `{ a: 1 }` to http bin (`postToHttpBin`)
+2. get the `json` prop of that response (`_.get('json')`)
+3. log that value out to the console
+
+What's going on in `postToHttpBin`:
+1. partially apply 'https://httpbin.org/post' to `makePostRequest`,  
+a higher order function that takes a url
+
+What's going on in makePostRequest after applying `url`:
+1. json stringify the input body (`JSON.stringify`)
+2. create a structure that resembles `[url, { method, body, headers }]` (`_.diverge`)
+3. spread that structure as arguments into fetch (`_.spread(fetch)`)
+4. format the response payload (`response => response.json()`)
+
+The powerful idea here is <b>functions as modules</b>; that you can solve a problem once,  
+name it something you can remember, and use it anywhere you see fit.
+
+These examples are but the tip of the iceburg. For more examples, see the `examples` folder.  
+For the full documentation, please visit https://rubico.land
