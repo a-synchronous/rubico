@@ -67,16 +67,16 @@ _.flow(
 )({ a: 1 })
 ```
 
-What's going on at a high level:
+What's going on at a high level:  
 1. make a post request with body `{ a: 1 }` to http bin  
 2. get the `json` prop of that response  
 3. log that value out to the console  
 
-What's going on in `postToHttpBin`:
+What's going on in `postToHttpBin`:  
 4. partially apply 'https://httpbin.org/post' to `makePostRequest`,  
 a higher order function that takes a url
 
-What's going on in `makePostRequest` after applying `url`:
+What's going on in `makePostRequest` after applying `url`:  
 5. json stringify the input body  
 6. create a structure with stringified body that resembles `[url, { method, body, headers }]`  
 7. spread that structure as arguments into fetch  
