@@ -1278,24 +1278,15 @@ describe('rubico', () => {
     })
   })
 
-  describe('_.size, _.ssize', () => {
+  describe('_.size', () => {
     it('gets the size (length)', async () => {
-      assert.strictEqual(await _.size(_.id)('hey'), 3)
-      assert.strictEqual(await _.size(_.id)([1, 2, 3]), 3)
-      assert.strictEqual(await _.size(_.id)(new Set([1, 2, 3])), 3)
-      assert.strictEqual(await _.size(_.id)(new Map([['a', 1]])), 1)
-      assert.strictEqual(await _.size(_.id)({ a: 1 }), 1)
-      assert.rejects(
-        () => _.size(_.id)(undefined),
-        new TypeError('cannot size undefined')
-      )
-      assert.strictEqual(_.ssize(_.id)('hey'), 3)
-      assert.strictEqual(_.ssize(_.id)([1, 2, 3]), 3)
-      assert.strictEqual(_.ssize(_.id)(new Set([1, 2, 3])), 3)
-      assert.strictEqual(_.ssize(_.id)(new Map([['a', 1]])), 1)
-      assert.strictEqual(_.ssize(_.id)({ a: 1 }), 1)
+      assert.strictEqual(_.size('hey'), 3)
+      assert.strictEqual(_.size([1, 2, 3]), 3)
+      assert.strictEqual(_.size(new Set([1, 2, 3])), 3)
+      assert.strictEqual(_.size(new Map([['a', 1]])), 1)
+      assert.strictEqual(_.size({ a: 1 }), 1)
       assert.throws(
-        () => _.ssize(_.id)(undefined),
+        () => _.size(undefined),
         new TypeError('cannot size undefined')
       )
     })
