@@ -1,987 +1,124 @@
 const util = require('util')
 const assert = require('assert')
-
 const _ = {}
-
-_.noop = () => {}
-
-_.is = t => x => {
-  if (t === 'int') return Number.isInteger(x)
-  if (t === 'nil') return x === undefined  || x === null
-  if (typeof t === 'string') return typeof x === t
-  if (typeof t === 'function') return x instanceof t
-  if (Number.isNaN(t)) return Number.isNaN(x)
-  return false
-}
-
-_.isNot = t => x => !_.is(t)(x)
-
-_.isIterable = x => {
-  if (_.dne(x)) return false
-  if (_.is('object')(x)) return true
-  return _.is('function')(_.get(Symbol.iterator)(x))
-}
-
-_.toString = x => {
-  if (_.is('string')(x)) return x
-  if (_.is('nil')(x)) return ''
-  if (_.is(Object)(x)) return x.toString()
-  return `${x}`
-}
-
-_.toFn = x => _.is(Function)(x) ? x : () => x
-
-_.toNumber = Number
-
-_.toInt = x => parseInt(x, 10)
-
-_.toFloat = parseFloat
-
-_.toSet = x => new Set(x)
-
-_.entriesToObject = x => {
-  const y = {}
-  for (const [k, v] of x) y[k] = v
-  return y
-}
-
-const naiveGet = (key, defaultValue) => x => {
-  if (_.isNot(Object)(x)) return defaultValue
-  if (_.is('symbol')(key)) return x[key]
-  if (_.is(Map)(x)) return x.get(key)
-  return x[key]
-}
-
-_.get = (key, defaultValue) => {
-  if (_.is('string')(key)) return x => {
-    let y = x
-    for (const k of _.split('.')(key)) {
-      y = naiveGet(k)(y)
-      if (!_.exists(y)) return defaultValue
-    }
-    return y
-  }
-  if (_.is(Array)(key)) return x => {
-    let y = x
-    for (const k of key) {
-      y = naiveGet(k)(y)
-      if (!_.exists(y)) return defaultValue
-    }
-    return y
-  }
-  return x => naiveGet(key, defaultValue)(x)
-}
-
-_.lookup = x => k => _.get(k)(x)
-
-_.has = k => x => {
-  if (_.is('string')(x)) return x.includes(k)
-  if (_.is(Array)(x)) return x.includes(k)
-  if (_.is(Set)(x)) return x.has(k)
-  if (_.is(Map)(x)) return x.has(k)
-  if (_.is(Object)(x)) return !!_.get(k)(x)
-  throw new TypeError(`cannot has ${x}`)
-}
-
-_.hasNot = k => x => !_.has(k)(x)
-
-_.isMember = x => k => _.has(k)(x)
-
-_.isNotMember = x => k => !_.has(k)(x)
-
-_.put = (...ents) => async x => {
-  const y = { ...x }, tasks = []
-  for (const [k, fn] of ents) {
-    const a = _.toFn(fn)(x)
-    if (_.is(Promise)(a)) tasks.push(a.then(b => { y[k] = b }))
-    else { y[k] = a }
-  }
-  await Promise.all(tasks)
-  return y
-}
-
-_.sput = (...ents) => x => {
-  const y = { ...x }
-  for (const [k, fn] of ents) {
-    y[k] = _.toFn(fn)(x)
-  }
-  return y
-}
-
-_.default = d => x => x || d
-
-_.pick = keys => x => {
-  if (_.isNot(Object)(x)) throw new TypeError('point must be an object')
-  const y = {}
-  for (const k of keys) {
-    if (!_.exists(x[k])) continue
-    y[k] = x[k]
-  }
-  return y
-}
-
-_.parseJSON = (x, d) => {
-  if (_.is(Object)(x)) return x
-  try {
-    return JSON.parse(x)
-  } catch (e) {
-    return d
-  }
-}
-
-_.stringifyJSON = (x, d) => {
-  try {
-    return JSON.stringify(_.parseJSON(x))
-  } catch (e) {
-    return d
-  }
-}
-
-_.prettifyJSON = spaces => x => {
-  try {
-    return JSON.stringify(_.parseJSON(x), null, spaces)
-  } catch (e) {
-    return undefined
-  }
-}
-
-_.flip = pair => x => _.get(0)(_.sfilter(y => y !== x)(pair))
-
-_.replace = (...args) => x => x.replace(...args)
-
-_.join = d => x => x.join(d)
-
-_.split = d => x => _.toString(x).split(d)
-
-_.newDefault = x => {
-  if (_.is('string')(x)) return ''
-  if (_.is(Array)(x)) return []
-  if (_.is(Set)(x)) return new Set()
-  if (_.is(Map)(x)) return new Map()
-  if (_.is(Object)(x)) return {}
-  throw new TypeError(`cannot newDefault ${x}`)
-}
-
-_.append = item => x => {
-  if (_.is('string')(x)) return `${x}${item}`
-  if (_.is(Array)(x)) return x.concat(item)
-  throw new TypeError(`invalid container ${x}`)
-}
-
-_.chunk = l => {
-  if (l < 1) throw new RangeError(`chunk length must be greater than 0`)
-  return x => {
-    const y = []
-    let cur = _.newDefault(x)
-    for (const item of x) {
-      if (cur.length === l) {
-        y.push(cur)
-        cur = _.newDefault(x)
-      }
-      cur = _.append(item)(cur)
-    }
-    if (_.snot(_.isEmpty)(cur)) y.push(cur)
-    return y
-  }
-}
-
-_.slice = (from, to) => x => {
-  if (!_.exists(to)) to = x.length
-  if (to < 0) to = x.length + to
-  let y = []
-  for (let i = from; i < to; i++) y.push(x[i])
-  return y
-}
-
-_.toLowerCase = x => _.toString(x).toLowerCase()
-
-_.toUpperCase = x => _.toString(x).toUpperCase()
-
-_.capitalize = x => {
-  const s = _.toString(x)
-  if (s.length === 0) return ''
-  return `${s[0].toUpperCase()}${s.slice(1)}`
-}
-
-_.promisify = util.promisify
-
-_.callbackify = util.callbackify
-
-_.promisifyAll = x => {
-  const y = {}
-  if (!x) return y
-  for (k in x) {
-    const v = x[k]
-    if (_.isNot('function')(v)) { y[k] = v; continue }
-    y[k] = _.promisify(v.bind(x))
-  }
-  for (k in x.__proto__ || {}) {
-    const v = x.__proto__[k]
-    if (_.isNot('function')(v)) { y[k] = v; continue }
-    y[k] = _.promisify(v.bind(x))
-  }
-  return y
-}
-
-_.callbackifyAll = x => {
-  const y = {}
-  if (!x) return y
-  for (k in x) {
-    const v = x[k]
-    if (_.isNot('function')(v)) { y[k] = v; continue }
-    y[k] = _.callbackify(v.bind(x))
-  }
-  for (k in x.__proto__ || {}) {
-    const v = x.__proto__[k]
-    if (_.isNot('function')(v)) { y[k] = v; continue }
-    y[k] = _.callbackify(v.bind(x))
-  }
-  return y
-}
 
 _.id = x => x
 
-_.map = fn => async x => {
-  if (_.is(Array)(x)) {
-    const tasks = []
-    let i = 0
-    for (const a of x) {
-      tasks.push(fn(a, i))
-      i += 1
-    }
-    return await Promise.all(tasks)
-  }
-  if (_.is(Set)(x)) {
-    const tasks = []
-    let i = 0
-    for (const a of x) {
-      tasks.push(fn(a, i))
-      i += 1
-    }
-    return new Set(await Promise.all(tasks))
-  }
-  if (_.is(Map)(x)) {
-    const tasks = [], y = new Map()
-    let i = 0
-    for (const [k, v] of x) {
-      const a = fn(v, i)
-      if (_.is(Promise)(a)) tasks.push(a.then(b => y.set(k, b)))
-      else y.set(k, a)
-      i += 1
-    }
-    await Promise.all(tasks)
-    return y
-  }
-  if (_.is(Object)(x)) {
-    const tasks = [], y = {}
-    let i = 0
-    for (const k in x) {
-      const a = fn(x[k], i)
-      if (_.is(Promise)(a)) tasks.push(a.then(b => y[k] = b))
-      else y[k] = a
-      i += 1
-    }
-    await Promise.all(tasks)
-    return y
-  }
-  return await fn(x)
-}
+_.noop = () => {}
 
-_.smap = fn => x => {
-  if (_.is(Array)(x)) return x.map(fn)
-  if (_.is(Set)(x)) {
-    const y = new Set()
-    let i = 0
-    for (const a of x) {
-      y.add(fn(a, i))
-      i += 1
-    }
-    return y
-  }
-  if (_.is(Map)(x)) {
-    const y = new Map()
-    let i = 0
-    for (const [k, v] of x) {
-      y.set(k, fn(v, i))
-      i += 1
-    }
-    return y
-  }
-  if (_.is(Object)(x)) {
-    const y = {}
-    let i = 0
-    for (const k in x) {
-      y[k] = fn(x[k], i)
-      i += 1
-    }
-    return y
-  }
-  return fn(x)
-}
-
-_.mapSeries = fn => async x => {
-  if (_.is(Array)(x)) {
-    const y = []
-    for (const a of x) y.push(await fn(a))
-    return y
-  }
-  if (_.is(Set)(x)) {
-    const y = new Set()
-    for (const a of x) y.add(await fn(a))
-    return y
-  }
-  if (_.is(Map)(x)) {
-    const y = new Map()
-    for (const [k, v] of x) y.set(k, await fn(v))
-    return y
-  }
-  if (_.is(Object)(x)) {
-    const y = {}
-    for (const k in x) y[k] = await fn(x[k])
-    return y
-  }
-  return fn(x)
-}
-
-_.mapEntries = fn => async x => {
-  if (_.is(Array)(x)) {
-    const tasks = []
-    for (const a of x) tasks.push(fn(a))
-    return await Promise.all(tasks)
-  }
-  if (_.is(Set)(x)) {
-    const tasks = []
-    for (const a of x) tasks.push(fn(a))
-    return new Set(await Promise.all(tasks))
-  }
-  if (_.is(Map)(x)) {
-    const tasks = []
-    for (const a of x) tasks.push(fn(a))
-    return new Map(await Promise.all(tasks))
-  }
-  if (_.is(Object)(x)) {
-    const tasks = []
-    for (const k in x) tasks.push(fn([k, x[k]]))
-    const y = {}
-    for (const [k, v] of await Promise.all(tasks)) y[k] = v
-    return y
-  }
-  return await fn(x)
-}
-
-_.smapEntries = fn => x => {
-  if (_.is(Array)(x)) return x.map(fn)
-  if (_.is(Set)(x)) {
-    const y = new Set()
-    for (const a of x) y.add(fn(a))
-    return y
-  }
-  if (_.is(Map)(x)) {
-    const y = new Map()
-    for (const a of x) y.set(...fn(a))
-    return y
-  }
-  if (_.is(Object)(x)) {
-    const y = {}
-    for (const k in x) {
-      const [kn, vn] = fn([k, x[k]])
-      y[kn] = vn
-    }
-    return y
-  }
-  return fn(x)
-}
-
-_.filter = fn => async x => {
-  if (_.is(Array)(x)) {
-    const tasks = []
-    for (const a of x) tasks.push((async () => (await fn(a)) && a)())
-    return (await Promise.all(tasks)).filter(_.id)
-  }
-  if (_.is(Set)(x)) {
-    const tasks = []
-    for (const a of x) tasks.push((async () => (await fn(a)) && a)())
-    return new Set((await Promise.all(tasks)).filter(_.id))
-  }
-  if (_.is(Map)(x)) {
-    const tasks = [], y = new Map()
-    for (const [k, v] of x) tasks.push(
-      (async () => { if (await fn(v)) { y.set(k, v) } })()
-    )
-    await Promise.all(tasks)
-    return y
-  }
-  if (_.is(Object)(x)) {
-    const tasks = [], y = {}
-    for (const k in x) tasks.push(
-      (async () => { if (await fn(x[k])) { y[k] = x[k] } })()
-    )
-    await Promise.all(tasks)
-    return y
-  }
-  return (await fn(x)) ? x : undefined
-}
-
-_.sfilter = fn => x => {
-  if (_.is(Array)(x)) return x.filter(fn)
-  if (_.is(Set)(x)) {
-    const y = new Set()
-    for (const a of x) { if (!fn(a)) continue; y.add(a) }
-    return y
-  }
-  if (_.is(Map)(x)) {
-    const y = new Map()
-    for (const [k, v] of x) { if (!fn(v)) continue; y.set(k, v) }
-    return y
-  }
-  if (_.is(Object)(x)) {
-    const y = {}
-    for (const k in x) { if (!fn(x[k])) continue; y[k] = x[k] }
-    return y
-  }
-  return fn(x) ? x : undefined
-}
-
-_.reduce = (fn, x0) => async x => {
-  let [y, i] = x0 ? [x0, 0] : [x[0], 1]
-  while (i < x.length) {
-    y = await fn(y, x[i], i)
-    i += 1
-  }
-  return y
-}
-
-_.sreduce = (fn, x0) => x => {
-  let [y, i] = x0 ? [x0, 0] : [x[0], 1]
-  while (i < x.length) {
-    y = fn(y, x[i], i)
-    i += 1
-  }
-  return y
-}
-
-const argsOut = x => x.length <= 1 ? x[0] : x
-
-const verifyFunctions = fns => {
-  for (const fn of fns) {
-    // if (_.exists(fn)) continue
-    if (_.is(Function)(fn)) continue
-    throw new TypeError(`${fn} is not a function; ${fns.length} items`)
-  }
-}
-
-_.flow = (...fns) => {
-  verifyFunctions(fns)
-  return async (...x) => {
-    if (fns.length === 0) return argsOut(x)
-    let y = await fns[0](...x), i = 1
-    while (i < fns.length) {
-      y = await fns[i](y)
-      i += 1
-    }
-    return y
-  }
-}
-
-_.sflow = (...fns) => {
-  verifyFunctions(fns)
-  return (...x) => {
-    if (fns.length === 0) return argsOut(x)
-    let y = fns[0](...x), i = 1
-    while (i < fns.length) {
-      y = fns[i](y)
-      i += 1
-    }
-    return y
-  }
-}
-
-_.amp = (...fns) => {
-  verifyFunctions(fns)
-  return async (...x) => {
-    if (fns.length === 0) return argsOut(x)
-    let y = await fns[0](...x), i = 1
-    if (!y) return y
-    while (i < fns.length) {
-      y = await fns[i](y)
-      if (!y) return y
-      i += 1
-    }
-    return y
-  }
-}
-
-_.samp = (...fns) => {
-  verifyFunctions(fns)
-  return (...x) => {
-    if (fns.length === 0) return argsOut(x)
-    let y = fns[0](...x), i = 1
-    if (!y) return y
-    while (i < fns.length) {
-      y = fns[i](y)
-      if (!y) return y
-      i += 1
-    }
-    return y
-  }
-}
-
-_.alt = (...fns) => {
-  verifyFunctions(fns)
-  return async (...x) => {
-    let y = argsOut(x), i = 0
-    while (i < fns.length) {
-      y = await fns[i](...x)
-      if (y) return y
-      i += 1
-    }
-    return y
-  }
-}
-
-_.salt = (...fns) => {
-  verifyFunctions(fns)
-  return (...x) => {
-    let y = argsOut(x), i = 0
-    while (i < fns.length) {
-      y = fns[i](...x)
-      if (y) return y
-      i += 1
-    }
-    return y
-  }
-}
-
-_.series = fns0 => {
-  if (!_.isIterable(fns0)) throw new TypeError('fns must be a container')
-  if (_.sany(_.dne)(fns0)) throw new TypeError('fn dne')
-  const fns = _.smap(_.toFn)(fns0)
-  if (_.is(Array)(fns)) return async (...x) => {
-    const y = []
-    for (const fn of fns) y.push(await fn(...x))
-    return y
-  }
-  if (_.is(Set)(fns)) return async (...x) => {
-    const y = new Set()
-    for (const fn of fns) y.add(await fn(...x))
-    return y
-  }
-  if (_.is(Map)(fns)) return async (...x) => {
-    const y = new Map()
-    for (const [k, fn] of fns) y.set(k, await fn(...x))
-    return y
-  }
-  return async (...x) => {
-    const y = {}
-    for (const k in fns) y[k] = await fns[k](...x)
-    return y
-  }
-}
-
-_.diverge = fns0 => {
-  if (!_.isIterable(fns0)) throw new TypeError('fns must be a container')
-  if (_.sany(_.dne)(fns0)) throw new TypeError('fn dne')
-  const fns = _.smap(_.toFn)(fns0)
-  if (_.is(Array)(fns)) return async (...x) => (
-    await Promise.all(fns.map(fn => fn(...x)))
-  )
-  if (_.is(Set)(fns)) return async (...x) => {
-    const y = new Set(), tasks = []
-    for (const fn of fns) {
-      const p = fn(...x)
-      if (_.is(Promise)(p)) tasks.push(p.then(a => y.add(a)))
-      else y.add(p)
-    }
-    await Promise.all(tasks)
-    return y
-  }
-  if (_.is(Map)(fns)) return async (...x) => {
-    const y = new Map(), tasks = []
-    for (const [k, fn] of fns) {
-      const p = fn(...x)
-      if (_.is(Promise)(p)) tasks.push(p.then(a => y.set(k, a)))
-      else y.set(k, p)
-    }
-    await Promise.all(tasks)
-    return y
-  }
-  return async (...x) => {
-    const y = {}, tasks = []
-    for (const k in fns) {
-      const p = fns[k](...x)
-      if (_.is(Promise)(p)) tasks.push(p.then(a => { y[k] = a }))
-      else { y[k] = p }
-    }
-    await Promise.all(tasks)
-    return y
-  }
-}
-
-_.sdiverge = fns0 => {
-  if (!_.isIterable(fns0)) throw new TypeError('fns must be a container')
-  if (_.sany(_.dne)(fns0)) throw new TypeError('fn dne')
-  const fns = _.smap(_.toFn)(fns0)
-  if (_.is(Array)(fns)) return (...x) => fns.map(fn => fn(...x))
-  if (_.is(Set)(fns)) return (...x) => {
-    const y = new Set()
-    for (const fn of fns) y.add(fn(...x))
-    return y
-  }
-  if (_.is(Map)(fns)) return (...x) => {
-    const y = new Map()
-    for (const [k, fn] of fns) y.set(k, fn(...x))
-    return y
-  }
-  return (...x) => {
-    const y = {}
-    for (const k in fns) y[k] = fns[k](...x)
-    return y
-  }
-  throw new TypeError('fns must be a container')
-}
-
-_.if = (condFn, fn) => {
-  verifyFunctions([condFn, fn])
-  return async (...x) => {
-    if (await condFn(...x)) return await fn(...x)
-    return argsOut(x)
-  }
-}
-
-_.seffect = fn => x => {
-  _.toFn(fn)(x)
-  return x
-}
-
-_.effect = fn => async x => {
-  await _.toFn(fn)(x)
-  return x
-}
-
-_.sideEffect = (fn, errFn) => async (...x) => {
-  try {
-    await fn(...x)
-  } catch (e) {
-    if (errFn) errFn(...x)(e)
-  }
-  return argsOut(x)
-}
-
-_.log = tag => _.effect(() => console.log(tag))
-
-_.trace = _.effect(console.log)
-
-_.strace = _.seffect(console.log)
-
-_.tracep = (p, tag = '') => _.effect(x => console.log(p, _.get(p)(x)), tag)
-
-_.stracep = (p, tag = '') => _.seffect(x => console.log(p, _.get(p)(x)), tag)
-
-_.tracef = (fn, tag = '') => _.effect(async x => console.log(await _.toFn(fn)(x), tag))
-
-_.stracef = (fn, tag = '') => _.seffect(x => console.log(_.toFn(fn)(x)), tag)
-
-_.benchmark = fn => tag => async x => {
-  const st = Date.now()
-  const y = await fn(x)
-  console.log(tag, `${Date.now() - st}ms`)
-  return y
-}
-
-const getIterator = x => x.values()
-
-_.braid = rates => (x, y = []) => {
-  const iterators = _.smap(getIterator)(x)
-  let i = 0
-  while (iterators.length > 0) {
-    const modi = i % iterators.length
-    for (let j = 0; j < rates[modi]; j++) {
-      const v = iterators[modi].next()
-      if (v.done) {
-        iterators.splice(modi, 1)
-        break
-      }
-      y.push(v.value)
-    }
-    i += 1
-  }
-  return y
-}
-
-_.unbraid = rates => x => {
-  const y = []
-  for (let k = 0; k < rates.length; k++) y.push([])
-  let i = 0, ri = 0
-  while (i < x.length) {
-    const modi = ri % rates.length
-    for (let j = 0; j < rates[modi]; j++) {
-      y[modi].push(x[i])
-      i += 1
-    }
-    ri += 1
-  }
-  return y
-}
-
-_.transpose = x => {
-  const y = []
-  for (let i = 0; i < x.length; i++) {
-    for (let j = 0; j < x[i].length; j++) {
-      if (!y[j]) y[j] = []
-      y[j][i] = x[i][j]
-    }
-  }
-  return y
-}
-
-_.flatten = _.sreduce((a, b) => a.concat(b), [])
-
-_.flattenAll = x => x.flat(Infinity)
-
-_.uniq = x => {
-  const mem = new Set()
-  const y = []
-  for (const a of x) {
-    if (mem.has(a)) continue
-    mem.add(a)
-    y.push(a)
-  }
-  return y
-}
-
-_.uniqp = k => x => {
-  const mem = new Set()
-  const y = []
-  for (const a of x) {
-    const v = _.get(k)(a)
-    if (mem.has(v)) continue
-    mem.add(v)
-    y.push(a)
-  }
-  return y
-}
-
-/*
-_.suniqf = fn => x => {
-  const mem = {}
-  const y = []
-  for (const a of x) {
-  }
-}
-*/
-
-_.sleep = ms => _.effect(
-  () => new Promise(resolve => setTimeout(resolve, ms))
-)
-
-_.first = _.get(0)
-
-_.last = x => x[x.length - 1]
-
-_.reverse = x => x.slice(0).reverse()
-
-_.compare = (a, b) => {
-  if (a < b) return -1
-  if (a > b) return 1
-  return 0
-}
-
-_.sort = (order = 1) => x => x.sort(
-  (a, b) => order * _.compare(a, b)
-)
-
-_.sortBy = (k, order = 1) => x => x.sort(
-  (a, b) => order * _.compare(_.get(k)(a), _.get(k)(b))
-)
-
-_.not = fn => async x => !(await _.toFn(fn)(x))
-
-_.snot = fn => x => !_.toFn(fn)(x)
-
-_.any = fn => _.flow(_.map(fn), _.sany(_.id))
-
-_.sany = fn => x => {
-  if (!_.isIterable(x)) return false
-  if (_.is(Array)(x) || _.is(Set)(x) || _.is(Map)(x)) {
-    for (const a of x) {
-      if (_.toFn(fn)(a)) return true
-    }
-  } else {
-    for (const k in x) {
-      if (_.toFn(fn)(x[k])) return true
-    }
-  }
-  return false
-}
-
-_.every = fn => _.flow(_.map(fn), _.severy(_.id))
-
-_.severy = fn => x => {
-  if (!_.isIterable(x)) return false
-  if (_.is(Array)(x) || _.is(Set)(x) || _.is(Map)(x)) {
-    for (const a of x) {
-      if (!_.toFn(fn)(a)) return false
-    }
-  } else {
-    for (const k in x) {
-      if (!_.toFn(fn)(x[k])) return false
-    }
-  }
-  return true
-}
-
-_.and = (...fns) => (...args) => _.every(fn => _.toFn(fn)(...args))(fns)
-
-_.sand = (...fns) => (...args) => _.severy(fn => _.toFn(fn)(...args))(fns)
-
-_.or = (...fns) => (...args) => _.any(fn => _.toFn(fn)(...args))(fns)
-
-_.sor = (...fns) => (...args) => _.sany(fn => _.toFn(fn)(...args))(fns)
-
-_.eq = (...fns) => _.flow(
-  _.diverge(fns),
-  x => {
-    for (let i = 1; i < x.length; i++) {
-      if (x[i] !== x[0]) return false
-    }
-    return true
-  },
-)
-
-_.seq = (...fns) => _.sflow(
-  _.sdiverge(fns),
-  x => {
-    for (let i = 1; i < x.length; i++) {
-      if (x[i] !== x[0]) return false
-    }
-    return true
-  },
-)
-
-_.lt = (...fns) => _.flow(
-  _.diverge(fns),
-  x => {
-    for (let i = 1; i < x.length; i++) {
-      if (x[i - 1] >= x[i]) return false
-    }
-    return true
-  },
-)
-
-_.slt = (...fns) => _.sflow(
-  _.sdiverge(fns),
-  x => {
-    for (let i = 1; i < x.length; i++) {
-      if (x[i - 1] >= x[i]) return false
-    }
-    return true
-  },
-)
-
-_.lte = (...fns) => _.flow(
-  _.diverge(fns),
-  x => {
-    for (let i = 1; i < x.length; i++) {
-      if (x[i - 1] > x[i]) return false
-    }
-    return true
-  },
-)
-
-_.slte = (...fns) => _.sflow(
-  _.sdiverge(fns),
-  x => {
-    for (let i = 1; i < x.length; i++) {
-      if (x[i - 1] > x[i]) return false
-    }
-    return true
-  },
-)
-
-_.gt = (...fns) => _.flow(
-  _.diverge(fns),
-  x => {
-    for (let i = 1; i < x.length; i++) {
-      if (x[i - 1] <= x[i]) return false
-    }
-    return true
-  },
-)
-
-_.sgt = (...fns) => _.sflow(
-  _.sdiverge(fns),
-  x => {
-    for (let i = 1; i < x.length; i++) {
-      if (x[i - 1] <= x[i]) return false
-    }
-    return true
-  },
-)
-
-_.gte = (...fns) => _.flow(
-  _.diverge(fns),
-  x => {
-    for (let i = 1; i < x.length; i++) {
-      if (x[i - 1] < x[i]) return false
-    }
-    return true
-  },
-)
-
-_.sgte = (...fns) => _.sflow(
-  _.sdiverge(fns),
-  x => {
-    for (let i = 1; i < x.length; i++) {
-      if (x[i - 1] < x[i]) return false
-    }
-    return true
-  },
-)
+_.spread = fn => x => fn(...x)
 
 _.exists = x => x !== undefined && x !== null
 
 _.dne = x => x === undefined || x === null
 
-_.size = x => {
-  if (_.is('string')(x)) return x.length
-  if (_.is(Array)(x)) return x.length
-  if (_.is(Set)(x)) return x.size
-  if (_.is(Map)(x)) return x.size
-  if (_.is(Object)(x)) {
-    let y = 0
-    for (const k in x) if (x.hasOwnProperty(k)) y += 1
+_.isFn = x => typeof x === 'function'
+
+_.isString = x => typeof x === 'string'
+
+_.isNumber = x => typeof x === 'number'
+
+_.isBoolean = x => typeof x === 'boolean'
+
+_.is = c => x => _.exists(x) && _.exists(x.constructor) && x.constructor === c
+
+_.isArray = _.is(Array)
+
+_.isObject = _.is(Object)
+
+_.isSet = _.is(Set)
+
+_.isMap = _.is(Map)
+
+_.isBuffer = _.is(Buffer)
+
+_.isSymbol = _.is(Symbol)
+
+_.isPromise = _.is(Promise)
+
+_.isRegExp = _.is(RegExp)
+
+_.new = x => {
+  if (_.isString(x)) return ''
+  if (_.isNumber(x)) return 0
+  if (_.isArray(x)) return []
+  if (_.isObject(x)) return {}
+  if (_.isSet(x)) return new Set()
+  if (_.isMap(x)) return new Map()
+  if (_.isBuffer(x)) return Buffer.from('')
+  throw new TypeError(`cannot new ${x}`)
+}
+
+_.toFn = x => {
+  if (_.isFn(x)) return x
+  return () => x
+}
+
+_.toString = x => `${x}`
+
+_.toInt = x => x === Infinity ? x : parseInt(x, 10)
+
+_.toFloat = parseFloat
+
+_.toArray = x => {
+  if (_.dne(x)) return []
+  if (_.isString(x)) return Array.of(x)
+  if (_.isNumber(x)) return Array.of(x)
+  return Array.from(x)
+}
+
+_.toSet = x => new Set(_.toArray(x))
+
+const escapeRegex = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+_.toRegExp = (x, flags = '') => {
+  if (_.isRegExp(x)) return new RegExp(x, flags)
+  if (_.isString(x)) return new RegExp(escapeRegex(x), flags)
+  throw new TypeError(`cannot coerce to RegExp ${x}`)
+}
+
+_.flow = (...fns) => {
+  if (!fns.every(_.isFn)) throw new TypeError('not all fns are fns')
+  return async (...x) => {
+    if (fns.length === 0) return x[0]
+    let y = await fns[0](...x), i = 1
+    while (i < fns.length) {
+      y = await fns[i](y)
+      i += 1
+    }
     return y
   }
-  throw new TypeError(`cannot size ${x}`)
 }
 
-_.isEmpty = x => _.size(x) === 0
-
-_.once = fn => (...args) => {
-  let ret = null
-  if (ret) return ret
-  ret = fn(...args)
-  return ret
+_.flow.sync = (...fns) => {
+  if (!fns.every(_.isFn)) throw new TypeError('not all fns are fns')
+  return (...x) => {
+    if (fns.length === 0) return x[0]
+    let y = fns[0](...x), i = 1
+    while (i < fns.length) {
+      y = fns[i](y)
+      i += 1
+    }
+    return y
+  }
 }
 
-_.assert = (...fns) => async x => {
-  await _.map(async fn => {
-    if (await fn(x)) return
-    const e = new Error(`${_.stringifyJSON(x)} did not pass ${_.toString(fn)}`)
-    e.name = 'AssertionError'
-    throw e
-  })(fns)
-  return x
+_.series = (...fns) => {
+  if (!fns.every(_.isFn)) throw new TypeError('not all fns are fns')
+  return async (...x) => {
+    const y = []
+    for (const fn of fns) y.push(await _.toFn(fn)(...x))
+    return y
+  }
 }
 
-_.ternary = (cf, lf, rf) => async x => {
-  if (await _.toFn(cf)(x)) return await _.toFn(lf)(x)
-  return await _.toFn(rf)(x)
-}
-
-_.sternary = (cf, lf, rf) => x => {
-  if (_.toFn(cf)(x)) return _.toFn(lf)(x)
-  return _.toFn(rf)(x)
+_.series.sync = (...fns) => {
+  if (!fns.every(_.isFn)) throw new TypeError('not all fns are fns')
+  return (...x) => {
+    const y = []
+    for (const fn of fns) y.push(_.toFn(fn)(...x))
+    return y
+  }
 }
 
 _.switch = (...fns) => {
@@ -1008,24 +145,18 @@ _.sswitch = (...fns) => {
   }
 }
 
-_.sum = (...fns) => _.flow(
-  _.diverge(_.smap(_.toFn)(fns)),
-  _.reduce((a, b) => a + b),
-)
+_.effect = fn => async x => {
+  await _.toFn(fn)(x)
+  return x
+}
 
-_.ssum = (...fns) => _.sflow(
-  _.sdiverge(_.smap(_.toFn)(fns)),
-  _.sreduce((a, b) => a + b),
-)
+_.effect.sync = fn => x => {
+  _.toFn(fn)(x)
+  return x
+}
 
-_.multiply = (...fns) => _.flow(
-  _.diverge(_.smap(_.toFn)(fns)),
-  _.reduce((a, b) => a * b),
-)
-
-_.smultiply = (...fns) => _.sflow(
-  _.sdiverge(_.smap(_.toFn)(fns)),
-  _.sreduce((a, b) => a * b),
+_.sleep = ms => _.effect(
+  () => new Promise(resolve => setTimeout(resolve, ms))
 )
 
 _.tryCatch = (tryFn, catchFn) => async x => {
@@ -1044,6 +175,983 @@ _.stryCatch = (tryFn, catchFn) => x => {
   }
 }
 
-_.spread = fn => x => fn(...x)
+_.diverge = fns => {
+  if (_.isArray(fns)) return async (...x) => (
+    await Promise.all(fns.map(fn => _.toFn(fn)(...x)))
+  )
+  if (_.isSet(fns)) return async (...x) => {
+    const y = new Set(), tasks = []
+    for (const fn of fns) {
+      const p = _.toFn(fn)(...x)
+      if (_.isPromise(p)) tasks.push(p.then(a => y.add(a)))
+      else y.add(p)
+    }
+    await Promise.all(tasks)
+    return y
+  }
+  if (_.isMap(fns)) return async (...x) => {
+    const y = new Map(), tasks = []
+    for (const [k, fn] of fns) {
+      const p = _.toFn(fn)(...x)
+      if (_.isPromise(p)) tasks.push(p.then(a => y.set(k, a)))
+      else y.set(k, p)
+    }
+    await Promise.all(tasks)
+    return y
+  }
+  if (_.isObject(fns)) return async (...x) => {
+    const y = {}, tasks = []
+    for (const k in fns) {
+      const p = _.toFn(fns[k])(...x)
+      if (_.isPromise(p)) tasks.push(p.then(a => { y[k] = a }))
+      else { y[k] = p }
+    }
+    await Promise.all(tasks)
+    return y
+  }
+  throw new TypeError(`cannot diverge ${fns}`)
+}
+
+_.diverge.sync = fns => {
+  if (_.isArray(fns)) return (...x) => fns.map(fn => _.toFn(fn)(...x))
+  if (_.isSet(fns)) return (...x) => {
+    const y = new Set()
+    for (const fn of fns) y.add(_.toFn(fn)(...x))
+    return y
+  }
+  if (_.isMap(fns)) return (...x) => {
+    const y = new Map()
+    for (const [k, fn] of fns) y.set(k, _.toFn(fn)(...x))
+    return y
+  }
+  if (_.isObject(fns)) return (...x) => {
+    const y = {}
+    for (const k in fns) y[k] = _.toFn(fns[k])(...x)
+    return y
+  }
+  throw new TypeError(`cannot diverge ${fns}`)
+}
+
+_.map = fn => {
+  const e = new TypeError()
+  Error.captureStackTrace(e)
+  return async x => {
+    if (_.isArray(x)) {
+      const tasks = []
+      let i = 0
+      for (const a of x) {
+        tasks.push(fn(a, i))
+        i += 1
+      }
+      return await Promise.all(tasks)
+    }
+    if (_.isSet(x)) {
+      const tasks = []
+      let i = 0
+      for (const a of x) {
+        tasks.push(fn(a, i))
+        i += 1
+      }
+      return new Set(await Promise.all(tasks))
+    }
+    if (_.isMap(x)) {
+      const tasks = [], y = new Map()
+      let i = 0
+      for (const [k, v] of x) {
+        const a = fn(v, i)
+        if (_.isPromise(a)) tasks.push(a.then(b => y.set(k, b)))
+        else y.set(k, a)
+        i += 1
+      }
+      await Promise.all(tasks)
+      return y
+    }
+    if (_.isObject(x)) {
+      const tasks = [], y = {}
+      let i = 0
+      for (const k in x) {
+        const a = fn(x[k], i)
+        if (_.isPromise(a)) tasks.push(a.then(b => y[k] = b))
+        else y[k] = a
+        i += 1
+      }
+      await Promise.all(tasks)
+      return y
+    }
+    e.message = `cannot map ${x}`
+    throw e
+  }
+}
+
+_.map.sync = fn => {
+  const e = new TypeError()
+  Error.captureStackTrace(e)
+  return x => {
+    if (_.isArray(x)) return x.map(fn)
+    if (_.isSet(x)) {
+      const y = new Set()
+      let i = 0
+      for (const a of x) {
+        y.add(fn(a, i))
+        i += 1
+      }
+      return y
+    }
+    if (_.isMap(x)) {
+      const y = new Map()
+      let i = 0
+      for (const [k, v] of x) {
+        y.set(k, fn(v, i))
+        i += 1
+      }
+      return y
+    }
+    if (_.isObject(x)) {
+      const y = {}
+      let i = 0
+      for (const k in x) {
+        y[k] = fn(x[k], i)
+        i += 1
+      }
+      return y
+    }
+    e.message = `cannot map ${x}`
+    throw e
+  }
+}
+
+_.serialMap = fn => {
+  const e = new TypeError()
+  Error.captureStackTrace(e)
+  return async x => {
+    if (_.isArray(x)) {
+      const y = []
+      for (const a of x) y.push(await fn(a))
+      return y
+    }
+    if (_.isSet(x)) {
+      const y = new Set()
+      for (const a of x) y.add(await fn(a))
+      return y
+    }
+    if (_.isMap(x)) {
+      const y = new Map()
+      for (const [k, v] of x) y.set(k, await fn(v))
+      return y
+    }
+    if (_.isObject(x)) {
+      const y = {}
+      for (const k in x) y[k] = await fn(x[k])
+      return y
+    }
+    e.message = `cannot serialMap ${x}`
+    throw e
+  }
+}
+
+_.entryMap = fn => {
+  const e = new TypeError()
+  Error.captureStackTrace(e)
+  return async x => {
+    if (_.isArray(x)) {
+      const tasks = []
+      for (const a of x) tasks.push(fn(a))
+      return await Promise.all(tasks)
+    }
+    if (_.isSet(x)) {
+      const tasks = []
+      for (const a of x) tasks.push(fn(a))
+      return new Set(await Promise.all(tasks))
+    }
+    if (_.isMap(x)) {
+      const tasks = []
+      for (const a of x) tasks.push(fn(a))
+      return new Map(await Promise.all(tasks))
+    }
+    if (_.isObject(x)) {
+      const tasks = []
+      for (const k in x) tasks.push(fn([k, x[k]]))
+      const y = {}
+      for (const [k, v] of await Promise.all(tasks)) y[k] = v
+      return y
+    }
+    e.message = `cannot entryMap ${x}`
+    throw e
+  }
+}
+
+_.entryMap.sync = fn => {
+  const e = new TypeError()
+  Error.captureStackTrace(e)
+  return x => {
+    if (_.isArray(x)) return x.map(fn)
+    if (_.isSet(x)) {
+      const y = new Set()
+      for (const a of x) y.add(fn(a))
+      return y
+    }
+    if (_.isMap(x)) {
+      const y = new Map()
+      for (const a of x) y.set(...fn(a))
+      return y
+    }
+    if (_.isObject(x)) {
+      const y = {}
+      for (const k in x) {
+        const [kn, vn] = fn([k, x[k]])
+        y[kn] = vn
+      }
+      return y
+    }
+    e.message = `cannot entryMap ${x}`
+    throw e
+  }
+}
+
+_.filter = fn => {
+  const e = new TypeError()
+  Error.captureStackTrace(e)
+  return async x => {
+    if (_.isArray(x)) {
+      const tasks = []
+      for (const a of x) tasks.push((async () => (await fn(a)) && a)())
+      return (await Promise.all(tasks)).filter(_.id)
+    }
+    if (_.isSet(x)) {
+      const tasks = []
+      for (const a of x) tasks.push((async () => (await fn(a)) && a)())
+      return new Set((await Promise.all(tasks)).filter(_.id))
+    }
+    if (_.isMap(x)) {
+      const tasks = [], y = new Map()
+      for (const [k, v] of x) tasks.push(
+        (async () => { if (await fn(v)) { y.set(k, v) } })()
+      )
+      await Promise.all(tasks)
+      return y
+    }
+    if (_.isObject(x)) {
+      const tasks = [], y = {}
+      for (const k in x) tasks.push(
+        (async () => { if (await fn(x[k])) { y[k] = x[k] } })()
+      )
+      await Promise.all(tasks)
+      return y
+    }
+    e.message = `cannot filter ${x}`
+    throw e
+  }
+}
+
+_.filter.sync = fn => {
+  const e = new TypeError()
+  Error.captureStackTrace(e)
+  return x => {
+    if (_.isArray(x)) return x.filter(fn)
+    if (_.isSet(x)) {
+      const y = new Set()
+      for (const a of x) { if (!fn(a)) continue; y.add(a) }
+      return y
+    }
+    if (_.isMap(x)) {
+      const y = new Map()
+      for (const [k, v] of x) { if (!fn(v)) continue; y.set(k, v) }
+      return y
+    }
+    if (_.isObject(x)) {
+      const y = {}
+      for (const k in x) { if (!fn(x[k])) continue; y[k] = x[k] }
+      return y
+    }
+    e.message = `cannot filter ${x}`
+    throw e
+  }
+}
+
+_.reduce = (fn, x0) => {
+  const e = new TypeError()
+  Error.captureStackTrace(e)
+  return async x => {
+    if (_.isArray(x)) {
+    } else if (_.isSet(x)) {
+      x = Array.from(x)
+    } else if (_.isMap(x)) {
+      x = [...x.values()]
+    } else if (_.isObject(x)) {
+      x = Object.values(x)
+    } else {
+      e.message = `cannot reduce ${x}`
+      throw e
+    }
+    let [y, i] = x0 ? [x0, 0] : [x[0], 1]
+    while (i < x.length) {
+      y = await fn(y, x[i], i)
+      i += 1
+    }
+    return y
+  }
+}
+
+_.reduce.sync = (fn, x0) => {
+  const e = new TypeError()
+  Error.captureStackTrace(e)
+  return x => {
+    if (_.isArray(x)) {
+    } else if (_.isSet(x)) {
+      x = Array.from(x)
+    } else if (_.isMap(x)) {
+      x = [...x.values()]
+    } else if (_.isObject(x)) {
+      x = Object.values(x)
+    } else {
+      e.message = `cannot reduce ${x}`
+      throw e
+    }
+    let [y, i] = x0 ? [x0, 0] : [x[0], 1]
+    while (i < x.length) {
+      y = fn(y, x[i], i)
+      i += 1
+    }
+    return y
+  }
+}
+
+_.not = fn => async x => !(await _.toFn(fn)(x))
+
+_.not.sync = fn => x => !_.toFn(fn)(x)
+
+_.any = fn => {
+  const e = new TypeError()
+  Error.captureStackTrace(e)
+  return async x => {
+    if (_.isObject(x)) {
+      for (const k in await _.map(_.toFn(fn))(x)) {
+        if (x[k]) return true
+      }
+      return false
+    }
+    if (_.isArray(x) || _.isSet(x) || _.isMap(x)) {
+      for (const a of await _.map(_.toFn(fn))(x)) {
+        if (a) return true
+      }
+      return false
+    }
+    e.message = `cannot any ${x}`
+    throw e
+  }
+}
+
+_.any.sync = fn => {
+  const e = new TypeError()
+  Error.captureStackTrace(e)
+  return x => {
+    if (_.isArray(x) || _.isSet(x) || _.isMap(x)) {
+      for (const a of x) {
+        if (_.toFn(fn)(a)) return true
+      }
+      return false
+    }
+    if (_.isObject(x)) {
+      for (const k in x) {
+        if (_.toFn(fn)(x[k])) return true
+      }
+      return false
+    }
+    e.message = `cannot any ${x}`
+    throw e
+  }
+}
+
+_.every = fn => {
+  const e = new TypeError()
+  Error.captureStackTrace(e)
+  return async x => {
+    if (_.isArray(x) || _.isSet(x) || _.isMap(x)) {
+      for (const a of await _.map(_.toFn(fn))(x)) {
+        if (!a) return false
+      }
+      return true
+    }
+    if (_.isObject(x)) {
+      for (const k in await _.map(_.toFn(fn))(x)) {
+        if (!x[k]) return false
+      }
+      return true
+    }
+    e.message = `cannot every ${x}`
+    throw e
+  }
+}
+
+_.every.sync = fn => {
+  const e = new TypeError()
+  Error.captureStackTrace(e)
+  return x => {
+    if (_.isArray(x) || _.isSet(x) || _.isMap(x)) {
+      for (const a of x) {
+        if (!_.toFn(fn)(a)) return false
+      }
+      return true
+    }
+    if (_.isObject(x)) {
+      for (const k in x) {
+        if (!_.toFn(fn)(x[k])) return false
+      }
+      return true
+    }
+    e.message = `cannot every ${x}`
+    throw e
+  }
+}
+
+_.and = (...fns) => (...args) => _.every(fn => _.toFn(fn)(...args))(fns)
+
+_.and.sync = (...fns) => (...args) => _.every.sync(fn => _.toFn(fn)(...args))(fns)
+
+_.or = (...fns) => (...args) => _.any(fn => _.toFn(fn)(...args))(fns)
+
+_.or.sync = (...fns) => (...args) => _.any.sync(fn => _.toFn(fn)(...args))(fns)
+
+_.eq = (...fns) => _.flow(
+  _.diverge(fns),
+  x => {
+    for (let i = 1; i < x.length; i++) {
+      if (x[i] !== x[0]) return false
+    }
+    return true
+  },
+)
+
+_.eq.sync = (...fns) => _.flow.sync(
+  _.diverge.sync(fns),
+  x => {
+    for (let i = 1; i < x.length; i++) {
+      if (x[i] !== x[0]) return false
+    }
+    return true
+  },
+)
+
+_.lt = (...fns) => _.flow(
+  _.diverge(fns),
+  x => {
+    for (let i = 1; i < x.length; i++) {
+      if (x[i - 1] >= x[i]) return false
+    }
+    return true
+  },
+)
+
+_.lt.sync = (...fns) => _.flow.sync(
+  _.diverge.sync(fns),
+  x => {
+    for (let i = 1; i < x.length; i++) {
+      if (x[i - 1] >= x[i]) return false
+    }
+    return true
+  },
+)
+
+_.lte = (...fns) => _.flow(
+  _.diverge(fns),
+  x => {
+    for (let i = 1; i < x.length; i++) {
+      if (x[i - 1] > x[i]) return false
+    }
+    return true
+  },
+)
+
+_.lte.sync = (...fns) => _.flow.sync(
+  _.diverge.sync(fns),
+  x => {
+    for (let i = 1; i < x.length; i++) {
+      if (x[i - 1] > x[i]) return false
+    }
+    return true
+  },
+)
+
+_.gt = (...fns) => _.flow(
+  _.diverge(fns),
+  x => {
+    for (let i = 1; i < x.length; i++) {
+      if (x[i - 1] <= x[i]) return false
+    }
+    return true
+  },
+)
+
+_.gt.sync = (...fns) => _.flow.sync(
+  _.diverge.sync(fns),
+  x => {
+    for (let i = 1; i < x.length; i++) {
+      if (x[i - 1] <= x[i]) return false
+    }
+    return true
+  },
+)
+
+_.gte = (...fns) => _.flow(
+  _.diverge(fns),
+  x => {
+    for (let i = 1; i < x.length; i++) {
+      if (x[i - 1] < x[i]) return false
+    }
+    return true
+  },
+)
+
+_.gte.sync = (...fns) => _.flow.sync(
+  _.diverge.sync(fns),
+  x => {
+    for (let i = 1; i < x.length; i++) {
+      if (x[i - 1] < x[i]) return false
+    }
+    return true
+  },
+)
+
+const simpleGet = k => x => {
+  if (typeof x !== 'object') return undefined
+  if (_.isMap(x)) return x.get(k)
+  return x[k]
+}
+
+const keyToPath = k => {
+  if (_.isString(k)) return _.split('.')(k)
+  if (_.isArray(k)) return k
+  return [k]
+}
+
+_.get = (key, defaultValue) => {
+  const path = keyToPath(key)
+  return x => {
+    let y = x
+    for (const k of path) {
+      y = simpleGet(k)(y)
+      if (_.dne(y)) return defaultValue
+    }
+    return y
+  }
+}
+
+_.lookup = x => k => _.get(k)(x)
+
+_.put = (...ents) => async x => {
+  const y = { ...x }, tasks = []
+  for (const [k, fn] of ents) {
+    const a = _.toFn(fn)(x)
+    if (_.isPromise(a)) tasks.push(a.then(b => { y[k] = b }))
+    else { y[k] = a }
+  }
+  await Promise.all(tasks)
+  return y
+}
+
+_.put.sync = (...ents) => x => {
+  const y = { ...x }
+  for (const [k, fn] of ents) {
+    y[k] = _.toFn(fn)(x)
+  }
+  return y
+}
+
+// https://jsperf.com/multi-array-concat/7
+_.concat = (...fns) => {
+  const e = new TypeError()
+  Error.captureStackTrace(e)
+  return async x => {
+    if (!_.isString(x) && !_.isArray(x)) {
+      e.message = `cannot concat to ${x}`
+      throw e
+    }
+    const items = await _.map(fn => _.toFn(fn)(x))(fns)
+    return x.constructor.prototype.concat.apply(x, items)
+  }
+}
+
+_.concat.sync = (...fns) => {
+  const e = new TypeError()
+  Error.captureStackTrace(e)
+  return x => {
+    if (!_.isString(x) && !_.isArray(x)) {
+      e.message = `cannot concat to ${x}`
+      throw e
+    }
+    const items = _.map.sync(fn => _.toFn(fn)(x))(fns)
+    return x.constructor.prototype.concat.apply(x, items)
+  }
+}
+
+_.has = m => {
+  const e = new TypeError()
+  Error.captureStackTrace(e)
+  return col => {
+    if (_.isString(col)) return col.includes(m)
+    if (_.isArray(col)) return col.includes(m)
+    if (_.isSet(col)) return col.has(m)
+    if (_.isMap(col)) return col.has(m)
+    if (_.isObject(col)) return !!_.get(m)(col)
+    if (_.isBuffer(col)) return _.toString(col).includes(m)
+    e.message = `cannot has ${col}`
+    throw e
+  }
+}
+
+_.member = col => {
+  if (_.isString(col)) return m => col.includes(m)
+  if (_.isArray(col)) return m => col.includes(m)
+  if (_.isSet(col)) return m => col.has(m)
+  if (_.isMap(col)) return m => col.has(m)
+  if (_.isObject(col)) return m => !!_.get(m)(col)
+  if (_.isBuffer(x)) return m => _.toString(col).includes(m)
+  throw new TypeError(`cannot member ${col}`)
+}
+
+_.log = tag => _.effect(() => console.log(tag))
+
+_.trace = _.effect(console.log)
+
+_.trace.sync = _.effect.sync(console.log)
+
+_.tracep = (p, tag = '') => _.effect(x => console.log(p, _.get(p)(x)), tag)
+
+_.tracep.sync = (p, tag = '') => _.effect.sync(x => console.log(p, _.get(p)(x)), tag)
+
+_.tracef = (fn, tag = '') => _.effect(async x => console.log(await _.toFn(fn)(x), tag))
+
+_.tracef.sync = (fn, tag = '') => _.effect.sync(x => console.log(_.toFn(fn)(x)), tag)
+
+_.promisify = util.promisify
+
+_.callbackify = util.callbackify
+
+_.promisifyAll = x => {
+  const y = {}
+  if (!x) return y
+  for (k in x) {
+    const v = x[k]
+    if (!_.isFn(v)) { y[k] = v; continue }
+    y[k] = _.promisify(v.bind(x))
+  }
+  for (k in x.__proto__ || {}) {
+    const v = x.__proto__[k]
+    if (!_.isFn(v)) { y[k] = v; continue }
+    y[k] = _.promisify(v.bind(x))
+  }
+  return y
+}
+
+_.callbackifyAll = x => {
+  const y = {}
+  if (!x) return y
+  for (k in x) {
+    const v = x[k]
+    if (!_.isFn(v)) { y[k] = v; continue }
+    y[k] = _.callbackify(v.bind(x))
+  }
+  for (k in x.__proto__ || {}) {
+    const v = x.__proto__[k]
+    if (!_.isFn(v)) { y[k] = v; continue }
+    y[k] = _.callbackify(v.bind(x))
+  }
+  return y
+}
+
+_.pick = keys => {
+  const e = new TypeError()
+  Error.captureStackTrace(e)
+  return x => {
+    if (!_.isObject(x)) {
+      e.message = `cannot pick ${x}`
+      throw e
+    }
+    const y = {}
+    for (const k of keys) {
+      const v = x[k]
+      if (_.dne(v)) continue
+      y[k] = v
+    }
+    return y
+  }
+}
+
+_.slice = (from, to) => x => {
+  if (_.dne(from)) from = 0
+  else if (from < 0) from += x.length
+  if (_.dne(to)) to = x.length
+  else if (to < 0) to += x.length
+  from = Math.max(0, Math.min(from, x.length))
+  to = Math.max(0, Math.min(to, x.length))
+  let y = []
+  for (let i = from; i < to; i++) y.push(x[i])
+  return y
+}
+
+_.replaceOne = (s, r) => {
+  if (_.dne(r)) throw new TypeError('no replacement provided')
+  if (!_.isString(r) && !_.isNumber(r)) {
+    throw new TypeError(`bad replacement ${r}`)
+  }
+  if (!_.isString(s)) {
+    throw new TypeError(`cannot replace ${s}`)
+  }
+  const rx = _.toRegExp(s)
+  const e = new TypeError()
+  Error.captureStackTrace(e)
+  return x => {
+    if (!_.isString(x)) {
+      e.message = `cannot replace for ${x}`
+      throw e
+    }
+    return x.replace(rx, _.toString(r))
+  }
+}
+
+_.replaceAll = (s, r) => {
+  if (_.dne(r)) throw new TypeError('no replacement provided')
+  if (!_.isString(r) && !_.isNumber(r)) {
+    throw new TypeError(`bad replacement ${r}`)
+  }
+  if (!_.isString(s)) {
+    throw new TypeError(`cannot replace ${s}`)
+  }
+  const rx = _.toRegExp(s, 'g')
+  const e = new TypeError()
+  Error.captureStackTrace(e)
+  return x => {
+    if (!_.isString(x)) {
+      e.message = `cannot replace for ${x}`
+      throw e
+    }
+    return x.replace(rx, _.toString(r))
+  }
+}
+
+_.join = d => {
+  if (_.dne(d)) throw new TypeError('no delimiter provided')
+  if (!_.isString(d) && !_.isNumber(d)) {
+    throw new TypeError(`bad delimiter ${d}`)
+  }
+  const e = new TypeError()
+  Error.captureStackTrace(e)
+  return x => {
+    if (!_.isArray(x)) {
+      e.message = `cannot join ${x}`
+      throw e
+    }
+    return x.join(d)
+  }
+}
+
+_.split = d => {
+  if (_.dne(d)) throw new TypeError('no delimiter provided')
+  if (!_.isString(d) && !_.isNumber(d)) {
+    throw new TypeError(`bad delimiter ${d}`)
+  }
+  const e = new TypeError()
+  Error.captureStackTrace(e)
+  return x => {
+    if (!_.isString(x)) {
+      e.message = `cannot split ${x}`
+      throw e
+    }
+    return x.split(d)
+  }
+}
+
+_.lowercase = x => {
+  if (!_.isString(x)) throw new TypeError(`cannot lowercase ${x}`)
+  return x.toLowerCase()
+}
+
+_.uppercase = x => {
+  if (!_.isString(x)) throw new TypeError(`cannot uppercase ${x}`)
+  return x.toUpperCase()
+}
+
+_.capitalize = x => {
+  if (!_.isString(x)) throw new TypeError(`cannot capitalize ${x}`)
+  const s = _.toString(x)
+  if (s.length === 0) return ''
+  return `${s[0].toUpperCase()}${s.slice(1)}`
+}
+
+_.braid = (...rates) => {
+  const e = new Error()
+  Error.captureStackTrace(e)
+  return x => {
+    if (!_.isArray(x) || !x.every(_.isArray)) {
+      e.name = 'TypeError'
+      e.message = 'point must be an array of arrays'
+      throw e
+    }
+    if (x.length !== rates.length) {
+      e.message = 'point length must === number of rates'
+      throw e
+    }
+    const y = []
+    const iterators = x.map(y => y.values())
+    let i = 0
+    while (iterators.length > 0) {
+      const modi = i % iterators.length
+      for (let j = 0; j < rates[modi]; j++) {
+        const v = iterators[modi].next()
+        if (v.done) {
+          iterators.splice(modi, 1)
+          break
+        }
+        y.push(v.value)
+      }
+      i += 1
+    }
+    return y
+  }
+}
+
+_.unbraid = (...rates) => {
+  const e = new Error()
+  Error.captureStackTrace(e)
+  return x => {
+    if (!_.isArray(x)) {
+      e.name = 'TypeError'
+      e.message = 'point must be an array'
+      throw e
+    }
+    const y = []
+    for (let k = 0; k < rates.length; k++) y.push([])
+    let i = 0, ri = 0
+    while (i < x.length) {
+      const modi = ri % rates.length
+      for (let j = 0; j < rates[modi]; j++) {
+        y[modi].push(x[i])
+        i += 1
+      }
+      ri += 1
+    }
+    return y
+  }
+}
+
+_.transpose = x => {
+  if (!_.isArray(x)) throw new TypeError('point must be an array')
+  const y = []
+  for (let i = 0; i < x.length; i++) {
+    for (let j = 0; j < x[i].length; j++) {
+      if (!y[j]) y[j] = []
+      y[j][i] = x[i][j]
+    }
+  }
+  return y
+}
+
+_.flatten = x => {
+  if (!_.isArray(x)) throw new TypeError('point must be an array')
+  return x.flat(1)
+}
+
+_.flattenAll = x => {
+  if (!_.isArray(x)) throw new TypeError('point must be an array')
+  return x.flat(Infinity)
+}
+
+_.uniq = x => {
+  if (!_.isArray(x)) throw new TypeError('point must be an array')
+  const mem = new Set()
+  const y = []
+  for (const a of x) {
+    if (mem.has(a)) continue
+    mem.add(a)
+    y.push(a)
+  }
+  return y
+}
+
+_.uniqp = k => x => {
+  if (!_.isArray(x)) throw new TypeError('point must be an array')
+  const mem = new Set()
+  const y = []
+  for (const a of x) {
+    const v = _.get(k)(a)
+    if (mem.has(v)) continue
+    mem.add(v)
+    y.push(a)
+  }
+  return y
+}
+
+_.first = x => {
+  if (!_.isArray(x)) throw new TypeError('point must be an array')
+  return _.get(0)(x)
+}
+
+_.last = x => {
+  if (!_.isArray(x)) throw new TypeError('point must be an array')
+  return x[x.length - 1]
+}
+
+_.reverse = x => {
+  if (!_.isArray(x)) throw new TypeError('point must be an array')
+  return x.slice(0).reverse()
+}
+
+_.compare = (a, b) => {
+  if (a < b) return -1
+  if (a > b) return 1
+  return 0
+}
+
+_.sort = (order = 1) => {
+  const e = new TypeError()
+  Error.captureStackTrace(e)
+  return x => {
+    if (!_.isArray(x)) {
+      e.message = 'point must be an array'
+      throw e
+    }
+    return x.sort(
+      (a, b) => order * _.compare(a, b)
+    )
+  }
+}
+
+_.sortBy = (k, order = 1) => {
+  const e = new TypeError()
+  Error.captureStackTrace(e)
+  return x => {
+    if (!_.isArray(x)) {
+      e.message = 'point must be an array'
+      throw e
+    }
+    return x.sort(
+      (a, b) => order * _.compare(_.get(k)(a), _.get(k)(b))
+    )
+  }
+}
+
+_.size = x => {
+  if (_.isString(x)) return x.length
+  if (_.isArray(x)) return x.length
+  if (_.isSet(x)) return x.size
+  if (_.isMap(x)) return x.size
+  if (_.isObject(x)) {
+    let y = 0
+    for (const k in x) if (x.hasOwnProperty(k)) y += 1
+    return y
+  }
+  throw new TypeError(`cannot size ${x}`)
+}
+
+_.isEmpty = x => _.size(x) === 0
+
+_.once = fn => (...args) => {
+  let ret = null
+  if (ret) return ret
+  ret = fn(...args)
+  return ret
+}
+
+_.flip = pair => x => _.get(0)(_.filter.sync(y => y !== x)(pair))
 
 module.exports = _
