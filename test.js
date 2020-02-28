@@ -411,7 +411,7 @@ describe('rubico', () => {
     })
   })
 
-  describe('_.switch, _.sswitch', () => {
+  describe('_.switch, _.switch.sync', () => {
     it('switch case using fn order', async () => {
       ase(
         await _.switch(x => x === 1, 'hey', x => x === 2, 'ho', 'yo')(1),
@@ -430,19 +430,19 @@ describe('rubico', () => {
         undefined,
       )
       ase(
-        _.sswitch(x => x === 1, 'hey', x => x === 2, 'ho', 'yo')(1),
+        _.switch.sync(x => x === 1, 'hey', x => x === 2, 'ho', 'yo')(1),
         'hey',
       )
       ase(
-        _.sswitch(x => x === 1, 'hey', x => x === 2, 'ho', 'yo')(2),
+        _.switch.sync(x => x === 1, 'hey', x => x === 2, 'ho', 'yo')(2),
         'ho',
       )
       ase(
-        _.sswitch(x => x === 1, 'hey', x => x === 2, 'ho', 'yo')(100),
+        _.switch.sync(x => x === 1, 'hey', x => x === 2, 'ho', 'yo')(100),
         'yo',
       )
       ase(
-        _.sswitch(x => x === 1, 'hey', x => x === 2, 'ho')(100),
+        _.switch.sync(x => x === 1, 'hey', x => x === 2, 'ho')(100),
         undefined,
       )
     })

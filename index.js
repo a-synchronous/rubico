@@ -133,7 +133,7 @@ _.switch = (...fns) => {
   }
 }
 
-_.sswitch = (...fns) => {
+_.switch.sync = (...fns) => {
   const lastFn = fns.length % 2 === 0 ? () => {} : fns.pop()
   return x => {
     let i = 0
