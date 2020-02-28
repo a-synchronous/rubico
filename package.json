@@ -12,6 +12,7 @@
   "homepage": "https://rubico.land",
   "keywords": [
     "rubico",
+    "composition",
     "callback",
     "async",
     "await",
