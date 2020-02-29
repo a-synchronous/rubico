@@ -8,6 +8,8 @@ _.noop = () => {}
 
 _.spread = fn => x => fn(...x)
 
+_.throw = e => { throw e }
+
 _.apply = fn => async args => {
   let y = fn
   for (const a of args) y = await y(a)
@@ -175,7 +177,8 @@ _.tryCatch = (tryFn, catchFn) => async x => {
   try {
     return await _.toFn(tryFn)(x)
   } catch (e) {
-    return await _.toFn(catchFn)(x, e)
+    e.arguments = [x]
+    return await _.toFn(catchFn)(e)
   }
 }
 
@@ -183,7 +186,8 @@ _.stryCatch = (tryFn, catchFn) => x => {
   try {
     return _.toFn(tryFn)(x)
   } catch (e) {
-    return _.toFn(catchFn)(x, e)
+    e.arguments = [x]
+    return _.toFn(catchFn)(e)
   }
 }
 

@@ -55,6 +55,15 @@ describe('rubico', () => {
     })
   })
 
+  describe('_.throw', () => {
+    it('throws e', async () => {
+      assert.throws(
+        () => _.throw(new TypeError('hey')),
+        new TypeError('hey'),
+      )
+    })
+  })
+
   describe('_.apply', () => {
     it('applies an array of arguments to fn', async () => {
       const fn = a => b => c => a + b + c
