@@ -1430,13 +1430,13 @@ describe('rubico', () => {
 
   describe('_.pick', () => {
     it('makes a new object using picked properties', async () => {
-      ade(_.pick(['a', 'b'])({ a: 1, b: 2, c: 2 }), { a: 1, b: 2 })
-      ade(_.pick(['d'])({ a: 1, b: 2, c: 2 }), {})
+      ade(_.pick('a', 'b')({ a: 1, b: 2, c: 2 }), { a: 1, b: 2 })
+      ade(_.pick('d')({ a: 1, b: 2, c: 2 }), {})
     })
 
     it('throws a TypeError', async () => {
       assert.throws(
-        () => _.pick(['a', 'b'])('hey'),
+        () => _.pick('a', 'b')('hey'),
         new TypeError('cannot pick hey')
       )
     })

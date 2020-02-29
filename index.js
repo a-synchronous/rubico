@@ -875,7 +875,7 @@ _.callbackifyAll = x => {
   return y
 }
 
-_.pick = keys => {
+_.pick = (...keys) => {
   const e = new TypeError()
   Error.captureStackTrace(e)
   return x => {
