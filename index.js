@@ -8,6 +8,12 @@ _.noop = () => {}
 
 _.spread = fn => x => fn(...x)
 
+_.apply = fn => args => {
+  let y = fn
+  for (const a of args) y = y(a)
+  return y
+}
+
 _.exists = x => x !== undefined && x !== null
 
 _.dne = x => x === undefined || x === null

@@ -55,6 +55,16 @@ describe('rubico', () => {
     })
   })
 
+  describe('_.apply', () => {
+    it('applies an array of arguments to fn', async () => {
+      const fn = a => b => c => a + b + c
+      ase(
+        _.apply(fn)([1, 2, 3]),
+        6,
+      )
+    })
+  })
+
   describe('_.exists', () => {
     it('=> true if x is not undefined or not null', async () => {
       ase(_.exists(undefined), false)
