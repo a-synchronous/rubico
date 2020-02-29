@@ -59,7 +59,17 @@ describe('rubico', () => {
     it('applies an array of arguments to fn', async () => {
       const fn = a => b => c => a + b + c
       ase(
-        _.apply(fn)([1, 2, 3]),
+        await _.apply(fn)([1, 2, 3]),
+        6,
+      )
+    })
+  })
+
+  describe('_.apply', () => {
+    it('applies an array of arguments to fn', async () => {
+      const fn = a => b => c => a + b + c
+      ase(
+        _.apply.sync(fn)([1, 2, 3]),
         6,
       )
     })

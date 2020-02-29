@@ -8,7 +8,13 @@ _.noop = () => {}
 
 _.spread = fn => x => fn(...x)
 
-_.apply = fn => args => {
+_.apply = fn => async args => {
+  let y = fn
+  for (const a of args) y = await y(a)
+  return y
+}
+
+_.apply.sync = fn => args => {
   let y = fn
   for (const a of args) y = y(a)
   return y
