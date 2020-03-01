@@ -2,7 +2,56 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>rubico</title>
 </head>
+<style>
+  body {
+      display: grid;
+      grid-template-columns: 20% 70% 10%;
+      grid-template-rows: auto;
+      grid-template-areas:
+          "header header header"
+          "search main .";
+  }
+  #header {
+      grid-area: header;
+      justify-self: center;
+  }
+  #search {
+      grid-area: search;
+      justify-self: start;
+  }
+  #main {
+      grid-area: main;
+      justify-self: center;
+  }
+</style>
 <body>
-    <h1>hey</h1>
+    <div id="header">
+        <h1>rubico</h1>
+    </div>
+    <div id="search"></div>
+    <div id="main">
+        <h2>Guidelines</h2>
+        <p>
+            With rubico, your code can take many directions; the following
+            recommendations are not meant to be followed strictly, but can help
+            you better reason about your programs if followed when possible.
+        </p>
+        <ol>
+            <li>
+                <b>Write pure functions</b> - your functions should avoid side
+                effects and shared state.
+            </li>
+            <li>
+                <b>Write unary functions</b> - your functions should take one
+                argument.
+            </li>
+            <li>
+                <b>Partial application over variables</b> - prefer higher order
+                functions to creating higher-scoped variables.
+            </li>
+        </ol>
+    </div>
 </body>
+</html>
