@@ -3,6 +3,7 @@ const assert = require('assert')
 const _ = {}
 
 _.id = x => x
+_.id.name = 'id'
 
 _.noop = () => {}
 
@@ -827,17 +828,38 @@ _.member = col => {
 
 _.log = tag => _.effect(() => console.log(tag))
 
-_.trace = _.effect(console.log)
+const inspectAll = x => util.inspect(x, { depth: Infinity })
 
-_.trace.sync = _.effect.sync(console.log)
+_.trace = _.effect.sync(x => console.log(inspectAll(x)))
 
-_.tracep = (p, tag = '') => _.effect(x => console.log(p, _.get(p)(x)), tag)
+_.tracet = tag => _.effect.sync(x => {
+  const args = []
+  if (_.exists(tag)) args.push(tag)
+  args.push(inspectAll(x))
+  console.log(...args)
+})
 
-_.tracep.sync = (p, tag = '') => _.effect.sync(x => console.log(p, _.get(p)(x)), tag)
+_.tracep = (p, tag) => _.effect.sync(x => {
+  const args = []
+  if (_.exists(tag)) args.push(tag)
+  const fmtp = _.isArray(p) ? p.join('.') : p
+  args.push(`.${fmtp} -`, inspectAll(_.get(p)(x)))
+  console.log(...args)
+})
 
-_.tracef = (fn, tag = '') => _.effect(async x => console.log(await _.toFn(fn)(x), tag))
+_.tracef = (fn, tag) => _.effect(async x => {
+  const args = []
+  if (_.exists(tag)) args.push(tag)
+  args.push(inspectAll(await _.toFn(fn)(x)))
+  console.log(...args)
+})
 
-_.tracef.sync = (fn, tag = '') => _.effect.sync(x => console.log(_.toFn(fn)(x)), tag)
+_.tracef.sync = (fn, tag) => _.effect.sync(x => {
+  const args = []
+  if (_.exists(tag)) args.push(tag)
+  args.push(inspectAll(_.toFn(fn)(x)))
+  console.log(...args)
+})
 
 _.promisify = util.promisify
 
@@ -1169,5 +1191,13 @@ _.once = fn => (...args) => {
 }
 
 _.flip = pair => x => _.get(0)(_.filter.sync(y => y !== x)(pair))
+
+_.spaces = l => {
+  let s = ''
+  for (let i = 0; i < l; i++) s += ' '
+  return s
+}
+
+_.prettifyJSON = x => JSON.stringify(x, null, 2)
 
 module.exports = _

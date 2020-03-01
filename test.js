@@ -1,36 +1,42 @@
 const assert = require('assert')
 const _ = require('.')
 
-const giveNull = () => null
-const giveNullAsync = async () => null
-const hi = x => x + 'hi'
-const ho = async x => x + 'ho'
-const hey = x => new Promise(res => setTimeout(() => res(x + 'hey'), 10))
-const add = (a, b) => a + b
-const add1 = x => add(1, x)
-const delayedAdd1 = x => new Promise(res => setTimeout(() => res(add(1, x)), 10))
-const range = (start, end) => {
-  const arr = Array(end - start)
-  for (let i = start; i < end; i++) arr[i - start] = i
-  return arr }
-const traceError = (...args) => err => {
-  const name = err && (
-    err.name || err.code || err.errCode || (
-      err.toString && err.toString()
-    )
-  )
-  console.log(JSON.stringify({
-    name,
-    message: err && err.message,
-    arguments: args,
-    stack: new Error().stack,
-  }))
-  return err
-}
-
 const ase = assert.strictEqual
 
 const ade = assert.deepEqual
+
+const writeStdout = process.stdout.write.bind(process.stdout)
+
+const captureStdout = () => {
+  const ret = { output: '' }
+  process.stdout.write = (chunk, encoding, cb) => {
+    if (typeof chunk === 'string') ret.output += chunk
+    return writeStdout(chunk, encoding, cb)
+  }
+  return ret
+}
+
+const releaseStdout = () => {
+  process.stdout.write = writeStdout
+}
+
+const hi = x => x + 'hi'
+
+const ho = async x => x + 'ho'
+
+const hey = x => new Promise(res => setTimeout(() => res(x + 'hey'), 10))
+
+const add = (a, b) => a + b
+
+const add1 = x => add(1, x)
+
+const delayedAdd1 = x => new Promise(res => setTimeout(() => res(add(1, x)), 10))
+
+const range = (start, end) => {
+  const arr = Array(end - start)
+  for (let i = start; i < end; i++) arr[i - start] = i
+  return arr
+}
 
 describe('rubico', () => {
   describe('_.id', () => {
@@ -283,6 +289,7 @@ describe('rubico', () => {
 
   describe('_.toString', () => {
     it('coerces point to string', async () => {
+      ase(_.toString(x => x), 'x => x')
       ase(_.toString('hey'), 'hey')
       ase(_.toString(null), 'null')
       ase(_.toString(undefined), 'undefined')
@@ -1359,24 +1366,47 @@ describe('rubico', () => {
     })
   })
 
-  describe('_.trace, _.trace.sync', () => {
+  describe('_.trace', () => {
     it('console logs args', async () => {
-      ase(await _.trace('trace'), 'trace')
-      ase(_.trace.sync('strace'), 'strace')
+      let stdout = captureStdout()
+      ase(_.trace('trace'), 'trace')
+      ase(stdout.output, '\'trace\'\n')
+      releaseStdout()
+      stdout = captureStdout()
+      ade(_.trace({ a: 1, b: [[[[['hey']]]]] }), { a: 1, b: [[[[['hey']]]]] })
+      ase(stdout.output, '{\n  a: 1,\n  b: [\n    [\n      [ [ [ \'hey\' ] ] ]\n    ]\n  ]\n}\n')
+      releaseStdout()
     })
   })
 
-  describe('_.tracep, _.tracep.sync', () => {
-    it('console logs prop and x.prop', async () => {
-      ade(await _.tracep('hey')({ hey: 'tracep' }), { hey: 'tracep' })
-      ade(_.tracep.sync('hey')({ hey: 'stracep' }), { hey: 'stracep' })
+  describe('_.tracep', () => {
+    it('console logs prop and x.prop, opt tag', async () => {
+      let stdout = captureStdout()
+      ade(_.tracep('hey')({ hey: 'tracep' }), { hey: 'tracep' })
+      ase(stdout.output, '.hey - \'tracep\'\n')
+      releaseStdout()
+      stdout = captureStdout()
+      ade(_.tracep('hey', 'mytag')({ hey: 'tracep' }), { hey: 'tracep' })
+      ase(stdout.output, 'mytag .hey - \'tracep\'\n')
+      releaseStdout()
     })
   })
 
   describe('_.tracef, _.tracef.sync', () => {
     it('console logs fn(args)', async () => {
-      await _.tracef(_.id)('tracef')
-      _.tracef.sync(_.id)('stracef')
+      let stdout = captureStdout()
+      ase(await _.tracef(async x => x)('tracef'), 'tracef')
+      ase(stdout.output, '\'tracef\'\n')
+      releaseStdout()
+    })
+  })
+
+  describe('_.tracef.sync', async () => {
+    it('console logs sync fn(args)', async() => {
+      let stdout = captureStdout()
+      ase(_.tracef.sync(_.id)('tracef'), 'tracef')
+      ase(stdout.output, '\'tracef\'\n')
+      releaseStdout()
     })
   })
 
@@ -1900,6 +1930,22 @@ describe('rubico', () => {
   describe('_.flip', () => {
     it('flips a value given arr', async () => {
       ase(_.flip(['heads', 'tails'])('heads'), 'tails')
+    })
+  })
+
+  describe('_.prettifyJSON', () => {
+    it('prettifies json', async () => {
+      ase(_.prettifyJSON(1), '1')
+      ase(_.prettifyJSON('hey'), '"hey"')
+      ase(_.prettifyJSON(true), 'true')
+      ase(_.prettifyJSON(null), 'null')
+      ase(_.prettifyJSON(), undefined)
+      ase(_.prettifyJSON([]), '[]')
+      ase(_.prettifyJSON({}), '{}')
+      ase(_.prettifyJSON(new Set()), '{}')
+      ase(_.prettifyJSON(new Map()), '{}')
+      ase(_.prettifyJSON([1, 2, 3]), '[\n  1,\n  2,\n  3\n]')
+      ase(_.prettifyJSON({ a: 1, b: 2 }), '{\n  "a": 1,\n  "b": 2\n}')
     })
   })
 })
