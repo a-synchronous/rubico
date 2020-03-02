@@ -52,6 +52,20 @@ describe('rubico', () => {
     })
   })
 
+  describe('_.inspect', () => {
+    it('inspects with depth infinity', async () => {
+      ase(_.inspect(function hey(){}), '[Function: hey]')
+      ase(_.inspect(() => {}), '[Function]')
+      ase(_.inspect(1), '1')
+      ase(_.inspect('hey'), '\'hey\'')
+      ase(_.inspect(true), 'true')
+      ase(_.inspect([]), '[]')
+      ase(_.inspect({}), '{}')
+      ase(_.inspect(new Set()), 'Set {}')
+      ase(_.inspect(new Map()), 'Map {}')
+    })
+  })
+
   describe('_.spread', () => {
     it('spreads args into fn', async () => {
       ase(

@@ -2,12 +2,13 @@ const util = require('util')
 const assert = require('assert')
 const _ = {}
 
-_.id = x => x
-_.id.name = 'id'
+_.id = function id(x) { return x }
 
-_.noop = () => {}
+_.noop = function noop() {}
 
-_.spread = fn => x => fn(...x)
+_.inspect = function inspect(x) { return util.inspect(x, { depth: Infinity }) }
+
+_.spread = function spread(fn) { return x => fn(...x) }
 
 _.throw = e => { throw e }
 
@@ -94,7 +95,7 @@ _.toRegExp = (x, flags = '') => {
 
 _.flow = (...fns) => {
   if (!fns.every(_.isFn)) throw new TypeError('not all fns are fns')
-  return async (...x) => {
+  const ret = async (...x) => {
     if (fns.length === 0) return x[0]
     let y = await fns[0](...x), i = 1
     while (i < fns.length) {
@@ -103,11 +104,13 @@ _.flow = (...fns) => {
     }
     return y
   }
+  ret.toString = () => `flow(${fns.map(_.inspect).join(', ')})`
+  return ret
 }
 
 _.flow.sync = (...fns) => {
   if (!fns.every(_.isFn)) throw new TypeError('not all fns are fns')
-  return (...x) => {
+  const ret = (...x) => {
     if (fns.length === 0) return x[0]
     let y = fns[0](...x), i = 1
     while (i < fns.length) {
@@ -116,6 +119,8 @@ _.flow.sync = (...fns) => {
     }
     return y
   }
+  ret.toString = () => `flow.sync(${fns.map(_.inspect).join(', ')})`
+  return ret
 }
 
 _.series = (...fns) => {
@@ -828,14 +833,12 @@ _.member = col => {
 
 _.log = tag => _.effect(() => console.log(tag))
 
-const inspectAll = x => util.inspect(x, { depth: Infinity })
-
-_.trace = _.effect.sync(x => console.log(inspectAll(x)))
+_.trace = _.effect.sync(x => console.log(_.inspect(x)))
 
 _.tracet = tag => _.effect.sync(x => {
   const args = []
   if (_.exists(tag)) args.push(tag)
-  args.push(inspectAll(x))
+  args.push(_.inspect(x))
   console.log(...args)
 })
 
@@ -843,21 +846,21 @@ _.tracep = (p, tag) => _.effect.sync(x => {
   const args = []
   if (_.exists(tag)) args.push(tag)
   const fmtp = _.isArray(p) ? p.join('.') : p
-  args.push(`.${fmtp} -`, inspectAll(_.get(p)(x)))
+  args.push(`.${fmtp} -`, _.inspect(_.get(p)(x)))
   console.log(...args)
 })
 
 _.tracef = (fn, tag) => _.effect(async x => {
   const args = []
   if (_.exists(tag)) args.push(tag)
-  args.push(inspectAll(await _.toFn(fn)(x)))
+  args.push(_.inspect(await _.toFn(fn)(x)))
   console.log(...args)
 })
 
 _.tracef.sync = (fn, tag) => _.effect.sync(x => {
   const args = []
   if (_.exists(tag)) args.push(tag)
-  args.push(inspectAll(_.toFn(fn)(x)))
+  args.push(_.inspect(_.toFn(fn)(x)))
   console.log(...args)
 })
 
