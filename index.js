@@ -1309,6 +1309,25 @@ _.pick = (...keys) => {
 }
 setName(_.pick, 'pick')
 
+_.exclude = (...keys) => {
+  const e = new TypeError()
+  Error.captureStackTrace(e)
+  const ret = x => {
+    if (!_.isObject(x)) {
+      e.message = `cannot exclude ${x}`
+      throw e
+    }
+    const y = { ...x }
+    for (const k of keys) {
+      delete y[k]
+    }
+    return y
+  }
+  setName(ret, `exclude(${keys.map(_.inspect).join(', ')})`)
+  return ret
+}
+setName(_.exclude, 'exclude')
+
 _.slice = (from, to) => {
   const ret = x => {
     if (_.dne(from)) from = 0

@@ -1512,6 +1512,20 @@ describe('rubico', () => {
     })
   })
 
+  describe('_.exclude', () => {
+    it('excludes keys from an object', async () => {
+      ade(_.exclude('a')({ a: 1, b: 2 }), { b: 2 })
+      ade(_.exclude('a', 'b')({ a: 1, b: 2 }), {})
+    })
+
+    it('throws a TypeError', async () => {
+      assert.throws(
+        () => _.exclude('a', 'b')('hey'),
+        new TypeError('cannot exclude hey')
+      )
+    })
+  })
+
   describe('_.slice', () => {
     it('slices an array from a to b, not including b', async () => {
       ade(_.slice(0)([1, 2, 3]), [1, 2, 3])
