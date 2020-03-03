@@ -3,8 +3,13 @@ const assert = require('assert')
 const _ = {}
 
 const setProp = prop => (x, value) => Object.defineProperty(x, prop, { value })
+_.setProp = setProp
+
 const setName = setProp('name')
-const getName = fn => fn.name || `${fn}`
+_.setName = setName
+
+const getName = fn => fn.name || 'anonymous'
+_.getName = getName
 
 _.id = x => x
 setName(_.id, 'id')
@@ -147,7 +152,7 @@ _.flow = (...fns) => {
     }
     return y
   }
-  setName(ret, `flow(${fns.map(getName).join(', ')})`)
+  setName(ret, `${fns.map(getName).join(' -> ')}`)
   return ret
 }
 setName(_.flow, 'flow')
@@ -163,7 +168,7 @@ _.flow.sync = (...fns) => {
     }
     return y
   }
-  setName(ret, `flow(${fns.map(getName).join(', ')})`)
+  setName(ret, `${fns.map(getName).join(' -> ')}`)
   return ret
 }
 setName(_.flow.sync, 'flow')
