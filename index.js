@@ -1339,6 +1339,7 @@ _.slice = (from, to) => {
     to = Math.max(0, Math.min(to, x.length))
     let y = []
     for (let i = from; i < to; i++) y.push(x[i])
+    if (_.isString(x)) y = y.join('')
     return y
   }
   setName(ret, `slice(${_.inspect(from)}, ${_.inspect(to)})`)

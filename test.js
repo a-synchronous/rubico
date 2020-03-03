@@ -1551,6 +1551,8 @@ describe('rubico', () => {
       ade(_.slice(-3, -2)([1, 2, 3]), [1])
       ade(_.slice(0, Infinity)([1, 2, 3]), [1, 2, 3])
       ade(_.slice(-Infinity, Infinity)([1, 2, 3]), [1, 2, 3])
+      ase(_.slice(0)('hey'), 'hey')
+      ase(_.slice(1)('hey'), 'ey')
     })
   })
 
