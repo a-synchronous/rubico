@@ -1,5 +1,6 @@
 const util = require('util')
-const assert = require('assert')
+const crypto = require('crypto')
+
 const _ = {}
 
 const setProp = prop => (x, value) => Object.defineProperty(x, prop, { value })
@@ -1671,5 +1672,18 @@ setName(_.spaces, 'spaces')
 
 _.prettifyJSON = x => JSON.stringify(x, null, 2)
 setName(_.prettifyJSON, 'prettifyJSON')
+
+_.hash = alg => {
+  const ret = x => crypto.createHash(alg).update(x).digest('hex')
+  setName(ret, `hash(${_.inspect(alg)})`)
+  return ret
+}
+setName(_.hash, 'hash')
+
+_.sha256 = _.hash('sha256')
+setName(_.sha256, 'sha256')
+
+_.sha512 = _.hash('sha512')
+setName(_.sha512, 'sha512')
 
 module.exports = _
