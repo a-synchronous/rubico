@@ -2,57 +2,90 @@ const util = require('util')
 const assert = require('assert')
 const _ = {}
 
-_.id = function id(x) { return x }
+const setProp = prop => (x, value) => Object.defineProperty(x, prop, { value })
+const setName = setProp('name')
+const getName = fn => fn.name || `${fn}`
 
-_.noop = function noop() {}
+_.id = x => x
+setName(_.id, 'id')
 
-_.inspect = function inspect(x) { return util.inspect(x, { depth: Infinity }) }
+_.noop = () => {}
+setName(_.noop, 'noop')
 
-_.spread = function spread(fn) { return x => fn(...x) }
+_.inspect = x => util.inspect(x, { depth: Infinity })
+setName(_.inspect, 'inspect')
+
+_.spread = fn => {
+  const ret = x => fn(...x)
+  setName(ret, `spread(${getName(fn)})`)
+  return ret
+}
+setName(_.spread, 'spread')
 
 _.throw = e => { throw e }
+setName(_.throw, 'throw')
 
-_.apply = fn => async args => {
-  let y = fn
-  for (const a of args) y = await y(a)
-  return y
-}
-
-_.apply.sync = fn => args => {
-  let y = fn
-  for (const a of args) y = y(a)
-  return y
+_.apply = fn => {
+  const ret = x => {
+    let y = fn
+    for (const a of x) y = y(a)
+    if (typeof y === 'function') {
+      setName(y, getName(fn) + x.map(y => `(${_.inspect(y)})`).join(''))
+    }
+    return y
+  }
+  setName(ret, `apply(${getName(fn)})`)
+  return ret
 }
 
 _.exists = x => x !== undefined && x !== null
+setName(_.exists, 'exists')
 
 _.dne = x => x === undefined || x === null
+setName(_.dne, 'dne')
 
 _.isFn = x => typeof x === 'function'
+setName(_.isFn, 'isFn')
 
 _.isString = x => typeof x === 'string'
+setName(_.isString, 'isString')
 
 _.isNumber = x => typeof x === 'number'
+setName(_.isNumber, 'isNumber')
 
 _.isBoolean = x => typeof x === 'boolean'
+setName(_.isBoolean, 'isBoolean')
 
-_.is = c => x => _.exists(x) && _.exists(x.constructor) && x.constructor === c
+_.is = fn => {
+  const ret = x => _.exists(x) && _.exists(x.constructor) && x.constructor === fn
+  setName(ret, `is(${getName(fn)})`)
+  return ret
+}
+setName(_.is, 'is')
 
 _.isArray = _.is(Array)
+setName(_.isArray, 'isArray')
 
 _.isObject = _.is(Object)
+setName(_.isObject, 'isObject')
 
 _.isSet = _.is(Set)
+setName(_.isSet, 'isSet')
 
 _.isMap = _.is(Map)
+setName(_.isMap, 'isMap')
 
 _.isBuffer = _.is(Buffer)
+setName(_.isBuffer, 'isBuffer')
 
 _.isSymbol = _.is(Symbol)
+setName(_.isSymbol, 'isSymbol')
 
 _.isPromise = _.is(Promise)
+setName(_.isPromise, 'isPromise')
 
 _.isRegExp = _.is(RegExp)
+setName(_.isRegExp, 'isRegExp')
 
 _.new = x => {
   if (_.isString(x)) return ''
@@ -64,17 +97,24 @@ _.new = x => {
   if (_.isBuffer(x)) return Buffer.from('')
   throw new TypeError(`cannot new ${x}`)
 }
+setName(_.new, 'new')
 
 _.toFn = x => {
   if (_.isFn(x)) return x
-  return () => x
+  const ret = () => x
+  setName(ret, `() => ${_.inspect(x)}`)
+  return ret
 }
+setName(_.toFn, 'toFn')
 
 _.toString = x => `${x}`
+setName(_.toString, 'toString')
 
 _.toInt = x => x === Infinity ? x : parseInt(x, 10)
+setName(_.toInt, 'toInt')
 
 _.toFloat = parseFloat
+setName(_.toFloat, 'toFloat')
 
 _.toArray = x => {
   if (_.dne(x)) return []
@@ -82,8 +122,10 @@ _.toArray = x => {
   if (_.isNumber(x)) return Array.of(x)
   return Array.from(x)
 }
+setName(_.toArray, 'toArray')
 
 _.toSet = x => new Set(_.toArray(x))
+setName(_.toSet, 'toSet')
 
 const escapeRegex = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
@@ -92,6 +134,7 @@ _.toRegExp = (x, flags = '') => {
   if (_.isString(x)) return new RegExp(escapeRegex(x), flags)
   throw new TypeError(`cannot coerce to RegExp ${x}`)
 }
+setName(_.toRegExp, 'toRegExp')
 
 _.flow = (...fns) => {
   if (!fns.every(_.isFn)) throw new TypeError('not all fns are fns')
@@ -104,9 +147,10 @@ _.flow = (...fns) => {
     }
     return y
   }
-  ret.toString = () => `flow(${fns.map(_.inspect).join(', ')})`
+  setName(ret, `flow(${fns.map(getName).join(', ')})`)
   return ret
 }
+setName(_.flow, 'flow')
 
 _.flow.sync = (...fns) => {
   if (!fns.every(_.isFn)) throw new TypeError('not all fns are fns')
@@ -119,145 +163,132 @@ _.flow.sync = (...fns) => {
     }
     return y
   }
-  ret.toString = () => `flow.sync(${fns.map(_.inspect).join(', ')})`
+  setName(ret, `flow(${fns.map(getName).join(', ')})`)
   return ret
 }
+setName(_.flow.sync, 'flow')
 
 _.series = (...fns) => {
   if (!fns.every(_.isFn)) throw new TypeError('not all fns are fns')
-  return async (...x) => {
+  const ret = async (...x) => {
     const y = []
     for (const fn of fns) y.push(await _.toFn(fn)(...x))
     return y
   }
+  setName(ret, `series(${fns.map(getName).join(', ')})`)
+  return ret
 }
+setName(_.series, 'series')
 
 _.series.sync = (...fns) => {
   if (!fns.every(_.isFn)) throw new TypeError('not all fns are fns')
-  return (...x) => {
+  const ret = (...x) => {
     const y = []
     for (const fn of fns) y.push(_.toFn(fn)(...x))
     return y
   }
+  setName(ret, `series(${fns.map(getName).join(', ')})`)
+  return ret
 }
+setName(_.series.sync, 'series')
 
 _.switch = (...fns) => {
-  const lastFn = fns.length % 2 === 0 ? () => {} : fns.pop()
-  return async x => {
+  if (fns.length < 3) throw new Error('3 or more fns required')
+  if (fns.length % 2 === 0) throw new Error('odd number of fns required')
+  fns = fns.map(_.toFn)
+  const lastFn = fns.pop()
+  const ret = async x => {
     let i = 0
     while (i < fns.length) {
-      if (await _.toFn(fns[i])(x)) return _.toFn(fns[i + 1])(x)
+      if (await fns[i](x)) return fns[i + 1](x)
       i += 2
     }
-    return _.toFn(lastFn)(x)
+    return lastFn(x)
   }
+  setName(ret, `switch(${fns.map(getName).join(', ')}, ${getName(lastFn)})`)
+  return ret
 }
+setName(_.switch, 'switch')
 
 _.switch.sync = (...fns) => {
-  const lastFn = fns.length % 2 === 0 ? () => {} : fns.pop()
-  return x => {
+  if (fns.length < 3) throw new Error('3 or more fns required')
+  if (fns.length % 2 === 0) throw new Error('odd number of fns required')
+  fns = fns.map(_.toFn)
+  const lastFn = fns.pop()
+  const ret = x => {
     let i = 0
     while (i < fns.length) {
-      if (_.toFn(fns[i])(x)) return _.toFn(fns[i + 1])(x)
+      if (fns[i](x)) return fns[i + 1](x)
       i += 2
     }
-    return _.toFn(lastFn)(x)
+    return lastFn(x)
   }
+  setName(ret, `switch(${fns.map(getName).join(', ')}, ${getName(lastFn)})`)
+  return ret
 }
+setName(_.switch.sync, 'switch')
 
-_.effect = fn => async x => {
-  await _.toFn(fn)(x)
-  return x
+_.effect = fn => {
+  fn = _.toFn(fn)
+  const ret = async x => { await fn(x); return x }
+  setName(ret, `effect(${getName(fn)})`)
+  return ret
 }
+setName(_.effect, 'effect')
 
-_.effect.sync = fn => x => {
-  _.toFn(fn)(x)
-  return x
+_.effect.sync = fn => {
+  fn = _.toFn(fn)
+  const ret = x => { fn(x); return x }
+  setName(ret, `effect(${getName(fn)})`)
+  return ret
 }
+setName(_.effect.sync, 'effect')
 
-_.sleep = ms => _.effect(
-  () => new Promise(resolve => setTimeout(resolve, ms))
-)
-
-_.tryCatch = (tryFn, catchFn) => async x => {
-  try {
-    return await _.toFn(tryFn)(x)
-  } catch (e) {
-    e.arguments = [x]
-    return await _.toFn(catchFn)(e)
-  }
-}
-
-_.stryCatch = (tryFn, catchFn) => x => {
-  try {
-    return _.toFn(tryFn)(x)
-  } catch (e) {
-    e.arguments = [x]
-    return _.toFn(catchFn)(e)
-  }
-}
-
-_.diverge = fns => {
-  if (_.isArray(fns)) return async (...x) => (
-    await Promise.all(fns.map(fn => _.toFn(fn)(...x)))
+_.sleep = ms => {
+  const ret = _.effect(
+    () => new Promise(resolve => setTimeout(resolve, ms))
   )
-  if (_.isSet(fns)) return async (...x) => {
-    const y = new Set(), tasks = []
-    for (const fn of fns) {
-      const p = _.toFn(fn)(...x)
-      if (_.isPromise(p)) tasks.push(p.then(a => y.add(a)))
-      else y.add(p)
-    }
-    await Promise.all(tasks)
-    return y
-  }
-  if (_.isMap(fns)) return async (...x) => {
-    const y = new Map(), tasks = []
-    for (const [k, fn] of fns) {
-      const p = _.toFn(fn)(...x)
-      if (_.isPromise(p)) tasks.push(p.then(a => y.set(k, a)))
-      else y.set(k, p)
-    }
-    await Promise.all(tasks)
-    return y
-  }
-  if (_.isObject(fns)) return async (...x) => {
-    const y = {}, tasks = []
-    for (const k in fns) {
-      const p = _.toFn(fns[k])(...x)
-      if (_.isPromise(p)) tasks.push(p.then(a => { y[k] = a }))
-      else { y[k] = p }
-    }
-    await Promise.all(tasks)
-    return y
-  }
-  throw new TypeError(`cannot diverge ${fns}`)
+  setName(ret, `sleep(${ms})`)
+  return ret
 }
+setName(_.sleep, 'sleep')
 
-_.diverge.sync = fns => {
-  if (_.isArray(fns)) return (...x) => fns.map(fn => _.toFn(fn)(...x))
-  if (_.isSet(fns)) return (...x) => {
-    const y = new Set()
-    for (const fn of fns) y.add(_.toFn(fn)(...x))
-    return y
+_.tryCatch = (tryFn, catchFn) => {
+  if (!_.isFn(tryFn)) throw new TypeError('try fn not a fn')
+  if (!_.isFn(catchFn)) throw new TypeError('catch fn not a fn')
+  const ret = async x => {
+    try {
+      return await tryFn(x)
+    } catch (e) {
+      e.arguments = [x]
+      return await catchFn(e)
+    }
   }
-  if (_.isMap(fns)) return (...x) => {
-    const y = new Map()
-    for (const [k, fn] of fns) y.set(k, _.toFn(fn)(...x))
-    return y
-  }
-  if (_.isObject(fns)) return (...x) => {
-    const y = {}
-    for (const k in fns) y[k] = _.toFn(fns[k])(...x)
-    return y
-  }
-  throw new TypeError(`cannot diverge ${fns}`)
+  setName(ret, `tryCatch(${getName(tryFn)}, ${getName(catchFn)})`)
+  return ret
 }
+setName(_.tryCatch, 'tryCatch')
+
+_.tryCatch.sync = (tryFn, catchFn) => {
+  if (!_.isFn(tryFn)) throw new TypeError('try fn not a fn')
+  if (!_.isFn(catchFn)) throw new TypeError('catch fn not a fn')
+  const ret = x => {
+    try {
+      return tryFn(x)
+    } catch (e) {
+      e.arguments = [x]
+      return catchFn(e)
+    }
+  }
+  setName(ret, `tryCatch(${getName(tryFn)}, ${getName(catchFn)})`)
+  return ret
+}
+setName(_.tryCatch.sync, 'tryCatch')
 
 _.map = fn => {
   const e = new TypeError()
   Error.captureStackTrace(e)
-  return async x => {
+  const ret = async x => {
     if (_.isArray(x)) {
       const tasks = []
       let i = 0
@@ -303,12 +334,15 @@ _.map = fn => {
     e.message = `cannot map ${x}`
     throw e
   }
+  setName(ret, `map(${getName(fn)})`)
+  return ret
 }
+setName(_.map, 'map')
 
 _.map.sync = fn => {
   const e = new TypeError()
   Error.captureStackTrace(e)
-  return x => {
+  const ret = x => {
     if (_.isArray(x)) return x.map(fn)
     if (_.isSet(x)) {
       const y = new Set()
@@ -340,12 +374,139 @@ _.map.sync = fn => {
     e.message = `cannot map ${x}`
     throw e
   }
+  setName(ret, `map(${getName(fn)})`)
+  return ret
 }
+setName(_.map.sync, 'map')
+
+const nameDiverge = fns => {
+  if (_.isArray(fns)) {
+    return `diverge([${_.map.sync(getName)(fns).join(', ')}])`
+  }
+  if (_.isSet(fns)) {
+    return `diverge(Set { ${
+      _.map.sync(getName)(_.toArray(fns)).join(', ')
+    } })`
+  }
+  if (_.isMap(fns)) {
+    const ents = []
+    for (const [k, fn] of fns) {
+      ents.push(`${k}: ${getName(fn)}`)
+    }
+    return `diverge(Map { ${ents.join(', ')} })`
+  }
+  if (_.isObject(fns)) {
+    const ents = []
+    for (const [k, fn] of Object.entries(fns)) {
+      ents.push(`${k}: ${getName(fn)}`)
+    }
+    return `diverge({ ${ents.join(', ')} })`
+  }
+}
+
+_.diverge = fns => {
+  if (_.isArray(fns)) {
+    fns = _.map.sync(_.toFn)(fns)
+    const ret = async (...x) => (
+      await Promise.all(fns.map(fn => fn(...x)))
+    )
+    setName(ret, nameDiverge(fns))
+    return ret
+  }
+  if (_.isSet(fns)) {
+    fns = _.map.sync(_.toFn)(fns)
+    const ret = async (...x) => {
+      const y = new Set(), tasks = []
+      for (const fn of fns) {
+        const p = fn(...x)
+        if (_.isPromise(p)) tasks.push(p.then(a => y.add(a)))
+        else y.add(p)
+      }
+      await Promise.all(tasks)
+      return y
+    }
+    setName(ret, nameDiverge(fns))
+    return ret
+  }
+  if (_.isMap(fns)) {
+    fns = _.map.sync(_.toFn)(fns)
+    const ret = async (...x) => {
+      const y = new Map(), tasks = []
+      for (const [k, fn] of fns) {
+        const p = _.toFn(fn)(...x)
+        if (_.isPromise(p)) tasks.push(p.then(a => y.set(k, a)))
+        else y.set(k, p)
+      }
+      await Promise.all(tasks)
+      return y
+    }
+    setName(ret, nameDiverge(fns))
+    return ret
+  }
+  if (_.isObject(fns)) {
+    fns = _.map.sync(_.toFn)(fns)
+    const ret = async (...x) => {
+      const y = {}, tasks = []
+      for (const k in fns) {
+        const p = fns[k](...x)
+        if (_.isPromise(p)) tasks.push(p.then(a => { y[k] = a }))
+        else { y[k] = p }
+      }
+      await Promise.all(tasks)
+      return y
+    }
+    setName(ret, nameDiverge(fns))
+    return ret
+  }
+  throw new TypeError(`cannot diverge ${fns}`)
+}
+setName(_.diverge, 'diverge')
+
+_.diverge.sync = fns => {
+  if (_.isArray(fns)) {
+    fns = _.map.sync(_.toFn)(fns)
+    const ret = (...x) => fns.map(fn => fn(...x))
+    setName(ret, nameDiverge(fns))
+    return ret
+  }
+  if (_.isSet(fns)) {
+    fns = _.map.sync(_.toFn)(fns)
+    const ret = (...x) => {
+      const y = new Set()
+      for (const fn of fns) y.add(fn(...x))
+      return y
+    }
+    setName(ret, nameDiverge(fns))
+    return ret
+  }
+  if (_.isMap(fns)) {
+    fns = _.map.sync(_.toFn)(fns)
+    const ret = (...x) => {
+      const y = new Map()
+      for (const [k, fn] of fns) y.set(k, fn(...x))
+      return y
+    }
+    setName(ret, nameDiverge(fns))
+    return ret
+  }
+  if (_.isObject(fns)) {
+    fns = _.map.sync(_.toFn)(fns)
+    const ret = (...x) => {
+      const y = {}
+      for (const k in fns) y[k] = fns[k](...x)
+      return y
+    }
+    setName(ret, nameDiverge(fns))
+    return ret
+  }
+  throw new TypeError(`cannot diverge ${fns}`)
+}
+setName(_.diverge.sync, 'diverge')
 
 _.serialMap = fn => {
   const e = new TypeError()
   Error.captureStackTrace(e)
-  return async x => {
+  const ret = async x => {
     if (_.isArray(x)) {
       const y = []
       for (const a of x) y.push(await fn(a))
@@ -369,12 +530,15 @@ _.serialMap = fn => {
     e.message = `cannot serialMap ${x}`
     throw e
   }
+  setName(ret, `serialMap(${getName(fn)})`)
+  return ret
 }
+setName(_.serialMap, 'serialMap')
 
 _.entryMap = fn => {
   const e = new TypeError()
   Error.captureStackTrace(e)
-  return async x => {
+  const ret = async x => {
     if (_.isArray(x)) {
       const tasks = []
       for (const a of x) tasks.push(fn(a))
@@ -400,12 +564,15 @@ _.entryMap = fn => {
     e.message = `cannot entryMap ${x}`
     throw e
   }
+  setName(ret, `entryMap(${getName(fn)})`)
+  return ret
 }
+setName(_.entryMap, 'entryMap')
 
 _.entryMap.sync = fn => {
   const e = new TypeError()
   Error.captureStackTrace(e)
-  return x => {
+  const ret = x => {
     if (_.isArray(x)) return x.map(fn)
     if (_.isSet(x)) {
       const y = new Set()
@@ -428,12 +595,15 @@ _.entryMap.sync = fn => {
     e.message = `cannot entryMap ${x}`
     throw e
   }
+  setName(ret, `entryMap(${getName(fn)})`)
+  return ret
 }
+setName(_.entryMap.sync, 'entryMap')
 
 _.filter = fn => {
   const e = new TypeError()
   Error.captureStackTrace(e)
-  return async x => {
+  const ret = async x => {
     if (_.isArray(x)) {
       const tasks = []
       for (const a of x) tasks.push((async () => (await fn(a)) && a)())
@@ -463,12 +633,15 @@ _.filter = fn => {
     e.message = `cannot filter ${x}`
     throw e
   }
+  setName(ret, `filter(${getName(fn)})`)
+  return ret
 }
+setName(_.filter, 'filter')
 
 _.filter.sync = fn => {
   const e = new TypeError()
   Error.captureStackTrace(e)
-  return x => {
+  const ret = x => {
     if (_.isArray(x)) return x.filter(fn)
     if (_.isSet(x)) {
       const y = new Set()
@@ -488,12 +661,22 @@ _.filter.sync = fn => {
     e.message = `cannot filter ${x}`
     throw e
   }
+  setName(ret, `filter(${getName(fn)})`)
+  return ret
+}
+setName(_.filter.sync, 'filter')
+
+const nameReduce = (fn, x0) => {
+  let name = `reduce(${getName(fn)}`
+  if (_.exists(x0)) name += `, ${_.inspect(x0)}`
+  name += ')'
+  return name
 }
 
 _.reduce = (fn, x0) => {
   const e = new TypeError()
   Error.captureStackTrace(e)
-  return async x => {
+  const ret = async x => {
     if (_.isArray(x)) {
     } else if (_.isSet(x)) {
       x = Array.from(x)
@@ -505,19 +688,22 @@ _.reduce = (fn, x0) => {
       e.message = `cannot reduce ${x}`
       throw e
     }
-    let [y, i] = x0 ? [x0, 0] : [x[0], 1]
+    let [y, i] = _.exists(x0) ? [x0, 0] : [x[0], 1]
     while (i < x.length) {
       y = await fn(y, x[i], i)
       i += 1
     }
     return y
   }
+  setName(ret, nameReduce(fn, x0))
+  return ret
 }
+setName(_.reduce, 'reduce')
 
 _.reduce.sync = (fn, x0) => {
   const e = new TypeError()
   Error.captureStackTrace(e)
-  return x => {
+  const ret = x => {
     if (_.isArray(x)) {
     } else if (_.isSet(x)) {
       x = Array.from(x)
@@ -536,16 +722,31 @@ _.reduce.sync = (fn, x0) => {
     }
     return y
   }
+  setName(ret, nameReduce(fn, x0))
+  return ret
 }
+setName(_.reduce.sync, 'reduce')
 
-_.not = fn => async x => !(await _.toFn(fn)(x))
+_.not = fn => {
+  fn = _.toFn(fn)
+  const ret = async x => !(await fn(x))
+  setName(ret, `not(${getName(fn)})`)
+  return ret
+}
+setName(_.not, 'not')
 
-_.not.sync = fn => x => !_.toFn(fn)(x)
+_.not.sync = fn => {
+  fn = _.toFn(fn)
+  const ret = x => !fn(x)
+  setName(ret, `not(${getName(fn)})`)
+  return ret
+}
+setName(_.not.sync, '!')
 
 _.any = fn => {
   const e = new TypeError()
   Error.captureStackTrace(e)
-  return async x => {
+  const ret = async x => {
     if (_.isObject(x)) {
       for (const k in await _.map(_.toFn(fn))(x)) {
         if (x[k]) return true
@@ -561,12 +762,15 @@ _.any = fn => {
     e.message = `cannot any ${x}`
     throw e
   }
+  setName(ret, `any(${getName(fn)})`)
+  return ret
 }
+setName(_.any, 'any')
 
 _.any.sync = fn => {
   const e = new TypeError()
   Error.captureStackTrace(e)
-  return x => {
+  const ret = x => {
     if (_.isArray(x) || _.isSet(x) || _.isMap(x)) {
       for (const a of x) {
         if (_.toFn(fn)(a)) return true
@@ -582,12 +786,15 @@ _.any.sync = fn => {
     e.message = `cannot any ${x}`
     throw e
   }
+  setName(ret, `any(${getName(fn)})`)
+  return ret
 }
+setName(_.any.sync, 'any')
 
 _.every = fn => {
   const e = new TypeError()
   Error.captureStackTrace(e)
-  return async x => {
+  const ret = async x => {
     if (_.isArray(x) || _.isSet(x) || _.isMap(x)) {
       for (const a of await _.map(_.toFn(fn))(x)) {
         if (!a) return false
@@ -603,12 +810,15 @@ _.every = fn => {
     e.message = `cannot every ${x}`
     throw e
   }
+  setName(ret, `every(${getName(fn)})`)
+  return ret
 }
+setName(_.every, 'every')
 
 _.every.sync = fn => {
   const e = new TypeError()
   Error.captureStackTrace(e)
-  return x => {
+  const ret = x => {
     if (_.isArray(x) || _.isSet(x) || _.isMap(x)) {
       for (const a of x) {
         if (!_.toFn(fn)(a)) return false
@@ -624,115 +834,202 @@ _.every.sync = fn => {
     e.message = `cannot every ${x}`
     throw e
   }
+  setName(ret, `every(${getName(fn)})`)
+  return ret
 }
+setName(_.every.sync, 'every')
 
-_.and = (...fns) => (...args) => _.every(fn => _.toFn(fn)(...args))(fns)
+_.and = (...fns) => {
+  fns = _.map.sync(_.toFn)(fns)
+  const ret = (...x) => _.every(fn => fn(...x))(fns)
+  setName(ret, `and(${fns.map(getName).join(', ')})`)
+  return ret
+}
+setName(_.and, 'and')
 
-_.and.sync = (...fns) => (...args) => _.every.sync(fn => _.toFn(fn)(...args))(fns)
+_.and.sync = (...fns) => {
+  fns = _.map.sync(_.toFn)(fns)
+  const ret = (...x) => _.every.sync(fn => fn(...x))(fns)
+  setName(ret, `and(${fns.map(getName).join(', ')})`)
+  return ret
+}
+setName(_.and.sync, 'and')
 
-_.or = (...fns) => (...args) => _.any(fn => _.toFn(fn)(...args))(fns)
+_.or = (...fns) => {
+  fns = _.map.sync(_.toFn)(fns)
+  const ret = (...x) => _.any(fn => fn(...x))(fns)
+  setName(ret, `or(${fns.map(getName).join(', ')})`)
+  return ret
+}
+setName(_.or, 'or')
 
-_.or.sync = (...fns) => (...args) => _.any.sync(fn => _.toFn(fn)(...args))(fns)
+_.or.sync = (...fns) => {
+  fns = _.map.sync(_.toFn)(fns)
+  const ret = (...x) => _.any.sync(fn => fn(...x))(fns)
+  setName(ret, `or(${fns.map(getName).join(', ')})`)
+  return ret
+}
+setName(_.or, 'or')
 
-_.eq = (...fns) => _.flow(
-  _.diverge(fns),
-  x => {
-    for (let i = 1; i < x.length; i++) {
-      if (x[i] !== x[0]) return false
-    }
-    return true
-  },
-)
+_.eq = (...fns) => {
+  fns = _.map.sync(_.toFn)(fns)
+  const ret = _.flow(
+    _.diverge(fns),
+    x => {
+      for (let i = 1; i < x.length; i++) {
+        if (x[i] !== x[0]) return false
+      }
+      return true
+    },
+  )
+  setName(ret, `eq(${fns.map(getName).join(', ')})`)
+  return ret
+}
+setName(_.eq, 'eq')
 
-_.eq.sync = (...fns) => _.flow.sync(
-  _.diverge.sync(fns),
-  x => {
-    for (let i = 1; i < x.length; i++) {
-      if (x[i] !== x[0]) return false
-    }
-    return true
-  },
-)
+_.eq.sync = (...fns) => {
+  fns = _.map.sync(_.toFn)(fns)
+  const ret = _.flow.sync(
+    _.diverge.sync(fns),
+    x => {
+      for (let i = 1; i < x.length; i++) {
+        if (x[i] !== x[0]) return false
+      }
+      return true
+    },
+  )
+  setName(ret, `eq(${fns.map(getName).join(', ')})`)
+  return ret
+}
+setName(_.eq.sync, 'eq')
 
-_.lt = (...fns) => _.flow(
-  _.diverge(fns),
-  x => {
-    for (let i = 1; i < x.length; i++) {
-      if (x[i - 1] >= x[i]) return false
-    }
-    return true
-  },
-)
+_.lt = (...fns) => {
+  fns = _.map.sync(_.toFn)(fns)
+  const ret = _.flow(
+    _.diverge(fns),
+    x => {
+      for (let i = 1; i < x.length; i++) {
+        if (x[i - 1] >= x[i]) return false
+      }
+      return true
+    },
+  )
+  setName(ret, `gt(${fns.map(getName).join(', ')})`)
+  return ret
+}
+setName(_.lt, 'lt')
 
-_.lt.sync = (...fns) => _.flow.sync(
-  _.diverge.sync(fns),
-  x => {
-    for (let i = 1; i < x.length; i++) {
-      if (x[i - 1] >= x[i]) return false
-    }
-    return true
-  },
-)
+_.lt.sync = (...fns) => {
+  fns = _.map.sync(_.toFn)(fns)
+  const ret = _.flow.sync(
+    _.diverge.sync(fns),
+    x => {
+      for (let i = 1; i < x.length; i++) {
+        if (x[i - 1] >= x[i]) return false
+      }
+      return true
+    },
+  )
+  setName(ret, `gt(${fns.map(getName).join(', ')})`)
+  return ret
+}
+setName(_.lt.sync, 'lt')
 
-_.lte = (...fns) => _.flow(
-  _.diverge(fns),
-  x => {
-    for (let i = 1; i < x.length; i++) {
-      if (x[i - 1] > x[i]) return false
-    }
-    return true
-  },
-)
+_.lte = (...fns) => {
+  fns = _.map.sync(_.toFn)(fns)
+  const ret = _.flow(
+    _.diverge(fns),
+    x => {
+      for (let i = 1; i < x.length; i++) {
+        if (x[i - 1] > x[i]) return false
+      }
+      return true
+    },
+  )
+  setName(ret, `lte(${fns.map(getName).join(', ')})`)
+  return ret
+}
+setName(_.lte, 'lte')
 
-_.lte.sync = (...fns) => _.flow.sync(
-  _.diverge.sync(fns),
-  x => {
-    for (let i = 1; i < x.length; i++) {
-      if (x[i - 1] > x[i]) return false
-    }
-    return true
-  },
-)
+_.lte.sync = (...fns) => {
+  fns = _.map.sync(_.toFn)(fns)
+  const ret = _.flow.sync(
+    _.diverge.sync(fns),
+    x => {
+      for (let i = 1; i < x.length; i++) {
+        if (x[i - 1] > x[i]) return false
+      }
+      return true
+    },
+  )
+  setName(ret, `lte(${fns.map(getName).join(', ')})`)
+  return ret
+}
+setName(_.lte.sync, 'lte')
 
-_.gt = (...fns) => _.flow(
-  _.diverge(fns),
-  x => {
-    for (let i = 1; i < x.length; i++) {
-      if (x[i - 1] <= x[i]) return false
-    }
-    return true
-  },
-)
+_.gt = (...fns) => {
+  fns = _.map.sync(_.toFn)(fns)
+  const ret = _.flow(
+    _.diverge(fns),
+    x => {
+      for (let i = 1; i < x.length; i++) {
+        if (x[i - 1] <= x[i]) return false
+      }
+      return true
+    },
+  )
+  setName(ret, `gt(${fns.map(getName).join(', ')})`)
+  return ret
+}
+setName(_.gt, 'gt')
 
-_.gt.sync = (...fns) => _.flow.sync(
-  _.diverge.sync(fns),
-  x => {
-    for (let i = 1; i < x.length; i++) {
-      if (x[i - 1] <= x[i]) return false
-    }
-    return true
-  },
-)
+_.gt.sync = (...fns) => {
+  fns = _.map.sync(_.toFn)(fns)
+  const ret = _.flow.sync(
+    _.diverge.sync(fns),
+    x => {
+      for (let i = 1; i < x.length; i++) {
+        if (x[i - 1] <= x[i]) return false
+      }
+      return true
+    },
+  )
+  setName(ret, `gt(${fns.map(getName).join(', ')})`)
+  return ret
+}
+setName(_.gt.sync, 'gt')
 
-_.gte = (...fns) => _.flow(
-  _.diverge(fns),
-  x => {
-    for (let i = 1; i < x.length; i++) {
-      if (x[i - 1] < x[i]) return false
-    }
-    return true
-  },
-)
+_.gte = (...fns) => {
+  fns = _.map.sync(_.toFn)(fns)
+  const ret = _.flow(
+    _.diverge(fns),
+    x => {
+      for (let i = 1; i < x.length; i++) {
+        if (x[i - 1] < x[i]) return false
+      }
+      return true
+    },
+  )
+  setName(ret, `gte(${fns.map(getName).join(', ')})`)
+  return ret
+}
+setName(_.gte, 'gte')
 
-_.gte.sync = (...fns) => _.flow.sync(
-  _.diverge.sync(fns),
-  x => {
-    for (let i = 1; i < x.length; i++) {
-      if (x[i - 1] < x[i]) return false
-    }
-    return true
-  },
-)
+_.gte.sync = (...fns) => {
+  fns = _.map.sync(_.toFn)(fns)
+  const ret = _.flow.sync(
+    _.diverge.sync(fns),
+    x => {
+      for (let i = 1; i < x.length; i++) {
+        if (x[i - 1] < x[i]) return false
+      }
+      return true
+    },
+  )
+  setName(ret, `gte(${fns.map(getName).join(', ')})`)
+  return ret
+}
+setName(_.gte.sync, 'gte')
 
 const simpleGet = k => x => {
   if (typeof x !== 'object') return undefined
@@ -741,14 +1038,14 @@ const simpleGet = k => x => {
 }
 
 const keyToPath = k => {
-  if (_.isString(k)) return _.split('.')(k)
+  if (_.isString(k)) return k.split('.')
   if (_.isArray(k)) return k
   return [k]
 }
 
 _.get = (key, defaultValue) => {
   const path = keyToPath(key)
-  return x => {
+  const ret = x => {
     let y = x
     for (const k of path) {
       y = simpleGet(k)(y)
@@ -756,47 +1053,87 @@ _.get = (key, defaultValue) => {
     }
     return y
   }
+  const nameArgs = [_.inspect(key)]
+  if (_.exists(defaultValue)) nameArgs.push(_.inspect(defaultValue))
+  setName(ret, `get(${nameArgs.join(', ')})`)
+  return ret
+}
+setName(_.get, 'get')
+
+_.lookup = x => {
+  const ret = k => _.get(k)(x)
+  setName(ret, `lookup(${_.inspect(x)})`)
+  return ret
+}
+setName(_.lookup, 'lookup')
+
+const namePut = ents => {
+  const nameArgs = []
+  for (const [k, fn] of ents) {
+    nameArgs.push(`[${k}, ${getName(_.toFn(fn))}]`)
+  }
+  return `put(${nameArgs.join(', ')})`
 }
 
-_.lookup = x => k => _.get(k)(x)
-
-_.put = (...ents) => async x => {
-  const y = { ...x }, tasks = []
-  for (const [k, fn] of ents) {
-    const a = _.toFn(fn)(x)
-    if (_.isPromise(a)) tasks.push(a.then(b => { y[k] = b }))
-    else { y[k] = a }
+_.put = (...ents) => {
+  const ret = async x => {
+    const y = { ...x }, tasks = []
+    for (const [k, fn] of ents) {
+      const a = _.toFn(fn)(x)
+      if (_.isPromise(a)) tasks.push(a.then(b => { y[k] = b }))
+      else { y[k] = a }
+    }
+    await Promise.all(tasks)
+    return y
   }
-  await Promise.all(tasks)
-  return y
+  const nameArgs = []
+  for (const [k, fn] of ents) {
+    nameArgs.push(`${k}: ${getName(_.toFn(fn))}`)
+  }
+  setName(ret, namePut(ents))
+  return ret
 }
+setName(_.put, 'put')
 
-_.put.sync = (...ents) => x => {
-  const y = { ...x }
-  for (const [k, fn] of ents) {
-    y[k] = _.toFn(fn)(x)
+_.put.sync = (...ents) => {
+  const ret = x => {
+    const y = { ...x }
+    for (const [k, fn] of ents) {
+      y[k] = _.toFn(fn)(x)
+    }
+    return y
   }
-  return y
+  const nameArgs = []
+  for (const [k, fn] of ents) {
+    nameArgs.push(`${k}: ${getName(_.toFn(fn))}`)
+  }
+  setName(ret, namePut(ents))
+  return ret
 }
 
 // https://jsperf.com/multi-array-concat/7
 _.concat = (...fns) => {
   const e = new TypeError()
   Error.captureStackTrace(e)
-  return async x => {
+  fns = _.map.sync(_.toFn)(fns)
+  const ret = async x => {
     if (!_.isString(x) && !_.isArray(x)) {
       e.message = `cannot concat to ${x}`
       throw e
     }
-    const items = await _.map(fn => _.toFn(fn)(x))(fns)
+    const items = await _.map(fn => fn(x))(fns)
     return x.constructor.prototype.concat.apply(x, items)
   }
+  setName(ret, `concat(${_.map.sync(getName)(fns).join(', ')})`)
+  return ret
 }
+setName(_.concat, 'concat')
 
 _.concat.sync = (...fns) => {
   const e = new TypeError()
   Error.captureStackTrace(e)
-  return x => {
+  fns = _.map.sync(_.toFn)(fns)
+  const ret = x => {
     if (!_.isString(x) && !_.isArray(x)) {
       e.message = `cannot concat to ${x}`
       throw e
@@ -804,12 +1141,15 @@ _.concat.sync = (...fns) => {
     const items = _.map.sync(fn => _.toFn(fn)(x))(fns)
     return x.constructor.prototype.concat.apply(x, items)
   }
+  setName(ret, `concat(${_.map.sync(getName)(fns).join(', ')})`)
+  return ret
 }
+setName(_.concat.sync, 'concat')
 
 _.has = m => {
   const e = new TypeError()
   Error.captureStackTrace(e)
-  return col => {
+  const ret = col => {
     if (_.isString(col)) return col.includes(m)
     if (_.isArray(col)) return col.includes(m)
     if (_.isSet(col)) return col.has(m)
@@ -819,54 +1159,95 @@ _.has = m => {
     e.message = `cannot has ${col}`
     throw e
   }
+  setName(ret, `has(${_.inspect(m)})`)
+  return ret
 }
+setName(_.has, 'has')
 
 _.member = col => {
-  if (_.isString(col)) return m => col.includes(m)
-  if (_.isArray(col)) return m => col.includes(m)
-  if (_.isSet(col)) return m => col.has(m)
-  if (_.isMap(col)) return m => col.has(m)
-  if (_.isObject(col)) return m => !!_.get(m)(col)
-  if (_.isBuffer(x)) return m => _.toString(col).includes(m)
-  throw new TypeError(`cannot member ${col}`)
+  let ret
+  if (_.isString(col)) ret = m => col.includes(m)
+  else if (_.isArray(col)) ret = m => col.includes(m)
+  else if (_.isSet(col)) ret = m => col.has(m)
+  else if (_.isMap(col)) ret = m => col.has(m)
+  else if (_.isObject(col)) ret = m => !!_.get(m)(col)
+  else if (_.isBuffer(x)) ret = m => _.toString(col).includes(m)
+  else throw new TypeError(`cannot member ${col}`)
+  setName(ret, `member(${_.inspect(col)})`)
+  return ret
 }
+setName(_.member, 'member')
 
-_.log = tag => _.effect(() => console.log(tag))
+_.log = tag => {
+  const ret = _.effect.sync(() => console.log(tag))
+  setName(ret, `log(${_.inspect(tag)})`)
+  return ret
+}
+setName(_.log, 'log')
 
 _.trace = _.effect.sync(x => console.log(_.inspect(x)))
+setName(_.trace, 'trace')
 
-_.tracet = tag => _.effect.sync(x => {
-  const args = []
-  if (_.exists(tag)) args.push(tag)
-  args.push(_.inspect(x))
-  console.log(...args)
-})
+_.tracet = tag => {
+  const ret = _.effect.sync(x => {
+    const args = []
+    if (_.exists(tag)) args.push(tag)
+    args.push(_.inspect(x))
+    console.log(...args)
+  })
+  setName(ret, `tracet(${_.inspect(tag)})`)
+  return ret
+}
+setName(_.tracet, 'tracet')
 
-_.tracep = (p, tag) => _.effect.sync(x => {
-  const args = []
-  if (_.exists(tag)) args.push(tag)
-  const fmtp = _.isArray(p) ? p.join('.') : p
-  args.push(`.${fmtp} -`, _.inspect(_.get(p)(x)))
-  console.log(...args)
-})
+_.tracep = (p, tag) => {
+  const ret = _.effect.sync(x => {
+    const args = []
+    if (_.exists(tag)) args.push(tag)
+    const fmtp = _.isArray(p) ? p.join('.') : p
+    args.push(`.${fmtp} -`, _.inspect(_.get(p)(x)))
+    console.log(...args)
+  })
+  const nameArgs = [_.inspect(p)]
+  if (_.exists(tag)) nameArgs.push(_.inspect(tag))
+  setName(ret, `tracep(${nameArgs.join(', ')})`)
+  return ret
+}
+setName(_.tracep, 'tracep')
 
-_.tracef = (fn, tag) => _.effect(async x => {
-  const args = []
-  if (_.exists(tag)) args.push(tag)
-  args.push(_.inspect(await _.toFn(fn)(x)))
-  console.log(...args)
-})
+_.tracef = (fn, tag) => {
+  const ret = _.effect(async x => {
+    const args = []
+    if (_.exists(tag)) args.push(tag)
+    args.push(_.inspect(await _.toFn(fn)(x)))
+    console.log(...args)
+  })
+  const nameArgs = [getName(fn)]
+  if (_.exists(tag)) nameArgs.push(_.inspect(tag))
+  setName(ret, `tracef(${nameArgs.join(', ')})`)
+  return ret
+}
+setName(_.tracef, 'tracef')
 
-_.tracef.sync = (fn, tag) => _.effect.sync(x => {
-  const args = []
-  if (_.exists(tag)) args.push(tag)
-  args.push(_.inspect(_.toFn(fn)(x)))
-  console.log(...args)
-})
+_.tracef.sync = (fn, tag) => {
+  const ret = _.effect.sync(x => {
+    const args = []
+    if (_.exists(tag)) args.push(tag)
+    args.push(_.inspect(_.toFn(fn)(x)))
+    console.log(...args)
+  })
+  const nameArgs = [getName(fn)]
+  if (_.exists(tag)) nameArgs.push(_.inspect(tag))
+  setName(ret, `tracef(${nameArgs.join(', ')})`)
+  return ret
+}
+setName(_.tracef.sync, 'tracef')
 
 _.promisify = util.promisify
+setName(_.promisify, 'promisify')
 
 _.callbackify = util.callbackify
+setName(_.callbackify, 'callbackify')
 
 _.promisifyAll = x => {
   const y = {}
@@ -883,6 +1264,7 @@ _.promisifyAll = x => {
   }
   return y
 }
+setName(_.promisifyAll, 'promisifyAll')
 
 _.callbackifyAll = x => {
   const y = {}
@@ -899,11 +1281,12 @@ _.callbackifyAll = x => {
   }
   return y
 }
+setName(_.callbackifyAll, 'callbackifyAll')
 
 _.pick = (...keys) => {
   const e = new TypeError()
   Error.captureStackTrace(e)
-  return x => {
+  const ret = x => {
     if (!_.isObject(x)) {
       e.message = `cannot pick ${x}`
       throw e
@@ -916,19 +1299,27 @@ _.pick = (...keys) => {
     }
     return y
   }
+  setName(ret, `pick(${keys.map(_.inspect).join(', ')})`)
+  return ret
 }
+setName(_.pick, 'pick')
 
-_.slice = (from, to) => x => {
-  if (_.dne(from)) from = 0
-  else if (from < 0) from += x.length
-  if (_.dne(to)) to = x.length
-  else if (to < 0) to += x.length
-  from = Math.max(0, Math.min(from, x.length))
-  to = Math.max(0, Math.min(to, x.length))
-  let y = []
-  for (let i = from; i < to; i++) y.push(x[i])
-  return y
+_.slice = (from, to) => {
+  const ret = x => {
+    if (_.dne(from)) from = 0
+    else if (from < 0) from += x.length
+    if (_.dne(to)) to = x.length
+    else if (to < 0) to += x.length
+    from = Math.max(0, Math.min(from, x.length))
+    to = Math.max(0, Math.min(to, x.length))
+    let y = []
+    for (let i = from; i < to; i++) y.push(x[i])
+    return y
+  }
+  setName(ret, `slice(${_.inspect(from)}, ${_.inspect(to)})`)
+  return ret
 }
+setName(_.slice, 'slice')
 
 _.replaceOne = (s, r) => {
   if (_.dne(r)) throw new TypeError('no replacement provided')
@@ -941,14 +1332,17 @@ _.replaceOne = (s, r) => {
   const rx = _.toRegExp(s)
   const e = new TypeError()
   Error.captureStackTrace(e)
-  return x => {
+  const ret =  x => {
     if (!_.isString(x)) {
       e.message = `cannot replace for ${x}`
       throw e
     }
     return x.replace(rx, _.toString(r))
   }
+  setName(ret, `replaceOne(${_.inspect(s)}, ${_.inspect(r)})`)
+  return ret
 }
+setName(_.replaceOne, 'replaceOne')
 
 _.replaceAll = (s, r) => {
   if (_.dne(r)) throw new TypeError('no replacement provided')
@@ -961,14 +1355,17 @@ _.replaceAll = (s, r) => {
   const rx = _.toRegExp(s, 'g')
   const e = new TypeError()
   Error.captureStackTrace(e)
-  return x => {
+  const ret = x => {
     if (!_.isString(x)) {
       e.message = `cannot replace for ${x}`
       throw e
     }
     return x.replace(rx, _.toString(r))
   }
+  setName(ret, `replaceAll(${_.inspect(s)}, ${_.inspect(r)})`)
+  return ret
 }
+setName(_.replaceAll, 'replaceAll')
 
 _.join = d => {
   if (_.dne(d)) throw new TypeError('no delimiter provided')
@@ -977,14 +1374,17 @@ _.join = d => {
   }
   const e = new TypeError()
   Error.captureStackTrace(e)
-  return x => {
+  const ret = x => {
     if (!_.isArray(x)) {
       e.message = `cannot join ${x}`
       throw e
     }
     return x.join(d)
   }
+  setName(ret, `join(${_.inspect(d)})`)
+  return ret
 }
+setName(_.join, 'join')
 
 _.split = d => {
   if (_.dne(d)) throw new TypeError('no delimiter provided')
@@ -993,24 +1393,29 @@ _.split = d => {
   }
   const e = new TypeError()
   Error.captureStackTrace(e)
-  return x => {
+  const ret = x => {
     if (!_.isString(x)) {
       e.message = `cannot split ${x}`
       throw e
     }
     return x.split(d)
   }
+  setName(ret, `split(${_.inspect(d)})`)
+  return ret
 }
+setName(_.split, 'split')
 
 _.lowercase = x => {
   if (!_.isString(x)) throw new TypeError(`cannot lowercase ${x}`)
   return x.toLowerCase()
 }
+setName(_.lowercase, 'lowercase')
 
 _.uppercase = x => {
   if (!_.isString(x)) throw new TypeError(`cannot uppercase ${x}`)
   return x.toUpperCase()
 }
+setName(_.uppercase, 'uppercase')
 
 _.capitalize = x => {
   if (!_.isString(x)) throw new TypeError(`cannot capitalize ${x}`)
@@ -1018,11 +1423,12 @@ _.capitalize = x => {
   if (s.length === 0) return ''
   return `${s[0].toUpperCase()}${s.slice(1)}`
 }
+setName(_.capitalize, 'capitalize')
 
 _.braid = (...rates) => {
   const e = new Error()
   Error.captureStackTrace(e)
-  return x => {
+  const ret = x => {
     if (!_.isArray(x) || !x.every(_.isArray)) {
       e.name = 'TypeError'
       e.message = 'point must be an array of arrays'
@@ -1049,12 +1455,15 @@ _.braid = (...rates) => {
     }
     return y
   }
+  setName(ret, `braid(${rates.map(_.inspect).join(', ')})`)
+  return ret
 }
+setName(_.braid, 'braid')
 
 _.unbraid = (...rates) => {
   const e = new Error()
   Error.captureStackTrace(e)
-  return x => {
+  const ret = x => {
     if (!_.isArray(x)) {
       e.name = 'TypeError'
       e.message = 'point must be an array'
@@ -1073,7 +1482,10 @@ _.unbraid = (...rates) => {
     }
     return y
   }
+  setName(ret, `unbraid(${rates.map(_.inspect).join(', ')})`)
+  return ret
 }
+setName(_.unbraid, 'unbraid')
 
 _.transpose = x => {
   if (!_.isArray(x)) throw new TypeError('point must be an array')
@@ -1086,16 +1498,19 @@ _.transpose = x => {
   }
   return y
 }
+setName(_.transpose, 'transpose')
 
 _.flatten = x => {
   if (!_.isArray(x)) throw new TypeError('point must be an array')
   return x.flat(1)
 }
+setName(_.flatten, 'flatten')
 
 _.flattenAll = x => {
   if (!_.isArray(x)) throw new TypeError('point must be an array')
   return x.flat(Infinity)
 }
+setName(_.flattenAll, 'flattenAll')
 
 _.uniq = x => {
   if (!_.isArray(x)) throw new TypeError('point must be an array')
@@ -1108,45 +1523,55 @@ _.uniq = x => {
   }
   return y
 }
+setName(_.uniq, 'uniq')
 
-_.uniqp = k => x => {
-  if (!_.isArray(x)) throw new TypeError('point must be an array')
-  const mem = new Set()
-  const y = []
-  for (const a of x) {
-    const v = _.get(k)(a)
-    if (mem.has(v)) continue
-    mem.add(v)
-    y.push(a)
+_.uniqp = k => {
+  const ret = x => {
+    if (!_.isArray(x)) throw new TypeError('point must be an array')
+    const mem = new Set()
+    const y = []
+    for (const a of x) {
+      const v = _.get(k)(a)
+      if (mem.has(v)) continue
+      mem.add(v)
+      y.push(a)
+    }
+    return y
   }
-  return y
+  setName(ret, `uniqp(${_.inspect(k)})`)
+  return ret
 }
+setName(_.uniqp, 'uniqp')
 
 _.first = x => {
   if (!_.isArray(x)) throw new TypeError('point must be an array')
   return _.get(0)(x)
 }
+setName(_.first, 'first')
 
 _.last = x => {
   if (!_.isArray(x)) throw new TypeError('point must be an array')
   return x[x.length - 1]
 }
+setName(_.last, 'last')
 
 _.reverse = x => {
   if (!_.isArray(x)) throw new TypeError('point must be an array')
   return x.slice(0).reverse()
 }
+setName(_.reverse, 'reverse')
 
 _.compare = (a, b) => {
   if (a < b) return -1
   if (a > b) return 1
   return 0
 }
+setName(_.compare, 'compare')
 
 _.sort = (order = 1) => {
   const e = new TypeError()
   Error.captureStackTrace(e)
-  return x => {
+  const ret = x => {
     if (!_.isArray(x)) {
       e.message = 'point must be an array'
       throw e
@@ -1155,12 +1580,15 @@ _.sort = (order = 1) => {
       (a, b) => order * _.compare(a, b)
     )
   }
+  setName(ret, `sort(${_.inspect(order)})`)
+  return ret
 }
+setName(_.sort, 'sort')
 
 _.sortBy = (k, order = 1) => {
   const e = new TypeError()
   Error.captureStackTrace(e)
-  return x => {
+  const ret = x => {
     if (!_.isArray(x)) {
       e.message = 'point must be an array'
       throw e
@@ -1169,7 +1597,10 @@ _.sortBy = (k, order = 1) => {
       (a, b) => order * _.compare(_.get(k)(a), _.get(k)(b))
     )
   }
+  setName(ret, `sortBy(${_.inspect(k)}, ${_.inspect(order)}})`)
+  return ret
 }
+setName(_.sortBy, 'sortBy')
 
 _.size = x => {
   if (_.isString(x)) return x.length
@@ -1183,24 +1614,38 @@ _.size = x => {
   }
   throw new TypeError(`cannot size ${x}`)
 }
+setName(_.size, 'size')
 
 _.isEmpty = x => _.size(x) === 0
+setName(_.isEmpty, 'isEmpty')
 
-_.once = fn => (...args) => {
-  let ret = null
-  if (ret) return ret
-  ret = fn(...args)
+_.once = fn => {
+  const ret = (...args) => {
+    let ret = null
+    if (ret) return ret
+    ret = fn(...args)
+    return ret
+  }
+  setName(ret, `once(${getName(fn)})`)
   return ret
 }
+setName(_.once, 'once')
 
-_.flip = pair => x => _.get(0)(_.filter.sync(y => y !== x)(pair))
+_.flip = (...pair) => {
+  const ret = x => pair.find(y => y !== x)
+  setName(ret, `flip(${pair.map(_.inspect).join(', ')})`)
+  return ret
+}
+setName(_.flip, 'flip')
 
 _.spaces = l => {
   let s = ''
   for (let i = 0; i < l; i++) s += ' '
   return s
 }
+setName(_.spaces, 'spaces')
 
 _.prettifyJSON = x => JSON.stringify(x, null, 2)
+setName(_.prettifyJSON, 'prettifyJSON')
 
 module.exports = _

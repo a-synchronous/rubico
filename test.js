@@ -85,20 +85,10 @@ describe('rubico', () => {
   })
 
   describe('_.apply', () => {
+    const fn = a => b => c => a + b + c
     it('applies an array of arguments to fn', async () => {
-      const fn = a => b => c => a + b + c
       ase(
-        await _.apply(fn)([1, 2, 3]),
-        6,
-      )
-    })
-  })
-
-  describe('_.apply', () => {
-    it('applies an array of arguments to fn', async () => {
-      const fn = a => b => c => a + b + c
-      ase(
-        _.apply.sync(fn)([1, 2, 3]),
+        _.apply(fn)([1, 2, 3]),
         6,
       )
     })
@@ -475,10 +465,25 @@ describe('rubico', () => {
         await _.switch(x => x === 1, 'hey', x => x === 2, 'ho', 'yo')(100),
         'yo',
       )
-      ase(
-        await _.switch(x => x === 1, 'hey', x => x === 2, 'ho')(100),
-        undefined,
+    })
+
+    it('requires odd number of fns', async () => {
+      assert.throws(
+        () => _.switch(x => x, x => x, x => x, x => x),
+        new Error('odd number of fns required'),
       )
+    })
+
+    it('requires 3 or more fns', async () => {
+      assert.throws(
+        () => _.switch(x => x),
+        new Error('3 or more fns required'),
+      )
+    })
+  })
+
+  describe('_.switch.sync', () => {
+    it('switch case using sync fn order', async () => {
       ase(
         _.switch.sync(x => x === 1, 'hey', x => x === 2, 'ho', 'yo')(1),
         'hey',
@@ -491,9 +496,19 @@ describe('rubico', () => {
         _.switch.sync(x => x === 1, 'hey', x => x === 2, 'ho', 'yo')(100),
         'yo',
       )
-      ase(
-        _.switch.sync(x => x === 1, 'hey', x => x === 2, 'ho')(100),
-        undefined,
+    })
+
+    it('requires odd number of fns', async () => {
+      assert.throws(
+        () => _.switch.sync(x => x, x => x, x => x, x => x),
+        new Error('odd number of fns required'),
+      )
+    })
+
+    it('requires 3 or more fns', async () => {
+      assert.throws(
+        () => _.switch.sync(x => x),
+        new Error('3 or more fns required'),
       )
     })
   })
@@ -518,7 +533,7 @@ describe('rubico', () => {
     })
   })
 
-  describe('_.tryCatch, _.stryCatch', () => {
+  describe('_.tryCatch, _.tryCatch.sync', () => {
     it('tries a fn and catches with the other fn', async () => {
       ase(await _.tryCatch(
         x => x + 1,
@@ -528,69 +543,24 @@ describe('rubico', () => {
         () => { throw new Error() },
         () => 10,
       )(1), 10)
-      ase(_.stryCatch(
+      ase(_.tryCatch.sync(
         x => x + 1,
         () => 10,
       )(1), 2)
-      ase(_.stryCatch(
+      ase(_.tryCatch.sync(
         () => { throw new Error() },
         () => 10,
       )(1), 10)
     })
-  })
-
-  describe('_.diverge', () => {
-    it('diverges flow to provided container', async () => {
-      ade(
-        await _.diverge([hi, ho, hey])('yo'),
-        ['yohi', 'yoho', 'yohey'],
-      )
-      ade(
-        await _.diverge(new Set([hi, ho, hey]))('yo'),
-        new Set(['yohi', 'yoho', 'yohey']),
-      )
-      ade(
-        await _.diverge(new Map([['a', hi], ['b', ho], ['c', hey]]))('yo'),
-        new Map([['a', 'yohi'], ['b', 'yoho'], ['c', 'yohey']])
-      )
-      ade(
-        await _.diverge({ a: hi, b: ho, c: hey })('yo'),
-        ({ a: 'yohi', b: 'yoho', c: 'yohey' }),
-      )
-    })
 
     it('throws TypeError', async () => {
       assert.throws(
-        () => _.diverge('ayelmao'),
-        new TypeError('cannot diverge ayelmao'),
+        () => _.tryCatch(1, _.noop),
+        new TypeError('try fn not a fn'),
       )
-    })
-  })
-
-  describe('_.diverge.sync', () => {
-    it('diverges flow to provided container', async () => {
-      ade(
-        _.diverge.sync([hi, hi, hi])('yo'),
-        ['yohi', 'yohi', 'yohi'],
-      )
-      ade(
-        _.diverge.sync(new Set([hi, hi, hi]))('yo'),
-        new Set(['yohi', 'yohi', 'yohi']),
-      )
-      ade(
-        _.diverge.sync(new Map([['a', hi], ['b', hi], ['c', hi]]))('yo'),
-        new Map([['a', 'yohi'], ['b', 'yohi'], ['c', 'yohi']])
-      )
-      ade(
-        _.diverge.sync({ a: hi, b: hi, c: hi })('yo'),
-        ({ a: 'yohi', b: 'yohi', c: 'yohi' }),
-      )
-    })
-
-    it('throws a TypeError', async () => {
       assert.throws(
-        () => _.diverge.sync('ayelmao'),
-        new TypeError('cannot diverge ayelmao'),
+        () => _.tryCatch(_.id, 0),
+        new TypeError('catch fn not a fn'),
       )
     })
   })
@@ -685,6 +655,62 @@ describe('rubico', () => {
       assert.throws(
         () => _.map.sync(x => x)(null),
         new TypeError('cannot map null'),
+      )
+    })
+  })
+
+  describe('_.diverge', () => {
+    it('diverges flow to provided container', async () => {
+      ade(
+        await _.diverge([hi, ho, hey])('yo'),
+        ['yohi', 'yoho', 'yohey'],
+      )
+      ade(
+        await _.diverge(new Set([hi, ho, hey]))('yo'),
+        new Set(['yohi', 'yoho', 'yohey']),
+      )
+      ade(
+        await _.diverge(new Map([['a', hi], ['b', ho], ['c', hey]]))('yo'),
+        new Map([['a', 'yohi'], ['b', 'yoho'], ['c', 'yohey']])
+      )
+      ade(
+        await _.diverge({ a: hi, b: ho, c: hey })('yo'),
+        ({ a: 'yohi', b: 'yoho', c: 'yohey' }),
+      )
+    })
+
+    it('throws TypeError', async () => {
+      assert.throws(
+        () => _.diverge('ayelmao'),
+        new TypeError('cannot diverge ayelmao'),
+      )
+    })
+  })
+
+  describe('_.diverge.sync', () => {
+    it('diverges flow to provided container', async () => {
+      ade(
+        _.diverge.sync([hi, hi, hi])('yo'),
+        ['yohi', 'yohi', 'yohi'],
+      )
+      ade(
+        _.diverge.sync(new Set([hi, hi, hi]))('yo'),
+        new Set(['yohi', 'yohi', 'yohi']),
+      )
+      ade(
+        _.diverge.sync(new Map([['a', hi], ['b', hi], ['c', hi]]))('yo'),
+        new Map([['a', 'yohi'], ['b', 'yohi'], ['c', 'yohi']])
+      )
+      ade(
+        _.diverge.sync({ a: hi, b: hi, c: hi })('yo'),
+        ({ a: 'yohi', b: 'yohi', c: 'yohi' }),
+      )
+    })
+
+    it('throws a TypeError', async () => {
+      assert.throws(
+        () => _.diverge.sync('ayelmao'),
+        new TypeError('cannot diverge ayelmao'),
       )
     })
   })
@@ -1943,7 +1969,7 @@ describe('rubico', () => {
 
   describe('_.flip', () => {
     it('flips a value given arr', async () => {
-      ase(_.flip(['heads', 'tails'])('heads'), 'tails')
+      ase(_.flip('heads', 'tails')('heads'), 'tails')
     })
   })
 
