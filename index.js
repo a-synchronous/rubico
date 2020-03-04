@@ -1331,14 +1331,15 @@ setName(_.exclude, 'exclude')
 
 _.slice = (from, to) => {
   const ret = x => {
-    if (_.dne(from)) from = 0
-    else if (from < 0) from += x.length
-    if (_.dne(to)) to = x.length
-    else if (to < 0) to += x.length
-    from = Math.max(0, Math.min(from, x.length))
-    to = Math.max(0, Math.min(to, x.length))
+    let f = from, t = to
+    if (_.dne(f)) f = 0
+    else if (f < 0) f += x.length
+    if (_.dne(t)) t = x.length
+    else if (t < 0) t += x.length
+    f = Math.max(0, Math.min(f, x.length))
+    t = Math.max(0, Math.min(t, x.length))
     let y = []
-    for (let i = from; i < to; i++) y.push(x[i])
+    for (let i = f; i < t; i++) y.push(x[i])
     if (_.isString(x)) y = y.join('')
     return y
   }
