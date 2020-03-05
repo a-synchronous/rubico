@@ -105,6 +105,18 @@ _.new = x => {
 }
 setName(_.new, 'new')
 
+_.copy = x => {
+  if (_.isString(x)) return x
+  if (_.isNumber(x)) return x
+  if (_.isArray(x)) return x.slice(0)
+  if (_.isObject(x)) return Object.assign({}, x)
+  if (_.isSet(x)) return new Set(x)
+  if (_.isMap(x)) return new Map(x)
+  if (_.isBuffer(x)) return Buffer.from(x)
+  throw new TypeError(`cannot copy ${x}`)
+}
+setName(_.copy, 'copy')
+
 _.toFn = x => {
   if (_.isFn(x)) return x
   const ret = () => x
@@ -1083,7 +1095,7 @@ const namePut = ents => {
 
 _.put = (...ents) => {
   const ret = async x => {
-    const y = { ...x }, tasks = []
+    const y = _.copy(x), tasks = []
     for (const [k, fn] of ents) {
       const a = _.toFn(fn)(x)
       if (_.isPromise(a)) tasks.push(a.then(b => { y[k] = b }))
@@ -1103,7 +1115,7 @@ setName(_.put, 'put')
 
 _.put.sync = (...ents) => {
   const ret = x => {
-    const y = { ...x }
+    const y = _.copy(x)
     for (const [k, fn] of ents) {
       y[k] = _.toFn(fn)(x)
     }

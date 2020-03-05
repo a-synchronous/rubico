@@ -279,6 +279,18 @@ describe('rubico', () => {
     })
   })
 
+  describe('_.copy', () => {
+    it('copies', async () => {
+      ase(_.copy('hey'), 'hey')
+      ase(_.copy(Infinity), Infinity)
+      ade(_.copy([1, 2, 3]), [1, 2, 3])
+      ade(_.copy(new Set([1, 2, 3])), new Set([1, 2, 3]))
+      ade(_.copy(new Map([[1, 1], [2, 2]])), new Map([[1, 1], [2, 2]]))
+      ade(_.copy({ a: 1, b: 2 }), { a: 1, b: 2 })
+      ade(_.copy(Buffer.from('hey')), Buffer.from('hey'))
+    })
+  })
+
   describe('_.toFn', () => {
     it('coerces point to fn', async () => {
       ase(_.toFn(() => {})(), undefined)
