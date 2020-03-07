@@ -278,7 +278,8 @@ _.tryCatch = (tryFn, catchFn) => {
     try {
       return await tryFn(x)
     } catch (e) {
-      return await catchFn(x, e)
+      e._args = [x]
+      return await catchFn(e)
     }
   }
   setName(ret, `tryCatch(${getName(tryFn)}, ${getName(catchFn)})`)
@@ -293,7 +294,8 @@ _.tryCatch.sync = (tryFn, catchFn) => {
     try {
       return tryFn(x)
     } catch (e) {
-      return catchFn(x, e)
+      e._args = [x]
+      return catchFn(e)
     }
   }
   setName(ret, `tryCatch(${getName(tryFn)}, ${getName(catchFn)})`)
