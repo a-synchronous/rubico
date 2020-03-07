@@ -274,11 +274,11 @@ setName(_.sleep, 'sleep')
 _.tryCatch = (tryFn, catchFn) => {
   if (!_.isFn(tryFn)) throw new TypeError('try fn not a fn')
   if (!_.isFn(catchFn)) throw new TypeError('catch fn not a fn')
-  const ret = async x => {
+  const ret = async (...x) => {
     try {
-      return await tryFn(x)
+      return await tryFn(...x)
     } catch (e) {
-      e._args = [x]
+      e._args = x
       return await catchFn(e)
     }
   }
@@ -290,11 +290,11 @@ setName(_.tryCatch, 'tryCatch')
 _.tryCatch.sync = (tryFn, catchFn) => {
   if (!_.isFn(tryFn)) throw new TypeError('try fn not a fn')
   if (!_.isFn(catchFn)) throw new TypeError('catch fn not a fn')
-  const ret = x => {
+  const ret = (...x) => {
     try {
-      return tryFn(x)
+      return tryFn(...x)
     } catch (e) {
-      e._args = [x]
+      e._args = x
       return catchFn(e)
     }
   }
