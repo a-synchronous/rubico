@@ -5,6 +5,7 @@ functional programming for humans
 
 ## Why?
 - [monads are hard to explain](https://stackoverflow.com/questions/44965/what-is-a-monad)
+- current functional programming constructs are [impractical](https://ramdajs.com/docs/#andThen) or [difficult to learn](https://ramdajs.com/docs/#transduce)
 - but I still want to program functionally
 
 well you can, and rubico can help you do it. And no, you do not need to know what a monad is.
