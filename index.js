@@ -1214,20 +1214,17 @@ _.log = tag => {
 }
 setName(_.log, 'log')
 
-_.trace = _.effect.sync(x => console.log(_.inspect(x)))
-setName(_.trace, 'trace')
-
-_.tracet = tag => {
+_.trace = tag => {
   const ret = _.effect.sync(x => {
     const args = []
     if (_.exists(tag)) args.push(tag)
     args.push(_.inspect(x))
     console.log(...args)
   })
-  setName(ret, `tracet(${_.inspect(tag)})`)
+  setName(ret, `trace(${_.inspect(tag)})`)
   return ret
 }
-setName(_.tracet, 'tracet')
+setName(_.trace, 'trace')
 
 _.tracep = (p, tag) => {
   const ret = _.effect.sync(x => {
