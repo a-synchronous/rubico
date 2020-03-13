@@ -346,7 +346,7 @@ _.map = fn => {
     if (_.isArray(x)) {
       const tasks = []
       let i = 0
-      for (const a of x) {
+      for await (const a of x) {
         tasks.push(fn(a, i))
         i += 1
       }
@@ -355,7 +355,7 @@ _.map = fn => {
     if (_.isSet(x)) {
       const tasks = []
       let i = 0
-      for (const a of x) {
+      for await (const a of x) {
         tasks.push(fn(a, i))
         i += 1
       }
@@ -364,7 +364,7 @@ _.map = fn => {
     if (_.isMap(x)) {
       const tasks = [], y = new Map()
       let i = 0
-      for (const [k, v] of x) {
+      for await (const [k, v] of x) {
         const a = fn(v, i)
         if (_.isPromise(a)) tasks.push(a.then(b => y.set(k, b)))
         else y.set(k, a)
@@ -635,17 +635,17 @@ _.filter = fn => {
   const ret = async x => {
     if (_.isArray(x)) {
       const tasks = []
-      for (const a of x) tasks.push((async () => (await fn(a)) && a)())
+      for await (const a of x) tasks.push((async () => (await fn(a)) && a)())
       return (await Promise.all(tasks)).filter(_.id)
     }
     if (_.isSet(x)) {
       const tasks = []
-      for (const a of x) tasks.push((async () => (await fn(a)) && a)())
+      for await (const a of x) tasks.push((async () => (await fn(a)) && a)())
       return new Set((await Promise.all(tasks)).filter(_.id))
     }
     if (_.isMap(x)) {
       const tasks = [], y = new Map()
-      for (const [k, v] of x) tasks.push(
+      for await (const [k, v] of x) tasks.push(
         (async () => { if (await fn(v)) { y.set(k, v) } })()
       )
       await Promise.all(tasks)
