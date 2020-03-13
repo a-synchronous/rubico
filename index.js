@@ -113,6 +113,7 @@ setName(_.spread, 'spread')
 _.throw = e => { throw e }
 setName(_.throw, 'throw')
 
+// TODO: apply multiple to arities > 1
 _.apply = fn => {
   const ret = x => {
     let y = fn
