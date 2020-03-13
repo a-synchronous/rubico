@@ -1115,10 +1115,6 @@ _.put = (...ents) => {
     await Promise.all(tasks)
     return y
   }
-  const nameArgs = []
-  for (const [k, fn] of ents) {
-    nameArgs.push(`${k}: ${_.shorthand(_.toFn(fn))}`)
-  }
   setName(ret, namePut(ents))
   return ret
 }
@@ -1131,10 +1127,6 @@ _.put.sync = (...ents) => {
       y[k] = _.toFn(fn)(x)
     }
     return y
-  }
-  const nameArgs = []
-  for (const [k, fn] of ents) {
-    nameArgs.push(`${k}: ${_.shorthand(_.toFn(fn))}`)
   }
   setName(ret, namePut(ents))
   return ret
