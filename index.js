@@ -339,6 +339,7 @@ _.tryCatch.sync = (tryFn, catchFn) => {
 }
 setName(_.tryCatch.sync, 'tryCatch')
 
+// TODO: account for AsyncIterator, Iterator, and Stream points
 _.map = fn => {
   const e = new TypeError()
   Error.captureStackTrace(e)
