@@ -434,6 +434,7 @@ _.map.sync = fn => {
 }
 setName(_.map.sync, 'map')
 
+// TODO: only support [] and {}
 _.diverge = fns => {
   if (_.isArray(fns)) {
     fns = _.map.sync(_.toFn)(fns)
