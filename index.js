@@ -190,6 +190,7 @@ _.toRegExp = (x, flags = '') => {
 setName(_.toRegExp, 'toRegExp')
 
 // TODO: what if x was a fn? a fn that returned bits off a stream or an item from a large list
+//       consider: second argument is accum
 _.flow = (...fns) => {
   if (!fns.every(_.isFn)) throw new TypeError('not all fns are fns')
   const ret = async (...x) => {
@@ -338,6 +339,9 @@ _.tryCatch.sync = (tryFn, catchFn) => {
   return ret
 }
 setName(_.tryCatch.sync, 'tryCatch')
+
+// TODO: implement this
+_.withIndex = fn => {}
 
 // TODO: account for AsyncIterator, Iterator, and Stream points
 _.map = fn => {
@@ -1611,6 +1615,7 @@ _.sort = (order = 1) => {
 }
 setName(_.sort, 'sort')
 
+// TODO: take function instead of prop
 _.sortBy = (k, order = 1) => {
   const e = new TypeError()
   Error.captureStackTrace(e)
