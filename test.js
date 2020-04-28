@@ -25,12 +25,30 @@ describe('rubico', () => {
     it('chaining no fns is identity', async () => {
       ase(await r.flow()('yo'), 'yo')
     })
+    it('can be sync', async () => {
+      ase(r.flow(hi, hi, hi)('yo'), 'yohihihi')
+    })
+    it('returns a promise if any fns async', async () => {
+      assert.ok(r.flow(hi, hi, hi, hey)('yo') instanceof Promise)
+    })
     it('throws a meaningful error on non functions', async () => {
       assert.throws(
         () => {
           r.flow(() => 1, undefined, () => 2)
         },
         new TypeError('undefined [1] is not a function'),
+      )
+    })
+    it('handles sync errors good', async () => {
+      assert.throws(
+        () => r.flow(hi, hi, x => { throw new Error(`throwing ${x}`) })('yo'),
+        new Error('throwing yohihi'),
+      )
+    })
+    it('handles async errors good', async () => {
+      assert.rejects(
+        () => r.flow(hi, hey, x => { throw new Error(`throwing ${x}`) })('yo'),
+        new Error('throwing yohihey'),
       )
     })
   })

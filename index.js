@@ -4,30 +4,32 @@ const toFunction = x => isFunction(x) ? x : (() => x)
 
 const is = fn => x => x && x.constructor && x.constructor === fn
 
-const type = x => (x && x.constructor && x.constructor.name) || typeof x
-
 const isArray = is(Array)
 
 const isObject = is(Object)
 
 const isPromise = is(Promise)
 
+const type = x => (x && x.constructor && x.constructor.name) || typeof x
+
+const chain = (fns, args, i = 0) => {
+  const y = fns[i](...args)
+  if (i === fns.length - 1) return y
+  if (isPromise(y)) return new Promise((resolve, reject) => {
+    y.then(res => {
+      resolve(chain(fns, [res], i + 1))
+    }).catch(err => { reject(err) })
+  })
+  return chain(fns, [y], i + 1)
+}
+
 const flow = (...fns) => {
   for (i = 0; i < fns.length; i++) {
-    if (!isFunction(fns[i])) {
-      throw new TypeError(`${typeof fns[i]} [${i}] is not a function`)
-    }
+    if (isFunction(fns[i])) continue
+    throw new TypeError(`${typeof fns[i]} [${i}] is not a function`)
   }
   if (fns.length === 0) return x => x
-  const flowed = async (...x) => {
-    let y = await fns[0](...x), i = 1
-    while (i < fns.length) {
-      y = await fns[i](y)
-      i += 1
-    }
-    return y
-  }
-  return flowed
+  return (...x) => chain(fns, x)
 }
 
 const diverge = fns => {
