@@ -13,14 +13,16 @@ const isPromise = is(Promise)
 const type = x => (x && x.constructor && x.constructor.name) || typeof x
 
 const chain = (fns, args, i = 0) => {
-  const y = fns[i](...args)
-  if (i === fns.length - 1) return y
-  if (isPromise(y)) return new Promise((resolve, reject) => {
-    y.then(res => {
+  const point = fns[i](...args)
+  if (i === fns.length - 1) return point
+  if (isPromise(point)) return new Promise((resolve, reject) => {
+    point.then(res => {
       resolve(chain(fns, [res], i + 1))
-    }).catch(err => { reject(err) })
+    }).catch(err => {
+      reject(err)
+    })
   })
-  return chain(fns, [y], i + 1)
+  return chain(fns, [point], i + 1)
 }
 
 const flow = (...fns) => {
@@ -32,6 +34,57 @@ const flow = (...fns) => {
   return (...x) => chain(fns, x)
 }
 
+const mapArray = (fn, arr) => {
+  const retArr = []
+  const promises = []
+  for (let i = 0; i < arr.length; i++) {
+    const point = fn(arr[i])
+    if (isPromise(point)) {
+      promises.push(new Promise((resolve, reject) => {
+        point.then(res => {
+          retArr[i] = res
+          resolve()
+        }).catch(err => {
+          reject(err)
+        })
+      }))
+    } else {
+      retArr[i] = point
+    }
+  }
+  if (promises.length > 1) {
+    return new Promise((resolve, reject) => {
+      Promise.all(promises).then(() => {
+        resolve(retArr)
+      }).catch(err => {
+        reject(err)
+      })
+    })
+  } else {
+    return retArr
+  }
+}
+
+const mapObject = (fn, obj) => {
+  const retObj = {}
+  const promises = []
+  for (const key in obj) {
+    const point = fn(obj[key])
+  }
+}
+
+const map = fn => {
+  if (!isFunction(fn)) {
+    throw new TypeError(`${typeof fn} is not a function`)
+  }
+  return x => {
+    if (isArray(x)) return mapArray(fn, x)
+    if (isObject(x)) return mapObject(fn, x)
+    throw new TypeError(`cannot map ${type(x)}`)
+  }
+}
+
+// TODO: reconsider
 const diverge = fns => {
   if (isArray(fns)) {
     const _fns = fns.map(toFunction)
@@ -57,7 +110,7 @@ const diverge = fns => {
 }
 
 const r = {
-  flow, diverge,
+  flow, map, diverge,
 }
 
 module.exports = r
