@@ -34,4 +34,37 @@ describe('rubico', () => {
       )
     })
   })
+
+  describe('diverge', () => {
+    it('parallelizes input to Array', async () => {
+      ade(
+        await r.diverge([hi, ho, hey])('yo'),
+        ['yohi', 'yoho', 'yohey'],
+      )
+    })
+    it('parallelizes input to Object', async () => {
+      ade(
+        await r.diverge({ a: hi, b: ho, c: hey })('yo'),
+        ({ a: 'yohi', b: 'yoho', c: 'yohey' }),
+      )
+    })
+    it('throws TypeError for String', async () => {
+      assert.throws(
+        () => r.diverge('ayelmao'),
+        new TypeError('cannot diverge to String'),
+      )
+    })
+    it('throws TypeError for Set', async () => {
+      assert.throws(
+        () => r.diverge(new Set([hi])),
+        new TypeError('cannot diverge to Set'),
+      )
+    })
+    it('throws TypeError for Map', async () => {
+      assert.throws(
+        () => r.diverge(new Map([['a', hi]])),
+        new TypeError('cannot diverge to Map'),
+      )
+    })
+  })
 })
