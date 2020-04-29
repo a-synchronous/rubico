@@ -5,6 +5,8 @@ const ase = assert.strictEqual
 
 const ade = assert.deepEqual
 
+const aok = assert.ok
+
 const hi = x => x + 'hi'
 
 const ho = x => x + 'ho'
@@ -27,18 +29,18 @@ describe('rubico', () => {
     it('chaining no fns is identity', async () => {
       ase(await r.flow()('yo'), 'yo')
     })
-    it('can be sync', async () => {
+    it('returns the raw value (no promise required) if all functions are sync', async () => {
       ase(r.flow(hi, hi, hi)('yo'), 'yohihihi')
     })
     it('returns a promise if any fns async', async () => {
-      assert.ok(r.flow(hi, hi, hi, asyncHey)('yo') instanceof Promise)
+      aok(r.flow(hi, hi, hi, asyncHey)('yo') instanceof Promise)
     })
-    it('throws a meaningful error on non functions', async () => {
+    it('throws a TypeError if any arguments are not a function', async () => {
       assert.throws(
         () => {
           r.flow(() => 1, undefined, () => 2)
         },
-        new TypeError('undefined [1] is not a function'),
+        new TypeError('undefined (arguments[1]) is not a function'),
       )
     })
     it('handles sync errors good', async () => {
@@ -66,6 +68,42 @@ describe('rubico', () => {
       ade(
         r.map(hi)(['yo', 1]),
         ['yohi', '1hi'],
+      )
+    })
+    it('applies an async function in parallel to all values of an object', async () => {
+      ade(
+        await r.map(asyncHey)({ a: 'yo', b: 1 }),
+        { a: 'yohey', b: '1hey' },
+      )
+    })
+    it('applies a sync function to all values of an object', async () => {
+      ade(
+        r.map(hi)({ a: 'yo', b: 1 }),
+        { a: 'yohi', b: '1hi' },
+      )
+    })
+    it('throws a TypeError if passed a non function', async () => {
+      assert.throws(
+        () => r.map({}),
+        new TypeError('object is not a function'),
+      )
+    })
+    it('throws a TypeError if input is not an array or object', async () => {
+      assert.throws(
+        () => r.map(hi)('yo'),
+        new TypeError('cannot map from String')
+      )
+    })
+    it('handles sync errors good', async () => {
+      assert.throws(
+        () => r.map(x => { throw new Error(`throwing ${x}`) })(['yo']),
+        new Error('throwing yo')
+      )
+    })
+    it('handles async errors good', async () => {
+      assert.rejects(
+        () => r.map(async x => { throw new Error(`throwing ${x}`) })(['yo']),
+        new Error('throwing yo'),
       )
     })
   })

@@ -18,9 +18,7 @@ const chain = (fns, args, i = 0) => {
   if (isPromise(point)) return new Promise((resolve, reject) => {
     point.then(res => {
       resolve(chain(fns, [res], i + 1))
-    }).catch(err => {
-      reject(err)
-    })
+    }).catch(reject)
   })
   return chain(fns, [point], i + 1)
 }
@@ -28,7 +26,7 @@ const chain = (fns, args, i = 0) => {
 const flow = (...fns) => {
   for (i = 0; i < fns.length; i++) {
     if (isFunction(fns[i])) continue
-    throw new TypeError(`${typeof fns[i]} [${i}] is not a function`)
+    throw new TypeError(`${typeof fns[i]} (arguments[${i}]) is not a function`)
   }
   if (fns.length === 0) return x => x
   return (...x) => chain(fns, x)
@@ -44,21 +42,17 @@ const mapArray = (fn, arr) => {
         point.then(res => {
           retArr[i] = res
           resolve()
-        }).catch(err => {
-          reject(err)
-        })
+        }).catch(reject)
       }))
     } else {
       retArr[i] = point
     }
   }
-  if (promises.length > 1) {
+  if (promises.length > 0) {
     return new Promise((resolve, reject) => {
       Promise.all(promises).then(() => {
         resolve(retArr)
-      }).catch(err => {
-        reject(err)
-      })
+      }).catch(reject)
     })
   } else {
     return retArr
@@ -70,6 +64,27 @@ const mapObject = (fn, obj) => {
   const promises = []
   for (const key in obj) {
     const point = fn(obj[key])
+    if (isPromise(point)) {
+      promises.push(new Promise((resolve, reject) => {
+        point.then(res => {
+          retObj[key] = res
+          resolve()
+        }).catch(reject)
+      }))
+    } else {
+      retObj[key] = point
+    }
+  }
+  if (promises.length > 0) {
+    return new Promise((resolve, reject) => {
+      Promise.all(promises).then(() => {
+        resolve(retObj)
+      }).catch(err => {
+        reject(err)
+      })
+    })
+  } else {
+    return retObj
   }
 }
 
@@ -80,7 +95,7 @@ const map = fn => {
   return x => {
     if (isArray(x)) return mapArray(fn, x)
     if (isObject(x)) return mapObject(fn, x)
-    throw new TypeError(`cannot map ${type(x)}`)
+    throw new TypeError(`cannot map from ${type(x)}`)
   }
 }
 
