@@ -103,7 +103,7 @@ const map = fn => {
 }
 
 // TODO: implement
-const _switch = (...fns) => {}
+const switch_ = (...fns) => {}
 
 // TODO: implement
 // assign({ a: hi, b: ho })
@@ -136,7 +136,7 @@ const diverge = fns => {
 
 const r = {
   pipe, map, diverge,
-  switch: _switch,
+  switch: switch_,
 }
 
 module.exports = r
