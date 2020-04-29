@@ -102,6 +102,9 @@ const map = fn => {
 // TODO: implement
 const switch = (...fns) => {}
 
+// TODO: implement
+const assign = (...fns) => {}
+
 // TODO: reconsider
 const diverge = fns => {
   if (isArray(fns)) {
