@@ -121,7 +121,7 @@ const diverge = fns => {
       return y
     }
   }
-  throw new TypeError(`cannot diverge to ${type(fns)}`)
+  throw new TypeError(`cannot diverge from ${type(fns)}`)
 }
 
 const r = {

@@ -124,19 +124,19 @@ describe('rubico', () => {
     it('throws TypeError for String', async () => {
       assert.throws(
         () => r.diverge('ayelmao'),
-        new TypeError('cannot diverge to String'),
+        new TypeError('cannot diverge from String'),
       )
     })
     it('throws TypeError for Set', async () => {
       assert.throws(
         () => r.diverge(new Set([hi])),
-        new TypeError('cannot diverge to Set'),
+        new TypeError('cannot diverge from Set'),
       )
     })
     it('throws TypeError for Map', async () => {
       assert.throws(
         () => r.diverge(new Map([['a', hi]])),
-        new TypeError('cannot diverge to Map'),
+        new TypeError('cannot diverge from Map'),
       )
     })
   })
