@@ -18,40 +18,48 @@ const asyncHey = x => new Promise(resolve => {
 describe('rubico', () => {
   describe('pipe', () => {
     it('chains async and regular functions together', async () => {
-      ase(await r.pipe(hi, ho, asyncHey)('yo'), 'yohihohey')
+      ase(await r.pipe([hi, ho, asyncHey])('yo'), 'yohihohey')
     })
     it('does something without arguments', async () => {
-      ase(await r.pipe(hi, ho, asyncHey)(), 'undefinedhihohey')
+      ase(await r.pipe([hi, ho, asyncHey])(), 'undefinedhihohey')
     })
     it('chaining one fn is the same as just calling that fn', async () => {
-      ase(await r.pipe(asyncHey)('yo'), await asyncHey('yo'))
+      ase(await r.pipe([asyncHey])('yo'), await asyncHey('yo'))
     })
     it('chaining no fns is identity', async () => {
-      ase(await r.pipe()('yo'), 'yo')
+      ase(await r.pipe([])('yo'), 'yo')
     })
     it('returns the raw value (no promise required) if all functions are sync', async () => {
-      ase(r.pipe(hi, hi, hi)('yo'), 'yohihihi')
+      ase(r.pipe([hi, hi, hi])('yo'), 'yohihihi')
     })
     it('returns a promise if any fns async', async () => {
-      aok(r.pipe(hi, hi, hi, asyncHey)('yo') instanceof Promise)
+      aok(r.pipe([hi, hi, hi, asyncHey])('yo') instanceof Promise)
     })
-    it('throws a TypeError if any arguments are not a function', async () => {
+    xit('throws a TypeError if first argument not an array', async () => {
       assert.throws(
         () => {
           r.pipe(() => 1, undefined, () => 2)
         },
-        new TypeError('undefined (arguments[1]) is not a function'),
+        new TypeError('first argument must be an array of functions'),
+      )
+    })
+    it('throws a TypeError if any arguments are not a function', async () => {
+      assert.throws(
+        () => {
+          r.pipe([() => 1, undefined, () => 2])
+        },
+        new TypeError('undefined (functions[1]) is not a function'),
       )
     })
     it('handles sync errors good', async () => {
       assert.throws(
-        () => r.pipe(hi, hi, x => { throw new Error(`throwing ${x}`) })('yo'),
+        () => r.pipe([hi, hi, x => { throw new Error(`throwing ${x}`) }])('yo'),
         new Error('throwing yohihi'),
       )
     })
     it('handles async errors good', async () => {
       assert.rejects(
-        () => r.pipe(hi, asyncHey, x => { throw new Error(`throwing ${x}`) })('yo'),
+        () => r.pipe([hi, asyncHey, x => { throw new Error(`throwing ${x}`) }])('yo'),
         new Error('throwing yohihey'),
       )
     })

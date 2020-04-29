@@ -23,10 +23,13 @@ const chain = (fns, args, i = 0) => {
   return chain(fns, [point], i + 1)
 }
 
-const pipe = (...fns) => {
+const pipe = fns => {
+  if (!isArray(fns)) {
+    throw new TypeError(`first argument must be an array of functions`)
+  }
   for (i = 0; i < fns.length; i++) {
     if (isFunction(fns[i])) continue
-    throw new TypeError(`${typeof fns[i]} (arguments[${i}]) is not a function`)
+    throw new TypeError(`${typeof fns[i]} (functions[${i}]) is not a function`)
   }
   if (fns.length === 0) return x => x
   return (...x) => chain(fns, x)
