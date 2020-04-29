@@ -23,7 +23,7 @@ const chain = (fns, args, i = 0) => {
   return chain(fns, [point], i + 1)
 }
 
-const flow = (...fns) => {
+const pipe = (...fns) => {
   for (i = 0; i < fns.length; i++) {
     if (isFunction(fns[i])) continue
     throw new TypeError(`${typeof fns[i]} (arguments[${i}]) is not a function`)
@@ -100,12 +100,13 @@ const map = fn => {
 }
 
 // TODO: implement
-const switch = (...fns) => {}
+const _switch = (...fns) => {}
 
 // TODO: implement
+// assign({ a: hi, b: ho })
 const assign = (...fns) => {}
 
-// TODO: reconsider
+// TODO: reconsider name.. put?
 const diverge = fns => {
   if (isArray(fns)) {
     const _fns = fns.map(toFunction)
@@ -131,7 +132,8 @@ const diverge = fns => {
 }
 
 const r = {
-  flow, map, diverge,
+  pipe, map, diverge,
+  switch: _switch,
 }
 
 module.exports = r
