@@ -35,7 +35,7 @@ describe('rubico', () => {
     it('returns a promise if any fns async', async () => {
       aok(r.pipe([hi, hi, hi, asyncHey])('yo') instanceof Promise)
     })
-    xit('throws a TypeError if first argument not an array', async () => {
+    it('throws a TypeError if first argument not an array', async () => {
       assert.throws(
         () => {
           r.pipe(() => 1, undefined, () => 2)
