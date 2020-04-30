@@ -1,3 +1,8 @@
+/* principles
+ *
+ * functional code should not care about async
+ */
+
 const isFunction = x => typeof x === 'function'
 
 const isBinaryFunction = x => typeof x === 'function' && x.length === 2
@@ -89,19 +94,23 @@ const mapObject = (fn, obj) => {
     return new Promise((resolve, reject) => {
       Promise.all(promises).then(() => {
         resolve(retObj)
-      }).catch(err => {
-        reject(err)
-      })
+      }).catch(reject)
     })
   } else {
     return retObj
   }
 }
 
-// TODO: implement
-const mapReducer = (fn, reducer) => {
-  return (y, xi) => {
-    reducer(y, fn(xi))
+const mapReducer = (fn, reducer) => (y, xi) => {
+  const point = fn(xi)
+  if (isPromise(point) || isPromise(y)) {
+    return new Promise((resolve, reject) => {
+      Promise.all([y, point]).then(res => {
+        resolve(reducer(...res))
+      }).catch(reject)
+    })
+  } else {
+    return reducer(y, point)
   }
 }
 
@@ -112,8 +121,7 @@ const map = fn => {
   return x => {
     if (isArray(x)) return mapArray(fn, x)
     if (isObject(x)) return mapObject(fn, x)
-    // TODO: if (isBinaryFunction(x)) return mapReducer(fn, x)
-    // r.map(inc)((y, xi) => y.concat(xi))
+    if (isBinaryFunction(x)) return mapReducer(fn, x)
     throw new TypeError(`cannot map from ${type(x)}`)
   }
 }

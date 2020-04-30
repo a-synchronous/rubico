@@ -15,6 +15,14 @@ const asyncHey = x => new Promise(resolve => {
   setTimeout(() => resolve(x + 'hey'), 10)
 })
 
+const asyncArrayReduce = fn => async x => {
+  if (x.length < 2) throw new Error('array must have length >= 2')
+  let y = await fn(x[0], x[1])
+  let i = 2
+  while (i < x.length) { y = await fn(y, x[i]); i += 1 }
+  return y
+}
+
 describe('rubico', () => {
   describe('pipe', () => {
     it('chains async and regular functions together', async () => {
@@ -92,6 +100,34 @@ describe('rubico', () => {
         r.map(hi)({ a: 'yo', b: 1 }),
         { a: 'yohi', b: '1hi' },
       )
+    })
+    it('acts as a transducer: binary function => reducer', async () => {
+      const addHiReducer = r.map(hi)((y, xi) => y + xi)
+      ase(typeof addHiReducer, 'function')
+      ase(addHiReducer.length, 2)
+      const addHeyReducer = r.map(asyncHey)(
+        (y, xi) => new Promise(resolve => resolve(y + xi)),
+      )
+      ase(typeof addHeyReducer, 'function')
+      ase(addHeyReducer.length, 2)
+    })
+    it('transducer handles sync transformations', async () => {
+      const addHiReducer = r.map(hi)((y, xi) => y + xi)
+      ase([1, 2, 3].reduce(addHiReducer), '12hi3hi')
+    })
+    it('transducer handles async transformations', async () => {
+      const addHeyReducer = r.map(asyncHey)((y, xi) => y + xi)
+      ase(await asyncArrayReduce(addHeyReducer)([1, 2, 3]), '12hey3hey')
+    })
+    it('transducer handles async step functions', async () => {
+      const addHiReducer = r.map(hi)(
+        (y, xi) => new Promise(resolve => resolve(y + xi)),
+      )
+      ase(await asyncArrayReduce(addHiReducer)([1, 2, 3]), '12hi3hi')
+      const addHeyReducer = r.map(asyncHey)(
+        (y, xi) => new Promise(resolve => resolve(y + xi)),
+      )
+      ase(await asyncArrayReduce(addHeyReducer)([1, 2, 3]), '12hey3hey')
     })
     it('throws a TypeError if passed a non function', async () => {
       assert.throws(
