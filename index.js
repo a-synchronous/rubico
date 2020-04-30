@@ -1,5 +1,7 @@
 const isFunction = x => typeof x === 'function'
 
+const isBinaryFunction = x => typeof x === 'function' && x.length === 2
+
 const toFunction = x => isFunction(x) ? x : (() => x)
 
 const is = fn => x => x && x.constructor && x.constructor === fn
@@ -91,6 +93,9 @@ const mapObject = (fn, obj) => {
   }
 }
 
+// TODO: implement
+const mapReducer = (fn, reducer) => {}
+
 const map = fn => {
   if (!isFunction(fn)) {
     throw new TypeError(`${typeof fn} is not a function`)
@@ -98,6 +103,8 @@ const map = fn => {
   return x => {
     if (isArray(x)) return mapArray(fn, x)
     if (isObject(x)) return mapObject(fn, x)
+    // TODO: if (isBinaryFunction(x)) return mapReducer(fn, x)
+    // r.map(inc)((y, xi) => y.concat(xi))
     throw new TypeError(`cannot map from ${type(x)}`)
   }
 }
