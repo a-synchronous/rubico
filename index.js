@@ -127,7 +127,25 @@ const map = fn => {
 }
 
 // TODO: implement
-const filter = fn => x => {}
+const filterArray = (fn, arr) => {}
+
+// TODO: implement
+const filterObject = (fn, obj) => {}
+
+// TODO: implement
+const filterReducer = (fn, reducer) => {}
+
+const filter = fn => {
+  if (!isFunction(fn)) {
+    throw new TypeError(`${typeof fn} is not a function`)
+  }
+  return x => {
+    if (isArray(x)) return filterArray(fn, x)
+    if (isObject(x)) return filterObject(fn, x)
+    if (isBinaryFunction(x)) return filterReducer(fn, x)
+    throw new TypeError(`cannot filter from ${type(x)}`)
+  }
+}
 
 // TODO: implement
 const reduce = fn => x => {}
