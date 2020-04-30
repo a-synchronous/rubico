@@ -103,11 +103,15 @@ const map = fn => {
 }
 
 // TODO: implement
-const switch_ = (...fns) => {}
+const filter = fn => x => {}
 
 // TODO: implement
-// assign({ a: hi, b: ho })
-const assign = (...fns) => {}
+const reduce = fn => x => {}
+
+// TODO: implement
+// r.assign({ a: hi, b: ho })
+// input must be object
+const assign = fns => {}
 
 // TODO: reconsider name.. put?
 const diverge = fns => {
@@ -134,8 +138,17 @@ const diverge = fns => {
   throw new TypeError(`cannot diverge from ${type(fns)}`)
 }
 
+// TODO: implement
+// r.switch([isNumber, () => 'was number', isString, 'was string', throwError])
+const switch_ = fns => {}
+
 const r = {
-  pipe, map, diverge,
+  pipe,
+  map,
+  filter,
+  reduce,
+  assign,
+  diverge,
   switch: switch_,
 }
 
