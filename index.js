@@ -14,15 +14,15 @@ const isPromise = is(Promise)
 
 const type = x => (x && x.constructor && x.constructor.name) || typeof x
 
-const chain = (fns, args, i, step) => {
+const _chain = (fns, args, i, step, end) => {
   const point = fns[i](...args)
-  if (i === fns.length - 1) return point
+  if (i === (end - step)) return point
   if (isPromise(point)) return new Promise((resolve, reject) => {
     point.then(res => {
-      resolve(chain(fns, [res], i + step, step))
+      resolve(_chain(fns, [res], i + step, step, end))
     }).catch(reject)
   })
-  return chain(fns, [point], i + step, step)
+  return _chain(fns, [point], i + step, step, end)
 }
 
 const pipe = fns => {
@@ -34,7 +34,12 @@ const pipe = fns => {
     throw new TypeError(`${typeof fns[i]} (functions[${i}]) is not a function`)
   }
   if (fns.length === 0) return x => x
-  return (...x) => chain(fns, x, 0, 1)
+  return (...args) => {
+    if (isBinaryFunction(args[0])) {
+      return _chain(fns, args, fns.length - 1, -1, -1)
+    }
+    return _chain(fns, args, 0, 1, fns.length)
+  }
 }
 
 const mapArray = (fn, arr) => {

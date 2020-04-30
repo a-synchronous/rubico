@@ -20,6 +20,9 @@ describe('rubico', () => {
     it('chains async and regular functions together', async () => {
       ase(await r.pipe([hi, ho, asyncHey])('yo'), 'yohihohey')
     })
+    it('chains functions in reverse if passed a reducer (very contrived)', async () => {
+      ase(await r.pipe([hi, ho, asyncHey])((y, xi) => y + xi), '(y, xi) => y + xiheyhohi')
+    })
     it('does something without arguments', async () => {
       ase(await r.pipe([hi, ho, asyncHey])(), 'undefinedhihohey')
     })
