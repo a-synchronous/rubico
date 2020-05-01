@@ -98,9 +98,8 @@ const mapReducer = (fn, reducer) => (y, xi) => {
         resolve(reducer(...res))
       }).catch(reject)
     })
-  } else {
-    return reducer(y, point)
   }
+  return reducer(y, point)
 }
 
 const map = fn => {
