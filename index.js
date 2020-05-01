@@ -1,6 +1,8 @@
 /* principles
  *
+ * this is a module, not a utility library
  * functional code should not care about async
+ * these functions are optimized for v8
  */
 
 const isFunction = x => typeof x === 'function'
@@ -18,6 +20,10 @@ const isObject = is(Object)
 const isPromise = is(Promise)
 
 const type = x => (x && x.constructor && x.constructor.name) || typeof x
+
+const range = (start, end) => Array.from({ length: end - start }, (x, i) => i + start)
+
+const arrayOf = (item, length) => Array.from({ length }, () => item)
 
 const _chain = (fns, args, i, step, end) => {
   const point = fns[i](...args)
@@ -47,31 +53,15 @@ const pipe = fns => {
   }
 }
 
+// arr.map: https://v8.dev/blog/elements-kinds#avoid-polymorphism
 const mapArray = (fn, arr) => {
-  const retArr = []
-  const promises = []
-  for (let i = 0; i < arr.length; i++) {
-    const point = fn(arr[i])
-    if (isPromise(point)) {
-      promises.push(new Promise((resolve, reject) => {
-        point.then(res => {
-          retArr[i] = res
-          resolve()
-        }).catch(reject)
-      }))
-    } else {
-      retArr[i] = point
-    }
-  }
-  if (promises.length > 0) {
-    return new Promise((resolve, reject) => {
-      Promise.all(promises).then(() => {
-        resolve(retArr)
-      }).catch(reject)
-    })
-  } else {
-    return retArr
-  }
+  let isAsync = false
+  const retArr = arr.map(item => {
+    const point = fn(item)
+    if (isPromise(point)) isAsync = true
+    return point
+  })
+  return isAsync ? Promise.all(retArr) : retArr
 }
 
 const mapObject = (fn, obj) => {
@@ -127,7 +117,18 @@ const map = fn => {
 }
 
 // TODO: implement
-const filterArray = (fn, arr) => {}
+const filterArray = (fn, arr) => {
+  const retArr = []
+  const promises = []
+  for (let i = 0; i < arr.length; i++) {
+    const ok = fn(arr[i])
+    if (isPromise(ok)) {
+      // noop
+    } else {
+      // noop
+    }
+  }
+}
 
 // TODO: implement
 const filterObject = (fn, obj) => {}
