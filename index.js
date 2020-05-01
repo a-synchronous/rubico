@@ -81,11 +81,7 @@ const mapObject = (fn, obj) => {
     }
   }
   if (promises.length > 0) {
-    return new Promise((resolve, reject) => {
-      Promise.all(promises).then(() => {
-        resolve(retObj)
-      }).catch(reject)
-    })
+    return Promise.all(promises).then(() => retObj)
   }
   return retObj
 }
@@ -129,8 +125,27 @@ const filterArray = (fn, arr) => {
   return arr.filter((_, i) => okArr[i])
 }
 
-// TODO: implement
-const filterObject = (fn, obj) => {}
+const filterObject = (fn, obj) => {
+  const retObj = {}
+  const promises = []
+  for (const k in obj) {
+    const ok = fn(obj[k])
+    if (isPromise(ok)) {
+      promises.push(new Promise((resolve, reject) => {
+        ok.then(res => {
+          if (res) { retObj[k] = obj[k] }
+          resolve()
+        }).catch(reject)
+      }))
+    } else {
+      if (ok) { retObj[k] = obj[k] }
+    }
+  }
+  if (promises.length > 0) {
+    return Promise.all(promises).then(() => retObj)
+  }
+  return retObj
+}
 
 // TODO: implement
 const filterReducer = (fn, reducer) => {}

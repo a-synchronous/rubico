@@ -173,6 +173,17 @@ describe('rubico', () => {
       aok(evens instanceof Promise)
       ade(await evens, [2, 4])
     })
+    it('filters entries from an object with a sync predicate', async () => {
+      ade(
+        r.filter(isOdd)({ a: 1, b: 2, c: 3, d: 4, e: 5 }),
+        { a: 1, c: 3, e: 5 },
+      )
+    })
+    it('filters entries from an object with an async predicate', async () => {
+      const evens = r.filter(asyncIsEven)({ a: 1, b: 2, c: 3, d: 4, e: 5 })
+      aok(evens instanceof Promise)
+      ade(await evens, { b: 2, d: 4 })
+    })
   })
 
   describe('diverge', () => {
