@@ -11,6 +11,12 @@ const hi = x => x + 'hi'
 
 const ho = x => x + 'ho'
 
+const isOdd = x => (x % 2 === 1)
+
+const asyncIsEven = x => new Promise(resolve => {
+  setTimeout(() => resolve(x % 2 === 0), 10)
+})
+
 const asyncHey = x => new Promise(resolve => {
   setTimeout(() => resolve(x + 'hey'), 10)
 })
@@ -152,6 +158,20 @@ describe('rubico', () => {
         () => r.map(async x => { throw new Error(`throwing ${x}`) })(['yo']),
         new Error('throwing yo'),
       )
+    })
+  })
+
+  describe('filter', () => {
+    it('filters elements from an array with a sync predicate', async () => {
+      ade(
+        r.filter(isOdd)([1, 2, 3, 4, 5]),
+        [1, 3, 5],
+      )
+    })
+    it('filters elements from an array with an async predicate', async () => {
+      const evens = r.filter(asyncIsEven)([1, 2, 3, 4, 5])
+      aok(evens instanceof Promise)
+      ade(await evens, [2, 4])
     })
   })
 

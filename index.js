@@ -86,9 +86,8 @@ const mapObject = (fn, obj) => {
         resolve(retObj)
       }).catch(reject)
     })
-  } else {
-    return retObj
   }
+  return retObj
 }
 
 const mapReducer = (fn, reducer) => (y, xi) => {
@@ -116,18 +115,19 @@ const map = fn => {
   }
 }
 
-// TODO: implement
 const filterArray = (fn, arr) => {
-  const retArr = []
-  const promises = []
-  for (let i = 0; i < arr.length; i++) {
-    const ok = fn(arr[i])
-    if (isPromise(ok)) {
-      // noop
-    } else {
-      // noop
-    }
+  let isAsync = false
+  const okArr = arr.map(item => {
+    const ok = fn(item)
+    if (isPromise(ok)) isAsync = true
+    return ok
+  })
+  if (isAsync) {
+    return Promise.all(okArr).then(
+      res => arr.filter((_, i) => res[i])
+    )
   }
+  return arr.filter((_, i) => okArr[i])
 }
 
 // TODO: implement
