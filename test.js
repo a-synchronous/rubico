@@ -216,6 +216,30 @@ describe('rubico', () => {
       )
       ase(await asyncArrayReduce(addEvensReducer, 0)([1, 2, 3, 4, 5, 6]), 12)
     })
+    it('throws a TypeError if passed a non function', async () => {
+      assert.throws(
+        () => r.filter({}),
+        new TypeError('object is not a function'),
+      )
+    })
+    it('throws a TypeError if input is not an array or object', async () => {
+      assert.throws(
+        () => r.filter(hi)('yo'),
+        new TypeError('cannot filter from String')
+      )
+    })
+    it('handles sync errors good', async () => {
+      assert.throws(
+        () => r.filter(x => { throw new Error(`throwing ${x}`) })(['yo']),
+        new Error('throwing yo')
+      )
+    })
+    it('handles async errors good', async () => {
+      assert.rejects(
+        () => r.filter(async x => { throw new Error(`throwing ${x}`) })(['yo']),
+        new Error('throwing yo'),
+      )
+    })
   })
 
   describe('diverge', () => {
