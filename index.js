@@ -89,11 +89,9 @@ const mapObject = (fn, obj) => {
 const mapReducer = (fn, reducer) => (y, xi) => {
   const point = fn(xi)
   if (isPromise(point) || isPromise(y)) {
-    return new Promise((resolve, reject) => {
-      Promise.all([y, point]).then(res => {
-        resolve(reducer(...res))
-      }).catch(reject)
-    })
+    return Promise.all([y, point]).then(
+      res => reducer(...res)
+    )
   }
   return reducer(y, point)
 }
@@ -147,8 +145,15 @@ const filterObject = (fn, obj) => {
   return retObj
 }
 
-// TODO: implement
-const filterReducer = (fn, reducer) => {}
+const filterReducer = (fn, reducer) => (y, xi) => {
+  const ok = fn(xi)
+  if (isPromise(ok) || isPromise(y)) {
+    return Promise.all([ok, y]).then(
+      res => res[0] ? reducer(res[1], xi) : res[1]
+    )
+  }
+  return ok ? reducer(y, xi) : y
+}
 
 const filter = fn => {
   if (!isFunction(fn)) {

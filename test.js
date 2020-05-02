@@ -21,10 +21,16 @@ const asyncHey = x => new Promise(resolve => {
   setTimeout(() => resolve(x + 'hey'), 10)
 })
 
-const asyncArrayReduce = fn => async x => {
+const asyncArrayReduce = (fn, y0) => async x => {
   if (x.length < 2) throw new Error('array must have length >= 2')
-  let y = await fn(x[0], x[1])
-  let i = 2
+  let y, i
+  if (y0 === undefined || y0 === null) {
+    y = await fn(x[0], x[1])
+    i = 2
+  } else {
+    y = await fn(y0, x[0])
+    i = 1
+  }
   while (i < x.length) { y = await fn(y, x[i]); i += 1 }
   return y
 }
@@ -107,7 +113,7 @@ describe('rubico', () => {
         { a: 'yohi', b: '1hi' },
       )
     })
-    it('acts as a transducer: binary function => reducer', async () => {
+    it('acts as a map transducer: binary function => reducer', async () => {
       const addHiReducer = r.map(hi)((y, xi) => y + xi)
       ase(typeof addHiReducer, 'function')
       ase(addHiReducer.length, 2)
@@ -123,17 +129,17 @@ describe('rubico', () => {
     })
     it('transducer handles async transformations', async () => {
       const addHeyReducer = r.map(asyncHey)((y, xi) => y + xi)
-      ase(await asyncArrayReduce(addHeyReducer)([1, 2, 3]), '12hey3hey')
+      ase(await asyncArrayReduce(addHeyReducer, '')([1, 2, 3]), '1hey2hey3hey')
     })
     it('transducer handles async step functions', async () => {
       const addHiReducer = r.map(hi)(
         (y, xi) => new Promise(resolve => resolve(y + xi)),
       )
-      ase(await asyncArrayReduce(addHiReducer)([1, 2, 3]), '12hi3hi')
+      ase(await asyncArrayReduce(addHiReducer, '')([1, 2, 3]), '1hi2hi3hi')
       const addHeyReducer = r.map(asyncHey)(
         (y, xi) => new Promise(resolve => resolve(y + xi)),
       )
-      ase(await asyncArrayReduce(addHeyReducer)([1, 2, 3]), '12hey3hey')
+      ase(await asyncArrayReduce(addHeyReducer, '')([1, 2, 3]), '1hey2hey3hey')
     })
     it('throws a TypeError if passed a non function', async () => {
       assert.throws(
@@ -183,6 +189,32 @@ describe('rubico', () => {
       const evens = r.filter(asyncIsEven)({ a: 1, b: 2, c: 3, d: 4, e: 5 })
       aok(evens instanceof Promise)
       ade(await evens, { b: 2, d: 4 })
+    })
+    it('acts as a filter transducer: binary function => reducer', async () => {
+      const addOddsReducer = r.filter(isOdd)((y, xi) => y + xi)
+      ase(typeof addOddsReducer, 'function')
+      ase(addOddsReducer.length, 2)
+      const addEvensReducer = r.filter(asyncIsEven)((y, xi) => y + xi)
+      ase(typeof addEvensReducer, 'function')
+      ase(addEvensReducer.length, 2)
+    })
+    it('transducer handles sync predicates', async () => {
+      const addOddsReducer = r.filter(isOdd)((y, xi) => y + xi)
+      ase([1, 2, 3, 4, 5].reduce(addOddsReducer), 9)
+    })
+    it('transducer handles async predicates', async () => {
+      const addEvensReducer = r.filter(asyncIsEven)((y, xi) => y + xi)
+      ase(await asyncArrayReduce(addEvensReducer, 0)([1, 2, 3, 4, 5, 6], 0), 12)
+    })
+    it('transducer handles async step functions', async () => {
+      const addOddsReducer = r.filter(isOdd)(
+        (y, xi) => Promise.resolve(y + xi)
+      )
+      ase(await asyncArrayReduce(addOddsReducer, 0)([1, 2, 3, 4, 5, 6]), 9)
+      const addEvensReducer = r.filter(asyncIsEven)(
+        (y, xi) => Promise.resolve(y + xi)
+      )
+      ase(await asyncArrayReduce(addEvensReducer, 0)([1, 2, 3, 4, 5, 6]), 12)
     })
   })
 
