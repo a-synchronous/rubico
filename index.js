@@ -168,7 +168,21 @@ const filter = fn => {
 }
 
 // TODO: implement
-const reduce = fn => x => {}
+const reduceArray = (fn, y0, arr) => {}
+
+// TODO: implement
+const reduceObject = (fn, y0, obj) => {}
+
+const reduce = (fn, y0) => {
+  if (!isFunction(fn)) {
+    throw new TypeError(`${typeof fn} is not a function`)
+  }
+  return x => {
+    if (isArray(x)) return reduceArray(fn, y0, x)
+    if (isObject(x)) return reduceObject(fn, y0, x)
+    throw new TypeError(`cannot reduce from ${type(x)}`)
+  }
+}
 
 // TODO: implement
 // r.assign({ a: hi, b: ho })
