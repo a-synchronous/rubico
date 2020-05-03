@@ -4,6 +4,7 @@
  * functional code should not care about async
  * these functions are optimized for v8
  */
+const isDefined = x => x !== undefined && x !== null
 
 const isFunction = x => typeof x === 'function'
 
@@ -11,13 +12,13 @@ const isBinaryFunction = x => typeof x === 'function' && x.length === 2
 
 const toFunction = x => isFunction(x) ? x : (() => x)
 
+const isArray = x => x instanceof Array
+
+const isPromise = x => x instanceof Promise
+
 const is = fn => x => x && x.constructor && x.constructor === fn
 
-const isArray = is(Array)
-
 const isObject = is(Object)
-
-const isPromise = is(Promise)
 
 const type = x => (x && x.constructor && x.constructor.name) || typeof x
 
@@ -42,7 +43,7 @@ const pipe = fns => {
   }
   for (i = 0; i < fns.length; i++) {
     if (isFunction(fns[i])) continue
-    throw new TypeError(`${typeof fns[i]} (functions[${i}]) is not a function`)
+    throw new TypeError(`${type(fns[i])} (functions[${i}]) is not a function`)
   }
   if (fns.length === 0) return x => x
   return (...args) => {
@@ -98,7 +99,7 @@ const mapReducer = (fn, reducer) => (y, xi) => {
 
 const map = fn => {
   if (!isFunction(fn)) {
-    throw new TypeError(`${typeof fn} is not a function`)
+    throw new TypeError(`${type(fn)} is not a function`)
   }
   return x => {
     if (isArray(x)) return mapArray(fn, x)
@@ -157,7 +158,7 @@ const filterReducer = (fn, reducer) => (y, xi) => {
 
 const filter = fn => {
   if (!isFunction(fn)) {
-    throw new TypeError(`${typeof fn} is not a function`)
+    throw new TypeError(`${type(fn)} is not a function`)
   }
   return x => {
     if (isArray(x)) return filterArray(fn, x)
@@ -167,19 +168,12 @@ const filter = fn => {
   }
 }
 
-// TODO: implement
-const reduceArray = (fn, y0, arr) => {}
-
-// TODO: implement
-const reduceObject = (fn, y0, obj) => {}
-
+// 1. run fn on each xi - fn has a reference to y
 const reduce = (fn, y0) => {
   if (!isFunction(fn)) {
-    throw new TypeError(`${typeof fn} is not a function`)
+    throw new TypeError(`${type(fn)} is not a function`)
   }
   return x => {
-    if (isArray(x)) return reduceArray(fn, y0, x)
-    if (isObject(x)) return reduceObject(fn, y0, x)
     throw new TypeError(`cannot reduce from ${type(x)}`)
   }
 }

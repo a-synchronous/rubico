@@ -144,7 +144,7 @@ describe('rubico', () => {
     it('throws a TypeError if passed a non function', async () => {
       assert.throws(
         () => r.map({}),
-        new TypeError('object is not a function'),
+        new TypeError('Object is not a function'),
       )
     })
     it('throws a TypeError if input is not an array or object', async () => {
@@ -219,7 +219,7 @@ describe('rubico', () => {
     it('throws a TypeError if passed a non function', async () => {
       assert.throws(
         () => r.filter({}),
-        new TypeError('object is not a function'),
+        new TypeError('Object is not a function'),
       )
     })
     it('throws a TypeError if input is not an array or object', async () => {
