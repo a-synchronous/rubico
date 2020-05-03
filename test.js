@@ -14,11 +14,15 @@ const ho = x => x + 'ho'
 const isOdd = x => (x % 2 === 1)
 
 const asyncIsEven = x => new Promise(resolve => {
-  setTimeout(() => resolve(x % 2 === 0), 10)
+  setImmediate(() => resolve(x % 2 === 0))
 })
 
 const asyncHey = x => new Promise(resolve => {
-  setTimeout(() => resolve(x + 'hey'), 10)
+  setImmediate(() => resolve(x + 'hey'))
+})
+
+const asyncMult = (y, xi) => new Promise(resolve => {
+  setImmediate(() => resolve(y * xi))
 })
 
 const asyncArrayReduce = (fn, y0) => async x => {
@@ -126,19 +130,12 @@ describe('rubico', () => {
     it('transducer handles sync transformations', async () => {
       const addHiReducer = r.map(hi)((y, xi) => y + xi)
       ase([1, 2, 3].reduce(addHiReducer), '12hi3hi')
+      ase([1, 2, 3].reduce(addHiReducer, ''), '1hi2hi3hi')
     })
     it('transducer handles async transformations', async () => {
       const addHeyReducer = r.map(asyncHey)((y, xi) => y + xi)
-      ase(await asyncArrayReduce(addHeyReducer, '')([1, 2, 3]), '1hey2hey3hey')
-    })
-    it('transducer handles async step functions', async () => {
-      const addHiReducer = r.map(hi)(
-        (y, xi) => new Promise(resolve => resolve(y + xi)),
-      )
-      ase(await asyncArrayReduce(addHiReducer, '')([1, 2, 3]), '1hi2hi3hi')
-      const addHeyReducer = r.map(asyncHey)(
-        (y, xi) => new Promise(resolve => resolve(y + xi)),
-      )
+      aok(asyncArrayReduce(addHeyReducer)([1, 2, 3]) instanceof Promise)
+      ase(await asyncArrayReduce(addHeyReducer)([1, 2, 3]), '12hey3hey')
       ase(await asyncArrayReduce(addHeyReducer, '')([1, 2, 3]), '1hey2hey3hey')
     })
     it('throws a TypeError if passed a non function', async () => {
@@ -200,21 +197,11 @@ describe('rubico', () => {
     })
     it('transducer handles sync predicates', async () => {
       const addOddsReducer = r.filter(isOdd)((y, xi) => y + xi)
-      ase([1, 2, 3, 4, 5].reduce(addOddsReducer), 9)
+      ase([1, 2, 3, 4, 5].reduce(addOddsReducer, 0), 9)
     })
     it('transducer handles async predicates', async () => {
       const addEvensReducer = r.filter(asyncIsEven)((y, xi) => y + xi)
       ase(await asyncArrayReduce(addEvensReducer, 0)([1, 2, 3, 4, 5, 6], 0), 12)
-    })
-    it('transducer handles async step functions', async () => {
-      const addOddsReducer = r.filter(isOdd)(
-        (y, xi) => Promise.resolve(y + xi)
-      )
-      ase(await asyncArrayReduce(addOddsReducer, 0)([1, 2, 3, 4, 5, 6]), 9)
-      const addEvensReducer = r.filter(asyncIsEven)(
-        (y, xi) => Promise.resolve(y + xi)
-      )
-      ase(await asyncArrayReduce(addEvensReducer, 0)([1, 2, 3, 4, 5, 6]), 12)
     })
     it('throws a TypeError if passed a non function', async () => {
       assert.throws(
@@ -240,6 +227,54 @@ describe('rubico', () => {
         new Error('throwing yo'),
       )
     })
+  })
+
+  describe('reduce', () => {
+    const iterables = [
+      [1, 2, 3, 4, 5],
+      { a: 1, b: 2, c: 3, d: 4, e: 5 },
+      new Set([1, 2, 3, 4, 5]),
+      {
+        [Symbol.iterator]: function* () {
+          for (let i = 1; i < 6; i++) yield i
+        },
+      },
+    ]
+    it('reduces any iterable with sync reducer', async () => {
+      for (const x of iterables) {
+        ase(r.reduce((y, xi) => y + xi)(x), 15)
+        ase(r.reduce((y, xi) => y + xi, 10)(x), 25)
+      }
+    })
+    it('reduces any iterable with async reducer', async () => {
+      aok(asyncMult(1, 2) instanceof Promise)
+      for (const x of iterables) {
+        aok(r.reduce(asyncMult)(x) instanceof Promise)
+        ase(await r.reduce(asyncMult)(x), 120)
+        ase(await r.reduce(asyncMult, 10)(x), 1200)
+      }
+    })
+    it('throws a TypeError if passed a non function', async () => {
+      assert.throws(
+        () => r.reduce({}),
+        new TypeError('Object is not a function'),
+      )
+    })
+    it('throws a TypeError if passed a non iterable', async () => {
+      assert.throws(
+        () => r.reduce((y, xi) => y + xi)(1),
+        new TypeError('cannot get iterator from Number'),
+      )
+    })
+    it('throws an Error on empty iterator', async () => {
+      assert.throws(
+        () => r.reduce((y, xi) => y + xi)([]),
+        new TypeError('cannot reduce empty iterator'),
+      )
+    })
+  })
+
+  describe('pipe, map, filter, reduce', () => {
   })
 
   describe('diverge', () => {

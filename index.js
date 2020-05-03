@@ -89,7 +89,7 @@ const mapObject = (fn, obj) => {
 
 const mapReducer = (fn, reducer) => (y, xi) => {
   const point = fn(xi)
-  if (isPromise(point) || isPromise(y)) {
+  if (isPromise(point)) {
     return Promise.all([y, point]).then(
       res => reducer(...res)
     )
@@ -148,7 +148,7 @@ const filterObject = (fn, obj) => {
 
 const filterReducer = (fn, reducer) => (y, xi) => {
   const ok = fn(xi)
-  if (isPromise(ok) || isPromise(y)) {
+  if (isPromise(ok)) {
     return Promise.all([ok, y]).then(
       res => res[0] ? reducer(res[1], xi) : res[1]
     )
@@ -168,13 +168,43 @@ const filter = fn => {
   }
 }
 
-// 1. run fn on each xi - fn has a reference to y
+const getIterator = x => {
+  /* TODO: consider AsyncIterator
+  if (isDefined(x[Symbol.asyncIterator])) {
+    return x[Symbol.asyncIterator].bind(x)()
+  }
+  */
+  if (isDefined(x[Symbol.iterator])) {
+    return x[Symbol.iterator].bind(x)()
+  }
+  if (isObject(x)) {
+    return (function* () { for (const k in x) yield x[k] })()
+  }
+  throw new TypeError(`cannot get iterator from ${type(x)}`)
+}
+
 const reduce = (fn, y0) => {
   if (!isFunction(fn)) {
     throw new TypeError(`${type(fn)} is not a function`)
   }
   return x => {
-    throw new TypeError(`cannot reduce from ${type(x)}`)
+    const iter = getIterator(x)
+    let cursor = iter.next()
+    if (cursor.done) {
+      throw new TypeError('cannot reduce empty iterator')
+    }
+    let y = isDefined(y0) ? fn(y0, cursor.value) : (() => {
+      const x0 = cursor.value
+      cursor = iter.next()
+      return cursor.done ? x0 : fn(x0, cursor.value)
+    })()
+    cursor = iter.next()
+    while (!cursor.done) {
+      const { value } = cursor
+      y = isPromise(y) ? y.then(res => fn(res, value)) : fn(y, value)
+      cursor = iter.next()
+    }
+    return y
   }
 }
 
