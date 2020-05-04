@@ -209,11 +209,22 @@ const reduce = (fn, y0) => {
 }
 
 // TODO: implement
+const pick = keys => {}
+
+// TODO: implement
+const omit = keys => {}
+
+// TODO: implement
+const get = path => {}
+
+// TODO: implement
 // r.assign({ a: hi, b: ho })
 // input must be object
 const assign = fns => {}
 
-// TODO: reconsider name.. put?
+// TODO: reconsider name.. tee
+// r.tee([hi, ho]) === x => [hi(x), ho(x)]
+// r.tee({ a: hi, b: ho })
 const diverge = fns => {
   if (isArray(fns)) {
     const _fns = fns.map(toFunction)
