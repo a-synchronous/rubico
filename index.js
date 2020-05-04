@@ -29,12 +29,9 @@ const arrayOf = (item, length) => Array.from({ length }, () => item)
 const _chain = (fns, args, i, step, end) => {
   const point = fns[i](...args)
   if (i === (end - step)) return point
-  if (isPromise(point)) return new Promise((resolve, reject) => {
-    point.then(res => {
-      resolve(_chain(fns, [res], i + step, step, end))
-    }).catch(reject)
-  })
-  return _chain(fns, [point], i + step, step, end)
+  return isPromise(point) ? (
+    point.then(res => _chain(fns, [res], i + step, step, end))
+  ) : _chain(fns, [point], i + step, step, end)
 }
 
 const pipe = fns => {
@@ -54,8 +51,37 @@ const pipe = fns => {
   }
 }
 
-// r.tee([hi, ho]) === x => [hi(x), ho(x)]
-// r.tee({ a: hi, b: ho })
+const teeArray = (fns, x) => {
+  let isAsync = false
+  const y = fns.map(fn => {
+    const point = fn(x)
+    if (isPromise(point)) isAsync = true
+    return point
+  })
+  return isAsync ? Promise.all(y) : y
+}
+
+/*
+const teeObject = (fns, x) => {
+  const y = {}, promises = []
+  for (const k in fns) {
+    const point = fns[k](x)
+    if (isPromise(point)) {
+      promises.push(point.then(res => { y[k] = res }))
+    } else {
+      y[k] = point
+    }
+  }
+  return promises.length > 0 ? Promise.all(promises).then(() => y) : y
+}
+
+const tee = fns => {
+  if (isArray(fns)) return x => teeArray(fns, x)
+  if (isObject(fns)) return x => teeObject(fns, x)
+  throw new TypeError(`cannot tee into ${type(fns)}`)
+}
+*/
+
 const tee = fns => {
   if (isArray(fns)) {
     const _fns = fns.map(toFunction)
@@ -91,36 +117,24 @@ const mapArray = (fn, arr) => {
   return isAsync ? Promise.all(retArr) : retArr
 }
 
-const mapObject = (fn, obj) => {
-  const retObj = {}
-  const promises = []
-  for (const key in obj) {
-    const point = fn(obj[key])
+const mapObject = (fn, x) => {
+  const y = {}, promises = []
+  for (const k in x) {
+    const point = fn(x[k])
     if (isPromise(point)) {
-      promises.push(new Promise((resolve, reject) => {
-        point.then(res => {
-          retObj[key] = res
-          resolve()
-        }).catch(reject)
-      }))
+      promises.push(point.then(res => { y[k] = res }))
     } else {
-      retObj[key] = point
+      y[k] = point
     }
   }
-  if (promises.length > 0) {
-    return Promise.all(promises).then(() => retObj)
-  }
-  return retObj
+  return promises.length > 0 ? Promise.all(promises).then(() => y) : y
 }
 
 const mapReducer = (fn, reducer) => (y, xi) => {
   const point = fn(xi)
-  if (isPromise(point)) {
-    return Promise.all([y, point]).then(
-      res => reducer(...res)
-    )
-  }
-  return reducer(y, point)
+  return isPromise(point) ? point.then(
+    res => reducer(y, res)
+  ) : reducer(y, point)
 }
 
 const map = fn => {
@@ -142,34 +156,20 @@ const filterArray = (fn, arr) => {
     if (isPromise(ok)) isAsync = true
     return ok
   })
-  if (isAsync) {
-    return Promise.all(okArr).then(
-      res => arr.filter((_, i) => res[i])
-    )
-  }
-  return arr.filter((_, i) => okArr[i])
+  return isAsync ? Promise.all(okArr).then(
+    res => arr.filter((_, i) => res[i])
+  ) : arr.filter((_, i) => okArr[i])
 }
 
-const filterObject = (fn, obj) => {
-  const retObj = {}
-  const promises = []
-  for (const k in obj) {
-    const ok = fn(obj[k])
+const filterObject = (fn, x) => {
+  const y = {}, promises = []
+  for (const k in x) {
+    const ok = fn(x[k])
     if (isPromise(ok)) {
-      promises.push(new Promise((resolve, reject) => {
-        ok.then(res => {
-          if (res) { retObj[k] = obj[k] }
-          resolve()
-        }).catch(reject)
-      }))
-    } else {
-      if (ok) { retObj[k] = obj[k] }
-    }
+      promises.push(ok.then(res => { if (res) { y[k] = x[k] } }))
+    } else if (ok) { y[k] = x[k] }
   }
-  if (promises.length > 0) {
-    return Promise.all(promises).then(() => retObj)
-  }
-  return retObj
+  return promises.length > 0 ? Promise.all(promises).then(() => y) : y
 }
 
 const filterReducer = (fn, reducer) => (y, xi) => {
