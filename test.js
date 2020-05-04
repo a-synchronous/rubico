@@ -93,16 +93,34 @@ describe('rubico', () => {
   })
 
   describe('tee', () => {
-    it('parallelizes input to Array', async () => {
+    it('maps input to array of sync functions', async () => {
+      ade(r.tee([hi, hi, hi])('yo'), ['yohi', 'yohi', 'yohi'])
+    })
+    it('maps input to object of sync functions', async () => {
       ade(
-        await r.tee([hi, ho, asyncHey])('yo'),
-        ['yohi', 'yoho', 'yohey'],
+        r.tee({ a: hi, b: hi, c: hi })('yo'),
+        { a: 'yohi', b: 'yohi', c: 'yohi' },
       )
     })
-    it('parallelizes input to Object', async () => {
+    it('maps input to array of async functions', async () => {
+      aok(r.tee([asyncHey, asyncHey, asyncHey])('yo') instanceof Promise)
       ade(
-        await r.tee({ a: hi, b: ho, c: asyncHey })('yo'),
-        ({ a: 'yohi', b: 'yoho', c: 'yohey' }),
+        await r.tee([asyncHey, asyncHey, asyncHey])('yo'),
+        ['yohey', 'yohey', 'yohey'],
+      )
+    })
+    it('maps input to object of async functions', async () => {
+      aok(r.tee({ a: asyncHey, b: asyncHey, c: asyncHey })('yo') instanceof Promise)
+      ade(
+        await r.tee({ a: asyncHey, b: asyncHey, c: asyncHey })('yo'),
+        { a: 'yohey', b: 'yohey', c: 'yohey' },
+      )
+    })
+    it('any functions async => Promise', async () => {
+      aok(r.tee([asyncHey, asyncHey, hi])('yo') instanceof Promise)
+      ade(
+        await r.tee([asyncHey, asyncHey, hi])('yo'),
+        ['yohey', 'yohey', 'yohi'],
       )
     })
     it('throws TypeError for String', async () => {

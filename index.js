@@ -51,7 +51,7 @@ const pipe = fns => {
   }
 }
 
-const teeArray = (fns, x) => {
+const arrayTee = (fns, x) => {
   let isAsync = false
   const y = fns.map(fn => {
     const point = fn(x)
@@ -61,8 +61,7 @@ const teeArray = (fns, x) => {
   return isAsync ? Promise.all(y) : y
 }
 
-/*
-const teeObject = (fns, x) => {
+const objectTee = (fns, x) => {
   const y = {}, promises = []
   for (const k in fns) {
     const point = fns[k](x)
@@ -76,33 +75,8 @@ const teeObject = (fns, x) => {
 }
 
 const tee = fns => {
-  if (isArray(fns)) return x => teeArray(fns, x)
-  if (isObject(fns)) return x => teeObject(fns, x)
-  throw new TypeError(`cannot tee into ${type(fns)}`)
-}
-*/
-
-const tee = fns => {
-  if (isArray(fns)) {
-    const _fns = fns.map(toFunction)
-    return async (...x) => await Promise.all(_fns.map(f => f(...x)))
-  }
-  if (isObject(fns)) {
-    const _fns = {}
-    for (const k in fns) {
-      _fns[k] = toFunction(fns[k])
-    }
-    return async (...x) => {
-      const y = {}, tasks = []
-      for (const k in _fns) {
-        const p = _fns[k](...x)
-        if (isPromise(p)) tasks.push(p.then(a => { y[k] = a }))
-        else { y[k] = p }
-      }
-      await Promise.all(tasks)
-      return y
-    }
-  }
+  if (isArray(fns)) return x => arrayTee(fns, x)
+  if (isObject(fns)) return x => objectTee(fns, x)
   throw new TypeError(`cannot tee into ${type(fns)}`)
 }
 
