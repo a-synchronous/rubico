@@ -54,6 +54,32 @@ const pipe = fns => {
   }
 }
 
+// r.tee([hi, ho]) === x => [hi(x), ho(x)]
+// r.tee({ a: hi, b: ho })
+const tee = fns => {
+  if (isArray(fns)) {
+    const _fns = fns.map(toFunction)
+    return async (...x) => await Promise.all(_fns.map(f => f(...x)))
+  }
+  if (isObject(fns)) {
+    const _fns = {}
+    for (const k in fns) {
+      _fns[k] = toFunction(fns[k])
+    }
+    return async (...x) => {
+      const y = {}, tasks = []
+      for (const k in _fns) {
+        const p = _fns[k](...x)
+        if (isPromise(p)) tasks.push(p.then(a => { y[k] = a }))
+        else { y[k] = p }
+      }
+      await Promise.all(tasks)
+      return y
+    }
+  }
+  throw new TypeError(`cannot tee into ${type(fns)}`)
+}
+
 // arr.map: https://v8.dev/blog/elements-kinds#avoid-polymorphism
 const mapArray = (fn, arr) => {
   let isAsync = false
@@ -209,45 +235,18 @@ const reduce = (fn, y0) => {
 }
 
 // TODO: implement
+const get = keys => {}
+
+// TODO: implement
 const pick = keys => {}
 
 // TODO: implement
 const omit = keys => {}
 
 // TODO: implement
-const get = path => {}
-
-// TODO: implement
 // r.assign({ a: hi, b: ho })
 // input must be object
 const assign = fns => {}
-
-// TODO: reconsider name.. tee
-// r.tee([hi, ho]) === x => [hi(x), ho(x)]
-// r.tee({ a: hi, b: ho })
-const diverge = fns => {
-  if (isArray(fns)) {
-    const _fns = fns.map(toFunction)
-    return async (...x) => await Promise.all(_fns.map(f => f(...x)))
-  }
-  if (isObject(fns)) {
-    const _fns = {}
-    for (const k in fns) {
-      _fns[k] = toFunction(fns[k])
-    }
-    return async (...x) => {
-      const y = {}, tasks = []
-      for (const k in _fns) {
-        const p = _fns[k](...x)
-        if (isPromise(p)) tasks.push(p.then(a => { y[k] = a }))
-        else { y[k] = p }
-      }
-      await Promise.all(tasks)
-      return y
-    }
-  }
-  throw new TypeError(`cannot diverge from ${type(fns)}`)
-}
 
 // TODO: implement
 // r.switch([isNumber, () => 'was number', isString, 'was string', throwError])
@@ -255,11 +254,13 @@ const switch_ = fns => {}
 
 const r = {
   pipe,
+  tee,
   map,
   filter,
   reduce,
+  get,
+  pick, omit,
   assign,
-  diverge,
   switch: switch_,
 }
 

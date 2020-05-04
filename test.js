@@ -92,6 +92,39 @@ describe('rubico', () => {
     })
   })
 
+  describe('tee', () => {
+    it('parallelizes input to Array', async () => {
+      ade(
+        await r.tee([hi, ho, asyncHey])('yo'),
+        ['yohi', 'yoho', 'yohey'],
+      )
+    })
+    it('parallelizes input to Object', async () => {
+      ade(
+        await r.tee({ a: hi, b: ho, c: asyncHey })('yo'),
+        ({ a: 'yohi', b: 'yoho', c: 'yohey' }),
+      )
+    })
+    it('throws TypeError for String', async () => {
+      assert.throws(
+        () => r.tee('ayelmao'),
+        new TypeError('cannot tee into String'),
+      )
+    })
+    it('throws TypeError for Set', async () => {
+      assert.throws(
+        () => r.tee(new Set([hi])),
+        new TypeError('cannot tee into Set'),
+      )
+    })
+    it('throws TypeError for Map', async () => {
+      assert.throws(
+        () => r.tee(new Map([['a', hi]])),
+        new TypeError('cannot tee into Map'),
+      )
+    })
+  })
+
   describe('map', () => {
     it('applies an async function in parallel to all elements of an array', async () => {
       ade(
@@ -320,39 +353,6 @@ describe('rubico', () => {
       ade(
         await r.reduce(hosWithHey(concat), [])(hihos),
         ['hohey', 'hohey', 'hohey'],
-      )
-    })
-  })
-
-  describe('diverge', () => {
-    it('parallelizes input to Array', async () => {
-      ade(
-        await r.diverge([hi, ho, asyncHey])('yo'),
-        ['yohi', 'yoho', 'yohey'],
-      )
-    })
-    it('parallelizes input to Object', async () => {
-      ade(
-        await r.diverge({ a: hi, b: ho, c: asyncHey })('yo'),
-        ({ a: 'yohi', b: 'yoho', c: 'yohey' }),
-      )
-    })
-    it('throws TypeError for String', async () => {
-      assert.throws(
-        () => r.diverge('ayelmao'),
-        new TypeError('cannot diverge from String'),
-      )
-    })
-    it('throws TypeError for Set', async () => {
-      assert.throws(
-        () => r.diverge(new Set([hi])),
-        new TypeError('cannot diverge from Set'),
-      )
-    })
-    it('throws TypeError for Map', async () => {
-      assert.throws(
-        () => r.diverge(new Map([['a', hi]])),
-        new TypeError('cannot diverge from Map'),
       )
     })
   })
