@@ -106,15 +106,15 @@ const tee = fns => {
   throw new TypeError(`cannot tee into ${type(fns)}`)
 }
 
-// arr.map: https://v8.dev/blog/elements-kinds#avoid-polymorphism
-const mapArray = (fn, arr) => {
+// x.map: https://v8.dev/blog/elements-kinds#avoid-polymorphism
+const mapArray = (fn, x) => {
   let isAsync = false
-  const retArr = arr.map(item => {
+  const y = x.map(item => {
     const point = fn(item)
     if (isPromise(point)) isAsync = true
     return point
   })
-  return isAsync ? Promise.all(retArr) : retArr
+  return isAsync ? Promise.all(y) : y
 }
 
 const mapObject = (fn, x) => {
@@ -149,16 +149,16 @@ const map = fn => {
   }
 }
 
-const filterArray = (fn, arr) => {
+const filterArray = (fn, x) => {
   let isAsync = false
-  const okArr = arr.map(item => {
+  const okIndex = x.map(item => {
     const ok = fn(item)
     if (isPromise(ok)) isAsync = true
     return ok
   })
-  return isAsync ? Promise.all(okArr).then(
-    res => arr.filter((_, i) => res[i])
-  ) : arr.filter((_, i) => okArr[i])
+  return isAsync ? Promise.all(okIndex).then(
+    res => x.filter((_, i) => res[i])
+  ) : x.filter((_, i) => okIndex[i])
 }
 
 const filterObject = (fn, x) => {
