@@ -274,7 +274,54 @@ describe('rubico', () => {
     })
   })
 
-  describe('pipe, map, filter, reduce', () => {
+  describe('integration: transducers from pipe, map, filter, reduce', () => {
+    const concat = (y, xi) => y.concat(xi)
+    const add = (y, xi) => y + xi
+    it('reduce with sync transduced reducers', async () => {
+      const squareOdds = r.pipe([
+        r.filter(isOdd),
+        r.map(x => x ** 2),
+      ])
+      ade(
+        r.reduce(squareOdds(concat), [])([1, 2, 3, 4, 5]),
+        [1, 9, 25],
+      )
+      ade(
+        r.reduce(squareOdds((y, xi) => y.add(xi)), new Set())([1, 2, 3, 4, 5]),
+        new Set([1, 9, 25]),
+      )
+      const appendAlphas = r.pipe([
+        r.map(x => x + 'a'),
+        r.map(x => x + 'b'),
+        r.map(x => x + 'c'),
+      ])
+      ase(
+        // r.transform('', appendAlphas)('123'),
+        r.reduce(appendAlphas(add), '')('123'),
+        '1abc2abc3abc',
+      )
+      ade(
+        r.reduce(appendAlphas(concat), [])('123'),
+        ['1abc', '2abc', '3abc'],
+      )
+    })
+    it('reduce with an async transduced reducer', async () => {
+      const hosWithHey = r.pipe([
+        r.filter(async x => x === 'ho'),
+        r.map(x => Promise.resolve(x + 'hey')),
+      ])
+      const hihos = { a: 'hi', b: 'ho', c: 'hi', d: 'ho', e: 'hi', f: 'ho' }
+      aok(r.reduce(hosWithHey(add), '')(hihos) instanceof Promise),
+      aok(r.reduce(hosWithHey(concat), [])(hihos) instanceof Promise),
+      ase(
+        await r.reduce(hosWithHey(add), '')(hihos),
+        'hoheyhoheyhohey',
+      )
+      ade(
+        await r.reduce(hosWithHey(concat), [])(hihos),
+        ['hohey', 'hohey', 'hohey'],
+      )
+    })
   })
 
   describe('diverge', () => {
