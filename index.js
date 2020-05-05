@@ -2,7 +2,7 @@
  *
  * this is a module, not a utility library
  * functional code should not care about async
- * these functions are optimized for v8
+ * these functions are optimal
  */
 const isDefined = x => x !== undefined && x !== null
 
@@ -78,6 +78,21 @@ const fork = fns => {
   if (isArray(fns)) return x => arrayFork(fns, x)
   if (isObject(fns)) return x => objectFork(fns, x)
   throw new TypeError(`cannot fork into ${type(fns)}`)
+}
+
+const assign = fns => {
+  if (!isObject(fns)) {
+    throw new TypeError(`cannot assign from ${type(fns)}`)
+  }
+  return x => {
+    if (!isObject(x)) {
+      throw new TypeError(`cannot assign into ${type(x)}`)
+    }
+    const assignments = objectFork(fns, x)
+    return isPromise(assignments)
+      ? assignments.then(res => ({ ...x, ...res }))
+      : ({ ...x, ...assignments })
+  }
 }
 
 // x.map: https://v8.dev/blog/elements-kinds#avoid-polymorphism
@@ -224,6 +239,7 @@ const switch_ = fns => {}
 const r = {
   pipe,
   fork,
+  assign,
   map,
   filter,
   reduce,

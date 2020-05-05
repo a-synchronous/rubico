@@ -143,6 +143,34 @@ describe('rubico', () => {
     })
   })
 
+  describe('assign', () => {
+    it('maps input to object of sync functions then merges', async () => {
+      ade(
+        r.assign({ b: x => x.a + 'yo' })({ a: 'a' }),
+        { a: 'a', b: 'ayo' },
+      )
+    })
+    it('maps input to object of async functions then merges', async () => {
+      aok(r.assign({ b: async x => x.a + 'yo' })({ a: 'a' }) instanceof Promise)
+      ade(
+        await r.assign({ b: async x => x.a + 'yo' })({ a: 'a' }),
+        { a: 'a', b: 'ayo' },
+      )
+    })
+    it('throws TypeError on non object functions', async () => {
+      assert.throws(
+        () => r.assign(new Set(['hey'])),
+        new TypeError('cannot assign from Set'),
+      )
+    })
+    it('throws TypeError on non object input', async () => {
+      assert.throws(
+        () => r.assign({ a: hi })('hi'),
+        new TypeError('cannot assign into String'),
+      )
+    })
+  })
+
   describe('map', () => {
     it('applies an async function in parallel to all elements of an array', async () => {
       ade(
