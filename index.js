@@ -10,8 +10,6 @@ const isFunction = x => typeof x === 'function'
 
 const isBinaryFunction = x => typeof x === 'function' && x.length === 2
 
-const toFunction = x => isFunction(x) ? x : (() => x)
-
 const isArray = x => x instanceof Array
 
 const isPromise = x => x instanceof Promise
