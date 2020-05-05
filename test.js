@@ -146,15 +146,24 @@ describe('rubico', () => {
   describe('assign', () => {
     it('maps input to object of sync functions then merges', async () => {
       ade(
-        r.assign({ b: x => x.a + 'yo' })({ a: 'a' }),
-        { a: 'a', b: 'ayo' },
+        r.assign({
+          b: x => x.a + 'yo',
+          c: x => x.a + 'yaya',
+        })({ a: 'a' }),
+        { a: 'a', b: 'ayo', c: 'ayaya' },
       )
     })
     it('maps input to object of async functions then merges', async () => {
-      aok(r.assign({ b: async x => x.a + 'yo' })({ a: 'a' }) instanceof Promise)
+      aok(r.assign({
+        b: async x => x.a + 'yo',
+        c: async x => x.a + 'yaya',
+      })({ a: 'a' }) instanceof Promise)
       ade(
-        await r.assign({ b: async x => x.a + 'yo' })({ a: 'a' }),
-        { a: 'a', b: 'ayo' },
+        await r.assign({
+          b: async x => x.a + 'yo',
+          c: async x => x.a + 'yaya',
+        })({ a: 'a' }),
+        { a: 'a', b: 'ayo', c: 'ayaya' },
       )
     })
     it('throws TypeError on non object functions', async () => {
