@@ -218,11 +218,6 @@ const pick = keys => {}
 const omit = keys => {}
 
 // TODO: implement
-// r.assign({ a: hi, b: ho })
-// input must be object
-const assign = fns => {}
-
-// TODO: implement
 // r.switch([isNumber, () => 'was number', isString, 'was string', throwError])
 const switch_ = fns => {}
 
@@ -233,8 +228,8 @@ const r = {
   filter,
   reduce,
   get,
-  pick, omit,
-  assign,
+  pick,
+  omit,
   switch: switch_,
 }
 
