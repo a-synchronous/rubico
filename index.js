@@ -29,9 +29,9 @@ const arrayOf = (item, length) => Array.from({ length }, () => item)
 const _chain = (fns, args, i, step, end) => {
   const point = fns[i](...args)
   if (i === (end - step)) return point
-  return isPromise(point) ? (
-    point.then(res => _chain(fns, [res], i + step, step, end))
-  ) : _chain(fns, [point], i + step, step, end)
+  return isPromise(point)
+    ? point.then(res => _chain(fns, [res], i + step, step, end))
+    : _chain(fns, [point], i + step, step, end)
 }
 
 const pipe = fns => {
@@ -121,9 +121,9 @@ const mapObject = (fn, x) => {
 
 const mapReducer = (fn, reducer) => (y, xi) => {
   const point = fn(xi)
-  return isPromise(point) ? point.then(
-    res => reducer(y, res)
-  ) : reducer(y, point)
+  return isPromise(point)
+    ? point.then(res => reducer(y, res))
+    : reducer(y, point)
 }
 
 const map = fn => {
@@ -145,9 +145,9 @@ const filterArray = (fn, x) => {
     if (isPromise(ok)) isAsync = true
     return ok
   })
-  return isAsync ? Promise.all(okIndex).then(
-    res => x.filter((_, i) => res[i])
-  ) : x.filter((_, i) => okIndex[i])
+  return isAsync
+    ? Promise.all(okIndex).then(res => x.filter((_, i) => res[i]))
+    : x.filter((_, i) => okIndex[i])
 }
 
 const filterObject = (fn, x) => {
