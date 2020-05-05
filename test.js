@@ -92,53 +92,53 @@ describe('rubico', () => {
     })
   })
 
-  describe('tee', () => {
+  describe('fork', () => {
     it('maps input to array of sync functions', async () => {
-      ade(r.tee([hi, hi, hi])('yo'), ['yohi', 'yohi', 'yohi'])
+      ade(r.fork([hi, hi, hi])('yo'), ['yohi', 'yohi', 'yohi'])
     })
     it('maps input to object of sync functions', async () => {
       ade(
-        r.tee({ a: hi, b: hi, c: hi })('yo'),
+        r.fork({ a: hi, b: hi, c: hi })('yo'),
         { a: 'yohi', b: 'yohi', c: 'yohi' },
       )
     })
     it('maps input to array of async functions', async () => {
-      aok(r.tee([asyncHey, asyncHey, asyncHey])('yo') instanceof Promise)
+      aok(r.fork([asyncHey, asyncHey, asyncHey])('yo') instanceof Promise)
       ade(
-        await r.tee([asyncHey, asyncHey, asyncHey])('yo'),
+        await r.fork([asyncHey, asyncHey, asyncHey])('yo'),
         ['yohey', 'yohey', 'yohey'],
       )
     })
     it('maps input to object of async functions', async () => {
-      aok(r.tee({ a: asyncHey, b: asyncHey, c: asyncHey })('yo') instanceof Promise)
+      aok(r.fork({ a: asyncHey, b: asyncHey, c: asyncHey })('yo') instanceof Promise)
       ade(
-        await r.tee({ a: asyncHey, b: asyncHey, c: asyncHey })('yo'),
+        await r.fork({ a: asyncHey, b: asyncHey, c: asyncHey })('yo'),
         { a: 'yohey', b: 'yohey', c: 'yohey' },
       )
     })
     it('any functions async => Promise', async () => {
-      aok(r.tee([asyncHey, asyncHey, hi])('yo') instanceof Promise)
+      aok(r.fork([asyncHey, asyncHey, hi])('yo') instanceof Promise)
       ade(
-        await r.tee([asyncHey, asyncHey, hi])('yo'),
+        await r.fork([asyncHey, asyncHey, hi])('yo'),
         ['yohey', 'yohey', 'yohi'],
       )
     })
     it('throws TypeError for String', async () => {
       assert.throws(
-        () => r.tee('ayelmao'),
-        new TypeError('cannot tee into String'),
+        () => r.fork('ayelmao'),
+        new TypeError('cannot fork into String'),
       )
     })
     it('throws TypeError for Set', async () => {
       assert.throws(
-        () => r.tee(new Set([hi])),
-        new TypeError('cannot tee into Set'),
+        () => r.fork(new Set([hi])),
+        new TypeError('cannot fork into Set'),
       )
     })
     it('throws TypeError for Map', async () => {
       assert.throws(
-        () => r.tee(new Map([['a', hi]])),
-        new TypeError('cannot tee into Map'),
+        () => r.fork(new Map([['a', hi]])),
+        new TypeError('cannot fork into Map'),
       )
     })
   })

@@ -51,7 +51,7 @@ const pipe = fns => {
   }
 }
 
-const arrayTee = (fns, x) => {
+const arrayFork = (fns, x) => {
   let isAsync = false
   const y = fns.map(fn => {
     const point = fn(x)
@@ -61,7 +61,7 @@ const arrayTee = (fns, x) => {
   return isAsync ? Promise.all(y) : y
 }
 
-const objectTee = (fns, x) => {
+const objectFork = (fns, x) => {
   const y = {}, promises = []
   for (const k in fns) {
     const point = fns[k](x)
@@ -74,10 +74,10 @@ const objectTee = (fns, x) => {
   return promises.length > 0 ? Promise.all(promises).then(() => y) : y
 }
 
-const tee = fns => {
-  if (isArray(fns)) return x => arrayTee(fns, x)
-  if (isObject(fns)) return x => objectTee(fns, x)
-  throw new TypeError(`cannot tee into ${type(fns)}`)
+const fork = fns => {
+  if (isArray(fns)) return x => arrayFork(fns, x)
+  if (isObject(fns)) return x => objectFork(fns, x)
+  throw new TypeError(`cannot fork into ${type(fns)}`)
 }
 
 // x.map: https://v8.dev/blog/elements-kinds#avoid-polymorphism
@@ -228,7 +228,7 @@ const switch_ = fns => {}
 
 const r = {
   pipe,
-  tee,
+  fork,
   map,
   filter,
   reduce,
