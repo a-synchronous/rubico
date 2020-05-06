@@ -103,8 +103,22 @@ const tap = fn => {
   }
 }
 
-// TODO: implement
-const tryCatch = (fn, onError) => {}
+const tryCatch = (fn, onError) => {
+  if (!isFunction(fn)) {
+    throw new TypeError(`cannot try ${type(fn)}`)
+  }
+  if (!isFunction(onError)) {
+    throw new TypeError(`cannot catch with ${type(onError)}`)
+  }
+  return x => {
+    try {
+      const point = fn(x)
+      return isPromise(point) ? point.catch(e => onError(e, x)) : point
+    } catch (e) {
+      return onError(e, x)
+    }
+  }
+}
 
 // x.map: https://v8.dev/blog/elements-kinds#avoid-polymorphism
 const mapArray = (fn, x) => {

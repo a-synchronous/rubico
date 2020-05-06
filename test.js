@@ -196,6 +196,80 @@ describe('rubico', () => {
     })
   })
 
+  describe('tryCatch', () => {
+    it('tries a sync function and catches with a sync function', async () => {
+      const errProp = (err, x) => { err.x = x; return err }
+      const throwError = x => { throw new Error(x) }
+      ase(r.tryCatch(x => x + 1, errProp)(1), 2)
+      const e1 = r.tryCatch(throwError, errProp)(1)
+      aok(e1 instanceof Error)
+      ase(e1.name, 'Error')
+      ase(e1.message, '1')
+      ase(e1.x, 1)
+    })
+    it('tries an async function and catches with a sync function', async () => {
+      const errProp = (err, x) => { err.x = x; return err }
+      const asyncThrowError = async x => { throw new Error(x) }
+      const reject = x => Promise.reject(new Error(x))
+      aok(r.tryCatch(async x => x + 1, errProp)(1) instanceof Promise)
+      ase(await r.tryCatch(async x => x + 1, errProp)(1), 2)
+      aok(r.tryCatch(asyncThrowError, errProp)(1) instanceof Promise)
+      const e1 = await r.tryCatch(asyncThrowError, errProp)(1)
+      aok(e1 instanceof Error)
+      ase(e1.name, 'Error')
+      ase(e1.message, '1')
+      ase(e1.x, 1)
+      aok(r.tryCatch(reject, errProp)(1) instanceof Promise)
+      const e2 = await r.tryCatch(reject, errProp)(1)
+      aok(e2 instanceof Error)
+      ase(e2.name, 'Error')
+      ase(e2.message, '1')
+      ase(e2.x, 1)
+    })
+    it('tries a sync function and catches with an async function', async () => {
+      const asyncErrProp = async (err, x) => { err.x = x; return err }
+      const throwError = x => { throw new Error(x) }
+      ase(r.tryCatch(x => x + 1, asyncErrProp)(1), 2)
+      aok(r.tryCatch(throwError, asyncErrProp)(1) instanceof Promise)
+      const e1 = await r.tryCatch(throwError, asyncErrProp)(1)
+      aok(e1 instanceof Error)
+      ase(e1.name, 'Error')
+      ase(e1.message, '1')
+      ase(e1.x, 1)
+    })
+    it('tries an async function and catches with an async function', async () => {
+      const asyncErrProp = async (err, x) => { err.x = x; return err }
+      const asyncThrowError = async x => { throw new Error(x) }
+      const reject = x => Promise.reject(new Error(x))
+      aok(r.tryCatch(async x => x + 1, asyncErrProp)(1) instanceof Promise)
+      ase(await r.tryCatch(async x => x + 1, asyncErrProp)(1), 2)
+      aok(r.tryCatch(asyncThrowError, asyncErrProp)(1) instanceof Promise)
+      const e1 = await r.tryCatch(asyncThrowError, asyncErrProp)(1)
+      aok(e1 instanceof Error)
+      ase(e1.name, 'Error')
+      ase(e1.message, '1')
+      ase(e1.x, 1)
+      aok(r.tryCatch(reject, asyncErrProp)(1) instanceof Promise)
+      const e2 = await r.tryCatch(reject, asyncErrProp)(1)
+      aok(e2 instanceof Error)
+      ase(e2.name, 'Error')
+      ase(e2.message, '1')
+      ase(e2.x, 1)
+    })
+    it('throws a TypeError if passed a non function tryer', async () => {
+      assert.throws(
+        () => r.tryCatch('hey', () => {}),
+        new TypeError('cannot try String'),
+      )
+    })
+    it('throws a TypeError if passed a non function catcher', async () => {
+      assert.throws(
+        () => r.tryCatch(() => {}, Buffer.from('abc')),
+        new TypeError('cannot catch with Buffer'),
+      )
+    })
+  })
+
   describe('map', () => {
     it('applies an async function in parallel to all elements of an array', async () => {
       ade(
