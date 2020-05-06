@@ -93,6 +93,19 @@ const assign = fns => {
   }
 }
 
+const tap = fn => {
+  if (!isFunction(fn)) {
+    throw new TypeError(`cannot tap with ${type(fn)}`)
+  }
+  return x => {
+    const point = fn(x)
+    return isPromise(point) ? point.then(() => x) : x
+  }
+}
+
+// TODO: implement
+const tryCatch = (fn, onError) => {}
+
 // x.map: https://v8.dev/blog/elements-kinds#avoid-polymorphism
 const mapArray = (fn, x) => {
   let isAsync = false
@@ -238,6 +251,8 @@ const r = {
   pipe,
   fork,
   assign,
+  tap,
+  tryCatch,
   map,
   filter,
   reduce,

@@ -180,6 +180,22 @@ describe('rubico', () => {
     })
   })
 
+  describe('tap', () => {
+    it('calls a provided sync function with input, returning input', async () => {
+      ase(r.tap(x => x + 1)(1), 1)
+    })
+    it('calls a provided async function with input, returning input', async () => {
+      aok(r.tap(async x => x + 1)(1) instanceof Promise)
+      ase(await r.tap(async x => x + 1)(1), 1)
+    })
+    it('throws a TypeError if passed a non function', async () => {
+      assert.throws(
+        () => r.tap('hey'),
+        new TypeError('cannot tap with String'),
+      )
+    })
+  })
+
   describe('map', () => {
     it('applies an async function in parallel to all elements of an array', async () => {
       ade(
