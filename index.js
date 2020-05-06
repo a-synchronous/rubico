@@ -128,6 +128,10 @@ const tryCatch = (fn, onError) => {
   }
 }
 
+// TODO: implement
+// r.switch([isNumber, () => 'was number', isString, 'was string', throwError])
+const switch_ = fns => {}
+
 // x.map: https://v8.dev/blog/elements-kinds#avoid-polymorphism
 const mapArray = (fn, x) => {
   let isAsync = false
@@ -265,23 +269,19 @@ const pick = keys => {}
 // TODO: implement
 const omit = keys => {}
 
-// TODO: implement
-// r.switch([isNumber, () => 'was number', isString, 'was string', throwError])
-const switch_ = fns => {}
-
 const r = {
   pipe,
   fork,
   assign,
   tap,
   tryCatch,
+  switch: switch_,
   map,
   filter,
   reduce,
   get,
   pick,
   omit,
-  switch: switch_,
 }
 
 module.exports = r
