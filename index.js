@@ -14,8 +14,6 @@ const isBinaryFunction = x => typeof x === 'function' && x.length === 2
 
 const isArray = x => x instanceof Array
 
-const isPromise = x => x instanceof Promise
-
 const is = fn => x => x && x.constructor && x.constructor === fn
 
 const isObject = is(Object)
@@ -37,7 +35,7 @@ const _chain = (fns, args, step) => {
   }
   let y = fns[i](...args)
   while (i !== end) {
-    y = isPromise(y) ? y.then(fns[i + step]) : fns[i + step](y)
+    y = y instanceof Promise ? y.then(fns[i + step]) : fns[i + step](y)
     i += step
   }
   return y
@@ -61,7 +59,7 @@ const arrayFork = (fns, x) => {
   let isAsync = false
   const y = fns.map(fn => {
     const point = fn(x)
-    if (isPromise(point)) isAsync = true
+    if (point instanceof Promise) isAsync = true
     return point
   })
   return isAsync ? Promise.all(y) : y
@@ -71,7 +69,7 @@ const objectFork = (fns, x) => {
   const y = {}, promises = []
   for (const k in fns) {
     const point = fns[k](x)
-    if (isPromise(point)) {
+    if (point instanceof Promise) {
       promises.push(point.then(res => { y[k] = res }))
     } else {
       y[k] = point
@@ -95,7 +93,7 @@ const assign = fns => {
       throw new TypeError(`cannot assign into ${type(x)}`)
     }
     const assignments = objectFork(fns, x)
-    return isPromise(assignments)
+    return assignments instanceof Promise
       ? assignments.then(res => Object.assign({}, x, res))
       : Object.assign({}, x, assignments)
   }
@@ -107,7 +105,7 @@ const tap = fn => {
   }
   return x => {
     const point = fn(x)
-    return isPromise(point) ? point.then(() => x) : x
+    return point instanceof Promise ? point.then(() => x) : x
   }
 }
 
@@ -121,7 +119,7 @@ const tryCatch = (fn, onError) => {
   return x => {
     try {
       const point = fn(x)
-      return isPromise(point) ? point.catch(e => onError(e, x)) : point
+      return point instanceof Promise ? point.catch(e => onError(e, x)) : point
     } catch (e) {
       return onError(e, x)
     }
@@ -137,7 +135,7 @@ const mapArray = (fn, x) => {
   let isAsync = false
   const y = x.map(item => {
     const point = fn(item)
-    if (isPromise(point)) isAsync = true
+    if (point instanceof Promise) isAsync = true
     return point
   })
   return isAsync ? Promise.all(y) : y
@@ -147,7 +145,7 @@ const mapObject = (fn, x) => {
   const y = {}, promises = []
   for (const k in x) {
     const point = fn(x[k])
-    if (isPromise(point)) {
+    if (point instanceof Promise) {
       promises.push(point.then(res => { y[k] = res }))
     } else {
       y[k] = point
@@ -158,7 +156,7 @@ const mapObject = (fn, x) => {
 
 const mapReducer = (fn, reducer) => (y, xi) => {
   const point = fn(xi)
-  return isPromise(point)
+  return point instanceof Promise
     ? point.then(res => reducer(y, res))
     : reducer(y, point)
 }
@@ -179,7 +177,7 @@ const filterArray = (fn, x) => {
   let isAsync = false
   const okIndex = x.map(item => {
     const ok = fn(item)
-    if (isPromise(ok)) isAsync = true
+    if (ok instanceof Promise) isAsync = true
     return ok
   })
   return isAsync
@@ -191,7 +189,7 @@ const filterObject = (fn, x) => {
   const y = {}, promises = []
   for (const k in x) {
     const ok = fn(x[k])
-    if (isPromise(ok)) {
+    if (ok instanceof Promise) {
       promises.push(ok.then(res => { if (res) { y[k] = x[k] } }))
     } else if (ok) { y[k] = x[k] }
   }
@@ -200,7 +198,7 @@ const filterObject = (fn, x) => {
 
 const filterReducer = (fn, reducer) => (y, xi) => {
   const ok = fn(xi)
-  if (isPromise(ok)) {
+  if (ok instanceof Promise) {
     return Promise.all([ok, y]).then(
       res => res[0] ? reducer(res[1], xi) : res[1]
     )
@@ -253,7 +251,7 @@ const reduce = (fn, y0) => {
     cursor = iter.next()
     while (!cursor.done) {
       const { value } = cursor
-      y = isPromise(y) ? y.then(res => fn(res, value)) : fn(y, value)
+      y = y instanceof Promise ? y.then(res => fn(res, value)) : fn(y, value)
       cursor = iter.next()
     }
     return y
