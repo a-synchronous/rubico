@@ -13,7 +13,7 @@ const isBinaryFunction = x => typeof x === 'function' && x.length === 2
 
 const isArray = x => x instanceof Array
 
-const isPromise = x => x instanceof Promise
+const isPromise = x => x && typeof x.then === 'function'
 
 const is = fn => x => x && x.constructor && x.constructor === fn
 
