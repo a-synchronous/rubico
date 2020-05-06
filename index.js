@@ -2,7 +2,9 @@
  *
  * this is a module, not a utility library
  * functional code should not care about async
- * these functions are optimal
+ * these functions are performant
+ * these functions are resource efficient
+ * blocks used by these functions are properly garbage collected
  */
 const isDefined = x => x !== undefined && x !== null
 
@@ -24,12 +26,21 @@ const range = (start, end) => Array.from({ length: end - start }, (x, i) => i + 
 
 const arrayOf = (item, length) => Array.from({ length }, () => item)
 
-const _chain = (fns, args, i, step, end) => {
-  const point = fns[i](...args)
-  if (i === (end - step)) return point
-  return isPromise(point)
-    ? point.then(res => _chain(fns, [res], i + step, step, end))
-    : _chain(fns, [point], i + step, step, end)
+const _chain = (fns, args, step) => {
+  let i, end
+  if (step === 1) {
+    i = 0; end = fns.length - 1
+  } else if (step === -1) {
+    i = fns.length - 1; end = 0
+  } else {
+    throw new RangeError('step must be 1 or -1')
+  }
+  let y = fns[i](...args)
+  while (i !== end) {
+    y = isPromise(y) ? y.then(fns[i + step]) : fns[i + step](y)
+    i += step
+  }
+  return y
 }
 
 const pipe = fns => {
@@ -41,12 +52,9 @@ const pipe = fns => {
     throw new TypeError(`${type(fns[i])} (functions[${i}]) is not a function`)
   }
   if (fns.length === 0) return x => x
-  return (...args) => {
-    if (isBinaryFunction(args[0])) {
-      return _chain(fns, args, fns.length - 1, -1, -1)
-    }
-    return _chain(fns, args, 0, 1, fns.length)
-  }
+  return (...args) => isBinaryFunction(args[0])
+    ? _chain(fns, args, -1)
+    : _chain(fns, args, 1)
 }
 
 const arrayFork = (fns, x) => {
