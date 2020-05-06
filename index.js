@@ -88,8 +88,8 @@ const assign = fns => {
     }
     const assignments = objectFork(fns, x)
     return isPromise(assignments)
-      ? assignments.then(res => ({ ...x, ...res }))
-      : ({ ...x, ...assignments })
+      ? assignments.then(res => Object.assign({}, x, res))
+      : Object.assign({}, x, assignments)
   }
 }
 
