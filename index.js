@@ -1,10 +1,9 @@
-/* principles
+/* design principles
  *
  * this is a module, not a utility library
  * functional code should not care about async
- * these functions are performant
- * these functions are resource efficient
- * blocks used by these functions are properly garbage collected
+ * these functions are time then space optimal
+ * memory used by these functions is properly garbage collected
  */
 const isDefined = x => x !== undefined && x !== null
 
