@@ -85,6 +85,9 @@ const fork = fns => {
   throw new TypeError(`cannot fork into ${type(fns)}`)
 }
 
+// TODO: implement - arrays only, functions applied in series rather than in parallel
+fork.series = fns => {}
+
 const assign = fns => {
   if (!isObject(fns)) {
     throw new TypeError(`cannot assign from ${type(fns)}`)
@@ -105,6 +108,7 @@ const tap = fn => {
     throw new TypeError(`cannot tap with ${type(fn)}`)
   }
   return x => {
+    // TODO: if (isBinaryFunction(x)) return tapReducer(fn, x)
     const point = fn(x)
     return isPromise(point) ? point.then(() => x) : x
   }
@@ -289,19 +293,41 @@ const pick = keys => {}
 // TODO: implement
 const omit = keys => {}
 
+// TODO: implement
+const any = fn => {}
+
+// TODO: implement
+const every = fn => {}
+
+// TODO: implement
+const and = fns => {}
+
+// TODO: implement
+const or = fns => {}
+
+// TODO: implement
+const not = fn => {}
+
+// TODO: implement
+const gt = fns => {}
+
+// TODO: implement
+const lt = fns => {}
+
+// TODO: implement
+const gte = fns => {}
+
+// TODO: implement
+const lte = fns => {}
+
 const r = {
-  pipe,
-  fork,
-  assign,
-  tap,
-  tryCatch,
-  switch: switch_,
-  map,
-  filter,
-  reduce,
-  get,
-  pick,
-  omit,
+  pipe, fork, assign,
+  tap, tryCatch, switch: switch_,
+  map, filter, reduce,
+  get, pick, omit,
+  any, every,
+  and, or, not,
+  gt, lt, gte, lte,
 }
 
 module.exports = r
