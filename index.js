@@ -7,6 +7,14 @@
  */
 const isDefined = x => x !== undefined && x !== null
 
+const isIterable = x => isDefined(x[Symbol.iterator])
+
+const isAsyncIterable = x => isDefined(x[Symbol.asyncIterator])
+
+const isReadableStream = x => (
+  x && typeof x._read === 'function' && typeof x._readableState === 'object'
+)
+
 const isFunction = x => typeof x === 'function'
 
 const isBinaryFunction = x => typeof x === 'function' && x.length === 2
