@@ -252,43 +252,42 @@ const filter = fn => {
   }
 }
 
-const getIterator = x => {
-  if (isDefined(x[Symbol.iterator])) {
-    return x[Symbol.iterator].bind(x)()
+const reduceIterable = (fn, y0, x) => {
+  const iter = x[Symbol.iterator].bind(x)()
+  let cursor = iter.next()
+  if (cursor.done) {
+    throw new TypeError('cannot reduce empty iterator')
   }
-  if (isObject(x)) {
-    return (function* () { for (const k in x) yield x[k] })()
+  let y = isDefined(y0) ? fn(y0, cursor.value) : (() => {
+    const x0 = cursor.value
+    cursor = iter.next()
+    return cursor.done ? x0 : fn(x0, cursor.value)
+  })()
+  cursor = iter.next()
+  while (!cursor.done) {
+    const { value } = cursor
+    y = isPromise(y) ? y.then(res => fn(res, value)) : fn(y, value)
+    cursor = iter.next()
   }
-  throw new TypeError(`cannot get iterator from ${type(x)}`)
+  return y
 }
+
+const reduceObject = (fn, y0, x) => reduceIterable(
+  fn,
+  y0,
+  (function* () { for (const k in x) yield x[k] })(),
+)
 
 const reduce = (fn, y0) => {
   if (!isFunction(fn)) {
     throw new TypeError(`${type(fn)} is not a function`)
   }
   return x => {
-    // TODO: if (isIterable(x)) return reduceIterable(fn, y0, x)
+    if (isIterable(x)) return reduceIterable(fn, y0, x)
     // TODO: if (isAsyncIterable(x)) return reduceAsyncIterable(fn, y0, x)
     // TODO: if (isReadableStream(x)) return reduceStream(fn, y0, x)
-    // TODO: if (isObject(x)) return reduceObject(fn, y0, x)
-    // TODO: throw new TypeError(`cannot reduce ${type(x)}`)
-    const iter = getIterator(x)
-    let cursor = iter.next()
-    if (cursor.done) {
-      throw new TypeError('cannot reduce empty iterator')
-    }
-    let y = isDefined(y0) ? fn(y0, cursor.value) : (() => {
-      const x0 = cursor.value
-      cursor = iter.next()
-      return cursor.done ? x0 : fn(x0, cursor.value)
-    })()
-    cursor = iter.next()
-    while (!cursor.done) {
-      const { value } = cursor
-      y = isPromise(y) ? y.then(res => fn(res, value)) : fn(y, value)
-      cursor = iter.next()
-    }
-    return y
+    if (isObject(x)) return reduceObject(fn, y0, x)
+    throw new TypeError(`cannot reduce ${type(x)}`)
   }
 }
 

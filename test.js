@@ -542,7 +542,7 @@ describe('rubico', () => {
     it('throws a TypeError if passed a non iterable', async () => {
       assert.throws(
         () => r.reduce((y, xi) => y + xi)(1),
-        new TypeError('cannot get iterator from Number'),
+        new TypeError('cannot reduce Number'),
       )
     })
     it('throws an Error on empty iterator', async () => {
