@@ -285,6 +285,14 @@ const reduce = (fn, y0) => {
 }
 
 // TODO: implement
+// r.transform([...], r.pipe([...])) <- atoms can be anything
+// r.transform('...', r.filter(...)) <- atoms must be strings or implement toString
+// r.transform(new Set([...]), r.pipe([...]))
+// r.transform(Buffer.from('...'), r.map(...))
+// r.transform(myStream, r.map(...))
+const transform = (y0, fn) => {}
+
+// TODO: implement
 const get = keys => {}
 
 // TODO: implement
@@ -323,7 +331,7 @@ const lte = fns => {}
 const r = {
   pipe, fork, assign,
   tap, tryCatch, switch: switch_,
-  map, filter, reduce,
+  map, filter, reduce, transform,
   get, pick, omit,
   any, every,
   and, or, not,
