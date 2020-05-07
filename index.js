@@ -286,6 +286,26 @@ const reduceIterable = (fn, y0, x) => {
   return y
 }
 
+const reduceAsyncIterable = async (fn, y0, x) => {
+  const iter = x[Symbol.asyncIterator].bind(x)()
+  let cursor = await iter.next()
+  if (cursor.done) {
+    throw new TypeError('cannot reduce empty iterator')
+  }
+  let y = isDefined(y0) ? await fn(y0, cursor.value) : await (async () => {
+    const x0 = cursor.value
+    cursor = await iter.next()
+    return cursor.done ? x0 : fn(x0, cursor.value)
+  })()
+  cursor = await iter.next()
+  while (!cursor.done) {
+    const { value } = cursor
+    const res = await Promise.all([fn(y, value), iter.next()])
+    y = res[0]; cursor = res[1]
+  }
+  return y
+}
+
 const reduceObject = (fn, y0, x) => reduceIterable(
   fn,
   y0,
@@ -298,7 +318,7 @@ const reduce = (fn, y0) => {
   }
   return x => {
     if (isIterable(x)) return reduceIterable(fn, y0, x)
-    // TODO: if (isAsyncIterable(x)) return reduceAsyncIterable(fn, y0, x)
+    if (isAsyncIterable(x)) return reduceAsyncIterable(fn, y0, x)
     // TODO: if (isReadableStream(x)) return reduceStream(fn, y0, x)
     if (isObject(x)) return reduceObject(fn, y0, x)
     throw new TypeError(`cannot reduce ${type(x)}`)

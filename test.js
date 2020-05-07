@@ -542,19 +542,35 @@ describe('rubico', () => {
         },
       },
     ]
-    it('reduces any iterable with sync reducer', async () => {
+    const asyncIterable = {
+      [Symbol.asyncIterator]: async function* () {
+        await sleep(1)
+        for (let i = 1; i < 6; i++) yield i
+      },
+    }
+    it('reduces any iterable with a sync reducer', async () => {
       for (const x of iterables) {
         ase(r.reduce((y, xi) => y + xi)(x), 15)
         ase(r.reduce((y, xi) => y + xi, 10)(x), 25)
       }
     })
-    it('reduces any iterable with async reducer', async () => {
+    it('reduces any iterable with an async reducer', async () => {
       aok(asyncMult(1, 2) instanceof Promise)
       for (const x of iterables) {
         aok(r.reduce(asyncMult)(x) instanceof Promise)
         ase(await r.reduce(asyncMult)(x), 120)
         ase(await r.reduce(asyncMult, 10)(x), 1200)
       }
+    })
+    it('reduces an async iterable with a sync reducer', async () => {
+      ase(await r.reduce((y, xi) => y + xi)(asyncIterable), 15)
+      ase(await r.reduce((y, xi) => y + xi, 10)(asyncIterable), 25)
+    })
+    it('reduces an async iterable with an async reducer', async () => {
+      aok(asyncMult(1, 2) instanceof Promise)
+      aok(r.reduce(asyncMult)(asyncIterable) instanceof Promise)
+      ase(await r.reduce(asyncMult)(asyncIterable), 120)
+      ase(await r.reduce(asyncMult, 10)(asyncIterable), 1200)
     })
     it('throws a TypeError if passed a non function', async () => {
       assert.throws(
