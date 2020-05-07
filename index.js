@@ -245,11 +245,6 @@ const filter = fn => {
 }
 
 const getIterator = x => {
-  /* TODO: consider AsyncIterator
-  if (isDefined(x[Symbol.asyncIterator])) {
-    return x[Symbol.asyncIterator].bind(x)()
-  }
-  */
   if (isDefined(x[Symbol.iterator])) {
     return x[Symbol.iterator].bind(x)()
   }
@@ -264,6 +259,11 @@ const reduce = (fn, y0) => {
     throw new TypeError(`${type(fn)} is not a function`)
   }
   return x => {
+    // TODO: if (isIterable(x)) return reduceIterable(fn, y0, x)
+    // TODO: if (isAsyncIterable(x)) return reduceAsyncIterable(fn, y0, x)
+    // TODO: if (isReadableStream(x)) return reduceStream(fn, y0, x)
+    // TODO: if (isObject(x)) return reduceObject(fn, y0, x)
+    // TODO: throw new TypeError(`cannot reduce ${type(x)}`)
     const iter = getIterator(x)
     let cursor = iter.next()
     if (cursor.done) {
