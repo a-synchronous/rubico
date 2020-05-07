@@ -270,6 +270,107 @@ describe('rubico', () => {
     })
   })
 
+  describe('switch', () => {
+    it('switches on provided sync functions', async () => {
+      ase(
+        r.switch([
+          x => x === 1, () => 'hi',
+          x => x === 2, () => 'ho',
+          () => 'hey',
+        ])(1),
+        'hi',
+      )
+      ase(
+        r.switch([
+          x => x === 1, () => 'hi',
+          x => x === 2, () => 'ho',
+          () => 'hey',
+        ])(2),
+        'ho',
+      )
+      ase(
+        r.switch([
+          x => x === 1, () => 'hi',
+          x => x === 2, () => 'ho',
+          () => 'hey',
+        ])(3),
+        'hey',
+      )
+      ase(
+        r.switch([
+          x => x === 1, async () => 'hi',
+          x => x === 2, async () => 'ho',
+          () => 'hey',
+        ])(3),
+        'hey',
+      )
+    })
+    it('switches on provided async functions', async () => {
+      aok(
+        r.switch([
+          async x => x === 1, async () => 'hi',
+          async x => x === 2, async () => 'ho',
+          async () => 'hey',
+        ])(1) instanceof Promise,
+      )
+      aok(
+        r.switch([
+          async x => x === 1, () => 'hi',
+          x => x === 2, () => 'ho',
+          () => 'hey',
+        ])(1) instanceof Promise,
+      )
+      ase(
+        await r.switch([
+          async x => x === 1, async () => 'hi',
+          async x => x === 2, async () => 'ho',
+          async () => 'hey',
+        ])(1),
+        'hi',
+      )
+      ase(
+        await r.switch([
+          async x => x === 1, async () => 'hi',
+          async x => x === 2, async () => 'ho',
+          async () => 'hey',
+        ])(2),
+        'ho',
+      )
+      ase(
+        await r.switch([
+          async x => x === 1, async () => 'hi',
+          async x => x === 2, async () => 'ho',
+          async () => 'hey',
+        ])(3),
+        'hey',
+      )
+    })
+    it('throws a TypeError if passed a non array', async () => {
+      assert.throws(
+        () => r.switch('hey'),
+        new TypeError('first argument must be an array of functions'),
+      )
+    })
+    it('throws a RangeError if passed less than three functions', async () => {
+      assert.throws(
+        () => r.switch([() => false, () => 'hey']),
+        new RangeError('at least 3 functions required'),
+      )
+    })
+    it('throws a RangeError if passed an even number of functions', async () => {
+      assert.throws(
+        () => r.switch([() => false, () => 'hey', () => true, () => 'ho']),
+        new RangeError('odd number of functions required'),
+      )
+    })
+    it('throws a TypeError if any item is not a function', async () => {
+      assert.throws(
+        () => r.switch([() => false, 'hey', () => true, () => 'ho', () => 'hi']),
+        new TypeError('String (functions[1]) is not a function'),
+      )
+    })
+  })
+
   describe('map', () => {
     it('applies an async function in parallel to all elements of an array', async () => {
       ade(

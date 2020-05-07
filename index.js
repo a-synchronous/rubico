@@ -127,9 +127,30 @@ const tryCatch = (fn, onError) => {
   }
 }
 
-// TODO: implement
-// r.switch([isNumber, () => 'was number', isString, 'was string', throwError])
-const switch_ = fns => {}
+const arraySwitch = (fns, x, i) => {
+  if (i === fns.length - 1) return fns[i](x)
+  const ok = fns[i](x)
+  return isPromise(ok)
+    ? ok.then(res => res ? fns[i + 1](x) : arraySwitch(fns, x, i + 2))
+    : ok ? fns[i + 1](x) : arraySwitch(fns, x, i + 2)
+}
+
+const switch_ = fns => {
+  if (!isArray(fns)) {
+    throw new TypeError(`first argument must be an array of functions`)
+  }
+  if (fns.length < 3) {
+    throw new RangeError('at least 3 functions required')
+  }
+  if (fns.length % 2 === 0) {
+    throw new RangeError('odd number of functions required')
+  }
+  for (i = 0; i < fns.length; i++) {
+    if (isFunction(fns[i])) continue
+    throw new TypeError(`${type(fns[i])} (functions[${i}]) is not a function`)
+  }
+  return x => arraySwitch(fns, x, 0)
+}
 
 // x.map: https://v8.dev/blog/elements-kinds#avoid-polymorphism
 const mapArray = (fn, x) => {
