@@ -330,7 +330,10 @@ const writeableTransform = (y0, fn) => reduce(
   y0,
 )
 
-const transform = (y0, fn = map(x => x)) => {
+const transform = (y0, fn) => {
+  if (!isFunction(fn)) {
+    throw new TypeError(`${type(fn)} is not a function`)
+  }
   if (isArray(y0)) return arrayTransform(y0, fn)
   if (isString(y0)) return stringTransform(y0, fn)
   if (isSet(y0)) return setTransform(y0, fn)
