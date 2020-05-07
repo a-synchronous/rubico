@@ -11,21 +11,35 @@ const isIterable = x => isDefined(x[Symbol.iterator])
 
 const isAsyncIterable = x => isDefined(x[Symbol.asyncIterator])
 
+const isReadable = x => x && typeof x.read === 'function'
+
+const isWritable = x => x && typeof x.write === 'function'
+
 const isReadableStream = x => (
   x && typeof x._read === 'function' && typeof x._readableState === 'object'
+)
+
+const isWriteableStream = x => (
+  x && typeof x._write === 'function' && typeof x._writeableState === 'object'
 )
 
 const isFunction = x => typeof x === 'function'
 
 const isBinaryFunction = x => typeof x === 'function' && x.length === 2
 
-const isArray = x => x instanceof Array
+const isArray = Array.isArray
+
+const isBuffer = Buffer.isBuffer
+
+const isString = x => typeof x === 'string' || x instanceof String
 
 const isPromise = x => x && typeof x.then === 'function'
 
-const is = fn => x => x && x.constructor && x.constructor === fn
+const is = fn => x => x && x.constructor === fn
 
 const isObject = is(Object)
+
+const isSet = is(Set)
 
 const type = x => (x && x.constructor && x.constructor.name) || typeof x
 
@@ -291,13 +305,39 @@ const reduce = (fn, y0) => {
   }
 }
 
-// TODO: implement
-// r.transform([...], r.pipe([...])) <- atoms can be anything
-// r.transform('...', r.filter(...)) <- atoms must be strings or implement toString
-// r.transform(new Set([...]), r.pipe([...]))
-// r.transform(Buffer.from('...'), r.map(...))
-// r.transform(myStream, r.map(...))
-const transform = (y0, fn) => {}
+const arrayTransform = (y0, fn) => reduce(
+  fn((y, xi) => { y.push(xi); return y }),
+  Array.from(y0),
+)
+
+const stringTransform = (y0, fn) => reduce(
+  fn((y, xi) => `${y}${xi}`),
+  y0,
+)
+
+const setTransform = (y0, fn) => reduce(
+  fn((y, xi) => y.add(xi)),
+  new Set(y0),
+)
+
+const bufferTransform = (y0, fn) => reduce(
+  fn((y, xi) => Buffer.concat([y, Buffer.from(xi)])),
+  Buffer.from(y0),
+)
+
+const writeableTransform = (y0, fn) => reduce(
+  fn((y, xi) => { y.write(xi); return y }),
+  y0,
+)
+
+const transform = (y0, fn = map(x => x)) => {
+  if (isArray(y0)) return arrayTransform(y0, fn)
+  if (isString(y0)) return stringTransform(y0, fn)
+  if (isSet(y0)) return setTransform(y0, fn)
+  if (isBuffer(y0)) return bufferTransform(y0, fn)
+  if (isWritable(y0)) return writeableTransform(y0, fn)
+  throw new TypeError(`cannot transform ${type(y0)}`)
+}
 
 // TODO: implement
 const get = keys => {}

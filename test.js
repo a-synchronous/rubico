@@ -1,4 +1,6 @@
 const assert = require('assert')
+const path = require('path')
+const fs = require('fs')
 const r = require('.')
 
 const ase = assert.strictEqual
@@ -7,11 +9,15 @@ const ade = assert.deepEqual
 
 const aok = assert.ok
 
+const sleep = ms => new Promise(resolve => { setTimeout(resolve, ms) })
+
 const hi = x => x + 'hi'
 
 const ho = x => x + 'ho'
 
 const isOdd = x => (x % 2 === 1)
+
+const square = x => x ** 2
 
 const asyncIsEven = x => new Promise(resolve => {
   setImmediate(() => resolve(x % 2 === 0))
@@ -38,6 +44,23 @@ const asyncArrayReduce = (fn, y0) => async x => {
   while (i < x.length) { y = await fn(y, x[i]); i += 1 }
   return y
 }
+
+const consumeReadStreamPush = s => new Promise((resolve, reject) => {
+  let y = ''
+  s.on('data', chunk => { y += chunk })
+  s.on('end', () => resolve(y))
+  s.on('error', err => reject(err))
+})
+
+const consumeReadStreamPull = s => new Promise((resolve, reject) => {
+  let y = ''
+  s.on('readable', () => {
+    let chunk
+    while (chunk = s.read()) y += `${chunk}`
+  })
+  s.on('end', () => resolve(y))
+  s.on('error', err => reject(err))
+})
 
 describe('rubico', () => {
   describe('pipe', () => {
@@ -600,6 +623,82 @@ describe('rubico', () => {
         await r.reduce(hosWithHey(concat), [])(hihos),
         ['hohey', 'hohey', 'hohey'],
       )
+    })
+  })
+
+  describe('transform', () => {
+    const squareOdds = r.pipe([r.filter(isOdd), r.map(square)])
+    const squareOddsToString = r.pipe([
+      r.filter(isOdd),
+      r.map(r.pipe([square, x => `${x}`])),
+    ])
+    const asyncEvens = r.filter(asyncIsEven)
+    const asyncEvensToString = r.pipe([
+      r.filter(asyncIsEven),
+      r.map(x => `${x}`)
+    ])
+    const numbers = [1, 2, 3, 4, 5]
+    it('sync transforms iterable to array', async () => {
+      ade(r.transform([], squareOdds)(numbers), [1, 9, 25])
+    })
+    it('async transforms iterable to array', async () => {
+      aok(r.transform([99], asyncEvens)(numbers) instanceof Promise)
+      ade(await r.transform([99], asyncEvens)(numbers), [99, 2, 4])
+    })
+    it('sync transforms iterable to string', async () => {
+      ase(r.transform('', squareOdds)(numbers), '1925')
+    })
+    it('async transforms iterable to string', async () => {
+      aok(r.transform('99', asyncEvens)(numbers) instanceof Promise)
+      ase(await r.transform('99', asyncEvens)(numbers), '9924')
+    })
+    it('sync transforms iterable to set', async () => {
+      ade(r.transform(new Set(), squareOdds)(numbers), new Set([1, 9, 25]))
+    })
+    it('async transforms iterable to set', async () => {
+      aok(r.transform(new Set([99]), asyncEvens)(numbers) instanceof Promise)
+      ade(
+        await r.transform(new Set([99, 2]), asyncEvens)(numbers),
+        new Set([99, 2, 4]),
+      )
+    })
+    it('sync transforms iterable to buffer', async () => {
+      ade(
+        r.transform(Buffer.from(''), squareOddsToString)(numbers),
+        Buffer.from('1925'),
+      )
+    })
+    it('async transforms iterable to buffer', async () => {
+      const buffer9924 = (
+        r.transform(Buffer.from('99'), asyncEvensToString)(numbers)
+      )
+      aok(buffer9924 instanceof Promise)
+      ade(await buffer9924, Buffer.from('9924'))
+    })
+    it('sync transforms iterable to writeable stream', async () => {
+      const tmpWriter = fs.createWriteStream(path.join(__dirname, './tmp'))
+      r.transform(tmpWriter, squareOddsToString)(numbers)
+      ase(await consumeReadStreamPush(
+        fs.createReadStream(path.join(__dirname, './tmp')),
+      ), '1925')
+      ase(await consumeReadStreamPull(
+        fs.createReadStream(path.join(__dirname, './tmp')),
+      ), '1925')
+      fs.unlinkSync('./tmp')
+    })
+    it('async transforms iterable to writeable stream', async () => {
+      const tmpWriter = fs.createWriteStream(path.join(__dirname, './tmp'))
+      tmpWriter.write('99')
+      const writeEvens = r.transform(tmpWriter, asyncEvensToString)(numbers)
+      aok(writeEvens instanceof Promise)
+      await writeEvens
+      ase(await consumeReadStreamPush(
+        fs.createReadStream(path.join(__dirname, './tmp')),
+      ), '9924')
+      ase(await consumeReadStreamPull(
+        fs.createReadStream(path.join(__dirname, './tmp')),
+      ), '9924')
+      fs.unlinkSync('./tmp')
     })
   })
 })
