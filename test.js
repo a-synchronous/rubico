@@ -220,6 +220,14 @@ describe('rubico', () => {
       aok(r.tap(async x => x + 1)(1) instanceof Promise)
       ase(await r.tap(async x => x + 1)(1), 1)
     })
+    it('acts as a tap transducer - taps into a sync reducer pipeline', async () => {
+      let strNums = ''
+      const tappedSum = r.tap(x => { strNums += `${x}` })((y, xi) => y + xi)
+      aok(typeof tappedSum, 'function')
+      ase(tappedSum.length, 2)
+      ase([1, 2, 3, 4, 5].reduce(tappedSum, 10), 25)
+      ase(strNums, '12345')
+    })
     it('throws a TypeError if passed a non function', async () => {
       assert.throws(
         () => r.tap('hey'),

@@ -123,12 +123,17 @@ const assign = fns => {
   }
 }
 
+const tapReducer = (fn, reducer) => (y, xi) => {
+  const point = fn(xi)
+  return isPromise(point) ? point.then(() => reducer(y, xi)) : reducer(y, xi)
+}
+
 const tap = fn => {
   if (!isFunction(fn)) {
     throw new TypeError(`cannot tap with ${type(fn)}`)
   }
   return x => {
-    // TODO: if (isBinaryFunction(x)) return tapReducer(fn, x)
+    if (isBinaryFunction(x)) return tapReducer(fn, x)
     const point = fn(x)
     return isPromise(point) ? point.then(() => x) : x
   }
