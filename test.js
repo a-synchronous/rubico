@@ -524,6 +524,45 @@ describe('rubico', () => {
     })
   })
 
+  describe('map.series', () => {
+    it('syncly maps into array of functions', async () => {
+      const arr = []
+      ade(
+        r.map.series(x => { arr.push(x); return x })([1, 2, 3]),
+        [1, 2, 3],
+      )
+      ade(arr, [1, 2, 3])
+    })
+    it('asyncly forks into array of functions, running each function in series', async () => {
+      const arr = []
+      const invertedSleepPushSeries = r.map.series(
+        x => sleep(15 - (x * 5)).then(() => { arr.push(x); return x })
+      )([1, 2, 3])
+      aok(invertedSleepPushSeries instanceof Promise)
+      ade(await invertedSleepPushSeries, [1, 2, 3])
+      ade(arr, [1, 2, 3])
+      const arr2 = []
+      const invertedSleepPush = r.map(
+        x => sleep(15 - (x * 5)).then(() => { arr2.push(x); return x })
+      )([1, 2, 3])
+      aok(invertedSleepPush instanceof Promise)
+      ade(await invertedSleepPush, [1, 2, 3])
+      ade(arr2, [3, 2, 1])
+    })
+    it('throws TypeError for non functions', async () => {
+      assert.throws(
+        () => r.map.series('hey'),
+        new TypeError('String is not a function'),
+      )
+    })
+    it('throws TypeError for non array input', async () => {
+      assert.throws(
+        () => r.map.series(() => 1)('hey'),
+        new TypeError('cannot map.series from String')
+      )
+    })
+  })
+
   describe('filter', () => {
     it('filters elements from an array with a sync predicate', async () => {
       ade(

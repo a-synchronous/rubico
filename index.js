@@ -234,6 +234,24 @@ const map = fn => {
   }
 }
 
+const mapSeriesArray = (fn, x, i, y) => {
+  if (i === x.length) return y
+  const point = fn(x[i])
+  return isPromise(point)
+    ? point.then(res => mapSeriesArray(fn, x, i + 1, y.concat(res)))
+    : mapSeriesArray(fn, x, i + 1, y.concat(point))
+}
+
+map.series = fn => {
+  if (!isFunction(fn)) {
+    throw new TypeError(`${type(fn)} is not a function`)
+  }
+  return x => {
+    if (isArray(x)) return mapSeriesArray(fn, x, 0, [])
+    throw new TypeError(`cannot map.series from ${type(x)}`)
+  }
+}
+
 const filterArray = (fn, x) => {
   let isAsync = false
   const okIndex = x.map(item => {
