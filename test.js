@@ -191,8 +191,8 @@ describe('rubico', () => {
     it('asyncly forks into array of functions, running each function in series', async () => {
       const arr = []
       const staggeredPush = r.fork.series([
-        () => sleep(50).then(() => { arr.push(1); return 'a' }),
-        () => sleep(25).then(() => { arr.push(2); return 'b' }),
+        () => sleep(10).then(() => { arr.push(1); return 'a' }),
+        () => sleep(5).then(() => { arr.push(2); return 'b' }),
         () => { arr.push(3); return 'c' },
       ])()
       aok(staggeredPush instanceof Promise)
@@ -200,13 +200,19 @@ describe('rubico', () => {
       ade(arr, [1, 2, 3])
       const arr2 = []
       const parallelPush = r.fork([
-        () => sleep(50).then(() => { arr2.push(1); return 'a' }),
-        () => sleep(25).then(() => { arr2.push(2); return 'b' }),
+        () => sleep(10).then(() => { arr2.push(1); return 'a' }),
+        () => sleep(5).then(() => { arr2.push(2); return 'b' }),
         () => { arr2.push(3); return 'c' },
       ])()
       aok(parallelPush instanceof Promise)
       ade(await parallelPush, ['a', 'b', 'c'])
       ade(arr2, [3, 2, 1])
+    })
+    it('throws TypeError for non array functions', async () => {
+      assert.throws(
+        () => r.fork.series({}),
+        new TypeError('cannot fork.series into Object'),
+      )
     })
   })
 
