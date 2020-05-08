@@ -1,4 +1,5 @@
 const assert = require('assert')
+const stream = require('stream')
 const path = require('path')
 const fs = require('fs')
 const r = require('.')
@@ -42,6 +43,14 @@ const asyncArrayReduce = (fn, y0) => async x => {
     i = 1
   }
   while (i < x.length) { y = await fn(y, x[i]); i += 1 }
+  return y
+}
+
+const constructReadStream = iterable => {
+  const y = new stream.Readable({ objectMode: true })
+  y._read = () => {}
+  for (const x of iterable) y.push(x)
+  y.push(null)
   return y
 }
 
@@ -542,12 +551,19 @@ describe('rubico', () => {
         },
       },
     ]
-    const asyncIterable = {
-      [Symbol.asyncIterator]: async function* () {
-        await sleep(1)
+    const makeAsyncIterables = () => [
+      stream.Readable.from([1, 2, 3, 4, 5]),
+      stream.Readable.from((async function* () {
         for (let i = 1; i < 6; i++) yield i
+      })()),
+      constructReadStream([1, 2, 3, 4, 5]),
+      {
+        [Symbol.asyncIterator]: async function* () {
+          await sleep(1)
+          for (let i = 1; i < 6; i++) yield i
+        },
       },
-    }
+    ]
     it('reduces any iterable with a sync reducer', async () => {
       for (const x of iterables) {
         ase(r.reduce((y, xi) => y + xi)(x), 15)
@@ -562,15 +578,25 @@ describe('rubico', () => {
         ase(await r.reduce(asyncMult, 10)(x), 1200)
       }
     })
-    it('reduces an async iterable with a sync reducer', async () => {
-      ase(await r.reduce((y, xi) => y + xi)(asyncIterable), 15)
-      ase(await r.reduce((y, xi) => y + xi, 10)(asyncIterable), 25)
+    it('reduces any async iterable with a sync reducer', async () => {
+      for (const x of makeAsyncIterables()) {
+        ase(await r.reduce((y, xi) => Number(y) + Number(xi))(x), 15)
+      }
+      for (const x of makeAsyncIterables()) {
+        ase(await r.reduce((y, xi) => Number(y) + Number(xi), 10)(x), 25)
+      }
     })
-    it('reduces an async iterable with an async reducer', async () => {
+    it('reduces any async iterable with an async reducer', async () => {
       aok(asyncMult(1, 2) instanceof Promise)
-      aok(r.reduce(asyncMult)(asyncIterable) instanceof Promise)
-      ase(await r.reduce(asyncMult)(asyncIterable), 120)
-      ase(await r.reduce(asyncMult, 10)(asyncIterable), 1200)
+      for (const x of makeAsyncIterables()) {
+        aok(r.reduce(asyncMult)(x) instanceof Promise)
+      }
+      for (const x of makeAsyncIterables()) {
+        ase(await r.reduce(asyncMult)(x), 120)
+      }
+      for (const x of makeAsyncIterables()) {
+        ase(await r.reduce(asyncMult, 10)(x), 1200)
+      }
     })
     it('throws a TypeError if passed a non function', async () => {
       assert.throws(

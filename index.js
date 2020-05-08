@@ -11,17 +11,15 @@ const isIterable = x => isDefined(x[Symbol.iterator])
 
 const isAsyncIterable = x => isDefined(x[Symbol.asyncIterator])
 
-const isReadable = x => x && typeof x.read === 'function'
+const isReadable = x => x
+  && x.readable
+  && typeof x._read === 'function'
+  && typeof x._readableState === 'object'
 
-const isWritable = x => x && typeof x.write === 'function'
-
-const isReadableStream = x => (
-  x && typeof x._read === 'function' && typeof x._readableState === 'object'
-)
-
-const isWriteableStream = x => (
-  x && typeof x._write === 'function' && typeof x._writeableState === 'object'
-)
+const isWritable = x => x
+  && x.writable
+  && typeof x._write === 'function'
+  && typeof x._writableState === 'object'
 
 const isFunction = x => typeof x === 'function'
 
@@ -319,7 +317,6 @@ const reduce = (fn, y0) => {
   return x => {
     if (isIterable(x)) return reduceIterable(fn, y0, x)
     if (isAsyncIterable(x)) return reduceAsyncIterable(fn, y0, x)
-    // TODO: if (isReadableStream(x)) return reduceStream(fn, y0, x)
     if (isObject(x)) return reduceObject(fn, y0, x)
     throw new TypeError(`cannot reduce ${type(x)}`)
   }
