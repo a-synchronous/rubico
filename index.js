@@ -105,8 +105,18 @@ const fork = fns => {
   throw new TypeError(`cannot fork into ${type(fns)}`)
 }
 
-// TODO: implement - arrays only, functions applied in series rather than in parallel
-fork.series = fns => {}
+const arrayForkSeries = (fns, x, i, y) => {
+  if (i === fns.length) return y
+  const point = fns[i](x)
+  return isPromise(point)
+    ? point.then(res => arrayForkSeries(fns, x, i + 1, y.concat(res)))
+    : arrayForkSeries(fns, x, i + 1, y.concat(point))
+}
+
+fork.series = fns => {
+  if (isArray(fns)) return x => arrayForkSeries(fns, x, 0, [])
+  throw new TypeError(`cannot fork.series into ${type(fns)}`)
+}
 
 const assign = fns => {
   if (!isObject(fns)) {
