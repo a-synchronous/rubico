@@ -443,7 +443,7 @@ const omit = keys => {}
 const any = fn => {}
 
 // TODO: implement
-const every = fn => {}
+const all = fn => {}
 
 // TODO: implement
 const and = fns => {}
@@ -471,7 +471,7 @@ const r = {
   tap, tryCatch, switch: switch_,
   map, filter, reduce, transform,
   get, pick, omit,
-  any, every,
+  any, all,
   and, or, not,
   gt, lt, gte, lte,
 }
