@@ -843,4 +843,40 @@ describe('rubico', () => {
       )
     })
   })
+
+  describe('get', () => {
+    const aaaaa = { a: { a: { a: { a: { a: 1 } } } } }
+    const nested = [[[[[1]]]]]
+    it('accesses a property of an object by name', async () => {
+      ase(r.get('a')({ a: 1 }), 1)
+      ase(r.get('b')({ a: 1 }), undefined)
+      ase(r.get('b', 0)({ a: 1 }), 0)
+      ase(r.get(0)([1]), 1)
+      ase(r.get(1)([1]), undefined)
+      ase(r.get(1, 0)([1]), 0)
+    })
+    it('accesses a property of an object by dot notation', async () => {
+      ase(r.get('a.a.a.a.a')(aaaaa), 1)
+      ase(r.get('a.a.a.a.b')(aaaaa), undefined)
+      ase(r.get('a.a.a.a.b', 0)(aaaaa), 0)
+      ase(r.get('0.0.0.0.0')(nested), 1)
+      ase(r.get('0.0.0.0.1')(nested), undefined)
+      ase(r.get('0.0.0.0.1', 0)(nested), 0)
+    })
+    it('accesses a property of an object by array', async () => {
+      ase(r.get(['a', 'a', 'a', 'a', 'a'])(aaaaa), 1)
+      ase(r.get(['a', 'a', 'a', 'a', 'b'])(aaaaa), undefined)
+      ase(r.get(['a', 'a', 'a', 'a', 'b'], 0)(aaaaa), 0)
+      ase(r.get([0, 0, 0, 0, 0])(nested), 1)
+      ase(r.get([0, 0, 0, 0, 1])(nested), undefined)
+      ase(r.get([0, 0, 0, 0, 1], 0)(nested), 0)
+      ase(r.get(['a', 0])({ a: [1] }), 1)
+    })
+    it('throws a TypeError on invalid path', async () => {
+      assert.throws(
+        () => r.get({}),
+        new TypeError('cannot get with Object path'),
+      )
+    })
+  })
 })

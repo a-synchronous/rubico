@@ -1,3 +1,5 @@
+'use strict'
+
 /* design principles
  *
  * this is a module, not a utility library
@@ -5,6 +7,7 @@
  * these functions are time then space optimal
  * memory used by these functions is properly garbage collected
  */
+
 const isDefined = x => x !== undefined && x !== null
 
 const isIterable = x => isDefined(x[Symbol.iterator])
@@ -16,10 +19,7 @@ const isReadable = x => x
   && typeof x._read === 'function'
   && typeof x._readableState === 'object'
 
-const isWritable = x => x
-  && x.writable
-  && typeof x._write === 'function'
-  && typeof x._writableState === 'object'
+const isWritable = x => x && typeof x.write === 'function'
 
 const isFunction = x => typeof x === 'function'
 
@@ -27,7 +27,11 @@ const isBinaryFunction = x => typeof x === 'function' && x.length === 2
 
 const isArray = Array.isArray
 
-const isBuffer = Buffer.isBuffer
+const isBuffer = x => x && x.constructor
+  && typeof x.constructor.isBuffer === 'function'
+  && x.constructor.isBuffer(x)
+
+const isNumber = x => typeof x === 'number' || x instanceof Number
 
 const isString = x => typeof x === 'string' || x instanceof String
 
@@ -66,7 +70,7 @@ const pipe = fns => {
   if (!isArray(fns)) {
     throw new TypeError(`first argument must be an array of functions`)
   }
-  for (i = 0; i < fns.length; i++) {
+  for (let i = 0; i < fns.length; i++) {
     if (isFunction(fns[i])) continue
     throw new TypeError(`${type(fns[i])} (functions[${i}]) is not a function`)
   }
@@ -184,7 +188,7 @@ const switch_ = fns => {
   if (fns.length % 2 === 0) {
     throw new RangeError('odd number of functions required')
   }
-  for (i = 0; i < fns.length; i++) {
+  for (let i = 0; i < fns.length; i++) {
     if (isFunction(fns[i])) continue
     throw new TypeError(`${type(fns[i])} (functions[${i}]) is not a function`)
   }
@@ -392,8 +396,28 @@ const transform = (y0, fn) => {
   throw new TypeError(`cannot transform ${type(y0)}`)
 }
 
-// TODO: implement
-const get = keys => {}
+const isDelimitedBy = (delim, x) => x
+  && x[0] !== delim
+  && x[x.length - 1] !== delim
+  && x.slice(1, x.length - 1).includes(delim)
+
+const arrayGet = (path, x, defaultValue) => {
+  let y = x
+  for (let i = 0; i < path.length; i++) {
+    y = y[path[i]]
+    if (!isDefined(y)) return defaultValue
+  }
+  return y
+}
+
+const get = (path, defaultValue) => {
+  if (isArray(path)) return x => arrayGet(path, x, defaultValue)
+  if (isNumber(path)) return x => arrayGet([path], x, defaultValue)
+  if (isString(path)) return isDelimitedBy('.', path)
+    ? x => arrayGet(path.split('.'), x, defaultValue)
+    : x => arrayGet([path], x, defaultValue)
+  throw new TypeError(`cannot get with ${type(path)} path`)
+}
 
 // TODO: implement
 const pick = keys => {}
@@ -439,3 +463,4 @@ const r = {
 }
 
 module.exports = r
+module.exports.default = r
