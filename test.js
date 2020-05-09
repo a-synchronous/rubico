@@ -158,19 +158,19 @@ describe('rubico', () => {
     it('throws TypeError for String', async () => {
       assert.throws(
         () => r.fork('ayelmao'),
-        new TypeError('cannot fork into String'),
+        new TypeError('cannot fork into string'),
       )
     })
     it('throws TypeError for Set', async () => {
       assert.throws(
         () => r.fork(new Set([hi])),
-        new TypeError('cannot fork into Set'),
+        new TypeError('cannot fork into set'),
       )
     })
     it('throws TypeError for Map', async () => {
       assert.throws(
         () => r.fork(new Map([['a', hi]])),
-        new TypeError('cannot fork into Map'),
+        new TypeError('cannot fork into map'),
       )
     })
   })
@@ -211,7 +211,7 @@ describe('rubico', () => {
     it('throws TypeError for non array functions', async () => {
       assert.throws(
         () => r.fork.series({}),
-        new TypeError('cannot fork.series into Object'),
+        new TypeError('cannot fork.series into object'),
       )
     })
   })
@@ -242,13 +242,13 @@ describe('rubico', () => {
     it('throws TypeError on non object functions', async () => {
       assert.throws(
         () => r.assign(new Set(['hey'])),
-        new TypeError('cannot assign from Set'),
+        new TypeError('cannot assign from set'),
       )
     })
     it('throws TypeError on non object input', async () => {
       assert.throws(
         () => r.assign({ a: hi })('hi'),
-        new TypeError('cannot assign into String'),
+        new TypeError('cannot assign into string'),
       )
     })
   })
@@ -272,7 +272,7 @@ describe('rubico', () => {
     it('throws a TypeError if passed a non function', async () => {
       assert.throws(
         () => r.tap('hey'),
-        new TypeError('cannot tap with String'),
+        new TypeError('cannot tap with string'),
       )
     })
   })
@@ -340,13 +340,13 @@ describe('rubico', () => {
     it('throws a TypeError if passed a non function tryer', async () => {
       assert.throws(
         () => r.tryCatch('hey', () => {}),
-        new TypeError('cannot try String'),
+        new TypeError('cannot try string'),
       )
     })
     it('throws a TypeError if passed a non function catcher', async () => {
       assert.throws(
         () => r.tryCatch(() => {}, Buffer.from('abc')),
-        new TypeError('cannot catch with Buffer'),
+        new TypeError('cannot catch with buffer'),
       )
     })
   })
@@ -447,7 +447,7 @@ describe('rubico', () => {
     it('throws a TypeError if any item is not a function', async () => {
       assert.throws(
         () => r.switch([() => false, 'hey', () => true, () => 'ho', () => 'hi']),
-        new TypeError('String (functions[1]) is not a function'),
+        new TypeError('string (functions[1]) is not a function'),
       )
     })
   })
@@ -501,13 +501,13 @@ describe('rubico', () => {
     it('throws a TypeError if passed a non function', async () => {
       assert.throws(
         () => r.map({}),
-        new TypeError('Object is not a function'),
+        new TypeError('object is not a function'),
       )
     })
     it('throws a TypeError if input is not an array or object', async () => {
       assert.throws(
         () => r.map(hi)('yo'),
-        new TypeError('cannot map from String')
+        new TypeError('cannot map from string')
       )
     })
     it('handles sync errors good', async () => {
@@ -552,13 +552,13 @@ describe('rubico', () => {
     it('throws TypeError for non functions', async () => {
       assert.throws(
         () => r.map.series('hey'),
-        new TypeError('String is not a function'),
+        new TypeError('string is not a function'),
       )
     })
     it('throws TypeError for non array input', async () => {
       assert.throws(
         () => r.map.series(() => 1)('hey'),
-        new TypeError('cannot map.series from String')
+        new TypeError('cannot map.series from string')
       )
     })
   })
@@ -605,13 +605,13 @@ describe('rubico', () => {
     it('throws a TypeError if passed a non function', async () => {
       assert.throws(
         () => r.filter({}),
-        new TypeError('Object is not a function'),
+        new TypeError('object is not a function'),
       )
     })
     it('throws a TypeError if input is not an array or object', async () => {
       assert.throws(
         () => r.filter(hi)('yo'),
-        new TypeError('cannot filter from String')
+        new TypeError('cannot filter from string')
       )
     })
     it('handles sync errors good', async () => {
@@ -689,13 +689,13 @@ describe('rubico', () => {
     it('throws a TypeError if passed a non function', async () => {
       assert.throws(
         () => r.reduce({}),
-        new TypeError('Object is not a function'),
+        new TypeError('object is not a function'),
       )
     })
     it('throws a TypeError if passed a non iterable', async () => {
       assert.throws(
         () => r.reduce((y, xi) => y + xi)(1),
-        new TypeError('cannot reduce Number'),
+        new TypeError('cannot reduce number'),
       )
     })
     it('throws an Error on empty iterator', async () => {
@@ -833,13 +833,13 @@ describe('rubico', () => {
     it('throws a TypeError for invalid initial value', async () => {
       assert.throws(
         () => r.transform({}, () => {}),
-        new TypeError('cannot transform Object'),
+        new TypeError('cannot transform object'),
       )
     })
     it('throws a TypeError for non function transducer', async () => {
       assert.throws(
         () => r.transform('hey', 'yo'),
-        new TypeError('String is not a function'),
+        new TypeError('string is not a function'),
       )
     })
   })
@@ -875,7 +875,7 @@ describe('rubico', () => {
     it('throws a TypeError on invalid path', async () => {
       assert.throws(
         () => r.get({}),
-        new TypeError('cannot get with Object path'),
+        new TypeError('cannot get with object path'),
       )
     })
   })
@@ -890,13 +890,13 @@ describe('rubico', () => {
     it('throws a TypeError on invalid props', async () => {
       assert.throws(
         () => r.pick('hey'),
-        new TypeError('cannot pick with String; array of props required'),
+        new TypeError('cannot pick with string; array of props required'),
       )
     })
     it('throws a TypeError on invalid input', async () => {
       assert.throws(
         () => r.pick(['hey'])(['hey']),
-        new TypeError('cannot pick from Array'),
+        new TypeError('cannot pick from array'),
       )
     })
   })
@@ -911,13 +911,47 @@ describe('rubico', () => {
     it('throws a TypeError on invalid props', async () => {
       assert.throws(
         () => r.omit('hey'),
-        new TypeError('cannot omit with String; array of props required'),
+        new TypeError('cannot omit with string; array of props required'),
       )
     })
     it('throws a TypeError on invalid input', async () => {
       assert.throws(
         () => r.omit(['hey'])(['hey']),
-        new TypeError('cannot omit from Array'),
+        new TypeError('cannot omit from array'),
+      )
+    })
+  })
+
+  describe('any', () => {
+    const numbers = [1, 2, 3, 4, 5]
+    const numbersObject = { a: 1, b: 2, c: 3, d: 4, e: 5 }
+    it('syncly evaluates fn against all items in iterable, true if any evaluation is truthy', async () => {
+      ase(r.any(x => x > 5)(numbers), false)
+      ase(r.any(x => x > 0)(numbers), true)
+      ase(r.any(x => x > 5)(new Set(numbers)), false)
+      ase(r.any(x => x > 0)(new Set(numbers)), true)
+      ase(r.any(x => x > 5)(numbersObject), false)
+      ase(r.any(x => x > 0)(numbersObject), true)
+    })
+    it('asyncly evaluates fn against all items in iterable, true if any evaluation is truthy', async () => {
+      aok(r.any(async x => x > 5)(numbers) instanceof Promise)
+      ase(await r.any(async x => x > 5)(numbers), false)
+      ase(await r.any(async x => x > 0)(numbers), true)
+      ase(await r.any(async x => x > 5)(new Set(numbers)), false)
+      ase(await r.any(async x => x > 0)(new Set(numbers)), true)
+      ase(await r.any(async x => x > 5)(numbersObject), false)
+      ase(await r.any(async x => x > 0)(numbersObject), true)
+    })
+    it('throws TypeError on non function setup', async () => {
+      assert.throws(
+        () => r.any('hey'),
+        new TypeError('string is not a function'),
+      )
+    })
+    it('throws TypeError if input not iterable or object', async () => {
+      assert.throws(
+        () => r.any(x => x)(1),
+        new TypeError('cannot any number'),
       )
     })
   })

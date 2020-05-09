@@ -44,7 +44,9 @@ const isObject = is(Object)
 
 const isSet = is(Set)
 
-const type = x => (x && x.constructor && x.constructor.name) || typeof x
+const toLowerCase = x => x && typeof x.toLowerCase === 'function' && x.toLowerCase()
+
+const type = x => x && x.constructor && toLowerCase(x.constructor.name) || typeof x
 
 const range = (start, end) => Array.from({ length: end - start }, (x, i) => i + start)
 
@@ -450,8 +452,33 @@ const omit = props => {
   throw new TypeError(`cannot omit with ${type(props)}; array of props required`)
 }
 
-// TODO: implement
-const any = fn => {}
+const anyIterable = (fn, x) => {
+  const promises = []
+  for (const xi of x) {
+    const point = fn(xi)
+    if (isPromise(point)) promises.push(point)
+    else if (point) return true
+  }
+  return promises.length > 0
+    ? Promise.all(promises).then(res => res.some(x => x))
+    : false
+}
+
+const anyObject = (fn, x) => anyIterable(
+  fn,
+  (function* () { for (const k in x) yield x[k] })(),
+)
+
+const any = fn => {
+  if (!isFunction(fn)) {
+    throw new TypeError(`${type(fn)} is not a function`)
+  }
+  return x => {
+    if (isIterable(x)) return anyIterable(fn, x)
+    if (isObject(x)) return anyObject(fn, x)
+    throw new TypeError(`cannot any ${type(x)}`)
+  }
+}
 
 // TODO: implement
 const all = fn => {}
