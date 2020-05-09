@@ -900,4 +900,25 @@ describe('rubico', () => {
       )
     })
   })
+
+  describe('omit', () => {
+    const abc = { a: 1, b: 2, c: 3 }
+    it('omits properties from an object defined by array', async () => {
+      ade(r.omit(['a'])(abc), { b: 2, c: 3 })
+      ade(r.omit(['a', 'd'])(abc), { b: 2, c: 3 })
+      ade(r.omit(['d'])(abc), { a: 1, b: 2, c: 3 })
+    })
+    it('throws a TypeError on invalid props', async () => {
+      assert.throws(
+        () => r.omit('hey'),
+        new TypeError('cannot omit with String; array of props required'),
+      )
+    })
+    it('throws a TypeError on invalid input', async () => {
+      assert.throws(
+        () => r.omit(['hey'])(['hey']),
+        new TypeError('cannot omit from Array'),
+      )
+    })
+  })
 })

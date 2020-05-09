@@ -436,8 +436,19 @@ const pick = props => {
   throw new TypeError(`cannot pick with ${type(props)}; array of props required`)
 }
 
-// TODO: implement
-const omit = keys => {}
+const omitObject = (props, x) => {
+  const y = Object.assign({}, x)
+  for (let i = 0; i < props.length; i++) delete y[props[i]]
+  return y
+}
+
+const omit = props => {
+  if (isArray(props)) return x => {
+    if (!isObject(x)) throw new TypeError(`cannot omit from ${type(x)}`)
+    return omitObject(props, x)
+  }
+  throw new TypeError(`cannot omit with ${type(props)}; array of props required`)
+}
 
 // TODO: implement
 const any = fn => {}
