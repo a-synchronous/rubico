@@ -879,4 +879,25 @@ describe('rubico', () => {
       )
     })
   })
+
+  describe('pick', () => {
+    const abc = { a: 1, b: 2, c: 3 }
+    it('picks properties off an object defined by array', async () => {
+      ade(r.pick(['a'])(abc), { a: 1 })
+      ade(r.pick(['a', 'd'])(abc), { a: 1 })
+      ade(r.pick(['d'])(abc), {})
+    })
+    it('throws a TypeError on invalid props', async () => {
+      assert.throws(
+        () => r.pick('hey'),
+        new TypeError('cannot pick with String; array of props required'),
+      )
+    })
+    it('throws a TypeError on invalid input', async () => {
+      assert.throws(
+        () => r.pick(['hey'])(['hey']),
+        new TypeError('cannot pick from Array'),
+      )
+    })
+  })
 })

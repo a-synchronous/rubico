@@ -4,6 +4,7 @@
  *
  * this is a module, not a utility library
  * functional code should not care about async
+ * no special types
  * these functions are time then space optimal
  * memory used by these functions is properly garbage collected
  */
@@ -419,8 +420,21 @@ const get = (path, defaultValue) => {
   throw new TypeError(`cannot get with ${type(path)} path`)
 }
 
-// TODO: implement
-const pick = keys => {}
+const pickObject = (props, x) => {
+  const y = {}
+  for (let i = 0; i < props.length; i++) {
+    if (isDefined(x[props[i]])) y[props[i]] = x[props[i]]
+  }
+  return y
+}
+
+const pick = props => {
+  if (isArray(props)) return x => {
+    if (!isObject(x)) throw new TypeError(`cannot pick from ${type(x)}`)
+    return pickObject(props, x)
+  }
+  throw new TypeError(`cannot pick with ${type(props)}; array of props required`)
+}
 
 // TODO: implement
 const omit = keys => {}
@@ -463,4 +477,3 @@ const r = {
 }
 
 module.exports = r
-module.exports.default = r
