@@ -32,14 +32,14 @@ const asyncMult = (y, xi) => new Promise(resolve => {
   setImmediate(() => resolve(y * xi))
 })
 
-const asyncArrayReduce = (fn, y0) => async x => {
+const asyncArrayReduce = (fn, x0) => async x => {
   if (x.length < 2) throw new Error('array must have length >= 2')
   let y, i
-  if (y0 === undefined || y0 === null) {
+  if (x0 === undefined || x0 === null) {
     y = await fn(x[0], x[1])
     i = 2
   } else {
-    y = await fn(y0, x[0])
+    y = await fn(x0, x[0])
     i = 1
   }
   while (i < x.length) { y = await fn(y, x[i]); i += 1 }

@@ -304,13 +304,13 @@ const filter = fn => {
   }
 }
 
-const reduceIterable = (fn, y0, x) => {
+const reduceIterable = (fn, x0, x) => {
   const iter = x[Symbol.iterator].bind(x)()
   let cursor = iter.next()
   if (cursor.done) {
     throw new TypeError('cannot reduce empty iterator')
   }
-  let y = isDefined(y0) ? fn(y0, cursor.value) : (() => {
+  let y = isDefined(x0) ? fn(x0, cursor.value) : (() => {
     const x0 = cursor.value
     cursor = iter.next()
     return cursor.done ? x0 : fn(x0, cursor.value)
@@ -324,13 +324,13 @@ const reduceIterable = (fn, y0, x) => {
   return y
 }
 
-const reduceAsyncIterable = async (fn, y0, x) => {
+const reduceAsyncIterable = async (fn, x0, x) => {
   const iter = x[Symbol.asyncIterator].bind(x)()
   let cursor = await iter.next()
   if (cursor.done) {
     throw new TypeError('cannot reduce empty iterator')
   }
-  let y = isDefined(y0) ? await fn(y0, cursor.value) : await (async () => {
+  let y = isDefined(x0) ? await fn(x0, cursor.value) : await (async () => {
     const x0 = cursor.value
     cursor = await iter.next()
     return cursor.done ? x0 : fn(x0, cursor.value)
@@ -344,59 +344,59 @@ const reduceAsyncIterable = async (fn, y0, x) => {
   return y
 }
 
-const reduceObject = (fn, y0, x) => reduceIterable(
+const reduceObject = (fn, x0, x) => reduceIterable(
   fn,
-  y0,
+  x0,
   (function* () { for (const k in x) yield x[k] })(),
 )
 
-const reduce = (fn, y0) => {
+const reduce = (fn, x0) => {
   if (!isFunction(fn)) {
     throw new TypeError(`${type(fn)} is not a function`)
   }
   return x => {
-    if (isIterable(x)) return reduceIterable(fn, y0, x)
-    if (isAsyncIterable(x)) return reduceAsyncIterable(fn, y0, x)
-    if (isObject(x)) return reduceObject(fn, y0, x)
+    if (isIterable(x)) return reduceIterable(fn, x0, x)
+    if (isAsyncIterable(x)) return reduceAsyncIterable(fn, x0, x)
+    if (isObject(x)) return reduceObject(fn, x0, x)
     throw new TypeError(`cannot reduce ${type(x)}`)
   }
 }
 
-const arrayTransform = (y0, fn) => reduce(
+const arrayTransform = (x0, fn) => reduce(
   fn((y, xi) => { y.push(xi); return y }),
-  Array.from(y0),
+  Array.from(x0),
 )
 
-const stringTransform = (y0, fn) => reduce(
+const stringTransform = (x0, fn) => reduce(
   fn((y, xi) => `${y}${xi}`),
-  y0,
+  x0,
 )
 
-const setTransform = (y0, fn) => reduce(
+const setTransform = (x0, fn) => reduce(
   fn((y, xi) => y.add(xi)),
-  new Set(y0),
+  new Set(x0),
 )
 
-const bufferTransform = (y0, fn) => reduce(
+const bufferTransform = (x0, fn) => reduce(
   fn((y, xi) => Buffer.concat([y, Buffer.from(xi)])),
-  Buffer.from(y0),
+  Buffer.from(x0),
 )
 
-const writeableTransform = (y0, fn) => reduce(
+const writeableTransform = (x0, fn) => reduce(
   fn((y, xi) => { y.write(xi); return y }),
-  y0,
+  x0,
 )
 
-const transform = (y0, fn) => {
+const transform = (x0, fn) => {
   if (!isFunction(fn)) {
     throw new TypeError(`${type(fn)} is not a function`)
   }
-  if (isArray(y0)) return arrayTransform(y0, fn)
-  if (isString(y0)) return stringTransform(y0, fn)
-  if (isSet(y0)) return setTransform(y0, fn)
-  if (isBuffer(y0)) return bufferTransform(y0, fn)
-  if (isWritable(y0)) return writeableTransform(y0, fn)
-  throw new TypeError(`cannot transform ${type(y0)}`)
+  if (isArray(x0)) return arrayTransform(x0, fn)
+  if (isString(x0)) return stringTransform(x0, fn)
+  if (isSet(x0)) return setTransform(x0, fn)
+  if (isBuffer(x0)) return bufferTransform(x0, fn)
+  if (isWritable(x0)) return writeableTransform(x0, fn)
+  throw new TypeError(`cannot transform ${type(x0)}`)
 }
 
 const isDelimitedBy = (delim, x) => x
