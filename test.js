@@ -72,28 +72,6 @@ const consumeReadStreamPull = s => new Promise((resolve, reject) => {
 })
 
 describe('rubico', () => {
-  describe('curry', () => {
-    const add = (a, b, c) => a + b + c
-    it('fn = (a, b, c) => a + b + c', async () => {
-      ase(add(1, 2, 3), 6)
-    })
-    it('fn(a, b, c) === curry(fn)(a, b, c)', async () => {
-      ase(add(1, 2, 3), r.curry(add)(1, 2, 3))
-    })
-    it('fn(a, b, c) === curry(fn)(a, b)(c)', async () => {
-      ase(add(1, 2, 3), r.curry(add)(1, 2)(3))
-    })
-    it('fn(a, b, c) === curry(fn)(a)(b, c)', async () => {
-      ase(add(1, 2, 3), r.curry(add)(1)(2, 3))
-    })
-    it('fn(a, b, c) === curry(fn)(a)(b)(c)', async () => {
-      ase(add(1, 2, 3), r.curry(add)(1)(2)(3))
-    })
-    it('fn(a, b, c) === curry(fn)(a)(b)(c, d)', async () => {
-      ase(add(1, 2, 3), r.curry(add)(1)(2)(3, 4))
-    })
-  })
-
   describe('pipe', () => {
     it('chains async and regular functions together', async () => {
       ase(await r.pipe([hi, ho, asyncHey])('yo'), 'yohihohey')

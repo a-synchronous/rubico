@@ -70,18 +70,6 @@ const range = (start, end) => Array.from({ length: end - start }, (x, i) => i + 
 
 const arrayOf = (item, length) => Array.from({ length }, () => item)
 
-const curryFunction = (fn, ...args) => {
-  if (args.length >= fn.length) return fn(...args)
-  return (...moreArgs) => curryFunction(fn, ...args.concat(moreArgs))
-}
-
-const curry = fn => {
-  if (!isFunction(fn)) {
-    throw new TypeError(`${type(fn)} is not a function`)
-  }
-  return (...args) => curryFunction(fn, ...args)
-}
-
 const _chain = (fns, args, step) => {
   let i, end
   if (step === 1) {
@@ -632,7 +620,6 @@ const gte = fns => {}
 const lte = fns => {}
 
 const r = {
-  curry,
   pipe,
   fork,
   assign,
