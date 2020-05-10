@@ -28,6 +28,7 @@ const isBinaryFunction = x => typeof x === 'function' && x.length === 2
 
 const isArray = Array.isArray
 
+// TODO: remove
 const isBuffer = x => x && x.constructor
   && typeof x.constructor.isBuffer === 'function'
   && x.constructor.isBuffer(x)
@@ -52,8 +53,17 @@ const range = (start, end) => Array.from({ length: end - start }, (x, i) => i + 
 
 const arrayOf = (item, length) => Array.from({ length }, () => item)
 
-// TODO: implement
-const curry = fn => {}
+const curryFunction = (fn, ...args) => {
+  if (args.length >= fn.length) return fn(...args)
+  return (...moreArgs) => curryFunction(fn, ...args.concat(moreArgs))
+}
+
+const curry = fn => {
+  if (!isFunction(fn)) {
+    throw new TypeError(`${type(fn)} is not a function`)
+  }
+  return (...args) => curryFunction(fn, ...args)
+}
 
 // TODO: implement
 const spread = fn => {}
@@ -179,6 +189,7 @@ const tryCatch = (fn, onError) => {
   }
 }
 
+// TODO: remove
 const arraySwitch = (fns, x, i) => {
   if (i === fns.length - 1) return fns[i](x)
   const ok = fns[i](x)
@@ -187,6 +198,7 @@ const arraySwitch = (fns, x, i) => {
     : ok ? fns[i + 1](x) : arraySwitch(fns, x, i + 2)
 }
 
+// TODO: deprecate in favor of ternary
 const switch_ = fns => {
   if (!isArray(fns)) {
     throw new TypeError(`first argument must be an array of functions`)
@@ -400,7 +412,7 @@ const transform = (x0, fn) => {
   if (isArray(x0)) return arrayTransform(x0, fn)
   if (isString(x0)) return stringTransform(x0, fn)
   if (isSet(x0)) return setTransform(x0, fn)
-  if (isBuffer(x0)) return bufferTransform(x0, fn)
+  if (isBuffer(x0)) return bufferTransform(x0, fn) // TODO: deprecate
   if (isWritable(x0)) return writeableTransform(x0, fn)
   throw new TypeError(`cannot transform ${type(x0)}`)
 }
