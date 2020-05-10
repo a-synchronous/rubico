@@ -457,7 +457,9 @@ const anyIterable = (fn, x) => {
   for (const xi of x) {
     const point = fn(xi)
     if (isPromise(point)) promises.push(point)
-    else if (point) return true
+    else if (point) return promises.length > 0
+      ? Promise.all(promises).then(() => true)
+      : true
   }
   return promises.length > 0
     ? Promise.all(promises).then(res => res.some(x => x))
@@ -480,8 +482,35 @@ const any = fn => {
   }
 }
 
-// TODO: implement
-const all = fn => {}
+const allIterable = (fn, x) => {
+  const promises = []
+  for (const xi of x) {
+    const point = fn(xi)
+    if (isPromise(point)) promises.push(point)
+    else if (!point) return promises.length > 0
+      ? Promise.all(promises).then(() => false)
+      : false
+  }
+  return promises.length > 0
+    ? Promise.all(promises).then(res => res.every(x => x))
+    : true
+}
+
+const allObject = (fn, x) => allIterable(
+  fn,
+  (function* () { for (const k in x) yield x[k] })(),
+)
+
+const all = fn => {
+  if (!isFunction(fn)) {
+    throw new TypeError(`${type(fn)} is not a function`)
+  }
+  return x => {
+    if (isIterable(x)) return allIterable(fn, x)
+    if (isObject(x)) return allObject(fn, x)
+    throw new TypeError(`cannot all ${type(x)}`)
+  }
+}
 
 // TODO: implement
 const and = fns => {}

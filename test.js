@@ -955,4 +955,38 @@ describe('rubico', () => {
       )
     })
   })
+
+  describe('all', () => {
+    const numbers = [1, 2, 3, 4, 5]
+    const numbersObject = { a: 1, b: 2, c: 3, d: 4, e: 5 }
+    it('syncly evaluates fn against all items in iterable, true if all evaluations are truthy', async () => {
+      ase(r.all(x => x > 5)(numbers), false)
+      ase(r.all(x => x > 0)(numbers), true)
+      ase(r.all(x => x > 5)(new Set(numbers)), false)
+      ase(r.all(x => x > 0)(new Set(numbers)), true)
+      ase(r.all(x => x > 5)(numbersObject), false)
+      ase(r.all(x => x > 0)(numbersObject), true)
+    })
+    it('asyncly evaluates fn against all items in iterable, true if all evaluations are truthy', async () => {
+      aok(r.all(async x => x > 5)(numbers) instanceof Promise)
+      ase(await r.all(async x => x > 5)(numbers), false)
+      ase(await r.all(async x => x > 0)(numbers), true)
+      ase(await r.all(async x => x > 5)(new Set(numbers)), false)
+      ase(await r.all(async x => x > 0)(new Set(numbers)), true)
+      ase(await r.all(async x => x > 5)(numbersObject), false)
+      ase(await r.all(async x => x > 0)(numbersObject), true)
+    })
+    it('throws TypeError on non function setup', async () => {
+      assert.throws(
+        () => r.all('hey'),
+        new TypeError('string is not a function'),
+      )
+    })
+    it('throws TypeError if input not iterable or object', async () => {
+      assert.throws(
+        () => r.all(x => x)(1),
+        new TypeError('cannot all number'),
+      )
+    })
+  })
 })
