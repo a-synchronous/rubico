@@ -4,9 +4,10 @@
  *
  * this is a module, not a utility library
  * functional code should not care about async
- * no special types
- * these functions are time then space optimal
+ * these functions are time and space optimal
  * memory used by these functions is properly garbage collected
+ * no special types
+ * no currying
  */
 
 const isDefined = x => x !== undefined && x !== null
