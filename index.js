@@ -82,9 +82,6 @@ const curry = fn => {
   return (...args) => curryFunction(fn, ...args)
 }
 
-// TODO: implement
-const spread = fn => {}
-
 const _chain = (fns, args, step) => {
   let i, end
   if (step === 1) {
@@ -636,7 +633,6 @@ const lte = fns => {}
 
 const r = {
   curry,
-  spread,
   pipe,
   fork,
   assign,
