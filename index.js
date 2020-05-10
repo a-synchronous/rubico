@@ -28,11 +28,6 @@ const isBinaryFunction = x => typeof x === 'function' && x.length === 2
 
 const isArray = Array.isArray
 
-// TODO: remove
-const isBuffer = x => x && x.constructor
-  && typeof x.constructor.isBuffer === 'function'
-  && x.constructor.isBuffer(x)
-
 const numberTypedArrays = new Set([
   'Uint8ClampedArray',
   'Uint8Array', 'Int8Array',
@@ -487,11 +482,6 @@ const bigIntTypedArrayTransform = (x0, fn) => x => {
   ) : point.y.slice(0, point.offset)
 }
 
-const bufferTransform = (x0, fn) => reduce(
-  fn((y, xi) => Buffer.concat([y, Buffer.from(xi)])),
-  Buffer.from(x0),
-)
-
 const writeableTransform = (x0, fn) => reduce(
   fn((y, xi) => { y.write(xi); return y }),
   x0,
@@ -506,7 +496,6 @@ const transform = (x0, fn) => {
   if (isSet(x0)) return setTransform(x0, fn)
   if (isNumberTypedArray(x0)) return numberTypedArrayTransform(x0, fn)
   if (isBigIntTypedArray(x0)) return bigIntTypedArrayTransform(x0, fn)
-  if (isBuffer(x0)) return bufferTransform(x0, fn) // TODO: deprecate
   if (isWritable(x0)) return writeableTransform(x0, fn)
   throw new TypeError(`cannot transform ${type(x0)}`)
 }

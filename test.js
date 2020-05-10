@@ -871,19 +871,6 @@ describe('rubico', () => {
         ade(await buffer9924, new constructor([9n, 9n, 2n, 4n]))
       }
     })
-    xit('sync transforms iterable to buffer', async () => {
-      ade(
-        r.transform(Buffer.from(''), squareOddsToString)(numbers),
-        Buffer.from('1925'),
-      )
-    })
-    xit('async transforms iterable to buffer', async () => {
-      const buffer9924 = (
-        r.transform(Buffer.from('99'), asyncEvensToString)(numbers)
-      )
-      aok(buffer9924 instanceof Promise)
-      ade(await buffer9924, Buffer.from('9924'))
-    })
     it('sync transforms iterable to writeable stream', async () => {
       const tmpWriter = fs.createWriteStream(path.join(__dirname, './tmp'))
       r.transform(tmpWriter, squareOddsToString)(numbers)
