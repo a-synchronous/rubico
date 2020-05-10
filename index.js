@@ -192,6 +192,27 @@ const tryCatch = (fn, onError) => {
   }
 }
 
+const arrayTernary = (fns, x) => {
+  const ok = fns[0](x)
+  return isPromise(ok) ? ok.then(
+    res => res ? fns[1](x) : fns[2](x)
+  ) : ok ? fns[1](x) : fns[2](x)
+}
+
+const ternary = fns => {
+  if (!isArray(fns)) {
+    throw new TypeError(`first argument must be an array of functions`)
+  }
+  if (fns.length !== 3) {
+    throw new RangeError('exactly 3 functions required')
+  }
+  for (let i = 0; i < fns.length; i++) {
+    if (isFunction(fns[i])) continue
+    throw new TypeError(`${type(fns[i])} (functions[${i}]) is not a function`)
+  }
+  return x => arrayTernary(fns, x)
+}
+
 // TODO: remove
 const arraySwitch = (fns, x, i) => {
   if (i === fns.length - 1) return fns[i](x)
@@ -626,6 +647,7 @@ const r = {
   assign,
   tap,
   tryCatch,
+  ternary,
   switch: switch_,
   map,
   filter,
