@@ -213,33 +213,6 @@ const ternary = fns => {
   return x => arrayTernary(fns, x)
 }
 
-// TODO: remove
-const arraySwitch = (fns, x, i) => {
-  if (i === fns.length - 1) return fns[i](x)
-  const ok = fns[i](x)
-  return isPromise(ok)
-    ? ok.then(res => res ? fns[i + 1](x) : arraySwitch(fns, x, i + 2))
-    : ok ? fns[i + 1](x) : arraySwitch(fns, x, i + 2)
-}
-
-// TODO: deprecate in favor of ternary
-const switch_ = fns => {
-  if (!isArray(fns)) {
-    throw new TypeError(`first argument must be an array of functions`)
-  }
-  if (fns.length < 3) {
-    throw new RangeError('at least 3 functions required')
-  }
-  if (fns.length % 2 === 0) {
-    throw new RangeError('odd number of functions required')
-  }
-  for (let i = 0; i < fns.length; i++) {
-    if (isFunction(fns[i])) continue
-    throw new TypeError(`${type(fns[i])} (functions[${i}]) is not a function`)
-  }
-  return x => arraySwitch(fns, x, 0)
-}
-
 // x.map: https://v8.dev/blog/elements-kinds#avoid-polymorphism
 const mapArray = (fn, x) => {
   let isAsync = false
@@ -648,7 +621,6 @@ const r = {
   tap,
   tryCatch,
   ternary,
-  switch: switch_,
   map,
   filter,
   reduce,
