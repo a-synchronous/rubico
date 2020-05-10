@@ -779,17 +779,33 @@ describe('rubico', () => {
   })
 
   describe('transform', () => {
+    const numberTypedArrayConstructors = [
+      Uint8ClampedArray,
+      Uint8Array, Int8Array,
+      Uint16Array, Int16Array,
+      Uint32Array, Int32Array,
+      Float32Array, Float64Array,
+    ]
+    const bigIntTypedArrayConstructors = [
+      BigUint64Array, BigInt64Array,
+    ]
+    const isBigOdd = x => (x % 2n === 1n)
+    const asyncIsBigEven = async x => (x % 2n === 0n)
+    const bigSquare = x => x ** 2n
     const squareOdds = r.pipe([r.filter(isOdd), r.map(square)])
     const squareOddsToString = r.pipe([
       r.filter(isOdd),
       r.map(r.pipe([square, x => `${x}`])),
     ])
+    const squareBigOdds = r.pipe([r.filter(isBigOdd), r.map(bigSquare)])
     const asyncEvens = r.filter(asyncIsEven)
     const asyncEvensToString = r.pipe([
       r.filter(asyncIsEven),
       r.map(x => `${x}`)
     ])
+    const asyncBigEvens = r.filter(asyncIsBigEven)
     const numbers = [1, 2, 3, 4, 5]
+    const bigNumbers = [1n, 2n, 3n, 4n, 5n]
     it('sync transforms iterable to array', async () => {
       ade(r.transform([], squareOdds)(numbers), [1, 9, 25])
     })
@@ -814,13 +830,54 @@ describe('rubico', () => {
         new Set([99, 2, 4]),
       )
     })
-    it('sync transforms iterable to buffer', async () => {
+    it('strings are encoded into arrays of character codes for number TypedArrays', async () => {
+      for (const constructor of numberTypedArrayConstructors) {
+        ade(
+          r.transform(new constructor(0), squareOddsToString)(numbers),
+          new constructor([49, 57, 50, 53]),
+        )
+        ase(String.fromCharCode(...(new constructor([49, 57, 50, 53]))), '1925')
+      }
+    })
+    it('sync transforms iterable to a number TypedArray', async () => {
+      for (const constructor of numberTypedArrayConstructors) {
+        ade(
+          r.transform(new constructor(0), squareOdds)(numbers),
+          new constructor([1, 9, 25]),
+        )
+      }
+    })
+    it('async transforms iterable to number TypedArray', async () => {
+      for (const constructor of numberTypedArrayConstructors) {
+        const buffer99 = new constructor([9, 9])
+        const buffer9924 = r.transform(buffer99, asyncEvens)(numbers)
+        aok(buffer9924 instanceof Promise)
+        ade(await buffer9924, new constructor([9, 9, 2, 4]))
+      }
+    })
+    it('sync transforms iterable to a bigint TypedArray', async () => {
+      for (const constructor of bigIntTypedArrayConstructors) {
+        ade(
+          r.transform(new constructor(0), squareBigOdds)(bigNumbers),
+          new constructor([1n, 9n, 25n]),
+        )
+      }
+    })
+    it('async transforms iterable to a bigint TypedArray', async () => {
+      for (const constructor of bigIntTypedArrayConstructors) {
+        const buffer99 = new constructor([9n, 9n])
+        const buffer9924 = r.transform(buffer99, asyncBigEvens)(bigNumbers)
+        aok(buffer9924 instanceof Promise)
+        ade(await buffer9924, new constructor([9n, 9n, 2n, 4n]))
+      }
+    })
+    xit('sync transforms iterable to buffer', async () => {
       ade(
         r.transform(Buffer.from(''), squareOddsToString)(numbers),
         Buffer.from('1925'),
       )
     })
-    it('async transforms iterable to buffer', async () => {
+    xit('async transforms iterable to buffer', async () => {
       const buffer9924 = (
         r.transform(Buffer.from('99'), asyncEvensToString)(numbers)
       )

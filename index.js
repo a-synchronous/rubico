@@ -33,9 +33,31 @@ const isBuffer = x => x && x.constructor
   && typeof x.constructor.isBuffer === 'function'
   && x.constructor.isBuffer(x)
 
-const isNumber = x => typeof x === 'number' || x instanceof Number
+const numberTypedArrays = new Set([
+  'Uint8ClampedArray',
+  'Uint8Array', 'Int8Array',
+  'Uint16Array', 'Int16Array',
+  'Uint32Array', 'Int32Array',
+  'Float32Array', 'Float64Array',
+])
 
-const isString = x => typeof x === 'string' || x instanceof String
+const isNumberTypedArray = x => x && x.constructor && (
+  numberTypedArrays.has(x.constructor.name)
+)
+
+const bigIntTypedArrays = new Set([
+  'BigUint64Array', 'BigInt64Array',
+])
+
+const isBigIntTypedArray = x => x && x.constructor && (
+  bigIntTypedArrays.has(x.constructor.name)
+)
+
+const isNumber = x => typeof x === 'number'
+
+const isBigInt = x => typeof x === 'bigint'
+
+const isString = x => typeof x === 'string'
 
 const isPromise = x => x && typeof x.then === 'function'
 
@@ -395,6 +417,76 @@ const setTransform = (x0, fn) => reduce(
   new Set(x0),
 )
 
+const stringToCharCodes = x => {
+  const y = []
+  for (let i = 0; i < x.length; i++) {
+    y.push(x.charCodeAt(i))
+  }
+  return y
+}
+
+const toNumberTypedArray = (constructor, x) => {
+  if (isNumber(x)) return constructor.of(x)
+  if (isString(x)) return new constructor(stringToCharCodes(x))
+  if (isNumberTypedArray(x)) return new constructor(x)
+  if (isArray(x) && x.every(isNumber)) return new constructor(x)
+  throw new TypeError(`cannot convert ${type(x)} to ${constructor.name}`)
+}
+
+const firstPowerOf2After = x => {
+  let y = 2
+  while (y < x + 1) {
+    y = y << 1
+  }
+  return y
+}
+
+const typedArrayConcat = (y, chunk, offset) => {
+  const nextLength = offset + chunk.length
+  const buf = nextLength > y.length ? (() => {
+    const newBuf = new y.constructor(firstPowerOf2After(nextLength))
+    newBuf.set(y, 0)
+    return newBuf
+  })() : y
+  buf.set(chunk, offset)
+  return buf
+}
+
+const numberTypedArrayTransform = (x0, fn) => x => {
+  const point = reduce(
+    fn(({ y, offset }, xi) => {
+      const chunk = toNumberTypedArray(x0.constructor, xi)
+      const buf = typedArrayConcat(y, chunk, offset)
+      return { y: buf, offset: offset + chunk.length }
+    }),
+    { y: x0.constructor.from(x0), offset: x0.length },
+  )(x)
+  return isPromise(point) ? point.then(
+    res => res.y.slice(0, res.offset)
+  ) : point.y.slice(0, point.offset)
+}
+
+const toBigIntTypedArray = (constructor, x) => {
+  if (isBigInt(x)) return constructor.of(x)
+  if (isBigIntTypedArray(x)) return new constructor(x)
+  if (isArray(x) && x.every(isBigInt)) return new constructor(x)
+  throw new TypeError(`cannot convert ${type(x)} to ${constructor.name}`)
+}
+
+const bigIntTypedArrayTransform = (x0, fn) => x => {
+  const point = reduce(
+    fn(({ y, offset }, xi) => {
+      const chunk = toBigIntTypedArray(x0.constructor, xi)
+      const buf = typedArrayConcat(y, chunk, offset)
+      return { y: buf, offset: offset + chunk.length }
+    }),
+    { y: x0.constructor.from(x0), offset: x0.length },
+  )(x)
+  return isPromise(point) ? point.then(
+    res => res.y.slice(0, res.offset)
+  ) : point.y.slice(0, point.offset)
+}
+
 const bufferTransform = (x0, fn) => reduce(
   fn((y, xi) => Buffer.concat([y, Buffer.from(xi)])),
   Buffer.from(x0),
@@ -412,6 +504,8 @@ const transform = (x0, fn) => {
   if (isArray(x0)) return arrayTransform(x0, fn)
   if (isString(x0)) return stringTransform(x0, fn)
   if (isSet(x0)) return setTransform(x0, fn)
+  if (isNumberTypedArray(x0)) return numberTypedArrayTransform(x0, fn)
+  if (isBigIntTypedArray(x0)) return bigIntTypedArrayTransform(x0, fn)
   if (isBuffer(x0)) return bufferTransform(x0, fn) // TODO: deprecate
   if (isWritable(x0)) return writeableTransform(x0, fn)
   throw new TypeError(`cannot transform ${type(x0)}`)
