@@ -1003,4 +1003,35 @@ describe('rubico', () => {
       )
     })
   })
+
+  describe('or', () => {
+    const isGreaterThan1 = x => x > 1
+    it('sync tests input against provided array of functions, true if any evaluations are truthy', async () => {
+      ase(r.or([isOdd, isGreaterThan1])(3), true)
+      ase(r.or([isOdd, isGreaterThan1])(0), false)
+    })
+    it('async tests input against provided array of functions, true if any evaluations are truthy', async () => {
+      aok(r.or([asyncIsEven, isGreaterThan1])(2) instanceof Promise)
+      ase(await r.or([asyncIsEven, isGreaterThan1])(2), true)
+      ase(await r.or([asyncIsEven, isGreaterThan1])(1), false)
+    })
+    it('throws a TypeError if passed a non array', async () => {
+      assert.throws(
+        () => r.or('hey'),
+        new TypeError('first argument must be an array of functions'),
+      )
+    })
+    it('throws a RangeError if passed less than one function', async () => {
+      assert.throws(
+        () => r.or([]),
+        new RangeError('at least one function required'),
+      )
+    })
+    it('throws a TypeError if any item is not a function', async () => {
+      assert.throws(
+        () => r.or([() => false, 'hey', () => 'hi']),
+        new TypeError('string (functions[1]) is not a function'),
+      )
+    })
+  })
 })

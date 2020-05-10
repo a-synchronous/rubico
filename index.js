@@ -625,8 +625,33 @@ const and = fns => {
   return x => arrayAnd(fns, x)
 }
 
-// TODO: implement
-const or = fns => {}
+const arrayOr = (fns, x) => {
+  const promises = []
+  for (let i = 0; i < fns.length; i++) {
+    const point = fns[i](x)
+    if (isPromise(point)) promises.push(point)
+    else if (point) return promises.length > 0
+      ? Promise.all(promises).then(() => true)
+      : true
+  }
+  return promises.length > 0
+    ? Promise.all(promises).then(res => res.some(x => x))
+    : false
+}
+
+const or = fns => {
+  if (!isArray(fns)) {
+    throw new TypeError(`first argument must be an array of functions`)
+  }
+  if (fns.length < 1) {
+    throw new RangeError('at least one function required')
+  }
+  for (let i = 0; i < fns.length; i++) {
+    if (isFunction(fns[i])) continue
+    throw new TypeError(`${type(fns[i])} (functions[${i}]) is not a function`)
+  }
+  return x => arrayOr(fns, x)
+}
 
 // TODO: implement
 const not = fn => {}
