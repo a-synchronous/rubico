@@ -52,6 +52,12 @@ const range = (start, end) => Array.from({ length: end - start }, (x, i) => i + 
 
 const arrayOf = (item, length) => Array.from({ length }, () => item)
 
+// TODO: implement
+const curry = fn => {}
+
+// TODO: implement
+const spread = fn => {}
+
 const _chain = (fns, args, step) => {
   let i, end
   if (step === 1) {
@@ -534,13 +540,30 @@ const gte = fns => {}
 const lte = fns => {}
 
 const r = {
-  pipe, fork, assign,
-  tap, tryCatch, switch: switch_,
-  map, filter, reduce, transform,
-  get, pick, omit,
-  any, all,
-  and, or, not,
-  gt, lt, gte, lte,
+  curry,
+  spread,
+  pipe,
+  fork,
+  assign,
+  tap,
+  tryCatch,
+  switch: switch_,
+  map,
+  filter,
+  reduce,
+  transform,
+  get,
+  pick,
+  omit,
+  any,
+  all,
+  and,
+  or,
+  not,
+  gt,
+  lt,
+  gte,
+  lte,
 }
 
 module.exports = r
