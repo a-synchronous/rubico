@@ -2,13 +2,16 @@
 
 /* design principles
  *
- * this is a module, not a utility library
+ * rubico is a module, not a utility library
  * functional code should not care about async
  * these functions are time and space optimal
  * memory used by these functions is properly garbage collected
- * no special types
- * no currying
+ * no special types; use built-in types
+ * no currying; write new functions
  */
+
+// overarching TODOs:
+// rework error messages
 
 const isDefined = x => x !== undefined && x !== null
 
@@ -92,6 +95,7 @@ const pipe = fns => {
   if (!isArray(fns)) {
     throw new TypeError(`first argument must be an array of functions`)
   }
+  // TODO: if (fns.length < 1) {} // TypeError
   for (let i = 0; i < fns.length; i++) {
     if (isFunction(fns[i])) continue
     throw new TypeError(`${type(fns[i])} (functions[${i}]) is not a function`)
@@ -593,8 +597,33 @@ const all = fn => {
   }
 }
 
-// TODO: implement
-const and = fns => {}
+const arrayAnd = (fns, x) => {
+  const promises = []
+  for (let i = 0; i < fns.length; i++) {
+    const point = fns[i](x)
+    if (isPromise(point)) promises.push(point)
+    else if (!point) return promises.length > 0
+      ? Promise.all(promises).then(() => false)
+      : false
+  }
+  return promises.length > 0
+    ? Promise.all(promises).then(res => res.every(x => x))
+    : true
+}
+
+const and = fns => {
+  if (!isArray(fns)) {
+    throw new TypeError(`first argument must be an array of functions`)
+  }
+  if (fns.length < 1) {
+    throw new RangeError('at least one function required')
+  }
+  for (let i = 0; i < fns.length; i++) {
+    if (isFunction(fns[i])) continue
+    throw new TypeError(`${type(fns[i])} (functions[${i}]) is not a function`)
+  }
+  return x => arrayAnd(fns, x)
+}
 
 // TODO: implement
 const or = fns => {}

@@ -972,4 +972,35 @@ describe('rubico', () => {
       )
     })
   })
+
+  describe('and', () => {
+    const isGreaterThan1 = x => x > 1
+    it('sync tests input against provided array of functions, true if all evaluations are truthy', async () => {
+      ase(r.and([isOdd, isGreaterThan1])(3), true)
+      ase(r.and([isOdd, isGreaterThan1])(1), false)
+    })
+    it('async tests input against provided array of functions, true if all evaluations are truthy', async () => {
+      aok(r.and([asyncIsEven, isGreaterThan1])(2) instanceof Promise)
+      ase(await r.and([asyncIsEven, isGreaterThan1])(2), true)
+      ase(await r.and([asyncIsEven, isGreaterThan1])(0), false)
+    })
+    it('throws a TypeError if passed a non array', async () => {
+      assert.throws(
+        () => r.and('hey'),
+        new TypeError('first argument must be an array of functions'),
+      )
+    })
+    it('throws a RangeError if passed less than one function', async () => {
+      assert.throws(
+        () => r.and([]),
+        new RangeError('at least one function required'),
+      )
+    })
+    it('throws a TypeError if any item is not a function', async () => {
+      assert.throws(
+        () => r.and([() => false, 'hey', () => 'hi']),
+        new TypeError('string (functions[1]) is not a function'),
+      )
+    })
+  })
 })
