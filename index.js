@@ -182,11 +182,11 @@ fork.series = fns => {
 
 const assign = fns => {
   if (!isObject(fns)) {
-    throw new TypeError('assign.arguments[0] is not an object of functions')
+    throw new TypeError('assign(x); x is not an object of functions')
   }
   return x => {
     if (!isObject(x)) {
-      throw new TypeError('assign.arguments[0] is not an object')
+      throw new TypeError('assign(...)(x); x is not an object')
     }
     const assignments = objectFork(fns, x)
     return isPromise(assignments)
