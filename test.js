@@ -973,13 +973,13 @@ describe('rubico', () => {
     it('throws TypeError on non function setup', async () => {
       assert.throws(
         () => r.any('hey'),
-        new TypeError('string is not a function'),
+        new TypeError('any(x); x is not a function'),
       )
     })
     it('throws TypeError if input not iterable or object', async () => {
       assert.throws(
         () => r.any(x => x)(1),
-        new TypeError('cannot any number'),
+        new TypeError('any(...)(x); x invalid'),
       )
     })
   })

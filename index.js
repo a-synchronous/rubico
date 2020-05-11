@@ -596,12 +596,12 @@ const anyObject = (fn, x) => anyIterable(
 
 const any = fn => {
   if (!isFunction(fn)) {
-    throw new TypeError(`${type(fn)} is not a function`)
+    throw new TypeError('any(x); x is not a function')
   }
   return x => {
     if (isIterable(x)) return anyIterable(fn, x)
     if (isObject(x)) return anyObject(fn, x)
-    throw new TypeError(`cannot any ${type(x)}`)
+    throw new TypeError('any(...)(x); x invalid')
   }
 }
 
