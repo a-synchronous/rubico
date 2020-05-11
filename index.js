@@ -4,14 +4,15 @@
  *
  * rubico is a module, not a utility library
  * functional code should not care about async
- * these functions are time and space optimal
- * memory used by these functions is properly garbage collected
+ * exported methods are time and space optimal
+ * memory used by exported methods is properly garbage collected
  * no special types; use built-in types
  * no currying; write new functions
  */
 
 // overarching TODOs:
 // rework error messages
+//   (functions[k]) => args[0][k]
 
 const isDefined = x => x !== undefined && x !== null
 
@@ -132,8 +133,26 @@ const objectFork = (fns, x) => {
 }
 
 const fork = fns => {
-  if (isArray(fns)) return x => arrayFork(fns, x)
-  if (isObject(fns)) return x => objectFork(fns, x)
+  if (isArray(fns)) {
+    if (fns.length < 1) {
+      throw new RangeError('at least one function required')
+    }
+    for (let i = 0; i < fns.length; i++) {
+      if (isFunction(fns[i])) continue
+      throw new TypeError(`${type(fns[i])} (functions[${i}]) is not a function`)
+    }
+    return x => arrayFork(fns, x)
+  }
+  if (isObject(fns)) {
+    if (Object.keys(fns).length < 1) {
+      throw new RangeError('at least one function required')
+    }
+    for (const k in fns) {
+      if (isFunction(fns[k])) continue
+      throw new TypeError(`arguments[0]['${k}'] ${type(fns[k])} is not a function`)
+    }
+    return x => objectFork(fns, x)
+  }
   throw new TypeError(`cannot fork into ${type(fns)}`)
 }
 

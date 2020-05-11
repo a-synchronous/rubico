@@ -158,6 +158,30 @@ describe('rubico', () => {
         ['yohey', 'yohey', 'yohi'],
       )
     })
+    it('throws TypeError for fork([])', async () => {
+      assert.throws(
+        () => r.fork([]),
+        new RangeError('at least one function required'),
+      )
+    })
+    it('throws TypeError for fork({})', async () => {
+      assert.throws(
+        () => r.fork({}),
+        new RangeError('at least one function required'),
+      )
+    })
+    it('throws TypeError for fork([nonFunction])', async () => {
+      assert.throws(
+        () => r.fork(['hey']),
+        new TypeError('string (functions[0]) is not a function'),
+      )
+    })
+    it('throws TypeError for fork({ a: nonFunction })', async () => {
+      assert.throws(
+        () => r.fork({ a: 'hey' }),
+        new TypeError('arguments[0][\'a\'] string is not a function'),
+      )
+    })
     it('throws TypeError for String', async () => {
       assert.throws(
         () => r.fork('ayelmao'),
