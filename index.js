@@ -25,8 +25,6 @@ const isWritable = x => x && typeof x.write === 'function'
 
 const isFunction = x => typeof x === 'function'
 
-const isBinaryFunction = x => typeof x === 'function' && x.length === 2
-
 const isArray = Array.isArray
 
 const numberTypedArrays = new Set([
@@ -100,7 +98,7 @@ const pipe = fns => {
     throw new TypeError(`pipe(x); x[${i}] is not a function`)
   }
   if (fns.length === 0) return x => x
-  return (...args) => isBinaryFunction(args[0])
+  return (...args) => isFunction(args[0])
     ? _chain(fns, args, -1)
     : _chain(fns, args, 1)
 }
@@ -201,7 +199,7 @@ const tap = fn => {
     throw new TypeError('tap(x); x is not a function')
   }
   return x => {
-    if (isBinaryFunction(x)) return tapReducer(fn, x)
+    if (isFunction(x)) return tapReducer(fn, x)
     const point = fn(x)
     return isPromise(point) ? point.then(() => x) : x
   }
@@ -283,7 +281,7 @@ const map = fn => {
   return x => {
     if (isArray(x)) return mapArray(fn, x)
     if (isObject(x)) return mapObject(fn, x)
-    if (isBinaryFunction(x)) return mapReducer(fn, x)
+    if (isFunction(x)) return mapReducer(fn, x)
     throw new TypeError('map(...)(x); x invalid')
   }
 }
@@ -349,7 +347,7 @@ const filter = fn => {
   return x => {
     if (isArray(x)) return filterArray(fn, x)
     if (isObject(x)) return filterObject(fn, x)
-    if (isBinaryFunction(x)) return filterReducer(fn, x)
+    if (isFunction(x)) return filterReducer(fn, x)
     throw new TypeError('filter(...)(x); x invalid')
   }
 }
