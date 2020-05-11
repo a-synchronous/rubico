@@ -135,25 +135,25 @@ const objectFork = (fns, x) => {
 const fork = fns => {
   if (isArray(fns)) {
     if (fns.length < 1) {
-      throw new RangeError('arguments[0] at least one function required')
+      throw new RangeError('fork.arguments[0] at least one function required')
     }
     for (let i = 0; i < fns.length; i++) {
       if (isFunction(fns[i])) continue
-      throw new TypeError(`arguments[0][${i}] is not a function`)
+      throw new TypeError(`fork.arguments[0][${i}] is not a function`)
     }
     return x => arrayFork(fns, x)
   }
   if (isObject(fns)) {
     if (Object.keys(fns).length < 1) {
-      throw new RangeError('arguments[0] at least one function required')
+      throw new RangeError('fork.arguments[0] at least one function required')
     }
     for (const k in fns) {
       if (isFunction(fns[k])) continue
-      throw new TypeError(`arguments[0]['${k}'] is not a function`)
+      throw new TypeError(`fork.arguments[0]['${k}'] is not a function`)
     }
     return x => objectFork(fns, x)
   }
-  throw new TypeError('arguments[0] invalid')
+  throw new TypeError('fork.arguments[0] invalid')
 }
 
 const arrayForkSeries = (fns, x, i, y) => {
