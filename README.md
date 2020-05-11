@@ -8,7 +8,7 @@ a functional promise library
 2. simplify asynchronous programming in Javascript
 
 # Examples
-Make a request
+### Make a request
 ```javascript
 // promise chains
 fetch('https://jsonplaceholder.typicode.com/todos/1')
@@ -32,7 +32,7 @@ pipe([
 ])('https://jsonplaceholder.typicode.com/todos/1')
 ```
 
-Make multiple requests
+### Make multiple requests
 ```javascript
 const todoIDs = [1, 2, 3, 4, 5]
 
@@ -125,8 +125,8 @@ rubico exports 23 functions
 ## lte
 
 # More Examples
-Sync vs async
+### Sync vs async
 
-Transducers
+### Transducers
 
-A larger program
+### A larger program
