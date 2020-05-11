@@ -95,7 +95,9 @@ const pipe = fns => {
   if (!isArray(fns)) {
     throw new TypeError(`first argument must be an array of functions`)
   }
-  // TODO: if (fns.length < 1) {} // TypeError
+  if (fns.length < 1) {
+    throw new RangeError('at least one function required')
+  }
   for (let i = 0; i < fns.length; i++) {
     if (isFunction(fns[i])) continue
     throw new TypeError(`${type(fns[i])} (functions[${i}]) is not a function`)

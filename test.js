@@ -85,9 +85,6 @@ describe('rubico', () => {
     it('chaining one fn is the same as just calling that fn', async () => {
       ase(await r.pipe([asyncHey])('yo'), await asyncHey('yo'))
     })
-    it('chaining no fns is identity', async () => {
-      ase(await r.pipe([])('yo'), 'yo')
-    })
     it('returns the raw value (no promise required) if all functions are sync', async () => {
       ase(r.pipe([hi, hi, hi])('yo'), 'yohihihi')
     })
@@ -100,6 +97,12 @@ describe('rubico', () => {
           r.pipe(() => 1, undefined, () => 2)
         },
         new TypeError('first argument must be an array of functions'),
+      )
+    })
+    it('throws a RangeError if passed less than one function', async () => {
+      assert.throws(
+        () => r.pipe([]),
+        new RangeError('at least one function required'),
       )
     })
     it('throws a TypeError if any arguments are not a function', async () => {
