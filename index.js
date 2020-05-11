@@ -309,6 +309,9 @@ map.series = fn => {
   }
 }
 
+// TODO(richytong): map.pool(fn, poolSize); poolSize is max concurrency
+map.pool = (fn, poolSize) => {}
+
 const filterArray = (fn, x) => {
   let isAsync = false
   const okIndex = x.map(item => {
