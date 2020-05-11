@@ -379,13 +379,13 @@ describe('rubico', () => {
     it('throws a TypeError if passed a non function tryer', async () => {
       assert.throws(
         () => r.tryCatch('hey', () => {}),
-        new TypeError('tryCatch(x, _) x is not a function'),
+        new TypeError('tryCatch(x, y); x is not a function'),
       )
     })
     it('throws a TypeError if passed a non function catcher', async () => {
       assert.throws(
         () => r.tryCatch(() => {}, Buffer.from('abc')),
-        new TypeError('tryCatch(_, x) x is not a function'),
+        new TypeError('tryCatch(x, y); y is not a function'),
       )
     })
   })
