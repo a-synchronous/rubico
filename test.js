@@ -238,19 +238,19 @@ describe('rubico', () => {
     it('throws TypeError for fork([])', async () => {
       assert.throws(
         () => r.fork.series([]),
-        new RangeError('fork.series.arguments[0] at least one function required'),
+        new RangeError('fork.series(x); x is not an array of at least one function'),
       )
     })
     it('throws TypeError for fork([nonFunction])', async () => {
       assert.throws(
         () => r.fork.series(['hey']),
-        new TypeError('fork.series.arguments[0][0] is not a function'),
+        new TypeError('fork.series(x); x[0] is not a function'),
       )
     })
     it('throws TypeError for non array functions', async () => {
       assert.throws(
         () => r.fork.series({}),
-        new TypeError('fork.series.arguments[0] invalid'),
+        new TypeError('fork.series(x); x invalid'),
       )
     })
   })
