@@ -281,13 +281,13 @@ describe('rubico', () => {
     it('throws TypeError on assign(nonObject)', async () => {
       assert.throws(
         () => r.assign(new Set(['hey'])),
-        new TypeError('arguments[0] is not an object of functions'),
+        new TypeError('assign.arguments[0] is not an object of functions'),
       )
     })
     it('throws TypeError on assign(...)(nonObject)', async () => {
       assert.throws(
         () => r.assign({ a: hi })('hi'),
-        new TypeError('arguments[0] is not an object'),
+        new TypeError('assign.arguments[0] is not an object'),
       )
     })
   })
@@ -311,7 +311,7 @@ describe('rubico', () => {
     it('throws a TypeError if passed a non function', async () => {
       assert.throws(
         () => r.tap('hey'),
-        new TypeError('arguments[0] is not a function'),
+        new TypeError('tap.arguments[0] is not a function'),
       )
     })
   })
