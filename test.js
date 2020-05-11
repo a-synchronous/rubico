@@ -235,6 +235,18 @@ describe('rubico', () => {
       ade(await parallelPush, ['a', 'b', 'c'])
       ade(arr2, [3, 2, 1])
     })
+    it('throws TypeError for fork([])', async () => {
+      assert.throws(
+        () => r.fork.series([]),
+        new RangeError('at least one function required'),
+      )
+    })
+    it('throws TypeError for fork([nonFunction])', async () => {
+      assert.throws(
+        () => r.fork.series(['hey']),
+        new TypeError('string (functions[0]) is not a function'),
+      )
+    })
     it('throws TypeError for non array functions', async () => {
       assert.throws(
         () => r.fork.series({}),

@@ -165,7 +165,16 @@ const arrayForkSeries = (fns, x, i, y) => {
 }
 
 fork.series = fns => {
-  if (isArray(fns)) return x => arrayForkSeries(fns, x, 0, [])
+  if (isArray(fns)) {
+    if (fns.length < 1) {
+      throw new RangeError('at least one function required')
+    }
+    for (let i = 0; i < fns.length; i++) {
+      if (isFunction(fns[i])) continue
+      throw new TypeError(`${type(fns[i])} (functions[${i}]) is not a function`)
+    }
+    return x => arrayForkSeries(fns, x, 0, [])
+  }
   throw new TypeError(`cannot fork.series into ${type(fns)}`)
 }
 
