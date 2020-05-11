@@ -413,19 +413,19 @@ describe('rubico', () => {
     it('throws a TypeError if passed a non array', async () => {
       assert.throws(
         () => r.ternary('hey'),
-        new TypeError('first argument must be an array of functions'),
+        new TypeError('arguments[0] is not an array of three functions'),
       )
     })
     it('throws a RangeError if passed less than three functions', async () => {
       assert.throws(
         () => r.ternary([() => false, () => 'hey']),
-        new RangeError('exactly 3 functions required'),
+        new RangeError('arguments[0] exactly three functions required'),
       )
     })
     it('throws a TypeError if any item is not a function', async () => {
       assert.throws(
         () => r.ternary([() => false, 'hey', () => 'hi']),
-        new TypeError('string (functions[1]) is not a function'),
+        new TypeError('arguments[0][1] is not a function'),
       )
     })
   })
