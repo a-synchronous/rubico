@@ -651,14 +651,14 @@ const arrayAnd = (fns, x) => {
 
 const and = fns => {
   if (!isArray(fns)) {
-    throw new TypeError(`first argument must be an array of functions`)
+    throw new TypeError('and(x); x is not an array of functions')
   }
   if (fns.length < 1) {
-    throw new RangeError('at least one function required')
+    throw new RangeError('and(x); x is not an array of at least one function')
   }
   for (let i = 0; i < fns.length; i++) {
     if (isFunction(fns[i])) continue
-    throw new TypeError(`${type(fns[i])} (functions[${i}]) is not a function`)
+    throw new TypeError(`and(x); x[${i}] is not a function`)
   }
   return x => arrayAnd(fns, x)
 }

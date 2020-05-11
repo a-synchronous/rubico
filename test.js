@@ -1032,19 +1032,19 @@ describe('rubico', () => {
     it('throws a TypeError if passed a non array', async () => {
       assert.throws(
         () => r.and('hey'),
-        new TypeError('first argument must be an array of functions'),
+        new TypeError('and(x); x is not an array of functions'),
       )
     })
     it('throws a RangeError if passed less than one function', async () => {
       assert.throws(
         () => r.and([]),
-        new RangeError('at least one function required'),
+        new RangeError('and(x); x is not an array of at least one function'),
       )
     })
     it('throws a TypeError if any item is not a function', async () => {
       assert.throws(
         () => r.and([() => false, 'hey', () => 'hi']),
-        new TypeError('string (functions[1]) is not a function'),
+        new TypeError('and(x); x[1] is not a function'),
       )
     })
   })
