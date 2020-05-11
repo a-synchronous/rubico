@@ -282,13 +282,13 @@ const mapReducer = (fn, reducer) => (y, xi) => {
 
 const map = fn => {
   if (!isFunction(fn)) {
-    throw new TypeError('arguments[0] is not a function')
+    throw new TypeError('map(x); x is not a function')
   }
   return x => {
     if (isArray(x)) return mapArray(fn, x)
     if (isObject(x)) return mapObject(fn, x)
     if (isBinaryFunction(x)) return mapReducer(fn, x)
-    throw new TypeError('map(...).arguments[0] invalid')
+    throw new TypeError('map(...)(x); x invalid')
   }
 }
 
@@ -302,11 +302,11 @@ const mapSeriesArray = (fn, x, i, y) => {
 
 map.series = fn => {
   if (!isFunction(fn)) {
-    throw new TypeError('arguments[0] is not a function')
+    throw new TypeError('map.series(x); x is not a function')
   }
   return x => {
     if (isArray(x)) return mapSeriesArray(fn, x, 0, [])
-    throw new TypeError('map.series(...).arguments[0] invalid')
+    throw new TypeError('map.series(...)(x); x invalid')
   }
 }
 
