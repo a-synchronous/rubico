@@ -54,24 +54,9 @@ const doAsyncThings = async a => {
 }
 ```
 
-async and await ruled my life until I discovered two hard things:
-[cache invalidation and naming things](https://martinfowler.com/bliki/TwoHardThings.html)
+Some of us, however, did not miss variables and `try catch`.
 
-at that point, I was like
-> Maybe life would be nicer if I didn't have to name so many things
-
-> I wonder if there's a way to do async/await but without variables
-
-which eventually led to
-> What if I just took the output of one function and just piped it into another?
-
-> hmm, looks like they have a thing for that already called functional programming
-
-> whoa, functional programming sounds cool, but monads seem a bit... esoteric
-
-> ugh, I just want to chain stuff together without learning category theory
-
-and now, async things in rubico
+> maybe promises were on to something
 ```javascript
 import { pipe } from 'rubico'
 
@@ -84,14 +69,54 @@ const doAsyncThings = pipe([
 ])
 ```
 
-## Goals
-rubico, a functional (programming) promise library, has two:
+Enter rubico, a functional (programming) promise library.
+
+rubico resolves two promises:
 1. simplify asynchronous programming in JavaScript
 2. enable functional programming in JavaScript
+
+programs written with rubico follow a [point-free style](https://en.wikipedia.org/wiki/Tacit_programming)
+
+rubico exports 23 functions
+
+[pipe](https://github.com/richytong/rubico#pipe),
+[fork](https://github.com/richytong/rubico#fork),
+[assign](https://github.com/richytong/rubico#assign)
+
+[tap](https://github.com/richytong/rubico#tap),
+[tryCatch](https://github.com/richytong/rubico#tryCatch),
+[ternary](https://github.com/richytong/rubico#ternary)
+
+[map](https://github.com/richytong/rubico#map),
+[filter](https://github.com/richytong/rubico#filter),
+[reduce](https://github.com/richytong/rubico#reduce),
+[transform](https://github.com/richytong/rubico#transform)
+
+[get](https://github.com/richytong/rubico#get),
+[pick](https://github.com/richytong/rubico#pick),
+[omit](https://github.com/richytong/rubico#omit)
+
+[any](https://github.com/richytong/rubico#any),
+[all](https://github.com/richytong/rubico#all)
+
+[and](https://github.com/richytong/rubico#and),
+[or](https://github.com/richytong/rubico#or),
+[not](https://github.com/richytong/rubico#not)
+
+[eq](https://github.com/richytong/rubico#eq),
+[gt](https://github.com/richytong/rubico#gt),
+[lt](https://github.com/richytong/rubico#lt),
+[gte](https://github.com/richytong/rubico#gte),
+[lte](https://github.com/richytong/rubico#lte)
+
+## Installation
+with npm; `npm i rubico`
 
 the rest of this document is examples, documentation, and more examples.
 
 # Examples
+The following examples compare algorithmically equivalent code between promise chains, async/await, and rubico
+
 ### Make a request
 ```javascript
 // promise chains
@@ -151,38 +176,6 @@ pipe([
 ```
 
 # Documentation
-rubico exports 23 functions
-
-[pipe](https://github.com/richytong/rubico#pipe)
-[fork](https://github.com/richytong/rubico#fork)
-[assign](https://github.com/richytong/rubico#assign)
-
-[tap](https://github.com/richytong/rubico#tap)
-[tryCatch](https://github.com/richytong/rubico#tryCatch)
-[ternary](https://github.com/richytong/rubico#ternary)
-
-[map](https://github.com/richytong/rubico#map)
-[filter](https://github.com/richytong/rubico#filter)
-[reduce](https://github.com/richytong/rubico#reduce)
-[transform](https://github.com/richytong/rubico#transform)
-
-[get](https://github.com/richytong/rubico#get)
-[pick](https://github.com/richytong/rubico#pick)
-[omit](https://github.com/richytong/rubico#omit)
-
-[any](https://github.com/richytong/rubico#any)
-[all](https://github.com/richytong/rubico#all)
-
-[and](https://github.com/richytong/rubico#and)
-[or](https://github.com/richytong/rubico#or)
-[not](https://github.com/richytong/rubico#not)
-
-[eq](https://github.com/richytong/rubico#eq)
-[gt](https://github.com/richytong/rubico#gt)
-[lt](https://github.com/richytong/rubico#lt)
-[gte](https://github.com/richytong/rubico#gte)
-[lte](https://github.com/richytong/rubico#lte)
-
 
 ## pipe
 ## fork
