@@ -211,10 +211,10 @@ const tap = fn => {
 
 const tryCatch = (fn, onError) => {
   if (!isFunction(fn)) {
-    throw new TypeError(`cannot try ${type(fn)}`)
+    throw new TypeError('arguments[0] is not a function')
   }
   if (!isFunction(onError)) {
-    throw new TypeError(`cannot catch with ${type(onError)}`)
+    throw new TypeError('arguments[1] is not a function')
   }
   return x => {
     try {
