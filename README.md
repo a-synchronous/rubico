@@ -54,7 +54,7 @@ void (async () => {
   data.map(x => console.log(x)) // > {...} {...} {...}
 })()
 
-// rubico - pipe, map
+// rubico
 import { pipe, map, filter } from 'rubico'
 
 pipe([
@@ -64,17 +64,6 @@ pipe([
   map(res => res.json()),
   map(console.log), // > {...} {...} {...}
 ])(todoIDs)
-
-// rubico - transform + transducer
-import { pipe, map, filter, transform } from 'rubico'
-
-transform(null, pipe([
-  filter(id => id <= 3),
-  map(id => `https://jsonplaceholder.typicode.com/todos/${id}`),
-  map(fetch),
-  map(res => res.json()),
-  map(console.log), // > {...} {...} {...}
-]))(todoIDs)
 ```
 
 # Documentation
