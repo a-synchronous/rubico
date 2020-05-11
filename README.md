@@ -113,8 +113,6 @@ rubico exports 23 functions
 ## Installation
 with npm; `npm i rubico`
 
-the rest of this document is examples, documentation, and more examples.
-
 # Examples
 The following examples compare algorithmically equivalent code between promise chains, async/await, and rubico
 
