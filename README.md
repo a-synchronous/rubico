@@ -45,7 +45,7 @@ Promise.resolve(todoIDs.filter(id => id <= 3))
   .then(responses => Promise.all(responses.map(res => res.json())))
   .then(data => data.map(x => console.log(x))) // > {...} {...} {...}
 
-// async await
+// async/await
 void (async () => {
   const filtered = todoIDs.filter(id => id <= 3)
   const urls = await Promise.all(filtered.map(id => `https://jsonplaceholder.typicode.com/todos/${id}`))
