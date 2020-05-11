@@ -521,6 +521,7 @@ const transform = (x0, fn) => {
   if (isNumberTypedArray(x0)) return numberTypedArrayTransform(x0, fn)
   if (isBigIntTypedArray(x0)) return bigIntTypedArrayTransform(x0, fn)
   if (isWritable(x0)) return writeableTransform(x0, fn)
+  // TODO(richytong): if (isDataView) return dataViewTransform(x0, fn)
   throw new TypeError('transform(x, y); x invalid')
 }
 
