@@ -3,10 +3,10 @@
 
 a functional promise library
 
-# Introduction
+## Introduction
 Asynchronous programming in JavaScript has evolved over the years
 
-In the beginning, there were [callbacks](http://callbackhell.com)
+> In the beginning, there were [callbacks](http://callbackhell.com)
 ```javascript
 function doAsyncThings(a, cb) {
   doAsyncThingA(a, function(errA, b) {
@@ -31,7 +31,7 @@ function doAsyncThings(a, cb) {
 To stay within maximum line lengths, we created
 [Promises](https://developer.mozilla.org/en-US/docs/Mozilla/JavaScript_code_modules/Promise.jsm/Promise)
 
-Then began the chains of `then`
+> Then began the chains of `then`
 ```javascript
 const doAsyncThings = a => doAsyncThingA(a)
   .then(b => doAsyncThingB(b))
@@ -42,8 +42,7 @@ const doAsyncThings = a => doAsyncThingA(a)
 
 This was fine until we started to miss variables and `try catch`
 
-[async/await](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function),
-the latest in asynchrony
+> [async/await](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function), the latest in asynchrony
 ```javascript
 const doAsyncThings = async a => {
   const b = await doAsyncThingA(a)
@@ -72,13 +71,7 @@ which eventually led to
 
 > ugh, I just want to chain stuff together without learning category theory
 
-which led to this library.
-
-rubico, a functional (programming) promise library, has two goals
-1. simplify asynchronous programming in JavaScript
-2. enable functional programming in JavaScript
-
-async things in rubico
+and now, async things in rubico
 ```javascript
 import { pipe } from 'rubico'
 
@@ -90,6 +83,13 @@ const doAsyncThings = pipe([
   doAsyncThingE,
 ])
 ```
+
+## Goals
+rubico, a functional (programming) promise library, has two:
+1. simplify asynchronous programming in JavaScript
+2. enable functional programming in JavaScript
+
+the rest of this document is examples, documentation, and more examples.
 
 # Examples
 ### Make a request
