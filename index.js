@@ -286,7 +286,7 @@ const map = fn => {
     if (isArray(x)) return mapArray(fn, x)
     if (isObject(x)) return mapObject(fn, x)
     if (isBinaryFunction(x)) return mapReducer(fn, x)
-    throw new TypeError('arguments[0] invalid')
+    throw new TypeError('map(...).arguments[0] invalid')
   }
 }
 
@@ -304,7 +304,7 @@ map.series = fn => {
   }
   return x => {
     if (isArray(x)) return mapSeriesArray(fn, x, 0, [])
-    throw new TypeError('arguments[0] invalid')
+    throw new TypeError('map.series(...).arguments[0] invalid')
   }
 }
 
