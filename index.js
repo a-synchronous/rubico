@@ -510,13 +510,14 @@ const transform = (x0, fn) => {
   if (!isFunction(fn)) {
     throw new TypeError('transform(x, y); y is not a function')
   }
+  // TODO(richytong): if (isNull(x)) return nullTransform(x0, fn)
   if (isArray(x0)) return arrayTransform(x0, fn)
   if (isString(x0)) return stringTransform(x0, fn)
   if (isSet(x0)) return setTransform(x0, fn)
   if (isNumberTypedArray(x0)) return numberTypedArrayTransform(x0, fn)
   if (isBigIntTypedArray(x0)) return bigIntTypedArrayTransform(x0, fn)
   if (isWritable(x0)) return writeableTransform(x0, fn)
-  // TODO(richytong): if (isDataView) return dataViewTransform(x0, fn)
+  // TODO(richytong): if (isDataView(x)) return dataViewTransform(x0, fn)
   throw new TypeError('transform(x, y); x invalid')
 }
 
