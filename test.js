@@ -580,16 +580,16 @@ describe('rubico', () => {
       const addEvensReducer = r.filter(asyncIsEven)((y, xi) => y + xi)
       ase(await asyncArrayReduce(addEvensReducer, 0)([1, 2, 3, 4, 5, 6], 0), 12)
     })
-    it('throws a TypeError if passed a non function', async () => {
+    it('throws a TypeError on filter({})', async () => {
       assert.throws(
         () => r.filter({}),
-        new TypeError('object is not a function'),
+        new TypeError('filter(x); x is not a function'),
       )
     })
-    it('throws a TypeError if input is not an array or object', async () => {
+    it('throws a TypeError on filter(...)(string)', async () => {
       assert.throws(
         () => r.filter(hi)('yo'),
-        new TypeError('cannot filter from string')
+        new TypeError('filter(...)(x); x invalid')
       )
     })
     it('handles sync errors good', async () => {

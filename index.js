@@ -345,13 +345,13 @@ const filterReducer = (fn, reducer) => (y, xi) => {
 
 const filter = fn => {
   if (!isFunction(fn)) {
-    throw new TypeError(`${type(fn)} is not a function`)
+    throw new TypeError('filter(x); x is not a function')
   }
   return x => {
     if (isArray(x)) return filterArray(fn, x)
     if (isObject(x)) return filterObject(fn, x)
     if (isBinaryFunction(x)) return filterReducer(fn, x)
-    throw new TypeError(`cannot filter from ${type(x)}`)
+    throw new TypeError('filter(...)(x); x invalid')
   }
 }
 
