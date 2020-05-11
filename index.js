@@ -94,14 +94,14 @@ const _chain = (fns, args, step) => {
 
 const pipe = fns => {
   if (!isArray(fns)) {
-    throw new TypeError('arguments[0] is not an array of functions')
+    throw new TypeError('pipe.arguments[0] is not an array of functions')
   }
   if (fns.length < 1) {
-    throw new RangeError('arguments[0] at least one function required')
+    throw new RangeError('pipe.arguments[0] at least one function required')
   }
   for (let i = 0; i < fns.length; i++) {
     if (isFunction(fns[i])) continue
-    throw new TypeError(`arguments[0][${i}] is not a function`)
+    throw new TypeError(`pipe.arguments[0][${i}] is not a function`)
   }
   if (fns.length === 0) return x => x
   return (...args) => isBinaryFunction(args[0])
