@@ -300,11 +300,11 @@ const mapSeriesArray = (fn, x, i, y) => {
 
 map.series = fn => {
   if (!isFunction(fn)) {
-    throw new TypeError(`${type(fn)} is not a function`)
+    throw new TypeError('arguments[0] is not a function')
   }
   return x => {
     if (isArray(x)) return mapSeriesArray(fn, x, 0, [])
-    throw new TypeError(`cannot map.series from ${type(x)}`)
+    throw new TypeError('arguments[0] invalid')
   }
 }
 

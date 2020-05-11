@@ -530,13 +530,13 @@ describe('rubico', () => {
     it('throws TypeError for non functions', async () => {
       assert.throws(
         () => r.map.series('hey'),
-        new TypeError('string is not a function'),
+        new TypeError('arguments[0] is not a function'),
       )
     })
     it('throws TypeError for non array input', async () => {
       assert.throws(
         () => r.map.series(() => 1)('hey'),
-        new TypeError('cannot map.series from string')
+        new TypeError('arguments[0] invalid')
       )
     })
   })
