@@ -700,17 +700,94 @@ const not = fn => {
   }
 }
 
-// TODO: implement
-const gt = fns => {}
+const compareAsc = (predicate, x) => {
+  for (let i = 0; i < x.length - 1; i++) {
+    if (!predicate(x[i], x[i + 1])) return false
+  }
+  return true
+}
 
-// TODO: implement
-const lt = fns => {}
+const operator = (predicate, fns, x) => {
+  let isAsync = false
+  const points = fns.map(fn => {
+    const point = fn(x)
+    if (isPromise(point)) isAsync = true
+    return point
+  })
+  return isAsync ? Promise.all(points).then(
+    res => compareAsc(predicate, res)
+  ) : compareAsc(predicate, points)
+}
 
-// TODO: implement
-const gte = fns => {}
+const eq = fns => {
+  if (!isArray(fns)) {
+    throw new TypeError('eq(x); x is not an array of functions')
+  }
+  if (fns.length < 2) {
+    throw new RangeError('eq(x); x is not an array of at least two functions')
+  }
+  for (let i = 0; i < fns.length; i++) {
+    if (isFunction(fns[i])) continue
+    throw new TypeError(`eq(x); x[${i}] is not a function`)
+  }
+  return x => operator((a, b) => a === b, fns, x)
+}
 
-// TODO: implement
-const lte = fns => {}
+const gt = fns => {
+  if (!isArray(fns)) {
+    throw new TypeError('gt(x); x is not an array of functions')
+  }
+  if (fns.length < 2) {
+    throw new RangeError('gt(x); x is not an array of at least two functions')
+  }
+  for (let i = 0; i < fns.length; i++) {
+    if (isFunction(fns[i])) continue
+    throw new TypeError(`gt(x); x[${i}] is not a function`)
+  }
+  return x => operator((a, b) => a > b, fns, x)
+}
+
+const lt = fns => {
+  if (!isArray(fns)) {
+    throw new TypeError('lt(x); x is not an array of functions')
+  }
+  if (fns.length < 2) {
+    throw new RangeError('lt(x); x is not an array of at least two functions')
+  }
+  for (let i = 0; i < fns.length; i++) {
+    if (isFunction(fns[i])) continue
+    throw new TypeError(`lt(x); x[${i}] is not a function`)
+  }
+  return x => operator((a, b) => a < b, fns, x)
+}
+
+const gte = fns => {
+  if (!isArray(fns)) {
+    throw new TypeError('gte(x); x is not an array of functions')
+  }
+  if (fns.length < 2) {
+    throw new RangeError('gte(x); x is not an array of at least two functions')
+  }
+  for (let i = 0; i < fns.length; i++) {
+    if (isFunction(fns[i])) continue
+    throw new TypeError(`gte(x); x[${i}] is not a function`)
+  }
+  return x => operator((a, b) => a >= b, fns, x)
+}
+
+const lte = fns => {
+  if (!isArray(fns)) {
+    throw new TypeError('lte(x); x is not an array of functions')
+  }
+  if (fns.length < 2) {
+    throw new RangeError('lte(x); x is not an array of at least two functions')
+  }
+  for (let i = 0; i < fns.length; i++) {
+    if (isFunction(fns[i])) continue
+    throw new TypeError(`lte(x); x[${i}] is not a function`)
+  }
+  return x => operator((a, b) => a <= b, fns, x)
+}
 
 const r = {
   pipe,
@@ -731,6 +808,7 @@ const r = {
   and,
   or,
   not,
+  eq,
   gt,
   lt,
   gte,

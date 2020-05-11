@@ -1085,7 +1085,7 @@ describe('rubico', () => {
       ase(r.not(isOdd)(2), true)
       ase(r.not(isOdd)(1), false)
     })
-    it('[async] not(asyncIsEven)(x) === !(await asyncIsEven(x))', async () => {
+    it('[async] not(isEven)(x) === !(await isEven(x))', async () => {
       aok(r.not(asyncIsEven)(2) instanceof Promise)
       ase(await r.not(asyncIsEven)(2), false)
       ase(await r.not(asyncIsEven)(1), true)
@@ -1094,6 +1094,36 @@ describe('rubico', () => {
       assert.throws(
         () => r.not('hey'),
         new TypeError('not(x); x is not a function'),
+      )
+    })
+  })
+
+  describe('eq', () => {
+    it('[sync] eq(functions)(x) === allStrictEqual(functions.map(f => f(x))))', async () => {
+      ase(r.eq([x => `${x}`, x => x])('hey'), true)
+      ase(r.eq([x => `${x}`, x => x])(1), false)
+    })
+    it('[async] eq(functions)(x) === allStrictEqual(functions.map(f => f(x))))', async () => {
+      aok(r.eq([x => `${x}`, async x => x])('hey') instanceof Promise)
+      ase(await r.eq([x => `${x}`, async x => x])('hey'), true)
+      ase(await r.eq([x => `${x}`, async x => x])(1), false)
+    })
+    it('throws TypeError on eq(nonArray)', async () => {
+      assert.throws(
+        () => r.eq('hey'),
+        new TypeError('eq(x); x is not an array of functions'),
+      )
+    })
+    it('throws TypeError on eq(arrayOfLengthLessThan2)', async () => {
+      assert.throws(
+        () => r.eq([() => true]),
+        new RangeError('eq(x); x is not an array of at least two functions'),
+      )
+    })
+    it('throws TypeError on eq(x); any xi of x is not a function', async () => {
+      assert.throws(
+        () => r.eq([() => true, 'hey', 'yo']),
+        new TypeError('eq(x); x[1] is not a function'),
       )
     })
   })
