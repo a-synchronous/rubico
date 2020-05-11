@@ -202,7 +202,7 @@ const tapReducer = (fn, reducer) => (y, xi) => {
 
 const tap = fn => {
   if (!isFunction(fn)) {
-    throw new TypeError('tap.arguments[0] is not a function')
+    throw new TypeError('tap(x); x is not a function')
   }
   return x => {
     if (isBinaryFunction(x)) return tapReducer(fn, x)
