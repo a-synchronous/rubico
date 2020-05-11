@@ -1079,4 +1079,22 @@ describe('rubico', () => {
       )
     })
   })
+
+  describe('not', () => {
+    it('[sync] not(isOdd)(x) === !isOdd(x)', async () => {
+      ase(r.not(isOdd)(2), true)
+      ase(r.not(isOdd)(1), false)
+    })
+    it('[async] not(asyncIsEven)(x) === !(await asyncIsEven(x))', async () => {
+      aok(r.not(asyncIsEven)(2) instanceof Promise)
+      ase(await r.not(asyncIsEven)(2), false)
+      ase(await r.not(asyncIsEven)(1), true)
+    })
+    it('throws TypeError on not(nonFunction)', async () => {
+      assert.throws(
+        () => r.not('hey'),
+        new TypeError('not(x); x is not a function'),
+      )
+    })
+  })
 })

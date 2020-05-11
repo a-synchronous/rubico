@@ -10,9 +10,8 @@
  * no currying; write new functions
  */
 
-// overarching TODOs:
-// rework error messages
-//   (functions[k]) => args[0][k]
+// overarching TODO:
+// test names [[a]sync]
 
 const isDefined = x => x !== undefined && x !== null
 
@@ -691,8 +690,15 @@ const or = fns => {
   return x => arrayOr(fns, x)
 }
 
-// TODO: implement
-const not = fn => {}
+const not = fn => {
+  if (!isFunction(fn)) {
+    throw new TypeError('not(x); x is not a function')
+  }
+  return x => {
+    const point = fn(x)
+    return isPromise(point) ? point.then(res => !res) : !point
+  }
+}
 
 // TODO: implement
 const gt = fns => {}
