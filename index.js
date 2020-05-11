@@ -153,7 +153,7 @@ const fork = fns => {
     }
     return x => objectFork(fns, x)
   }
-  throw new TypeError(`arguments[0] invalid`)
+  throw new TypeError('arguments[0] invalid')
 }
 
 const arrayForkSeries = (fns, x, i, y) => {
@@ -167,15 +167,15 @@ const arrayForkSeries = (fns, x, i, y) => {
 fork.series = fns => {
   if (isArray(fns)) {
     if (fns.length < 1) {
-      throw new RangeError('at least one function required')
+      throw new RangeError('arguments[0] at least one function required')
     }
     for (let i = 0; i < fns.length; i++) {
       if (isFunction(fns[i])) continue
-      throw new TypeError(`${type(fns[i])} (functions[${i}]) is not a function`)
+      throw new TypeError(`arguments[0][${i}] is not a function`)
     }
     return x => arrayForkSeries(fns, x, 0, [])
   }
-  throw new TypeError(`cannot fork.series into ${type(fns)}`)
+  throw new TypeError('arguments[0] invalid')
 }
 
 const assign = fns => {
