@@ -167,15 +167,17 @@ const arrayForkSeries = (fns, x, i, y) => {
 fork.series = fns => {
   if (isArray(fns)) {
     if (fns.length < 1) {
-      throw new RangeError('arguments[0] at least one function required')
+      throw new RangeError(
+        'fork.series.arguments[0] at least one function required',
+      )
     }
     for (let i = 0; i < fns.length; i++) {
       if (isFunction(fns[i])) continue
-      throw new TypeError(`arguments[0][${i}] is not a function`)
+      throw new TypeError(`fork.series.arguments[0][${i}] is not a function`)
     }
     return x => arrayForkSeries(fns, x, 0, [])
   }
-  throw new TypeError('arguments[0] invalid')
+  throw new TypeError('fork.series.arguments[0] invalid')
 }
 
 const assign = fns => {
