@@ -77,6 +77,7 @@ rubico resolves two promises:
 
 programs written with rubico follow a [point-free style](https://en.wikipedia.org/wiki/Tacit_programming)
 
+## Interface
 rubico exports 23 functions
 
 [pipe](https://github.com/richytong/rubico#pipe),
