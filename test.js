@@ -664,22 +664,28 @@ describe('rubico', () => {
         ase(await r.reduce(asyncMult, 10)(x), 1200)
       }
     })
-    it('throws a TypeError if passed a non function', async () => {
+    it('throws a TypeError on reduce(nonFunction)', async () => {
       assert.throws(
         () => r.reduce({}),
-        new TypeError('object is not a function'),
+        new TypeError('reduce(x, y); x is not a function'),
       )
     })
-    it('throws a TypeError if passed a non iterable', async () => {
+    it('throws a TypeError on reduce(...)(number)', async () => {
       assert.throws(
         () => r.reduce((y, xi) => y + xi)(1),
-        new TypeError('cannot reduce number'),
+        new TypeError('reduce(...)(x); x invalid'),
       )
     })
-    it('throws an Error on empty iterator', async () => {
+    it('throws a TypeError on reduce(...)(emptyIterator)', async () => {
       assert.throws(
         () => r.reduce((y, xi) => y + xi)([]),
-        new TypeError('cannot reduce empty iterator'),
+        new TypeError('reduce(...)(x); x cannot be empty'),
+      )
+    })
+    it('throws a TypeError on reduce(...)(emptyAsyncIterator)', async () => {
+      assert.rejects(
+        () => r.reduce((y, xi) => y + xi)((async function* () {})()),
+        new TypeError('reduce(...)(x); x cannot be empty'),
       )
     })
   })

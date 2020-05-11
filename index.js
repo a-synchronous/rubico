@@ -359,7 +359,7 @@ const reduceIterable = (fn, x0, x) => {
   const iter = x[Symbol.iterator].bind(x)()
   let cursor = iter.next()
   if (cursor.done) {
-    throw new TypeError('cannot reduce empty iterator')
+    throw new TypeError('reduce(...)(x); x cannot be empty')
   }
   let y = isDefined(x0) ? fn(x0, cursor.value) : (() => {
     const x0 = cursor.value
@@ -379,7 +379,7 @@ const reduceAsyncIterable = async (fn, x0, x) => {
   const iter = x[Symbol.asyncIterator].bind(x)()
   let cursor = await iter.next()
   if (cursor.done) {
-    throw new TypeError('cannot reduce empty iterator')
+    throw new TypeError('reduce(...)(x); x cannot be empty')
   }
   let y = isDefined(x0) ? await fn(x0, cursor.value) : await (async () => {
     const x0 = cursor.value
@@ -403,13 +403,13 @@ const reduceObject = (fn, x0, x) => reduceIterable(
 
 const reduce = (fn, x0) => {
   if (!isFunction(fn)) {
-    throw new TypeError(`${type(fn)} is not a function`)
+    throw new TypeError('reduce(x, y); x is not a function')
   }
   return x => {
     if (isIterable(x)) return reduceIterable(fn, x0, x)
     if (isAsyncIterable(x)) return reduceAsyncIterable(fn, x0, x)
     if (isObject(x)) return reduceObject(fn, x0, x)
-    throw new TypeError(`cannot reduce ${type(x)}`)
+    throw new TypeError('reduce(...)(x); x invalid')
   }
 }
 
