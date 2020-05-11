@@ -237,14 +237,14 @@ const arrayTernary = (fns, x) => {
 
 const ternary = fns => {
   if (!isArray(fns)) {
-    throw new TypeError('arguments[0] is not an array of three functions')
+    throw new TypeError('ternary(x); x is not an array of three functions')
   }
   if (fns.length !== 3) {
-    throw new RangeError('arguments[0] exactly three functions required')
+    throw new RangeError('ternary(x); x is not an array of exactly three functions')
   }
   for (let i = 0; i < fns.length; i++) {
     if (isFunction(fns[i])) continue
-    throw new TypeError(`arguments[0][${i}] is not a function`)
+    throw new TypeError(`ternary(x); x[${i}] is not a function`)
   }
   return x => arrayTernary(fns, x)
 }
