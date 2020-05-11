@@ -626,12 +626,12 @@ const allObject = (fn, x) => allIterable(
 
 const all = fn => {
   if (!isFunction(fn)) {
-    throw new TypeError(`${type(fn)} is not a function`)
+    throw new TypeError('all(x); x is not a function')
   }
   return x => {
     if (isIterable(x)) return allIterable(fn, x)
     if (isObject(x)) return allObject(fn, x)
-    throw new TypeError(`cannot all ${type(x)}`)
+    throw new TypeError('all(...)(x); x invalid')
   }
 }
 

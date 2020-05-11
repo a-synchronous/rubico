@@ -1004,16 +1004,16 @@ describe('rubico', () => {
       ase(await r.all(async x => x > 5)(numbersObject), false)
       ase(await r.all(async x => x > 0)(numbersObject), true)
     })
-    it('throws TypeError on non function setup', async () => {
+    it('throws TypeError on all(nonFunction)', async () => {
       assert.throws(
         () => r.all('hey'),
-        new TypeError('string is not a function'),
+        new TypeError('all(x); x is not a function'),
       )
     })
-    it('throws TypeError if input not iterable or object', async () => {
+    it('throws TypeError on all(...)(string)', async () => {
       assert.throws(
         () => r.all(x => x)(1),
-        new TypeError('cannot all number'),
+        new TypeError('all(...)(x); x invalid'),
       )
     })
   })
