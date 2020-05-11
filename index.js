@@ -12,6 +12,8 @@
 
 const isDefined = x => x !== undefined && x !== null
 
+const isUndefined = x => x === undefined
+
 const isNull = x => x === null
 
 const isIterable = x => isDefined(x[Symbol.iterator])
@@ -360,7 +362,7 @@ const reduceIterable = (fn, x0, x) => {
   if (cursor.done) {
     throw new TypeError('reduce(...)(x); x cannot be empty')
   }
-  let y = isDefined(x0) ? fn(x0, cursor.value) : (() => {
+  let y = !isUndefined(x0) ? fn(x0, cursor.value) : (() => {
     const x0 = cursor.value
     cursor = iter.next()
     return cursor.done ? x0 : fn(x0, cursor.value)
@@ -380,7 +382,7 @@ const reduceAsyncIterable = async (fn, x0, x) => {
   if (cursor.done) {
     throw new TypeError('reduce(...)(x); x cannot be empty')
   }
-  let y = isDefined(x0) ? await fn(x0, cursor.value) : await (async () => {
+  let y = !isUndefined(x0) ? await fn(x0, cursor.value) : await (async () => {
     const x0 = cursor.value
     cursor = await iter.next()
     return cursor.done ? x0 : fn(x0, cursor.value)

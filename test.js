@@ -769,11 +769,15 @@ describe('rubico', () => {
     const numbers = [1, 2, 3, 4, 5]
     const bigNumbers = [1n, 2n, 3n, 4n, 5n]
     it('sync transforms iterable to null', async () => {
-      ase(r.transform(null, squareOdds)(numbers), null)
+      let y = ''
+      ase(r.transform(null, r.tap(x => { y += x }))(numbers), null)
+      ase(y, '12345')
     })
     it('async transforms iterable to null', async () => {
-      aok(r.transform(null, asyncEvens)(numbers) instanceof Promise)
-      ase(await r.transform(null, asyncEvens)(numbers), null)
+      let y = ''
+      aok(r.transform(null, r.tap(async () => {}))(numbers) instanceof Promise)
+      ase(await r.transform(null, r.tap(async x => { y += x }))(numbers), null)
+      ase(y, '12345')
     })
     it('sync transforms iterable to array', async () => {
       ade(r.transform([], squareOdds)(numbers), [1, 9, 25])
