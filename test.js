@@ -161,43 +161,43 @@ describe('rubico', () => {
     it('throws TypeError for fork([])', async () => {
       assert.throws(
         () => r.fork([]),
-        new RangeError('at least one function required'),
+        new RangeError('arguments[0] at least one function required'),
       )
     })
     it('throws TypeError for fork({})', async () => {
       assert.throws(
         () => r.fork({}),
-        new RangeError('at least one function required'),
+        new RangeError('arguments[0] at least one function required'),
       )
     })
     it('throws TypeError for fork([nonFunction])', async () => {
       assert.throws(
         () => r.fork(['hey']),
-        new TypeError('string (functions[0]) is not a function'),
+        new TypeError('arguments[0][0] is not a function'),
       )
     })
     it('throws TypeError for fork({ a: nonFunction })', async () => {
       assert.throws(
         () => r.fork({ a: 'hey' }),
-        new TypeError('arguments[0][\'a\'] string is not a function'),
+        new TypeError('arguments[0][\'a\'] is not a function'),
       )
     })
     it('throws TypeError for String', async () => {
       assert.throws(
         () => r.fork('ayelmao'),
-        new TypeError('cannot fork into string'),
+        new TypeError('arguments[0] invalid'),
       )
     })
     it('throws TypeError for Set', async () => {
       assert.throws(
         () => r.fork(new Set([hi])),
-        new TypeError('cannot fork into set'),
+        new TypeError('arguments[0] invalid'),
       )
     })
     it('throws TypeError for Map', async () => {
       assert.throws(
         () => r.fork(new Map([['a', hi]])),
-        new TypeError('cannot fork into map'),
+        new TypeError('arguments[0] invalid'),
       )
     })
   })
