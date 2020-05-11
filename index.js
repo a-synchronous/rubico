@@ -555,10 +555,12 @@ const pickObject = (props, x) => {
 
 const pick = props => {
   if (isArray(props)) return x => {
-    if (!isObject(x)) throw new TypeError(`cannot pick from ${type(x)}`)
+    if (!isObject(x)) {
+      throw new TypeError('pick(...)(x); x is not an object')
+    }
     return pickObject(props, x)
   }
-  throw new TypeError(`cannot pick with ${type(props)}; array of props required`)
+  throw new TypeError('pick(x); x is not an array')
 }
 
 const omitObject = (props, x) => {

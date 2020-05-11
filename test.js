@@ -915,16 +915,16 @@ describe('rubico', () => {
       ade(r.pick(['a', 'd'])(abc), { a: 1 })
       ade(r.pick(['d'])(abc), {})
     })
-    it('throws a TypeError on invalid props', async () => {
+    it('throws a TypeError on pick(nonArray)', async () => {
       assert.throws(
         () => r.pick('hey'),
-        new TypeError('cannot pick with string; array of props required'),
+        new TypeError('pick(x); x is not an array'),
       )
     })
-    it('throws a TypeError on invalid input', async () => {
+    it('throws a TypeError on pick(...)(nonObject)', async () => {
       assert.throws(
         () => r.pick(['hey'])(['hey']),
-        new TypeError('cannot pick from array'),
+        new TypeError('pick(...)(x); x is not an object'),
       )
     })
   })
