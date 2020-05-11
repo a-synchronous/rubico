@@ -3,7 +3,7 @@
 
 a functional promise library
 
-## Introduction
+# Introduction
 Asynchronous programming in JavaScript has evolved over the years
 
 > In the beginning, there were [callbacks](http://callbackhell.com)
@@ -77,7 +77,7 @@ rubico resolves two promises:
 
 programs written with rubico follow a [point-free style](https://en.wikipedia.org/wiki/Tacit_programming)
 
-## Interface
+# Interface
 rubico exports 23 functions
 
 [pipe](https://github.com/richytong/rubico#pipe),
@@ -110,7 +110,7 @@ rubico exports 23 functions
 [gte](https://github.com/richytong/rubico#gte),
 [lte](https://github.com/richytong/rubico#lte)
 
-## Installation
+# Installation
 with npm; `npm i rubico`
 
 # Examples
