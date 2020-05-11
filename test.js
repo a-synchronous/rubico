@@ -311,7 +311,7 @@ describe('rubico', () => {
     it('throws a TypeError if passed a non function', async () => {
       assert.throws(
         () => r.tap('hey'),
-        new TypeError('cannot tap with string'),
+        new TypeError('arguments[0] is not a function'),
       )
     })
   })
