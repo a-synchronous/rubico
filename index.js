@@ -10,9 +10,6 @@
  * no currying; write new functions
  */
 
-// overarching TODO:
-// test names [[a]sync]
-
 const isDefined = x => x !== undefined && x !== null
 
 const isIterable = x => isDefined(x[Symbol.iterator])
