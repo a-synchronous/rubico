@@ -94,7 +94,7 @@ const _chain = (fns, args, step) => {
 
 const pipe = fns => {
   if (!isArray(fns)) {
-    throw new TypeError(`arguments[0] must be an array of functions`)
+    throw new TypeError('arguments[0] is not an array of functions')
   }
   if (fns.length < 1) {
     throw new RangeError('arguments[0] at least one function required')
@@ -180,11 +180,11 @@ fork.series = fns => {
 
 const assign = fns => {
   if (!isObject(fns)) {
-    throw new TypeError(`cannot assign from ${type(fns)}`)
+    throw new TypeError(`arguments[0] is not an object of functions`)
   }
   return x => {
     if (!isObject(x)) {
-      throw new TypeError(`cannot assign into ${type(x)}`)
+      throw new TypeError(`arguments[0] is not an object`)
     }
     const assignments = objectFork(fns, x)
     return isPromise(assignments)

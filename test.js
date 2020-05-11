@@ -96,7 +96,7 @@ describe('rubico', () => {
         () => {
           r.pipe(() => 1, undefined, () => 2)
         },
-        new TypeError('arguments[0] must be an array of functions'),
+        new TypeError('arguments[0] is not an array of functions'),
       )
     })
     it('throws a RangeError if passed less than one function', async () => {
@@ -278,16 +278,16 @@ describe('rubico', () => {
         { a: 'a', b: 'ayo', c: 'ayaya' },
       )
     })
-    it('throws TypeError on non object functions', async () => {
+    it('throws TypeError on assign(nonObject)', async () => {
       assert.throws(
         () => r.assign(new Set(['hey'])),
-        new TypeError('cannot assign from set'),
+        new TypeError('arguments[0] is not an object of functions'),
       )
     })
-    it('throws TypeError on non object input', async () => {
+    it('throws TypeError on assign(...)(nonObject)', async () => {
       assert.throws(
         () => r.assign({ a: hi })('hi'),
-        new TypeError('cannot assign into string'),
+        new TypeError('arguments[0] is not an object'),
       )
     })
   })
