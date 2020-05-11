@@ -67,3 +67,30 @@ pipe([
 ```
 
 # Documentation
+rubico exports 23 functions
+
+## pipe
+## fork
+## assign
+## tap
+## tryCatch
+## ternary
+## map
+## filter
+## reduce
+## transform
+## get
+## pick
+## omit
+## any
+## all
+## and
+## or
+## not
+## eq
+## gt
+## lt
+## gte
+## lte
+
+# More Examples
