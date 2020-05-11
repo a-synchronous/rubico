@@ -939,13 +939,13 @@ describe('rubico', () => {
     it('throws a TypeError on invalid props', async () => {
       assert.throws(
         () => r.omit('hey'),
-        new TypeError('cannot omit with string; array of props required'),
+        new TypeError('omit(x); x is not an array'),
       )
     })
     it('throws a TypeError on invalid input', async () => {
       assert.throws(
         () => r.omit(['hey'])(['hey']),
-        new TypeError('cannot omit from array'),
+        new TypeError('omit(...)(x); x is not an object'),
       )
     })
   })
