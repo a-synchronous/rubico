@@ -40,10 +40,10 @@ const doAsyncThings = a => doAsyncThingA(a)
   .then(e => doAsyncThingE(e))
 ```
 
-This was fine until we started to miss variables
+This was fine until we started to miss variables and `try catch`
 
-Here lies the state of the art:
-[async/await](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function)
+[async/await](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function),
+the latest in asynchrony
 ```javascript
 const doAsyncThings = async a => {
   const b = await doAsyncThingA(a)
@@ -55,9 +55,41 @@ const doAsyncThings = async a => {
 }
 ```
 
-tmp
+async and await ruled my life until I discovered two hard things:
+[cache invalidation and naming things](https://martinfowler.com/bliki/TwoHardThings.html)
+
+at that point, I was like
+> Maybe life would be nicer if I didn't have to name so many things
+
+> I wonder if there's a way to do async/await but without variables
+
+which eventually led to
+> What if I just took the output of one function and just piped it into another?
+
+> hmm, looks like they have a thing for that already called functional programming
+
+> whoa, functional programming sounds cool, but monads seem a bit... esoteric
+
+> ugh, I just want to chain stuff together without learning category theory
+
+which led to this library.
+
+rubico, a functional (programming) promise library, has two goals
 1. simplify asynchronous programming in JavaScript
 2. enable functional programming in JavaScript
+
+async things in rubico
+```javascript
+import { pipe } from 'rubico'
+
+const doAsyncThings = pipe([
+  doAsyncThingA,
+  doAsyncThingB,
+  doAsyncThingC,
+  doAsyncThingD,
+  doAsyncThingE,
+])
+```
 
 # Examples
 ### Make a request
