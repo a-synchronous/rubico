@@ -542,7 +542,7 @@ const get = (path, defaultValue) => {
   if (isString(path)) return isDelimitedBy('.', path)
     ? x => arrayGet(path.split('.'), x, defaultValue)
     : x => arrayGet([path], x, defaultValue)
-  throw new TypeError(`cannot get with ${type(path)} path`)
+  throw new TypeError('get(x, y); x invalid')
 }
 
 const pickObject = (props, x) => {
