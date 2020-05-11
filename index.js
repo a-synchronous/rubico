@@ -441,7 +441,10 @@ const toNumberTypedArray = (constructor, x) => {
   if (isString(x)) return new constructor(stringToCharCodes(x))
   if (isNumberTypedArray(x)) return new constructor(x)
   if (isArray(x) && x.every(isNumber)) return new constructor(x)
-  throw new TypeError(`cannot convert ${type(x)} to ${constructor.name}`)
+  throw new TypeError([
+    `toNumberTypedArray(${constructor.name}, y)`,
+    `cannot convert y to ${constructor.name}`,
+  ].join('; '))
 }
 
 const firstPowerOf2After = x => {
@@ -481,7 +484,10 @@ const toBigIntTypedArray = (constructor, x) => {
   if (isBigInt(x)) return constructor.of(x)
   if (isBigIntTypedArray(x)) return new constructor(x)
   if (isArray(x) && x.every(isBigInt)) return new constructor(x)
-  throw new TypeError(`cannot convert ${type(x)} to ${constructor.name}`)
+  throw new TypeError([
+    `toBigIntTypedArray(${constructor.name}, y)`,
+    `cannot convert y to ${constructor.name}`,
+  ].join('; '))
 }
 
 const bigIntTypedArrayTransform = (x0, fn) => x => {
@@ -505,7 +511,7 @@ const writeableTransform = (x0, fn) => reduce(
 
 const transform = (x0, fn) => {
   if (!isFunction(fn)) {
-    throw new TypeError(`${type(fn)} is not a function`)
+    throw new TypeError('transform(x, y); y is not a function')
   }
   if (isArray(x0)) return arrayTransform(x0, fn)
   if (isString(x0)) return stringTransform(x0, fn)
@@ -513,7 +519,7 @@ const transform = (x0, fn) => {
   if (isNumberTypedArray(x0)) return numberTypedArrayTransform(x0, fn)
   if (isBigIntTypedArray(x0)) return bigIntTypedArrayTransform(x0, fn)
   if (isWritable(x0)) return writeableTransform(x0, fn)
-  throw new TypeError(`cannot transform ${type(x0)}`)
+  throw new TypeError('transform(x, y); x invalid')
 }
 
 const isDelimitedBy = (delim, x) => x

@@ -858,16 +858,16 @@ describe('rubico', () => {
       ), '9924')
       fs.unlinkSync('./tmp')
     })
-    it('throws a TypeError for invalid initial value', async () => {
+    it('throws a TypeError for transform(Object, () => {})', async () => {
       assert.throws(
         () => r.transform({}, () => {}),
-        new TypeError('cannot transform object'),
+        new TypeError('transform(x, y); x invalid'),
       )
     })
     it('throws a TypeError for non function transducer', async () => {
       assert.throws(
         () => r.transform('hey', 'yo'),
-        new TypeError('string is not a function'),
+        new TypeError('transform(x, y); y is not a function'),
       )
     })
   })
