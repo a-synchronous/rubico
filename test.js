@@ -479,13 +479,13 @@ describe('rubico', () => {
     it('throws a TypeError if passed a non function', async () => {
       assert.throws(
         () => r.map({}),
-        new TypeError('object is not a function'),
+        new TypeError('arguments[0] is not a function'),
       )
     })
     it('throws a TypeError if input is not an array or object', async () => {
       assert.throws(
         () => r.map(hi)('yo'),
-        new TypeError('cannot map from string')
+        new TypeError('arguments[0] invalid')
       )
     })
     it('handles sync errors good', async () => {

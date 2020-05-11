@@ -280,13 +280,13 @@ const mapReducer = (fn, reducer) => (y, xi) => {
 
 const map = fn => {
   if (!isFunction(fn)) {
-    throw new TypeError(`${type(fn)} is not a function`)
+    throw new TypeError('arguments[0] is not a function')
   }
   return x => {
     if (isArray(x)) return mapArray(fn, x)
     if (isObject(x)) return mapObject(fn, x)
     if (isBinaryFunction(x)) return mapReducer(fn, x)
-    throw new TypeError(`cannot map from ${type(x)}`)
+    throw new TypeError('arguments[0] invalid')
   }
 }
 
