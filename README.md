@@ -124,3 +124,8 @@ rubico exports 23 functions
 ## lte
 
 # More Examples
+Sync vs async
+
+Transducers
+
+A larger program
