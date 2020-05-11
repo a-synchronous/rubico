@@ -96,13 +96,13 @@ describe('rubico', () => {
         () => {
           r.pipe(() => 1, undefined, () => 2)
         },
-        new TypeError('first argument must be an array of functions'),
+        new TypeError('arguments[0] must be an array of functions'),
       )
     })
     it('throws a RangeError if passed less than one function', async () => {
       assert.throws(
         () => r.pipe([]),
-        new RangeError('at least one function required'),
+        new RangeError('arguments[0] at least one function required'),
       )
     })
     it('throws a TypeError if any arguments are not a function', async () => {
@@ -110,7 +110,7 @@ describe('rubico', () => {
         () => {
           r.pipe([() => 1, undefined, () => 2])
         },
-        new TypeError('undefined (functions[1]) is not a function'),
+        new TypeError('arguments[0][1] is not a function'),
       )
     })
     it('handles sync errors good', async () => {
