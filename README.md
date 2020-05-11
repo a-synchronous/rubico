@@ -3,9 +3,61 @@
 
 a functional promise library
 
-# Goals
-1. enable functional programming in Javascript
-2. simplify asynchronous programming in Javascript
+# Introduction
+Asynchronous programming in JavaScript has evolved over the years
+
+In the beginning, there were [callbacks](http://callbackhell.com)
+```javascript
+function doAsyncThings(a, cb) {
+  doAsyncThingA(a, function(errA, b) {
+    if (errA) return cb(errA)
+    doAsyncThingB(b, function(errB, c) {
+      if (errB) return cb(errB)
+      doAsyncThingC(c, function(errC, d) {
+        if (errC) return cb(errC)
+        doAsyncThingD(d, function(errD, e) {
+          if (errD) return cb(errD)
+          doAsyncThingE(e, function(errE, f) {
+            if (errE) return cb(errE)
+            cb(null, f)
+          })
+        })
+      })
+    })
+  })
+}
+```
+
+To stay within maximum line lengths, we created
+[Promises](https://developer.mozilla.org/en-US/docs/Mozilla/JavaScript_code_modules/Promise.jsm/Promise)
+
+Then began the chains of `then`
+```javascript
+const doAsyncThings = a => doAsyncThingA(a)
+  .then(b => doAsyncThingB(b))
+  .then(c => doAsyncThingC(c))
+  .then(d => doAsyncThingD(d))
+  .then(e => doAsyncThingE(e))
+```
+
+This was fine until we started to miss variables
+
+Here lies the state of the art:
+[async/await](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function)
+```javascript
+const doAsyncThings = async a => {
+  const b = await doAsyncThingA(a)
+  const c = await doAsyncThingB(b)
+  const d = await doAsyncThingC(c)
+  const e = await doAsyncThingD(d)
+  const f = await doAsyncThingE(e)
+  return f
+}
+```
+
+tmp
+1. simplify asynchronous programming in JavaScript
+2. enable functional programming in JavaScript
 
 # Examples
 ### Make a request
