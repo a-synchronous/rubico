@@ -12,6 +12,8 @@
 
 const isDefined = x => x !== undefined && x !== null
 
+const isNull = x => x === null
+
 const isIterable = x => isDefined(x[Symbol.iterator])
 
 const isAsyncIterable = x => isDefined(x[Symbol.asyncIterator])
@@ -410,6 +412,11 @@ const reduce = (fn, x0) => {
   }
 }
 
+const nullTransform = (x0, fn) => reduce(
+  fn(() => x0),
+  x0,
+)
+
 const arrayTransform = (x0, fn) => reduce(
   fn((y, xi) => { y.push(xi); return y }),
   Array.from(x0),
@@ -510,7 +517,7 @@ const transform = (x0, fn) => {
   if (!isFunction(fn)) {
     throw new TypeError('transform(x, y); y is not a function')
   }
-  // TODO(richytong): if (isNull(x0)) return nullTransform(x0, fn)
+  if (isNull(x0)) return nullTransform(x0, fn)
   if (isArray(x0)) return arrayTransform(x0, fn)
   if (isString(x0)) return stringTransform(x0, fn)
   if (isSet(x0)) return setTransform(x0, fn)
