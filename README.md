@@ -40,7 +40,7 @@ const doAsyncThings = a => doAsyncThingA(a)
   .then(e => doAsyncThingE(e))
 ```
 
-This was fine until we started to miss variables and `try catch`
+This was fine until we started to miss variables
 
 > [async/await](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function), the latest in asynchrony
 ```javascript
@@ -54,7 +54,7 @@ const doAsyncThings = async a => {
 }
 ```
 
-Some of us, however, did not miss variables and `try catch`.
+Some of us, however, did not miss variables
 
 > maybe promises were on to something
 ```javascript
