@@ -22,7 +22,7 @@ void (async () => {
 
 const { pipe, map, filter, transform } = require('..')
 
-// rubico - pipe, map
+// rubico
 pipe([
   filter(id => id <= 3),
   map(id => `https://jsonplaceholder.typicode.com/todos/${id}`),
@@ -31,7 +31,8 @@ pipe([
   map(x => console.log('rubico', x)), // > {...} {...} {...}
 ])(todoIDs)
 
-// rubico - transform + transducer
+// transform - a special way to consume transducers
+// transform(null, pipe(...))(x) transforms input x to null according to transducer pipe(...)
 transform(null, pipe([
   filter(id => id <= 3),
   map(id => `https://jsonplaceholder.typicode.com/todos/${id}`),
