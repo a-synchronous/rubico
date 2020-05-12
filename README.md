@@ -77,6 +77,8 @@ rubico resolves two promises:
 
 programs written with rubico follow a [point-free style](https://en.wikipedia.org/wiki/Tacit_programming)
 
+rubico works in server and browser JavaScript environments
+
 # Interface
 rubico exports 23 functions
 
