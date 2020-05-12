@@ -224,7 +224,7 @@ y = fork(functions)(x)
 ```
 `functions` is either an array of functions or an object of functions
 
-all functions of `functions` are run in parallel
+all functions of `functions` are run concurrently
 
 `x` is anything
 
@@ -232,7 +232,7 @@ all functions of `functions` are run in parallel
 
 `y` assumes the shape of `functions`
 
-`y` is the output from calling each function of `functions` with `x`
+`y` is the output of mapping `x` to each function of `functions`
 
 if all functions of `functions` are synchronous, `y` is not a Promise
 
@@ -264,6 +264,36 @@ fork({
 ```
 
 ## assign
+parallelizes sync or async functions, then merges result with input
+```javascript
+y = assign(functions)(x)
+```
+`functions` is an object of functions
+
+all functions of `functions` are run concurrently
+
+`x` is an object of anything
+
+`y` is an object of anything
+
+`y` is the output of mapping `x` to each function of `functions`, then merging `x` with that result
+
+```javascript
+assign({
+  hello: x => 'hello ' + x.name,
+  goodbye: x => 'goodbye ' + x.name,
+})({ name: 'George' }) // => { hello: 'hello George', goodbye: 'goodbye George' }
+
+assign({
+  hello: x => 'hello ' + x.name,
+  goodbye: async x => 'goodbye ' + x.name,
+})({ name: 'George' }) // => Promise { ({ hello: 'hello George', goodbye: 'goodbye George' }) }
+
+assign({
+  name: () => 'not George',
+})({ name: 'George' }) // => { name: 'not George' }
+```
+
 ## tap
 ## tryCatch
 ## ternary
