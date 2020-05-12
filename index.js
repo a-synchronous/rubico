@@ -234,6 +234,7 @@ const arrayTernary = (fns, x) => {
   ) : ok ? fns[1](x) : fns[2](x)
 }
 
+// TODO: ...fns
 const ternary = fns => {
   if (!isArray(fns)) {
     throw new TypeError('ternary(x); x is not an array of three functions')
