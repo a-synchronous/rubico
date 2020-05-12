@@ -271,6 +271,10 @@ all functions of `functions` are run concurrently
 
 `y` is the output of mapping `x` to each function of `functions`, then merging `x` with that result
 
+if all functions of `functions` are synchronous, `y` is not a Promise
+
+if any functions of `functions` are asynchronous, `y` is a Promise
+
 ```javascript
 assign({
   hello: x => 'hello ' + x.name,
@@ -297,6 +301,10 @@ y = tap(fn)(x)
 `x` is anything
 
 `y` is `x`
+
+if `fn` is synchronous, `y` is `x`
+
+if `fn` is asynchronous, `y` is a Promise that resolves to `x`
 
 ```javascript
 tap(
