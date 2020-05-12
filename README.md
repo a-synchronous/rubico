@@ -294,15 +294,15 @@ assign({
 ## tap
 calls a sync or async function with input, returning input
 ```javascript
-y = tap(fn)(x)
+y = tap(f)(x)
 ```
-`fn` is a function
+`f` is a function
 
 `x` is anything
 
-if `fn` is synchronous, `y` is `x`
+if `f` is synchronous, `y` is `x`
 
-if `fn` is asynchronous, `y` is a Promise that resolves to `x`
+if `f` is asynchronous, `y` is a Promise that resolves to `x`
 
 ```javascript
 tap(
@@ -317,31 +317,31 @@ tap(
 ## tryCatch
 tries a sync or async function with input, catches with another sync or async function
 ```javascript
-y = tryCatch(fnA, fnB)(x)
+y = tryCatch(f, g)(x)
 ```
-`fnA` is a function
+`f` is a function
 
-`fnA` is tried with `x` as `fnA(x)`
+`f` is tried with `x` as `f(x)`
 
-`fnB` is a function that expects two arguments
+`g` is a function that expects two arguments
 
-in argument position 0, `fnB` expects a value potentially thrown by `fnA(x)`
+in argument position 0, `g` expects a value potentially thrown by `f(x)`
 
-in argument position 1, `fnB` expects `x`
+in argument position 1, `g` expects `x`
 
 `x` is anything
 
-if `fnA(x)` did not throw, `y` is `fnA(x)`
+if `f(x)` did not throw, `y` is `f(x)`
 
-if `fnA(x)` threw, `y` is `fnB(err, x)`; `err` is the thrown value
+if `f(x)` threw, `y` is `g(err, x)`; `err` is the thrown value
 
-if `fnA` and `fnB` are synchronous, `y` is not a Promise
+if `f` and `g` are synchronous, `y` is not a Promise
 
-if `fnA` is asynchronous, `y` is a Promise
+if `f` is asynchronous, `y` is a Promise
 
-if `fnB` is asynchronous and `fnA(x)` did not throw, `y` is not a Promise
+if `g` is asynchronous and `f(x)` did not throw, `y` is not a Promise
 
-if `fnB` is asynchronous and `fnA(x)` threw, `y` is a Promise
+if `g` is asynchronous and `f(x)` threw, `y` is a Promise
 
 ```javascript
 tryCatch(
