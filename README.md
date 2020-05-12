@@ -189,8 +189,6 @@ y = pipe(functions)(x)
 if `x` is a function, pipe chains `functions` from right to left,
 see [transform](https://github.com/richytong/rubico#transform)
 
-`y` is anything
-
 `y` is the output of running `x` through the chain of `functions`
 
 if all functions of `functions` are synchronous, `y` is not a Promise
@@ -220,8 +218,6 @@ y = fork(functions)(x)
 all functions of `functions` are run concurrently
 
 `x` is anything
-
-`y` is either an array of anything or an object of anything
 
 `y` assumes the shape of `functions`
 
@@ -321,8 +317,6 @@ y = tryCatch(f, g)(x)
 ```
 `f` is a function
 
-`f` is tried with `x` as `f(x)`
-
 `g` is a function that expects two arguments
 
 in argument position 0, `g` expects a value potentially thrown by `f(x)`
@@ -366,6 +360,54 @@ tryCatch(
 ```
 
 ## ternary
+f(x) ? g(x) : h(x)
+```javascript
+y = ternary(f, g, h)(x)
+```
+`f` is a function
+
+`g` is a function
+
+`h` is a function
+
+`x` is anything
+
+`y` is `g(x)` if `f(x)` is truthy
+
+`y` is `h(x)` if `f(x)` is falsy
+
+if `f` is asynchronous, `y` is a Promise
+
+if `g` is asynchronous and `f(x)` is truthy, `y` is a Promise
+
+if `h` is asynchronous and `f(x)` is falsy, `y` is a Promise
+
+```javascript
+ternary(
+  x => x === 'a',
+  x => x + 'yo',
+  () => 'not a',
+)('a') // => 'ayo'
+
+ternary(
+  x => x === 'a',
+  x => x + 'yo',
+  () => 'not a',
+)('b') // => 'not a'
+
+ternary(
+  async x => x === 'a',
+  x => x + 'yo',
+  () => 'not a',
+)('a') // => Promise { 'ayo' }
+
+ternary(
+  x => x === 'a',
+  x => x + 'yo',
+  async () => 'not a',
+)('b') // => Promise { 'not a' }
+```
+
 ## map
 ## filter
 ## reduce
