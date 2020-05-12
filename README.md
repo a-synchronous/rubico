@@ -260,7 +260,7 @@ fork({
   a: x => x + 1,
   b: x => Promise.resolve(x + 2),
   c: async x => x + 3,
-})(0) // => Promise { ({ a: 1, b: 2, c: 3 }) }
+})(0) // => Promise { { a: 1, b: 2, c: 3 } }
 ```
 
 ## assign
@@ -287,7 +287,7 @@ assign({
 assign({
   hello: x => 'hello ' + x.name,
   goodbye: async x => 'goodbye ' + x.name,
-})({ name: 'George' }) // => Promise { ({ hello: 'hello George', goodbye: 'goodbye George' }) }
+})({ name: 'George' }) // => Promise { { hello: 'hello George', goodbye: 'goodbye George' } }
 
 assign({
   name: () => 'not George',
