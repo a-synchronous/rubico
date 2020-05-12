@@ -8,6 +8,7 @@
  * memory used by exported methods is properly garbage collected
  * no special types; use built-in types
  * no currying; write new functions
+ * avoid variadic functions; use lists
  */
 
 const isDefined = x => x !== undefined && x !== null

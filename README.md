@@ -175,6 +175,14 @@ pipe([
 ```
 
 # Documentation
+api and implementation design principles
+ * rubico is a module, not a utility library
+ * functional code should not care about async
+ * exported methods are time and space optimal
+ * memory used by exported methods is properly garbage collected
+ * no special types; use built-in types
+ * no currying; write new functions
+ * avoid variadic functions; use lists
 
 ## pipe
 chains together sync or async functions
