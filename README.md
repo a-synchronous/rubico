@@ -183,7 +183,8 @@ y = pipe(functions)(x)
 ```
 `functions` is an array of functions
 
-`x` can be anything; if `x` is a function, pipe chains `functions` in reverse
+`x` can be anything; if `x` is a function, pipe chains `functions` in reverse,
+see [transform](https://github.com/richytong/rubico#transform)
 
 `y` is the output of running `x` through the chain of `functions`
 
