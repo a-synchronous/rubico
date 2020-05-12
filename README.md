@@ -177,6 +177,16 @@ pipe([
 # Documentation
 
 ## pipe
+chains together sync or async functions
+```javascript
+pipe(functions)(x) // => y
+```
+`functions` is an array of functions
+
+`x` can be anything; if `x` is a function, pipe chains `functions` in reverse
+
+`y` is the output of running `x` through the chain of `functions`
+
 ## fork
 ## assign
 ## tap
