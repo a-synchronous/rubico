@@ -304,7 +304,7 @@ if `f` is synchronous, `y` is `x`
 
 if `f` is asynchronous, `y` is a Promise that resolves to `x`
 
-if `x` is a function, signature becomes
+if `x` is a function
 ```javascript
 y = reduce(tap(f)(x))(z)
 ```
@@ -430,6 +430,8 @@ ternary(
 ```
 
 ## map
+`y = map(f)(x)`
+
 ## filter
 ## reduce (WIP)
 for each `zi` of `z`, `reduce` provides `x` with two arguments `y` and `zi`

@@ -252,6 +252,55 @@ const mapArray = (fn, x) => {
   return isAsync ? Promise.all(y) : y
 }
 
+const mapIterableToArray = (fn, x) => {
+  let isAsync = false
+  const primer = []
+  for (const xi of x) {
+    const point = fn(xi)
+    if (isPromise(point)) isAsync = true
+    primer.push(point)
+  }
+  return isAsync ? Promise.all(primer) : primer
+}
+
+const mapString = (fn, x) => {
+  const y = mapIterableToArray(fn, x)
+  return isPromise(y) ? y.then(res => res.join('')) : y.join('')
+}
+
+const mapTypedArray = (fn, x) => {
+  const y = mapIterableToArray(fn, x)
+  return (isPromise(y)
+    ? y.then(res => new x.constructor(res))
+    : new x.constructor(y))
+}
+
+const mapSet = (fn, x) => {
+  const y = new Set(), promises = []
+  x.forEach(xi => {
+    const point = fn(xi)
+    if (isPromise(point)) {
+      promises.push(point.then(res => { y.add(res) }))
+    } else {
+      y.add(point)
+    }
+  })
+  return promises.length > 0 ? Promise.all(promises).then(() => y) : y
+}
+
+const mapMap = (fn, x) => {
+  const y = new Map(), promises = []
+  for (const entry of x) {
+    const point = fn(entry)
+    if (isPromise(point)) {
+      promises.push(point.then(res => { y.set(...res) }))
+    } else {
+      y.set(...point)
+    }
+  }
+  return promises.length > 0 ? Promise.all(promises).then(() => y) : y
+}
+
 const mapObject = (fn, x) => {
   const y = {}, promises = []
   for (const k in x) {
@@ -263,11 +312,6 @@ const mapObject = (fn, x) => {
     }
   }
   return promises.length > 0 ? Promise.all(promises).then(() => y) : y
-}
-
-const mapIterable = (fn, x) => {
-  for (const xi of x) {
-  }
 }
 
 const mapReducer = (fn, reducer) => (y, xi) => {
@@ -283,8 +327,13 @@ const map = fn => {
   }
   return x => {
     if (isArray(x)) return mapArray(fn, x)
+    if (isString(x)) return mapString(fn, x)
+    if (is(Set)(x)) return mapSet(fn, x)
+    if (is(Map)(x)) return mapMap(fn, x)
+    if (isNumberTypedArray(x)) return mapTypedArray(fn, x)
+    if (isBigIntTypedArray(x)) return mapTypedArray(fn, x)
     if (is(Object)(x)) return mapObject(fn, x)
-    // TODO(richytong): if (isIterable(x)) return mapIterable(fn, x)
+    // TODO(richytong): if (isAsyncIterable(x)) return mapAsyncIterable(fn, x)
     if (isFunction(x)) return mapReducer(fn, x)
     throw new TypeError('map(...)(x); x invalid')
   }
@@ -533,11 +582,13 @@ const transform = (x0, fn) => {
   throw new TypeError('transform(x, y); x invalid')
 }
 
-const isDelimitedBy = (delim, x) => x
+// TODO(richytong): style - use this wrapped (...) style for all multiline conditionals
+const isDelimitedBy = (delim, x) => (x
   && x[0] !== delim
   && x[x.length - 1] !== delim
-  && x.slice(1, x.length - 1).includes(delim)
+  && x.slice(1, x.length - 1).includes(delim))
 
+// TODO(richytong): support Map and Set; Set returns booleans
 const arrayGet = (path, x, defaultValue) => {
   let y = x
   for (let i = 0; i < path.length; i++) {
