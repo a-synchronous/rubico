@@ -187,6 +187,23 @@ pipe(functions)(x) // => y
 
 `y` is the output of running `x` through the chain of `functions`
 
+if all functions are sync, `y` is a synchronous value
+
+if any functions are async, `y` is an asynchronous value
+```javascript
+pipe([
+  x => x + 'y',
+  x => x + 'y',
+  x => x + 'lmao',
+])('a') // => 'ayylmao'
+
+pipe([
+  x => x + 'y',
+  x => x + 'y',
+  async x => x + 'lmao',
+])('a') // => Promise { 'ayylmao' }
+```
+
 ## fork
 ## assign
 ## tap
