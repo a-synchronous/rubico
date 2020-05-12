@@ -185,14 +185,18 @@ api and implementation design principles
  * avoid variadic functions; use lists
 
 ## pipe
-chains together sync or async functions
+chains sync or async functions from left to right
 ```javascript
 y = pipe(functions)(x)
 ```
 `functions` is an array of functions
 
-`x` can be anything; if `x` is a function, pipe chains `functions` in reverse,
+`x` is anything
+
+if `x` is a function, pipe chains `functions` from right to left,
 see [transform](https://github.com/richytong/rubico#transform)
+
+`y` is anything
 
 `y` is the output of running `x` through the chain of `functions`
 
@@ -214,6 +218,49 @@ pipe([
 ```
 
 ## fork
+parallelizes sync or async functions
+```javascript
+y = fork(functions)(x)
+```
+`functions` is either an array of functions or an object of functions
+
+`x` is anything
+
+`y` is either an array of anything or an object of anything
+
+`y` assumes the shape of `functions`
+
+`y` is the output from calling each function of `functions` in parallel with `x`
+
+if all functions of `functions` are synchronous, `y` is not a Promise
+
+if any functions of `functions` are asynchronous, `y` is a Promise
+```javascript
+fork([
+  x => 'o' + x + 'o',
+  x => 'u' + x + 'u',
+  x => 'x' + x + 'x',
+])('w') // => ['owo', 'uwu', 'xwx']
+
+fork([
+  x => 'o' + x + 'o',
+  x => Promise.resolve('u' + x + 'u'),
+  async x => 'x' + x + 'x',
+])('w') // => Promise { ['owo', 'uwu', 'xwx'] }
+
+fork({
+  a: x => x + 1,
+  b: x => x + 2,
+  c: x => x + 3,
+})(0) // => { a: 1, b: 2, c: 3 }
+
+fork({
+  a: x => x + 1,
+  b: x => Promise.resolve(x + 2),
+  c: async x => x + 3,
+})(0) // => Promise { ({ a: 1, b: 2, c: 3 }) }
+```
+
 ## assign
 ## tap
 ## tryCatch
