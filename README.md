@@ -193,15 +193,15 @@ if any functions of `functions` are asynchronous, `y` is a Promise
 ```javascript
 pipe([
   x => x + 'y',
-  x => x + 'y',
+  x => x + 'e',
   x => x + 'lmao',
-])('a') // => 'ayylmao'
+])('a') // => 'ayelmao'
 
 pipe([
   x => x + 'y',
-  x => Promise.resolve(x + 'y'),
+  x => Promise.resolve(x + 'e'),
   async x => x + 'lmao',
-])('a') // => Promise { 'ayylmao' }
+])('a') // => Promise { 'ayelmao' }
 ```
 
 ## fork
