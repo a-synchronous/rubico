@@ -21,10 +21,10 @@ const isIterable = x => isDefined(x[Symbol.iterator])
 
 const isAsyncIterable = x => isDefined(x[Symbol.asyncIterator])
 
-const isReadable = x => x
+const isReadable = x => (x
   && x.readable
   && typeof x._read === 'function'
-  && typeof x._readableState === 'object'
+  && typeof x._readableState === 'object')
 
 const isWritable = x => x && typeof x.write === 'function'
 
@@ -99,9 +99,9 @@ const pipe = fns => {
     throw new TypeError(`pipe(x); x[${i}] is not a function`)
   }
   if (fns.length === 0) return x => x
-  return (...args) => isFunction(args[0])
+  return (...args) => (isFunction(args[0])
     ? _chain(fns, args, -1)
-    : _chain(fns, args, 1)
+    : _chain(fns, args, 1))
 }
 
 const arrayFork = (fns, x) => {
@@ -154,9 +154,9 @@ const fork = fns => {
 const arrayForkSeries = (fns, x, i, y) => {
   if (i === fns.length) return y
   const point = fns[i](x)
-  return isPromise(point)
+  return (isPromise(point)
     ? point.then(res => arrayForkSeries(fns, x, i + 1, y.concat(res)))
-    : arrayForkSeries(fns, x, i + 1, y.concat(point))
+    : arrayForkSeries(fns, x, i + 1, y.concat(point)))
 }
 
 fork.series = fns => {
@@ -184,9 +184,9 @@ const assign = fns => {
       throw new TypeError('assign(...)(x); x is not an object')
     }
     const assignments = objectFork(fns, x)
-    return isPromise(assignments)
+    return (isPromise(assignments)
       ? assignments.then(res => Object.assign({}, x, res))
-      : Object.assign({}, x, assignments)
+      : Object.assign({}, x, assignments))
   }
 }
 
@@ -316,9 +316,9 @@ const mapObject = (fn, x) => {
 
 const mapReducer = (fn, reducer) => (y, xi) => {
   const point = fn(xi)
-  return isPromise(point)
+  return (isPromise(point)
     ? point.then(res => reducer(y, res))
-    : reducer(y, point)
+    : reducer(y, point))
 }
 
 const map = fn => {
@@ -342,9 +342,9 @@ const map = fn => {
 const mapSeriesArray = (fn, x, i, y) => {
   if (i === x.length) return y
   const point = fn(x[i])
-  return isPromise(point)
+  return (isPromise(point)
     ? point.then(res => mapSeriesArray(fn, x, i + 1, y.concat(res)))
-    : mapSeriesArray(fn, x, i + 1, y.concat(point))
+    : mapSeriesArray(fn, x, i + 1, y.concat(point)))
 }
 
 map.series = fn => {
@@ -370,9 +370,9 @@ const filterArray = (fn, x) => {
     if (isPromise(ok)) isAsync = true
     return ok
   })
-  return isAsync
+  return (isAsync
     ? Promise.all(okIndex).then(res => x.filter((_, i) => res[i]))
-    : x.filter((_, i) => okIndex[i])
+    : x.filter((_, i) => okIndex[i]))
 }
 
 const filterObject = (fn, x) => {
@@ -582,7 +582,6 @@ const transform = (x0, fn) => {
   throw new TypeError('transform(x, y); x invalid')
 }
 
-// TODO(richytong): style - use this wrapped (...) style for all multiline conditionals
 const isDelimitedBy = (delim, x) => (x
   && x[0] !== delim
   && x[x.length - 1] !== delim
@@ -601,9 +600,9 @@ const arrayGet = (path, x, defaultValue) => {
 const get = (path, defaultValue) => {
   if (isArray(path)) return x => arrayGet(path, x, defaultValue)
   if (isNumber(path)) return x => arrayGet([path], x, defaultValue)
-  if (isString(path)) return isDelimitedBy('.', path)
+  if (isString(path)) return (isDelimitedBy('.', path)
     ? x => arrayGet(path.split('.'), x, defaultValue)
-    : x => arrayGet([path], x, defaultValue)
+    : x => arrayGet([path], x, defaultValue))
   throw new TypeError('get(x, y); x invalid')
 }
 
@@ -642,13 +641,13 @@ const anyIterable = (fn, x) => {
   for (const xi of x) {
     const point = fn(xi)
     if (isPromise(point)) promises.push(point)
-    else if (point) return promises.length > 0
+    else if (point) return (promises.length > 0
       ? Promise.all(promises).then(() => true)
-      : true
+      : true)
   }
-  return promises.length > 0
+  return (promises.length > 0
     ? Promise.all(promises).then(res => res.some(x => x))
-    : false
+    : false)
 }
 
 const anyObject = (fn, x) => anyIterable(
@@ -672,13 +671,13 @@ const allIterable = (fn, x) => {
   for (const xi of x) {
     const point = fn(xi)
     if (isPromise(point)) promises.push(point)
-    else if (!point) return promises.length > 0
+    else if (!point) return (promises.length > 0
       ? Promise.all(promises).then(() => false)
-      : false
+      : false)
   }
-  return promises.length > 0
+  return (promises.length > 0
     ? Promise.all(promises).then(res => res.every(x => x))
-    : true
+    : true)
 }
 
 const allObject = (fn, x) => allIterable(
@@ -702,13 +701,13 @@ const arrayAnd = (fns, x) => {
   for (let i = 0; i < fns.length; i++) {
     const point = fns[i](x)
     if (isPromise(point)) promises.push(point)
-    else if (!point) return promises.length > 0
+    else if (!point) return (promises.length > 0
       ? Promise.all(promises).then(() => false)
-      : false
+      : false)
   }
-  return promises.length > 0
+  return (promises.length > 0
     ? Promise.all(promises).then(res => res.every(x => x))
-    : true
+    : true)
 }
 
 const and = fns => {
@@ -730,13 +729,13 @@ const arrayOr = (fns, x) => {
   for (let i = 0; i < fns.length; i++) {
     const point = fns[i](x)
     if (isPromise(point)) promises.push(point)
-    else if (point) return promises.length > 0
+    else if (point) return (promises.length > 0
       ? Promise.all(promises).then(() => true)
-      : true
+      : true)
   }
-  return promises.length > 0
+  return (promises.length > 0
     ? Promise.all(promises).then(res => res.some(x => x))
-    : false
+    : false)
 }
 
 const or = fns => {
