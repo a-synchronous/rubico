@@ -199,7 +199,7 @@ pipe([
 
 pipe([
   x => x + 'y',
-  x => x + 'y',
+  x => Promise.resolve(x + 'y'),
   async x => x + 'lmao',
 ])('a') // => Promise { 'ayylmao' }
 ```
