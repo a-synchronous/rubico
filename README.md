@@ -296,14 +296,27 @@ calls a sync or async function with input, returning input
 ```javascript
 y = tap(f)(x)
 ```
-`f` is a function
-
 `x` is anything
+
+`f` is a function that expects one argument `x`
 
 if `f` is synchronous, `y` is `x`
 
 if `f` is asynchronous, `y` is a Promise that resolves to `x`
 
+if `x` is a function, signature becomes
+```javascript
+y = reduce(tap(f)(x))(z)
+```
+`reduce` is [reduce](https://github.com/richytong/rubico#reduce),
+
+`z` is an iterable, asyncIterable, or object
+
+`zi` is an element of `z`
+
+`f` is a function that expects one argument `zi`
+
+`y` is `reduce(x)(z)`
 ```javascript
 tap(
   console.log, // > 'hey'
@@ -312,6 +325,13 @@ tap(
 tap(
   async x => console.log(x), // > 'hey'
 )('hey') // => Promise { 'hey' }
+
+reduce(
+  tap(
+    console.log, // > 1 2 3 4 5
+  )((y, xi) => y + xi),
+  0,
+)([1, 2, 3, 4, 5]) // => 15
 ```
 
 ## tryCatch
@@ -319,28 +339,25 @@ tries a sync or async function with input, catches with another sync or async fu
 ```javascript
 y = tryCatch(f, g)(x)
 ```
-`f` is a function
+`f` is a function that expects one argument `x`
 
-`g` is a function that expects two arguments
+`g` is a function that expects two arguments `err` and `x`
 
-in argument position 0, `g` expects a value potentially thrown by `f(x)`
-
-in argument position 1, `g` expects `x`
+`err` is a value potentially thrown by `f(x)`
 
 `x` is anything
 
 if `f(x)` did not throw, `y` is `f(x)`
 
-if `f(x)` threw, `y` is `g(err, x)`; `err` is the thrown value
+if `f(x)` threw, `y` is `g(err, x)`
 
 if `f` and `g` are synchronous, `y` is not a Promise
 
 if `f` is asynchronous, `y` is a Promise
 
-if `g` is asynchronous and `f(x)` did not throw, `y` is not a Promise
+if `f` is synchronous, `g` is asynchronous, and `f(x)` did not throw, `y` is not a Promise
 
-if `g` is asynchronous and `f(x)` threw, `y` is a Promise
-
+if `f` is synchronous, `g` is asynchronous, and `f(x)` threw, `y` is a Promise
 ```javascript
 tryCatch(
   x => x + 'yo',
@@ -414,7 +431,17 @@ ternary(
 
 ## map
 ## filter
-## reduce
+## reduce (WIP)
+for each `zi` of `z`, `reduce` provides `x` with two arguments `y` and `zi`
+
+`x(y, zi)` returns the `y` used with the next `zi`
+
+`reduce` provides `x` with two arguments `y` and `zi`
+
+`x` specifies the relationship between `y` and `zi`
+
+if `x0` is provided, `y` is initially `x0`, else `y` assumes the first `zi` of `z`
+
 ## transform
 ## get
 ## pick
