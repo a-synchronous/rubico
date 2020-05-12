@@ -179,7 +179,7 @@ pipe([
 ## pipe
 chains together sync or async functions
 ```javascript
-pipe(functions)(x) // => y
+y = pipe(functions)(x)
 ```
 `functions` is an array of functions
 
@@ -187,9 +187,9 @@ pipe(functions)(x) // => y
 
 `y` is the output of running `x` through the chain of `functions`
 
-if all functions are sync, `y` is a synchronous value
+if all functions of `functions` are synchronous, `y` is not a Promise
 
-if any functions are async, `y` is an asynchronous value
+if any functions of `functions` are asynchronous, `y` is a Promise
 ```javascript
 pipe([
   x => x + 'y',
