@@ -224,13 +224,15 @@ y = fork(functions)(x)
 ```
 `functions` is either an array of functions or an object of functions
 
+all functions of `functions` are run in parallel
+
 `x` is anything
 
 `y` is either an array of anything or an object of anything
 
 `y` assumes the shape of `functions`
 
-`y` is the output from calling each function of `functions` in parallel with `x`
+`y` is the output from calling each function of `functions` with `x`
 
 if all functions of `functions` are synchronous, `y` is not a Promise
 
