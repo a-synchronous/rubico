@@ -292,7 +292,7 @@ assign({
 ```
 
 ## tap
-calls a function with input, returning input
+calls a sync or async function with input, returning input
 ```javascript
 y = tap(fn)(x)
 ```
@@ -308,9 +308,63 @@ if `fn` is asynchronous, `y` is a Promise that resolves to `x`
 tap(
   console.log, // > 'hey'
 )('hey') // => 'hey'
+
+tap(
+  async x => console.log(x), // > 'hey'
+)('hey') // => Promise { 'hey' }
 ```
 
 ## tryCatch
+tries a sync or async function with input, catches with another sync or async function
+```javascript
+y = tryCatch(fnA, fnB)(x)
+```
+`fnA` is a function
+
+`fnA` is tried with `x` as `fnA(x)`
+
+`fnB` is a function that expects two arguments
+
+in argument position 0, `fnB` expects a value potentially thrown by `fnA(x)`
+
+in argument position 1, `fnB` expects `x`
+
+`x` is anything
+
+if `fnA(x)` did not throw, `y` is `fnA(x)`
+
+if `fnA(x)` threw, `y` is `fnB(err, x)`; `err` is the thrown value
+
+if `fnA` and `fnB` are synchronous, `y` is not a Promise
+
+if `fnA` is asynchronous, `y` is a Promise
+
+if `fnB` is asynchronous and `fnA(x)` did not throw, `y` is not a Promise
+
+if `fnB` is asynchronous and `fnA(x)` threw, `y` is a Promise
+
+```javascript
+tryCatch(
+  x => x + 'yo',
+  (e, x) => x + e.message,
+)('a') // => 'ayo'
+
+tryCatch(
+  x => { throw new Error(x) },
+  (e, x) => x + e.message,
+)('a') // => 'aa'
+
+tryCatch(
+  async x => x + 'yo',
+  (e, x) => x + e.message,
+)('a') // => Promise { 'ayo' }
+
+tryCatch(
+  x => Promise.reject(new Error(x)),
+  (e, x) => x + e.message,
+)('a') // => Promise { 'aa' }
+```
+
 ## ternary
 ## map
 ## filter
