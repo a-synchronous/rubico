@@ -300,8 +300,6 @@ y = tap(fn)(x)
 
 `x` is anything
 
-`y` is `x`
-
 if `fn` is synchronous, `y` is `x`
 
 if `fn` is asynchronous, `y` is a Promise that resolves to `x`
