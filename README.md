@@ -288,6 +288,22 @@ assign({
 ```
 
 ## tap
+calls a function with input, returning input
+```javascript
+y = tap(fn)(x)
+```
+`fn` is a function
+
+`x` is anything
+
+`y` is `x`
+
+```javascript
+tap(
+  console.log, // > 'hey'
+)('hey') // => 'hey'
+```
+
 ## tryCatch
 ## ternary
 ## map
