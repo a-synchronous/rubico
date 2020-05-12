@@ -112,7 +112,7 @@ rubico works in server and browser JavaScript environments
 
 # Installation
 with deno;
-```javaascript
+```javascript
 import rubico from 'https://deno.land/x/rubico/mod.js'
 ```
 with npm; `npm i rubico`
