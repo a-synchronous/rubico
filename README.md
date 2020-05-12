@@ -80,8 +80,6 @@ programs written with rubico follow a [point-free style](https://en.wikipedia.or
 rubico works in server and browser JavaScript environments
 
 # Interface
-rubico exports 23 functions
-
 [pipe](https://github.com/richytong/rubico#pipe),
 [fork](https://github.com/richytong/rubico#fork),
 [assign](https://github.com/richytong/rubico#assign)
@@ -177,14 +175,7 @@ pipe([
 ```
 
 # Documentation
-api and implementation design principles
- * rubico is a module, not a utility library
- * functional code should not care about async
- * exported methods are time and space optimal
- * memory used by exported methods is properly garbage collected
- * no special types; use built-in types
- * no currying; write new functions
- * avoid variadic functions; use lists
+rubico exports 23 functions
 
 ## pipe
 chains sync or async functions from left to right
