@@ -881,4 +881,4 @@ const r = {
   lte,
 }
 
-module.exports = r
+export default r
