@@ -466,11 +466,10 @@ if `x0` is provided, `y` is initially `x0`, else `y` assumes the first `zi` of `
 ```javascript
 import { serve } from "https://deno.land/std/http/server.ts";
 import { map } from "https://deno.land/x/rubico/mod.ts";
-const s = serve({ port: 8000 });
 console.log("http://localhost:8000/");
 map(req => {
   req.respond({ body: "Hello World\n" });
-})(s);
+})(serve({ port: 8000 }));
 ```
 
 ### A larger webserver
