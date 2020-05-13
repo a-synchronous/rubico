@@ -256,6 +256,10 @@ const mapAsyncIterable = (fn, x) => (async function*() {
   for await (const xi of x) yield fn(xi)
 })()
 
+const mapIterable = (fn, x) => (function*() {
+  for (const xi of x) yield fn(xi)
+})()
+
 // x.map: https://v8.dev/blog/elements-kinds#avoid-polymorphism
 const mapArray = (fn, x) => {
   let isAsync = false
@@ -348,6 +352,7 @@ const map = fn => {
     if (is(Map)(x)) return mapMap(fn, x)
     if (isNumberTypedArray(x)) return mapTypedArray(fn, x)
     if (isBigIntTypedArray(x)) return mapTypedArray(fn, x)
+    if (isIterable(x)) return mapIterable(fn, x) // for generators or custom iterators
     if (is(Object)(x)) return mapObject(fn, x)
     if (isFunction(x)) return mapReducer(fn, x)
     throw new TypeError('map(...)(x); x invalid')

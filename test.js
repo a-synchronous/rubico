@@ -71,8 +71,22 @@ const consumeReadStreamPull = s => new Promise((resolve, reject) => {
   s.on('error', err => reject(err))
 })
 
+const makeNumbers = function*() {
+  for (let i = 0; i < 5; i++) yield i + 1
+}
+
 const makeAsyncNumbers = async function*() {
   for (let i = 0; i < 5; i++) yield i + 1
+}
+
+const iteratorToArray = x => {
+  let isAsync = false
+  const y = []
+  for (const xi of x) {
+    if (xi instanceof Promise) isAsync = true
+    y.push(xi)
+  }
+  return isAsync ? Promise.all(y) : y
 }
 
 const asyncIteratorToArray = async x => {
@@ -538,6 +552,28 @@ describe('rubico', () => {
           r.map(x => x + 1)(makeAsyncNumbers()),
         ),
         [2, 3, 4, 5, 6]
+      )
+    })
+    it('lazily applies an async function in parallel to all values of a sync non built-in iterable', async () => {
+      aok(!(r.map(async x => x + 1)(makeNumbers()) instanceof Promise))
+      aok(r.map(async x => x + 1)(makeNumbers())[Symbol.iterator])
+      aok(iteratorToArray(
+        r.map(async x => x + 1)(makeNumbers()),
+      ) instanceof Promise)
+      ade(
+        await iteratorToArray(
+          r.map(async x => x + 1)(makeNumbers()),
+        ),
+        [2, 3, 4, 5, 6],
+      )
+    })
+    it('lazily applies a sync function in parallel to all values of a sync non built-in iterable', async () => {
+      aok(r.map(x => x + 1)(makeNumbers())[Symbol.iterator])
+      ade(
+        iteratorToArray(
+          r.map(x => x + 1)(makeNumbers()),
+        ),
+        [2, 3, 4, 5, 6],
       )
     })
     it('applies an async function in parallel to all elements of an array', async () => {
