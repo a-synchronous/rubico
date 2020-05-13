@@ -554,7 +554,7 @@ describe('rubico', () => {
         [2, 3, 4, 5, 6]
       )
     })
-    it('lazily applies an async function in parallel to all values of a sync non built-in iterable', async () => {
+    it('lazily applies an async function in parallel to all values of a sync generator iterable', async () => {
       aok(!(r.map(async x => x + 1)(makeNumbers()) instanceof Promise))
       aok(r.map(async x => x + 1)(makeNumbers())[Symbol.iterator])
       aok(iteratorToArray(
@@ -567,7 +567,7 @@ describe('rubico', () => {
         [2, 3, 4, 5, 6],
       )
     })
-    it('lazily applies a sync function in parallel to all values of a sync non built-in iterable', async () => {
+    it('lazily applies a sync function in parallel to all values of a sync generator iterable', async () => {
       aok(r.map(x => x + 1)(makeNumbers())[Symbol.iterator])
       ade(
         iteratorToArray(
@@ -785,6 +785,27 @@ describe('rubico', () => {
       ade(
         await asyncIteratorToArray(
           r.filter(x => x <= 3)(makeAsyncNumbers()),
+        ),
+        [1, 2, 3],
+      )
+    })
+    it('throws TypeError on filter(asyncFunction)(sync generator iterable)', async () => {
+      assert.throws(
+        () => iteratorToArray(
+          r.filter(async x => x <= 3)(makeNumbers()),
+        ),
+        new TypeError([
+          'filter(f)(x); xi is an element of x; ',
+          'if x if the resulting iterator of a sync generator, ',
+          'f(xi) cannot return a Promise',
+        ].join('')),
+      )
+    })
+    it('lazily filters elements of a sync generator iterable based on a sync predicate', async () => {
+      aok(r.map(x => x + 1)(makeNumbers())[Symbol.iterator])
+      ade(
+        iteratorToArray(
+          r.filter(x => x <= 3)(makeNumbers()),
         ),
         [1, 2, 3],
       )

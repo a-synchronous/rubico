@@ -387,6 +387,20 @@ const filterAsyncIterable = (fn, x) => (async function*() {
   for await (const xi of x) { if (await fn(xi)) yield xi }
 })()
 
+const filterIterable = (fn, x) => (function*() {
+  for (const xi of x) {
+    const ok = fn(xi)
+    if (isPromise(ok)) {
+      throw new TypeError([
+        'filter(f)(x); xi is an element of x; ',
+        'if x if the resulting iterator of a sync generator, ',
+        'f(xi) cannot return a Promise',
+      ].join(''))
+    }
+    if (ok) yield xi
+  }
+})()
+
 const createFilterIndex = (fn, x) => {
   let isAsync = false
   const filterIndex = []
@@ -483,6 +497,7 @@ const filter = fn => {
     if (is(Map)(x)) return filterMap(fn, x)
     if (isNumberTypedArray(x)) return filterTypedArray(fn, x)
     if (isBigIntTypedArray(x)) return filterTypedArray(fn, x)
+    if (isIterable(x)) return filterIterable(fn, x) // for generators or custom iterators
     if (is(Object)(x)) return filterObject(fn, x)
     if (isFunction(x)) return filterReducer(fn, x)
     throw new TypeError('filter(...)(x); x invalid')
