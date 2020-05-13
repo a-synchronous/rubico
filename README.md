@@ -475,29 +475,63 @@ transform(null, map(req => {
 }))(s);
 ```
 
-### A deno webserver with middleware
+### A server with middleware
 ```javascript
 import { serve } from 'https://deno.land/std/http/server.ts'
-import { pipe, map, transform } from 'https://deno.land/x/rubico/mod.ts'
+import {
+  pipe, fork, assign,
+  tap, tryCatch, switchCase,
+  map, filter, reduce, transform,
+  get, pick, omit,
+  any, all,
+  and, or, not,
+  eq, gt, lt, gte, lte,
+} from 'https://deno.land/x/rubico/mod.ts'
 
-const s = serve({ port: 8001 })
-console.log('http://localhost:8001/')
+const join = delim => x => x.join(delim)
 
 const addServerTime = req => {
-  req.serverTime = Date.now()
+  req.serverTime = (new Date()).toJSON()
   return req
 }
 
-const formatTimestamp = ts => (new Date(ts)).toLocaleString()
+const trace = tap(console.log)
 
-const respondWithServerTime = req => {
-  req.respond({ body: `The server time is ${formatTimestamp(req.serverTime)}` })
+const traceRequest = tap(pipe([
+  fork([
+    pipe([get('serverTime'), x => '[' + x + ']']),
+    get('method'),
+    get('url'),
+  ]),
+  join(' '),
+  trace,
+]))
+
+const respondWithHelloWorld = req => {
+  req.respond({ body: 'Hello World\n' })
 }
 
-transform(null, map(pipe([
-  addServerTime,
-  respondWith('Hello World\n'),
-])))(s)
-```
+const respondWithServerTime = req => {
+  req.respond({ body: `The server time is ${req.serverTime}` })
+}
 
-### A larger program
+const respondWithNotFound = req => {
+  req.respond({ body: 'Not Found\n' })
+}
+
+const route = switchCase([
+  eq('/', get('url')), respondWithHelloWorld,
+  eq('/time', get('url')), respondWithServerTime,
+  respondWithNotFound,
+])
+
+const onRequest = pipe([
+  addServerTime,
+  traceRequest,
+  route,
+])
+
+const s = serve({ port: 8001 })
+console.log('http://localhost:8001/')
+transform(null, map(onRequest))(s)
+```
