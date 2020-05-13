@@ -683,25 +683,25 @@ describe('rubico', () => {
       ase(await asyncArrayReduce(addHeyReducer)([1, 2, 3]), '12hey3hey')
       ase(await asyncArrayReduce(addHeyReducer, '')([1, 2, 3]), '1hey2hey3hey')
     })
-    xit('throws a TypeError if passed a non function', async () => {
+    it('throws a TypeError on map(nonFunction)', async () => {
       assert.throws(
         () => r.map({}),
         new TypeError('map(x); x is not a function'),
       )
     })
-    xit('throws a TypeError if input is not an array or object', async () => {
+    it('throws a TypeError on map(...)(null)', async () => {
       assert.throws(
-        () => r.map(hi)('yo'),
+        () => r.map(hi)(null),
         new TypeError('map(...)(x); x invalid')
       )
     })
-    xit('handles sync errors good', async () => {
+    it('handles sync errors good', async () => {
       assert.throws(
         () => r.map(x => { throw new Error(`throwing ${x}`) })(['yo']),
         new Error('throwing yo')
       )
     })
-    xit('handles async errors good', async () => {
+    it('handles async errors good', async () => {
       assert.rejects(
         () => r.map(async x => { throw new Error(`throwing ${x}`) })(['yo']),
         new Error('throwing yo'),

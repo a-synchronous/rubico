@@ -17,9 +17,9 @@ const isUndefined = x => x === undefined
 
 const isNull = x => x === null
 
-const isIterable = x => isDefined(x[Symbol.iterator])
+const isIterable = x => isDefined(x) && isDefined(x[Symbol.iterator])
 
-const isAsyncIterable = x => isDefined(x[Symbol.asyncIterator])
+const isAsyncIterable = x => isDefined(x) && isDefined(x[Symbol.asyncIterator])
 
 const isReadable = x => (x
   && x.readable
