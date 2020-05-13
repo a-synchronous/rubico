@@ -323,9 +323,7 @@ y = reduce(tap(f)(x))(z)
 
 `z` is an iterable, asyncIterable, or object
 
-`zi` is an element of `z`
-
-`f` is a function that expects one argument `zi`
+`f` is a function that expects one argument `zi`, an element of `z`
 
 `y` is equivalent in value to `reduce(x)(z)`
 ```javascript
@@ -442,11 +440,11 @@ y = map(f)(x)
 `x` is an array, a string, a set, a map, a typed array, an object,<br>
     an async iterator, a generated iterator, or a function
 
-`f` is a function
+`f` is a function that expects one argument `xi`, an element of `x`
 
 `y` is `x` with `fn` applied to each element
 
-if `x` is an async iterator, `y` is not a Promise
+if `x` is an async iterator, `y` is a generated async iterator
 
 if `fn` is synchronous, `y` is not a Promise
 
@@ -460,9 +458,7 @@ y = reduce(map(f)(x))(z)
 
 `z` is an iterable, asyncIterable, or object
 
-`zi` is an element of `z`
-
-`f` is a function that expects one argument `zi`
+`f` is a function that expects one argument `zi`, an element of `z`
 
 `y` is equivalent in value to `reduce(x)(map(f)(z))`
 ```javascript
@@ -511,13 +507,93 @@ const numbersGeneratedIterator = (function*() {
 map(
   x => x + 1,
 )(numbersGeneratedIterator) // => generated iterator that yields 2 3 4 5 6
+
+reduce(
+  map(
+    async xi => xi + 1,
+  )((y, xi) => y + xi),
+  0,
+)([1, 2, 3, 4, 5]) // => Promise { 20 }
 ```
 ## filter
 filters elements out of a collection `x` based on predicate `f`
 ```javascript
 y = filter(f)(x)
 ```
+`x` is an array, a string, a set, a map, a typed array, an object,<br>
+    an async iterator, a generated iterator, or a function
 
+`f` is a function that expects one argument `xi`, an element of `x`
+
+`y` is `x` with elements `xi` where `fn(xi)` is truthy
+
+if `x` is an async iterator, `y` is a generated async iterator
+
+if `fn` is synchronous, `y` is not a Promise
+
+if `fn` is asynchronous and `x` is not an async iterator, `y` is a Promise
+
+if `x` is a function, truthy testing is done as `f(zi)` on elements `zi` of `z`
+```javascript
+y = reduce(filter(f)(x))(z)
+```
+`reduce` is [reduce](https://github.com/richytong/rubico#reduce),
+
+`z` is an iterable, asyncIterable, or object
+
+`f` is a function that expects one argument `zi`, an element of `z`
+
+`y` is equivalent in value to `reduce(x)(filter(f)(z))`
+```javascript
+filter(
+  x => x <= 3,
+)([1, 2, 3, 4, 5]) // => [1, 2, 3]
+
+filter(
+  async x => x !== 'y',
+)('yoyoyo') // => Promise { 'ooo' }
+
+const abcSet = new Set(['a', 'b', 'c'])
+
+filter(
+  x => !abcSet.has(x),
+)(new Set(['a', 'b', 'c', 'd'])) // => Set { 'd' }
+
+filter(
+  async ([key, value]) => key === value,
+)(new Map([[0, 1], [1, 1], [2, 1]])) // => Promise { Map { 1 => 1 } }
+
+filter(
+  x => x <= 3n,
+)(new BigInt64Array([1n, 2n, 3n, 4n, 5n])) // => BigInt64Array [1n, 2n, 3n]
+
+filter(
+  async x => x === 1,
+)({ a: 1, b: 2, c: 3 }) // => Promise { { a: 1 } }
+
+const asyncNumbersGeneratedIterator = (async function*() {
+  for (let i = 0; i < 5; i++) { yield i + 1 }
+})() // generated asyncIterator that yields 1 2 3 4 5
+
+filter(
+  x => x <= 3,
+)(asyncNumbersGeneratedIterator) // => generated asyncIterator that yields 1 2 3
+
+const numbersGeneratedIterator = (function*() {
+  for (let i = 0; i < 5; i++) { yield i + 1 }
+})() // generated iterator that yields 1 2 3 4 5
+
+filter(
+  x => x <= 3,
+)(numbersGeneratedIterator) // => generated iterator that yields 1 2 3
+
+reduce(
+  filter(
+    async xi => xi <= 3,
+  )((y, xi) => y + xi),
+  0,
+)([1, 2, 3, 4, 5]) // => Promise { 6 }
+```
 ## reduce
 (wip)
 for each `zi` of `z`, `reduce` provides `x` with two arguments `y` and `zi`
