@@ -79,41 +79,18 @@ programs written with rubico follow a [point-free style](https://en.wikipedia.or
 
 rubico works in server and browser JavaScript environments
 
-# Interface
-[pipe](https://github.com/richytong/rubico#pipe),
-[fork](https://github.com/richytong/rubico#fork),
-[assign](https://github.com/richytong/rubico#assign)
-
-[tap](https://github.com/richytong/rubico#tap),
-[tryCatch](https://github.com/richytong/rubico#tryCatch),
-[switchCase](https://github.com/richytong/rubico#switchCase)
-
-[map](https://github.com/richytong/rubico#map),
-[filter](https://github.com/richytong/rubico#filter),
-[reduce](https://github.com/richytong/rubico#reduce),
-[transform](https://github.com/richytong/rubico#transform)
-
-[get](https://github.com/richytong/rubico#get),
-[pick](https://github.com/richytong/rubico#pick),
-[omit](https://github.com/richytong/rubico#omit)
-
-[any](https://github.com/richytong/rubico#any),
-[all](https://github.com/richytong/rubico#all)
-
-[and](https://github.com/richytong/rubico#and),
-[or](https://github.com/richytong/rubico#or),
-[not](https://github.com/richytong/rubico#not)
-
-[eq](https://github.com/richytong/rubico#eq),
-[gt](https://github.com/richytong/rubico#gt),
-[lt](https://github.com/richytong/rubico#lt),
-[gte](https://github.com/richytong/rubico#gte),
-[lte](https://github.com/richytong/rubico#lte)
-
 # Installation
 with deno;
 ```javascript
-import rubico from 'https://deno.land/x/rubico/mod.ts'
+import {
+  pipe, fork, assign,
+  tap, tryCatch, switchCase,
+  map, filter, reduce, transform,
+  get, pick, omit,
+  any, all,
+  and, or, not,
+  eq, gt, lt, gte, lte,
+} from 'https://deno.land/x/rubico/mod.ts'
 ```
 with npm; `npm i rubico`
 
@@ -180,6 +157,36 @@ pipe([
 
 # Documentation
 rubico exports 23 functions
+
+[pipe](https://github.com/richytong/rubico#pipe),
+[fork](https://github.com/richytong/rubico#fork),
+[assign](https://github.com/richytong/rubico#assign)
+
+[tap](https://github.com/richytong/rubico#tap),
+[tryCatch](https://github.com/richytong/rubico#tryCatch),
+[switchCase](https://github.com/richytong/rubico#switchCase)
+
+[map](https://github.com/richytong/rubico#map),
+[filter](https://github.com/richytong/rubico#filter),
+[reduce](https://github.com/richytong/rubico#reduce),
+[transform](https://github.com/richytong/rubico#transform)
+
+[get](https://github.com/richytong/rubico#get),
+[pick](https://github.com/richytong/rubico#pick),
+[omit](https://github.com/richytong/rubico#omit)
+
+[any](https://github.com/richytong/rubico#any),
+[all](https://github.com/richytong/rubico#all)
+
+[and](https://github.com/richytong/rubico#and),
+[or](https://github.com/richytong/rubico#or),
+[not](https://github.com/richytong/rubico#not)
+
+[eq](https://github.com/richytong/rubico#eq),
+[gt](https://github.com/richytong/rubico#gt),
+[lt](https://github.com/richytong/rubico#lt),
+[gte](https://github.com/richytong/rubico#gte),
+[lte](https://github.com/richytong/rubico#lte)
 
 ## pipe
 chains sync or async functions from left to right
