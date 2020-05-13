@@ -415,34 +415,23 @@ if any functions of `evaluated` are asynchronous, `y` is a Promise
 
 ```javascript
 switchCase([
-  x => x === 'a', x => x + 'yo',
-  x => x === 'l', x => x + 'mao',
-  () => '???',
-])('a') // => 'ayo'
+  x => x > 0, x => `${x} is greather than zero`,
+  x => `${x} is not greater than zero`,
+])(1) // => '1 is greater than zero'
 
 switchCase([
-  x => x === 'a', x => x + 'yo',
-  x => x === 'l', x => x + 'mao',
-  () => '???',
-])('b') // => '???'
+  x => x === 1, x => `${x} is one`,
+  x => x === 2, x => `${x} is two`,
+  x => x === 3, x => `${x} is three`,
+  async () => 'not one, two, nor three',
+])(1) // => '1 is one'
 
 switchCase([
-  async x => x === 'a', x => x + 'yo',
-  x => x === 'l', x => x + 'mao',
-  () => '???',
-])('a') // => Promise { 'ayo' }
-
-switchCase([
-  async x => x === 'a', x => x + 'yo',
-  x => x === 'l', x => x + 'mao',
-  () => '???',
-])('b') // => Promise { '???' }
-
-switchCase([
-  x => x === 'a', x => x + 'yo',
-  async x => x === 'l', async x => x + 'mao',
-  async () => '???',
-])('a') // => 'ayo'
+  async x => x === 1, () => 'one',
+  x => x === 2, () => 'two',
+  x => x === 3, () => 'three',
+  x => `${x} is not one, two, nor three`,
+])(5) // => Promise { '5 is not one, two, nor three' }
 ```
 
 ## map
