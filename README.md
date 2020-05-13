@@ -391,11 +391,10 @@ y = switchCase(functions)(x)
 
 given predicate functions if1, if2, ..., ifN;<br>
 corresponding functions do1, do2, ..., doN;<br>
-and default function doDefault;
-
+and default function doDefault;<br>
 `functions` is the array of functions [if1, do1, if2, do2, ..., ifN, doN, doDefault]
 
-switchCase evaluates supplied functions as in series as `evaluated` and breaks early on a truthy predicate
+switchCase evaluates supplied functions in series as `evaluated` and breaks early on a truthy predicate
 
 if all functions of `evaluated` are synchronous, `y` is not a Promise
 
