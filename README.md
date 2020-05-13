@@ -655,7 +655,7 @@ const asyncNumbersGeneratedIterator = (async function*() {
 })() // generated async iterator that yields 1 2 3 4 5
 
 reduce(
-  (y, xi) => y.concat(xi),
+  (y, xi) => y.concat([xi]),
   [],
 )(asyncNumbersGeneratedIterator) // => Promise { [1, 2, 3, 4, 5] }
 
