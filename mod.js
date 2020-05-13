@@ -855,30 +855,22 @@ const lte = fns => {
   return x => operator((a, b) => a <= b, fns, x)
 }
 
-const r = {
-  pipe,
-  fork,
-  assign,
-  tap,
-  tryCatch,
-  ternary,
-  map,
-  filter,
-  reduce,
-  transform,
-  get,
-  pick,
-  omit,
-  any,
-  all,
-  and,
-  or,
-  not,
-  eq,
-  gt,
-  lt,
-  gte,
-  lte,
+export {
+  pipe, fork, assign,
+  tap, tryCatch, ternary,
+  map, filter, reduce, transform,
+  get, pick, omit,
+  any, all,
+  and, or, not,
+  eq, gt, lt, gte, lte,
 }
 
-export default r
+export default {
+  pipe, fork, assign,
+  tap, tryCatch, ternary,
+  map, filter, reduce, transform,
+  get, pick, omit,
+  any, all,
+  and, or, not,
+  eq, gt, lt, gte, lte,
+}
