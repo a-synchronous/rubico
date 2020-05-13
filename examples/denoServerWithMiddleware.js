@@ -29,7 +29,7 @@ const respondWithHelloWorld = req => {
 }
 
 const respondWithServerTime = req => {
-  req.respond({ body: `The server time is ${req.serverTime}` })
+  req.respond({ body: `The server time is ${req.serverTime}\n` })
 }
 
 const respondWithNotFound = req => {
