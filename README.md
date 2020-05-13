@@ -3,6 +3,14 @@
 
 a functional promise library
 
+[Installation](https://github.com/richytong/rubico#installation)
+
+[Examples](https://github.com/richytong/rubico#examples)
+
+[Documentation](https://github.com/richytong/rubico#documentation)
+
+[More Examples](https://github.com/richytong/rubico#more-examples)
+
 # Introduction
 Asynchronous programming in JavaScript has evolved over the years
 
