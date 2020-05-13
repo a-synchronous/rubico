@@ -71,6 +71,12 @@ const consumeReadStreamPull = s => new Promise((resolve, reject) => {
   s.on('error', err => reject(err))
 })
 
+const asyncIteratorToArray = async x => {
+  const y = []
+  for await (const xi of x) y.push(xi)
+  return y
+}
+
 const numberTypedArrayConstructors = [
   Uint8ClampedArray,
   Uint8Array, Int8Array,
@@ -535,6 +541,22 @@ describe('rubico', () => {
       ade(
         r.map(hi)({ a: 'yo', b: 1 }),
         { a: 'yohi', b: '1hi' },
+      )
+    })
+    const makeAsyncNumbers = async function*() {
+      for (let i = 0; i < 5; i++) yield i + 1
+    }
+    it('applies an async function in parallel to all values of an async iterable', async () => {
+      aok(!(r.map(async x => x + 1)(makeAsyncNumbers()) instanceof Promise))
+      aok(r.map(async x => x + 1)(makeAsyncNumbers())[Symbol.asyncIterator])
+      aok(asyncIteratorToArray(
+        r.map(async x => x + 1)(makeAsyncNumbers()),
+      ) instanceof Promise)
+      ade(
+        await asyncIteratorToArray(
+          r.map(async x => x + 1)(makeAsyncNumbers()),
+        ),
+        [2, 3, 4, 5, 6]
       )
     })
     it('acts as a map transducer: binary function => reducer', async () => {

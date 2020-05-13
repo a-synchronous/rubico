@@ -314,6 +314,10 @@ const mapObject = (fn, x) => {
   return promises.length > 0 ? Promise.all(promises).then(() => y) : y
 }
 
+const mapAsyncIterable = (fn, x) => (async function*() {
+  for await (const xi of x) yield fn(xi)
+})()
+
 const mapReducer = (fn, reducer) => (y, xi) => {
   const point = fn(xi)
   return (isPromise(point)
@@ -333,7 +337,7 @@ const map = fn => {
     if (isNumberTypedArray(x)) return mapTypedArray(fn, x)
     if (isBigIntTypedArray(x)) return mapTypedArray(fn, x)
     if (is(Object)(x)) return mapObject(fn, x)
-    // TODO(richytong): if (isAsyncIterable(x)) return mapAsyncIterable(fn, x)
+    if (isAsyncIterable(x)) return mapAsyncIterable(fn, x)
     if (isFunction(x)) return mapReducer(fn, x)
     throw new TypeError('map(...)(x); x invalid')
   }
