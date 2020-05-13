@@ -408,42 +408,6 @@ describe('rubico', () => {
     })
   })
 
-  /* TODO: deprecate in favor of switchCase
-  describe('ternary', () => {
-    it('sync x => fn[0](x) ? fn[1](x) : fn[2](x)', async () => {
-      const a1IfA1 = r.ternary(
-        x => x.a === 1,
-        () => 'a1',
-        () => '!a1',
-      )
-      ase(a1IfA1({ a: 1 }), 'a1')
-      ase(a1IfA1({ a: 2 }), '!a1')
-    })
-    it('async x => fn[0](x) ? fn[1](x) : fn[2](x)', async () => {
-      const a1IfA1Async = r.ternary(
-        async x => x.a === 1,
-        () => 'a1',
-        async () => '!a1',
-      )
-      aok(a1IfA1Async({ a: 1 }) instanceof Promise)
-      ase(await a1IfA1Async({ a: 1 }), 'a1')
-      ase(await a1IfA1Async({ a: 2 }), '!a1')
-    })
-    it('throws a RangeError if passed less than three functions', async () => {
-      assert.throws(
-        () => r.ternary(() => false, () => 'hey'),
-        new RangeError('ternary(...x); x is not an array of exactly three functions'),
-      )
-    })
-    it('throws a TypeError if any item is not a function', async () => {
-      assert.throws(
-        () => r.ternary(() => false, 'hey', () => 'hi'),
-        new TypeError('ternary(...x); x[1] is not a function'),
-      )
-    })
-  })
-  */
-
   describe('switchCase', () => {
     it('switches on provided sync functions', async () => {
       ase(

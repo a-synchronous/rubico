@@ -223,24 +223,6 @@ const tryCatch = (fn, onError) => {
   }
 }
 
-const arrayTernary = (fns, x) => {
-  const ok = fns[0](x)
-  return isPromise(ok) ? ok.then(
-    res => res ? fns[1](x) : fns[2](x)
-  ) : ok ? fns[1](x) : fns[2](x)
-}
-
-const ternary = (...fns) => {
-  if (fns.length !== 3) {
-    throw new RangeError('ternary(...x); x is not an array of exactly three functions')
-  }
-  for (let i = 0; i < fns.length; i++) {
-    if (isFunction(fns[i])) continue
-    throw new TypeError(`ternary(...x); x[${i}] is not a function`)
-  }
-  return x => arrayTernary(fns, x)
-}
-
 const arraySwitchCase = (fns, x, i) => {
   if (i === fns.length - 1) return fns[i](x)
   const ok = fns[i](x)
@@ -895,7 +877,6 @@ const r = {
   assign,
   tap,
   tryCatch,
-  // ternary, // TODO(richytong): deprecate in favor of switch
   switchCase,
   map,
   filter,
