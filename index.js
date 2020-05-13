@@ -330,6 +330,7 @@ const map = fn => {
     throw new TypeError('map(x); x is not a function')
   }
   return x => {
+    if (isAsyncIterable(x)) return mapAsyncIterable(fn, x)
     if (isArray(x)) return mapArray(fn, x)
     if (isString(x)) return mapString(fn, x)
     if (is(Set)(x)) return mapSet(fn, x)
@@ -337,7 +338,6 @@ const map = fn => {
     if (isNumberTypedArray(x)) return mapTypedArray(fn, x)
     if (isBigIntTypedArray(x)) return mapTypedArray(fn, x)
     if (is(Object)(x)) return mapObject(fn, x)
-    if (isAsyncIterable(x)) return mapAsyncIterable(fn, x)
     if (isFunction(x)) return mapReducer(fn, x)
     throw new TypeError('map(...)(x); x invalid')
   }
