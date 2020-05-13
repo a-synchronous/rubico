@@ -86,7 +86,7 @@ rubico works in server and browser JavaScript environments
 
 [tap](https://github.com/richytong/rubico#tap),
 [tryCatch](https://github.com/richytong/rubico#tryCatch),
-[ternary](https://github.com/richytong/rubico#ternary)
+[switchCase](https://github.com/richytong/rubico#switchCase)
 
 [map](https://github.com/richytong/rubico#map),
 [filter](https://github.com/richytong/rubico#filter),
@@ -380,53 +380,55 @@ tryCatch(
 )('a') // => Promise { 'aa' }
 ```
 
-## ternary
-f(x) ? g(x) : h(x)
+## switchCase
+if1(x) ? do1(x) : if2(x) ? do2(x) : ... ifN(x) ? doN(x) : doDefault(x)
 ```javascript
-y = ternary(f, g, h)(x)
+y = switchCase(functions)(x)
 ```
-`f` is a function
-
-`g` is a function
-
-`h` is a function
-
 `x` is anything
 
-`y` is `g(x)` if `f(x)` is truthy
+`functions` is an array of functions
 
-`y` is `h(x)` if `f(x)` is falsy
+given predicate functions if1, if2, ..., ifN; corresponding functions do1, do2, ..., doN; default function doDefault;
 
-if `f` is asynchronous, `y` is a Promise
+`functions` is the array of functions [if1, do1, if2, do2, ..., ifN, doN, doDefault]
 
-if `g` is asynchronous and `f(x)` is truthy, `y` is a Promise
+switchCase evaluates supplied functions as in series as `evaluated` and breaks early on a truthy predicate
 
-if `h` is asynchronous and `f(x)` is falsy, `y` is a Promise
+if all functions of `evaluated` are synchronous, `y` is not a Promise
+
+if any functions of `evaluated` are asynchronous, `y` is a Promise
 
 ```javascript
-ternary(
-  x => x === 'a',
-  x => x + 'yo',
-  () => 'not a',
-)('a') // => 'ayo'
+switchCase([
+  x => x === 'a', x => x + 'yo',
+  x => x === 'l', x => x + 'mao',
+  () => '???',
+])('a') // => 'ayo'
 
-ternary(
-  x => x === 'a',
-  x => x + 'yo',
-  () => 'not a',
-)('b') // => 'not a'
+switchCase([
+  x => x === 'a', x => x + 'yo',
+  x => x === 'l', x => x + 'mao',
+  () => '???',
+])('b') // => '???'
 
-ternary(
-  async x => x === 'a',
-  x => x + 'yo',
-  () => 'not a',
-)('a') // => Promise { 'ayo' }
+switchCase([
+  async x => x === 'a', x => x + 'yo',
+  x => x === 'l', x => x + 'mao',
+  () => '???',
+])('a') // => Promise { 'ayo' }
 
-ternary(
-  x => x === 'a',
-  x => x + 'yo',
-  async () => 'not a',
-)('b') // => Promise { 'not a' }
+switchCase([
+  async x => x === 'a', x => x + 'yo',
+  x => x === 'l', x => x + 'mao',
+  () => '???',
+])('b') // => Promise { '???' }
+
+switchCase([
+  x => x === 'a', x => x + 'yo',
+  async x => x === 'l', async x => x + 'mao',
+  async () => '???',
+])('a') // => 'ayo'
 ```
 
 ## map
