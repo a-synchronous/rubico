@@ -17,9 +17,9 @@ const isUndefined = x => x === undefined
 
 const isNull = x => x === null
 
-const isIterable = x => isDefined(x[Symbol.iterator])
+const isIterable = x => isDefined(x) && isDefined(x[Symbol.iterator])
 
-const isAsyncIterable = x => isDefined(x[Symbol.asyncIterator])
+const isAsyncIterable = x => isDefined(x) && isDefined(x[Symbol.asyncIterator])
 
 const isReadable = x => (x
   && x.readable
@@ -223,22 +223,33 @@ const tryCatch = (fn, onError) => {
   }
 }
 
-const arrayTernary = (fns, x) => {
-  const ok = fns[0](x)
-  return isPromise(ok) ? ok.then(
-    res => res ? fns[1](x) : fns[2](x)
-  ) : ok ? fns[1](x) : fns[2](x)
+const arraySwitchCase = (fns, x, i) => {
+  if (i === fns.length - 1) return fns[i](x)
+  const ok = fns[i](x)
+  return isPromise(ok)
+    ? ok.then(res => res ? fns[i + 1](x) : arraySwitchCase(fns, x, i + 2))
+    : ok ? fns[i + 1](x) : arraySwitchCase(fns, x, i + 2)
 }
 
-const ternary = (...fns) => {
-  if (fns.length !== 3) {
-    throw new RangeError('ternary(...x); x is not an array of exactly three functions')
+const switchCase = fns => {
+  if (!isArray(fns)) {
+    throw new TypeError('switchCase(x); x is not an array of functions')
+  }
+  if (fns.length < 3) {
+    throw new RangeError(
+      'switchCase(x); x is not an array of at least three functions',
+    )
+  }
+  if (fns.length % 2 === 0) {
+    throw new RangeError(
+      'switchCase(x); x is not an array of an odd number of functions',
+    )
   }
   for (let i = 0; i < fns.length; i++) {
     if (isFunction(fns[i])) continue
-    throw new TypeError(`ternary(...x); x[${i}] is not a function`)
+    throw new TypeError(`switchCase(x); x[${i}] is not a function`)
   }
-  return x => arrayTernary(fns, x)
+  return x => arraySwitchCase(fns, x, 0)
 }
 
 // x.map: https://v8.dev/blog/elements-kinds#avoid-polymorphism
@@ -766,98 +777,52 @@ const not = fn => {
   }
 }
 
-const compareAsc = (predicate, x) => {
-  for (let i = 0; i < x.length - 1; i++) {
-    if (!predicate(x[i], x[i + 1])) return false
-  }
-  return true
+const compare = (predicate, f, g) => x => {
+  const fx = isFunction(f) ? f(x) : f
+  const gx = isFunction(g) ? g(x) : g
+  return (isPromise(fx) || isPromise(gx)
+    ? Promise.all([fx, gx]).then(res => predicate(...res))
+    : predicate(fx, gx))
 }
 
-const operator = (predicate, fns, x) => {
-  let isAsync = false
-  const points = fns.map(fn => {
-    const point = fn(x)
-    if (isPromise(point)) isAsync = true
-    return point
-  })
-  return isAsync ? Promise.all(points).then(
-    res => compareAsc(predicate, res)
-  ) : compareAsc(predicate, points)
+const eq = function(f, g) {
+  if (arguments.length !== 2) {
+    throw new RangeError('eq(...arguments); exactly two arguments required')
+  }
+  return compare((a, b) => a === b, f, g)
 }
 
-const eq = fns => {
-  if (!isArray(fns)) {
-    throw new TypeError('eq(x); x is not an array of functions')
+const gt = function(f, g) {
+  if (arguments.length !== 2) {
+    throw new RangeError('gt(...arguments); exactly two arguments required')
   }
-  if (fns.length < 2) {
-    throw new RangeError('eq(x); x is not an array of at least two functions')
-  }
-  for (let i = 0; i < fns.length; i++) {
-    if (isFunction(fns[i])) continue
-    throw new TypeError(`eq(x); x[${i}] is not a function`)
-  }
-  return x => operator((a, b) => a === b, fns, x)
+  return compare((a, b) => a > b, f, g)
 }
 
-const gt = fns => {
-  if (!isArray(fns)) {
-    throw new TypeError('gt(x); x is not an array of functions')
+const lt = function(f, g) {
+  if (arguments.length !== 2) {
+    throw new RangeError('lt(...arguments); exactly two arguments required')
   }
-  if (fns.length < 2) {
-    throw new RangeError('gt(x); x is not an array of at least two functions')
-  }
-  for (let i = 0; i < fns.length; i++) {
-    if (isFunction(fns[i])) continue
-    throw new TypeError(`gt(x); x[${i}] is not a function`)
-  }
-  return x => operator((a, b) => a > b, fns, x)
+  return compare((a, b) => a < b, f, g)
 }
 
-const lt = fns => {
-  if (!isArray(fns)) {
-    throw new TypeError('lt(x); x is not an array of functions')
+const gte = function(f, g) {
+  if (arguments.length !== 2) {
+    throw new RangeError('gte(...arguments); exactly two arguments required')
   }
-  if (fns.length < 2) {
-    throw new RangeError('lt(x); x is not an array of at least two functions')
-  }
-  for (let i = 0; i < fns.length; i++) {
-    if (isFunction(fns[i])) continue
-    throw new TypeError(`lt(x); x[${i}] is not a function`)
-  }
-  return x => operator((a, b) => a < b, fns, x)
+  return compare((a, b) => a >= b, f, g)
 }
 
-const gte = fns => {
-  if (!isArray(fns)) {
-    throw new TypeError('gte(x); x is not an array of functions')
+const lte = function(f, g) {
+  if (arguments.length !== 2) {
+    throw new RangeError('lte(...arguments); exactly two arguments required')
   }
-  if (fns.length < 2) {
-    throw new RangeError('gte(x); x is not an array of at least two functions')
-  }
-  for (let i = 0; i < fns.length; i++) {
-    if (isFunction(fns[i])) continue
-    throw new TypeError(`gte(x); x[${i}] is not a function`)
-  }
-  return x => operator((a, b) => a >= b, fns, x)
-}
-
-const lte = fns => {
-  if (!isArray(fns)) {
-    throw new TypeError('lte(x); x is not an array of functions')
-  }
-  if (fns.length < 2) {
-    throw new RangeError('lte(x); x is not an array of at least two functions')
-  }
-  for (let i = 0; i < fns.length; i++) {
-    if (isFunction(fns[i])) continue
-    throw new TypeError(`lte(x); x[${i}] is not a function`)
-  }
-  return x => operator((a, b) => a <= b, fns, x)
+  return compare((a, b) => a <= b, f, g)
 }
 
 export {
   pipe, fork, assign,
-  tap, tryCatch, ternary,
+  tap, tryCatch, switchCase,
   map, filter, reduce, transform,
   get, pick, omit,
   any, all,
@@ -867,7 +832,7 @@ export {
 
 export default {
   pipe, fork, assign,
-  tap, tryCatch, ternary,
+  tap, tryCatch, switchCase,
   map, filter, reduce, transform,
   get, pick, omit,
   any, all,
