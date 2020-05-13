@@ -462,14 +462,40 @@ if `x0` is provided, `y` is initially `x0`, else `y` assumes the first `zi` of `
 # More Examples
 ### Sync vs async
 
-### A webserver using https://deno.land/std/http/server.ts serve + map
+### A webserver using map, transform, and https://deno.land/std/http/server.ts serve
 ```javascript
 import { serve } from "https://deno.land/std/http/server.ts";
-import { map } from "https://deno.land/x/rubico/mod.ts";
-console.log("http://localhost:8000/");
-map(req => {
+import { map, transform } from "https://deno.land/x/rubico/mod.ts"
+const s = serve({ port: 8001 });
+console.log("http://localhost:8001/");
+transform(null, map(req => {
   req.respond({ body: "Hello World\n" });
-})(serve({ port: 8000 }));
+}))(s);
 ```
 
-### A larger webserver
+### A deno webserver with middleware
+```javascript
+import { serve } from 'https://deno.land/std/http/server.ts'
+import { pipe, map, transform } from 'https://deno.land/x/rubico/mod.ts'
+
+const s = serve({ port: 8001 })
+console.log('http://localhost:8001/')
+
+const addServerTime = req => {
+  req.serverTime = Date.now()
+  return req
+}
+
+const formatTimestamp = ts => (new Date(ts)).toLocaleString()
+
+const respondWithServerTime = req => {
+  req.respond({ body: `The server time is ${formatTimestamp(req.serverTime)}` })
+}
+
+transform(null, map(pipe([
+  addServerTime,
+  respondWith('Hello World\n'),
+])))(s)
+```
+
+### A larger program
