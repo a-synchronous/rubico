@@ -241,31 +241,33 @@ const ternary = (...fns) => {
   return x => arrayTernary(fns, x)
 }
 
-// TODO: remove
-const arraySwitch = (fns, x, i) => {
+const arraySwitchCase = (fns, x, i) => {
   if (i === fns.length - 1) return fns[i](x)
   const ok = fns[i](x)
   return isPromise(ok)
-    ? ok.then(res => res ? fns[i + 1](x) : arraySwitch(fns, x, i + 2))
-    : ok ? fns[i + 1](x) : arraySwitch(fns, x, i + 2)
+    ? ok.then(res => res ? fns[i + 1](x) : arraySwitchCase(fns, x, i + 2))
+    : ok ? fns[i + 1](x) : arraySwitchCase(fns, x, i + 2)
 }
 
-// TODO: deprecate in favor of ternary
-const switch_ = fns => {
+const switchCase = fns => {
   if (!isArray(fns)) {
-    throw new TypeError(`first argument must be an array of functions`)
+    throw new TypeError('switchCase(x); x is not an array of functions')
   }
   if (fns.length < 3) {
-    throw new RangeError('at least 3 functions required')
+    throw new RangeError(
+      'switchCase(x); x is not an array of at least three functions',
+    )
   }
   if (fns.length % 2 === 0) {
-    throw new RangeError('odd number of functions required')
+    throw new RangeError(
+      'switchCase(x); x is not an array of an odd number of functions',
+    )
   }
   for (let i = 0; i < fns.length; i++) {
     if (isFunction(fns[i])) continue
-    throw new TypeError(`${type(fns[i])} (functions[${i}]) is not a function`)
+    throw new TypeError(`switchCase(x); x[${i}] is not a function`)
   }
-  return x => arraySwitch(fns, x, 0)
+  return x => arraySwitchCase(fns, x, 0)
 }
 
 // x.map: https://v8.dev/blog/elements-kinds#avoid-polymorphism
@@ -812,6 +814,7 @@ const operator = (predicate, fns, x) => {
   ) : compareAsc(predicate, points)
 }
 
+// TODO(richytong): binarify
 const eq = fns => {
   if (!isArray(fns)) {
     throw new TypeError('eq(x); x is not an array of functions')
@@ -826,6 +829,7 @@ const eq = fns => {
   return x => operator((a, b) => a === b, fns, x)
 }
 
+// TODO(richytong): binarify
 const gt = fns => {
   if (!isArray(fns)) {
     throw new TypeError('gt(x); x is not an array of functions')
@@ -840,6 +844,7 @@ const gt = fns => {
   return x => operator((a, b) => a > b, fns, x)
 }
 
+// TODO(richytong): binarify
 const lt = fns => {
   if (!isArray(fns)) {
     throw new TypeError('lt(x); x is not an array of functions')
@@ -854,6 +859,7 @@ const lt = fns => {
   return x => operator((a, b) => a < b, fns, x)
 }
 
+// TODO(richytong): binarify
 const gte = fns => {
   if (!isArray(fns)) {
     throw new TypeError('gte(x); x is not an array of functions')
@@ -868,6 +874,7 @@ const gte = fns => {
   return x => operator((a, b) => a >= b, fns, x)
 }
 
+// TODO(richytong): binarify
 const lte = fns => {
   if (!isArray(fns)) {
     throw new TypeError('lte(x); x is not an array of functions')
@@ -888,8 +895,8 @@ const r = {
   assign,
   tap,
   tryCatch,
-  ternary,
-  switch: switch_,
+  // ternary, // TODO(richytong): deprecate in favor of switch
+  switchCase,
   map,
   filter,
   reduce,

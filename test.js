@@ -408,6 +408,7 @@ describe('rubico', () => {
     })
   })
 
+  /* TODO: deprecate in favor of switchCase
   describe('ternary', () => {
     it('sync x => fn[0](x) ? fn[1](x) : fn[2](x)', async () => {
       const a1IfA1 = r.ternary(
@@ -441,11 +442,12 @@ describe('rubico', () => {
       )
     })
   })
+  */
 
-  describe('switch', () => {
+  describe('switchCase', () => {
     it('switches on provided sync functions', async () => {
       ase(
-        r.switch([
+        r.switchCase([
           x => x === 1, () => 'hi',
           x => x === 2, () => 'ho',
           () => 'hey',
@@ -453,7 +455,7 @@ describe('rubico', () => {
         'hi',
       )
       ase(
-        r.switch([
+        r.switchCase([
           x => x === 1, () => 'hi',
           x => x === 2, () => 'ho',
           () => 'hey',
@@ -461,7 +463,7 @@ describe('rubico', () => {
         'ho',
       )
       ase(
-        r.switch([
+        r.switchCase([
           x => x === 1, () => 'hi',
           x => x === 2, () => 'ho',
           () => 'hey',
@@ -469,7 +471,7 @@ describe('rubico', () => {
         'hey',
       )
       ase(
-        r.switch([
+        r.switchCase([
           x => x === 1, async () => 'hi',
           x => x === 2, async () => 'ho',
           () => 'hey',
@@ -479,21 +481,21 @@ describe('rubico', () => {
     })
     it('switches on provided async functions', async () => {
       aok(
-        r.switch([
+        r.switchCase([
           async x => x === 1, async () => 'hi',
           async x => x === 2, async () => 'ho',
           async () => 'hey',
         ])(1) instanceof Promise,
       )
       aok(
-        r.switch([
+        r.switchCase([
           async x => x === 1, () => 'hi',
           x => x === 2, () => 'ho',
           () => 'hey',
         ])(1) instanceof Promise,
       )
       ase(
-        await r.switch([
+        await r.switchCase([
           async x => x === 1, async () => 'hi',
           async x => x === 2, async () => 'ho',
           async () => 'hey',
@@ -501,7 +503,7 @@ describe('rubico', () => {
         'hi',
       )
       ase(
-        await r.switch([
+        await r.switchCase([
           async x => x === 1, async () => 'hi',
           async x => x === 2, async () => 'ho',
           async () => 'hey',
@@ -509,7 +511,7 @@ describe('rubico', () => {
         'ho',
       )
       ase(
-        await r.switch([
+        await r.switchCase([
           async x => x === 1, async () => 'hi',
           async x => x === 2, async () => 'ho',
           async () => 'hey',
@@ -519,26 +521,26 @@ describe('rubico', () => {
     })
     it('throws a TypeError if passed a non array', async () => {
       assert.throws(
-        () => r.switch('hey'),
-        new TypeError('first argument must be an array of functions'),
+        () => r.switchCase('hey'),
+        new TypeError('switchCase(x); x is not an array of functions'),
       )
     })
     it('throws a RangeError if passed less than three functions', async () => {
       assert.throws(
-        () => r.switch([() => false, () => 'hey']),
-        new RangeError('at least 3 functions required'),
+        () => r.switchCase([() => false, () => 'hey']),
+        new RangeError('switchCase(x); x is not an array of at least three functions'),
       )
     })
     it('throws a RangeError if passed an even number of functions', async () => {
       assert.throws(
-        () => r.switch([() => false, () => 'hey', () => true, () => 'ho']),
-        new RangeError('odd number of functions required'),
+        () => r.switchCase([() => false, () => 'hey', () => true, () => 'ho']),
+        new RangeError('switchCase(x); x is not an array of an odd number of functions'),
       )
     })
     it('throws a TypeError if any item is not a function', async () => {
       assert.throws(
-        () => r.switch([() => false, 'hey', () => true, () => 'ho', () => 'hi']),
-        new TypeError('string (functions[1]) is not a function'),
+        () => r.switchCase([() => false, 'hey', () => true, () => 'ho', () => 'hi']),
+        new TypeError('switchCase(x); x[1] is not a function'),
       )
     })
   })
