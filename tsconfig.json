@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": false
+  },
+  "files": [
+    "mod.ts"
+  ]
+}
