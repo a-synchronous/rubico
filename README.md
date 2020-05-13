@@ -497,17 +497,15 @@ const addServerTime = req => {
   return req
 }
 
-const trace = tap(console.log)
-
-const traceRequest = tap(pipe([
+const traceRequest = pipe([
   fork([
     pipe([get('serverTime'), x => '[' + x + ']']),
     get('method'),
     get('url'),
   ]),
   join(' '),
-  trace,
-]))
+  console.log,
+])
 
 const respondWithHelloWorld = req => {
   req.respond({ body: 'Hello World\n' })
@@ -529,7 +527,7 @@ const route = switchCase([
 
 const onRequest = pipe([
   addServerTime,
-  traceRequest,
+  tap(traceRequest),
   route,
 ])
 
