@@ -323,7 +323,9 @@ y = reduce(tap(f)(x))(z)
 
 `z` is an iterable, asyncIterable, or object
 
-`f` is a function that expects one argument `zi`, an element of `z`
+`zi` is an element of `z`
+
+`f` is a function that expects one argument `zi`
 
 `y` is equivalent in value to `reduce(x)(z)`
 ```javascript
@@ -440,15 +442,17 @@ y = map(f)(x)
 `x` is an array, a string, a set, a map, a typed array, an object,<br>
     an async iterator, a generated iterator, or a function
 
-`f` is a function that expects one argument `xi`, an element of `x`
+`xi` is an element of `x`
 
-`y` is `x` with `fn` applied to each element
+`f` is a function that expects one argument `xi`
+
+`y` is `x` with `f` applied to each element
 
 if `x` is an async iterator, `y` is a generated async iterator
 
-if `fn` is synchronous, `y` is not a Promise
+if `f` is synchronous, `y` is not a Promise
 
-if `fn` is asynchronous and `x` is not an async iterator, `y` is a Promise
+if `f` is asynchronous and `x` is not an async iterator, `y` is a Promise
 
 if `x` is a function, map applies `f` to each element `zi` of `z`, yielding `f(zi)`
 ```javascript
@@ -458,7 +462,13 @@ y = reduce(map(f)(x))(z)
 
 `z` is an iterable, asyncIterable, or object
 
-`f` is a function that expects one argument `zi`, an element of `z`
+`zi` is an element of `z`
+
+`f` is a function that expects one argument `zi`
+
+`x` is a function that expects two arguments `y` and `f(zi)`
+
+`map(f)(x)` is a transduced reducing function, see [transducers](https://github.com/richytong/rubico#transducers)
 
 `y` is equivalent in value to `reduce(x)(map(f)(z))`
 ```javascript
@@ -523,17 +533,19 @@ y = filter(f)(x)
 `x` is an array, a string, a set, a map, a typed array, an object,<br>
     an async iterator, a generated iterator, or a function
 
-`f` is a function that expects one argument `xi`, an element of `x`
+`xi` is an element of `x`
 
-`y` is `x` with elements `xi` where `fn(xi)` is truthy
+`f` is a function that expects one argument `xi`
+
+`y` is `x` with elements `xi` where `f(xi)` is truthy
 
 if `x` is an async iterator, `y` is a generated async iterator
 
-if `fn` is synchronous, `y` is not a Promise
+if `f` is synchronous, `y` is not a Promise
 
-if `fn` is asynchronous and `x` is not an async iterator, `y` is a Promise
+if `f` is asynchronous and `x` is not an async iterator, `y` is a Promise
 
-if `x` is a function, truthy testing is done as `f(zi)` on elements `zi` of `z`
+if `x` is a function, filtering is based on elements of `z`
 ```javascript
 y = reduce(filter(f)(x))(z)
 ```
@@ -541,7 +553,13 @@ y = reduce(filter(f)(x))(z)
 
 `z` is an iterable, asyncIterable, or object
 
-`f` is a function that expects one argument `zi`, an element of `z`
+`zi` is an element of `z`
+
+`f` is a function that expects one argument `zi`
+
+`x` is a function that expects two arguments `y` and `zi`
+
+`filter(f)(x)` is a transduced reducing function, see [transducers](https://github.com/richytong/rubico#transducers)
 
 `y` is equivalent in value to `reduce(x)(filter(f)(z))`
 ```javascript
@@ -595,17 +613,57 @@ reduce(
 )([1, 2, 3, 4, 5]) // => Promise { 6 }
 ```
 ## reduce
-(wip)
-for each `zi` of `z`, `reduce` provides `x` with two arguments `y` and `zi`
+applies a reducing function `f` to each element of a collection `x`, returning a single value
+```javascript
+y = reduce(f, x0)(x)
+```
+`x` is an iterable, an async iterable, or an object
 
-`x(y, zi)` returns the `y` used with the next `zi`
+`f` is a function that expects two arguments `y` and `xi`, an element of `x`
 
-`reduce` provides `x` with two arguments `y` and `zi`
+`x0` is optional
 
-`x` specifies the relationship between `y` and `zi`
+if `x0` is provided
+ * `y` starts as `x0`
+ * iteration begins with the first element of `x`
 
-if `x0` is provided, `y` is initially `x0`, else `y` assumes the first `zi` of `z`
+if `x0` is not provided
+ * `y` starts as the first element of `x`
+ * iteration begins with the second element of `x`
 
+for each successive `xi` of `x`, `y` assumes the output of `f(y, xi)`
+
+the returned `y` is the output of the final iteration `f(y, xi)`
+
+if `x` is an async iterator, `y` is a promise
+
+if `f` is synchronous and `x` is not an async iterator, `y` is not a Promise
+
+if `f` is asynchronous, `y` is a Promise
+```javascript
+reduce(
+  (y, xi) => y + xi,
+)([1, 2, 3, 4, 5]) // => 15
+
+reduce(
+  async (y, xi) => y + xi,
+  100,
+)([1, 2, 3, 4, 5]) // => Promise { 115 }
+
+const asyncNumbersGeneratedIterator = (async function*() {
+  for (let i = 0; i < 5; i++) { yield i + 1 }
+})() // generated async iterator that yields 1 2 3 4 5
+
+reduce(
+  (y, xi) => y.concat(xi),
+  [],
+)(asyncNumbersGeneratedIterator) // => Promise { [1, 2, 3, 4, 5] }
+
+reduce(
+  (y, xi) => y.add(xi),
+  new Set(),
+)({ a: 1, b: 1, c: 1, d: 1, e: 1 }) // => Set { 1 }
+```
 ## transform
 ## any
 ## all
