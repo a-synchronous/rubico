@@ -194,7 +194,7 @@ y = pipe(functions)(x)
 `x` is anything
 
 if `x` is a function, pipe chains `functions` from right to left,
-see [transform](https://github.com/richytong/rubico#transform)
+see [reduce](https://github.com/richytong/rubico#reduce)
 
 `y` is the output of running `x` through the chain of `functions`
 
@@ -338,7 +338,7 @@ reduce(
 ```
 
 ## tryCatch
-tries a sync or async function with input, catches with another sync or async function
+tries a sync or async function `f` with input `x`, catches with another sync or async function `g`
 ```javascript
 y = tryCatch(f, g)(x)
 ```
@@ -397,7 +397,7 @@ corresponding functions `do1, do2, ..., doN`;<br>
 and default function `doDefault`;<br>
 `functions` is the array of functions `[if1, do1, if2, do2, ..., ifN, doN, doDefault]`
 
-switchCase evaluates supplied functions in series as `evaluated` and breaks early on a truthy predicate
+switchCase evaluates supplied functions in series `evaluated` and breaks early on a truthy predicate
 
 if all functions of `evaluated` are synchronous, `y` is not a Promise
 
@@ -436,9 +436,17 @@ switchCase([
 ```
 
 ## map
-`y = map(f)(x)`
+applies a sync or async function `f` to each element of a collection `x`
+```javascript
+y = map(f)(x)
+```
 
 ## filter
+filters elements out of a collection `x` based on predicate `f`
+```javascript
+y = filter(f)(x)
+```
+
 ## reduce (WIP)
 for each `zi` of `z`, `reduce` provides `x` with two arguments `y` and `zi`
 
