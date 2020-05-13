@@ -529,7 +529,8 @@ filters elements out of a collection `x` based on predicate `f`
 y = filter(f)(x)
 ```
 
-## reduce (WIP)
+## reduce
+(wip)
 for each `zi` of `z`, `reduce` provides `x` with two arguments `y` and `zi`
 
 `x(y, zi)` returns the `y` used with the next `zi`
