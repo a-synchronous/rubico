@@ -252,11 +252,19 @@ const switchCase = fns => {
   return x => arraySwitchCase(fns, x, 0)
 }
 
+const mapAsyncIterable = (fn, x) => (async function*() {
+  for await (const xi of x) yield fn(xi)
+})()
+
+const mapIterable = (fn, x) => (function*() {
+  for (const xi of x) yield fn(xi)
+})()
+
 // x.map: https://v8.dev/blog/elements-kinds#avoid-polymorphism
 const mapArray = (fn, x) => {
   let isAsync = false
-  const y = x.map(item => {
-    const point = fn(item)
+  const y = x.map(xi => {
+    const point = fn(xi)
     if (isPromise(point)) isAsync = true
     return point
   })
@@ -288,14 +296,14 @@ const mapTypedArray = (fn, x) => {
 
 const mapSet = (fn, x) => {
   const y = new Set(), promises = []
-  x.forEach(xi => {
+  for (const xi of x) {
     const point = fn(xi)
     if (isPromise(point)) {
       promises.push(point.then(res => { y.add(res) }))
     } else {
       y.add(point)
     }
-  })
+  }
   return promises.length > 0 ? Promise.all(promises).then(() => y) : y
 }
 
@@ -325,10 +333,6 @@ const mapObject = (fn, x) => {
   return promises.length > 0 ? Promise.all(promises).then(() => y) : y
 }
 
-const mapAsyncIterable = (fn, x) => (async function*() {
-  for await (const xi of x) yield fn(xi)
-})()
-
 const mapReducer = (fn, reducer) => (y, xi) => {
   const point = fn(xi)
   return (isPromise(point)
@@ -348,6 +352,7 @@ const map = fn => {
     if (is(Map)(x)) return mapMap(fn, x)
     if (isNumberTypedArray(x)) return mapTypedArray(fn, x)
     if (isBigIntTypedArray(x)) return mapTypedArray(fn, x)
+    if (isIterable(x)) return mapIterable(fn, x) // for generators or custom iterators
     if (is(Object)(x)) return mapObject(fn, x)
     if (isFunction(x)) return mapReducer(fn, x)
     throw new TypeError('map(...)(x); x invalid')
@@ -378,16 +383,85 @@ map.pool = (fn, poolSize) => {}
 // TODO(richytong): map.indexed(fn); fn called with (item, index, array)
 map.withIndex = fn => {}
 
-const filterArray = (fn, x) => {
+const filterAsyncIterable = (fn, x) => (async function*() {
+  for await (const xi of x) { if (await fn(xi)) yield xi }
+})()
+
+const filterIterable = (fn, x) => (function*() {
+  for (const xi of x) {
+    const ok = fn(xi)
+    if (isPromise(ok)) {
+      throw new TypeError([
+        'filter(f)(x); xi is an element of x; ',
+        'if x if the resulting iterator of a sync generator, ',
+        'f(xi) cannot return a Promise',
+      ].join(''))
+    }
+    if (ok) yield xi
+  }
+})()
+
+const createFilterIndex = (fn, x) => {
   let isAsync = false
-  const okIndex = x.map(item => {
-    const ok = fn(item)
+  const filterIndex = []
+  for (const xi of x) {
+    const ok = fn(xi)
     if (isPromise(ok)) isAsync = true
-    return ok
-  })
-  return (isAsync
-    ? Promise.all(okIndex).then(res => x.filter((_, i) => res[i]))
-    : x.filter((_, i) => okIndex[i]))
+    filterIndex.push(ok)
+  }
+  return isAsync ? Promise.all(filterIndex) : filterIndex
+}
+
+const filterArray = (fn, x) => {
+  const index = createFilterIndex(fn, x)
+  return (isPromise(index)
+    ? index.then(res => x.filter((_, i) => res[i]))
+    : x.filter((_, i) => index[i])
+  )
+}
+
+const filterStringFromIndex = (index, x) => {
+  let y = ''
+  for (let i = 0; i < x.length; i++) { if (index[i]) y += x[i] }
+  return y
+}
+
+const filterString = (fn, x) => {
+  const index = createFilterIndex(fn, x)
+  return (isPromise(index)
+    ? index.then(res => filterStringFromIndex(res, x))
+    : filterStringFromIndex(index, x)
+  )
+}
+
+const filterSet = (fn, x) => {
+  const y = new Set(), promises = []
+  for (const xi of x) {
+    const ok = fn(xi)
+    if (isPromise(ok)) {
+      promises.push(ok.then(res => res && y.add(xi)))
+    } else if (ok) { y.add(xi) }
+  }
+  return promises.length > 0 ? Promise.all(promises).then(() => y) : y
+}
+
+const filterMap = (fn, x) => {
+  const y = new Map(), promises = []
+  for (const xi of x) {
+    const ok = fn(xi)
+    if (isPromise(ok)) {
+      promises.push(ok.then(res => res && y.set(...xi)))
+    } else if (ok) { y.set(...xi) }
+  }
+  return promises.length > 0 ? Promise.all(promises).then(() => y) : y
+}
+
+const filterTypedArray = (fn, x) => {
+  const y = filterArray(fn, x)
+  return (isPromise(y)
+    ? y.then(res => new x.constructor(res))
+    : new x.constructor(y)
+  )
 }
 
 const filterObject = (fn, x) => {
@@ -416,7 +490,14 @@ const filter = fn => {
     throw new TypeError('filter(x); x is not a function')
   }
   return x => {
+    if (isAsyncIterable(x)) return filterAsyncIterable(fn, x)
     if (isArray(x)) return filterArray(fn, x)
+    if (isString(x)) return filterString(fn, x)
+    if (is(Set)(x)) return filterSet(fn, x)
+    if (is(Map)(x)) return filterMap(fn, x)
+    if (isNumberTypedArray(x)) return filterTypedArray(fn, x)
+    if (isBigIntTypedArray(x)) return filterTypedArray(fn, x)
+    if (isIterable(x)) return filterIterable(fn, x) // for generators or custom iterators
     if (is(Object)(x)) return filterObject(fn, x)
     if (isFunction(x)) return filterReducer(fn, x)
     throw new TypeError('filter(...)(x); x invalid')
