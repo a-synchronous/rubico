@@ -466,8 +466,6 @@ if `x0` is provided, `y` is initially `x0`, else `y` assumes the first `zi` of `
 ## omit
 
 # More Examples
-### Sync vs async
-
 ### A webserver using map, transform, and https://deno.land/std/http/server.ts serve
 ```javascript
 import { serve } from "https://deno.land/std/http/server.ts";
