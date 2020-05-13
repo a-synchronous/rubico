@@ -389,7 +389,9 @@ y = switchCase(functions)(x)
 
 `functions` is an array of functions
 
-given predicate functions if1, if2, ..., ifN; corresponding functions do1, do2, ..., doN; default function doDefault;
+given predicate functions if1, if2, ..., ifN;<br>
+corresponding functions do1, do2, ..., doN;<br>
+and default function doDefault;
 
 `functions` is the array of functions [if1, do1, if2, do2, ..., ifN, doN, doDefault]
 
