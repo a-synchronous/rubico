@@ -1271,159 +1271,182 @@ describe('rubico', () => {
   })
 
   describe('eq', () => {
-    it('[sync] eq(functions)(x) === allStrictEqual(functions.map(f => f(x))))', async () => {
-      ase(r.eq([x => `${x}`, x => x])('hey'), true)
-      ase(r.eq([x => `${x}`, x => x])(1), false)
+    it('[sync] eq(f, g)(x) === (f(x) === g(x))', async () => {
+      ase(r.eq(x => `${x}`, x => x)('hey'), true)
+      ase(r.eq(x => `${x}`, x => x)(1), false)
     })
-    it('[async] eq(functions)(x) === allStrictEqual(functions.map(f => f(x))))', async () => {
-      aok(r.eq([x => `${x}`, async x => x])('hey') instanceof Promise)
-      ase(await r.eq([x => `${x}`, async x => x])('hey'), true)
-      ase(await r.eq([x => `${x}`, async x => x])(1), false)
+    it('[async] eq(f, g)(x) === (f(x) === g(x))', async () => {
+      aok(r.eq(x => `${x}`, async x => x)('hey') instanceof Promise)
+      ase(await r.eq(x => `${x}`, async x => x)('hey'), true)
+      ase(await r.eq(x => `${x}`, async x => x)(1), false)
     })
-    it('throws TypeError on eq(nonArray)', async () => {
+    it('[async] eq(value, g)(x) === (value === g(x))', async () => {
+      aok(r.eq('hey', async x => x)('hey') instanceof Promise)
+      ase(await r.eq('hey', async x => x)('hey'), true)
+      ase(await r.eq('ho', async x => x)(1), false)
+    })
+    it('[sync] eq(valueA, valueB)(x) === (valueA === valueB)', async () => {
+      ase(r.eq('hey', 'hey')('ayylmao'), true)
+      ase(r.eq('hey', 'ho')('ayylmao'), false)
+    })
+    it('throws RangeError on not enough arguments', async () => {
       assert.throws(
         () => r.eq('hey'),
-        new TypeError('eq(x); x is not an array of functions'),
+        new RangeError('eq(...arguments); exactly two arguments required'),
       )
     })
-    it('throws TypeError on eq(arrayOfLengthLessThan2)', async () => {
+    it('throws RangeError on too many arguments', async () => {
       assert.throws(
-        () => r.eq([() => true]),
-        new RangeError('eq(x); x is not an array of at least two functions'),
-      )
-    })
-    it('throws TypeError on eq(x); any xi of x is not a function', async () => {
-      assert.throws(
-        () => r.eq([() => true, 'hey', 'yo']),
-        new TypeError('eq(x); x[1] is not a function'),
+        () => r.eq('hey', () => {}, 'ho'),
+        new RangeError('eq(...arguments); exactly two arguments required'),
       )
     })
   })
 
   describe('gt', () => {
-    it('[sync] gt(functions)(x) === eachGreaterThanPreviousAsc(functions.map(f => f(x))))', async () => {
-      ase(r.gt([() => 1, x => x])(2), false)
-      ase(r.gt([() => 1, x => x])(1), false)
-      ase(r.gt([() => 1, x => x])(0), true)
+    it('[sync] gt(f, g)(x) === (f(x) > g(x))', async () => {
+      ase(r.gt(x => x + 1, x => x)(1), true)
+      ase(r.gt(x => x, x => x)(1), false)
+      ase(r.gt(x => x, x => x + 1)(1), false)
     })
-    it('[async] gt(functions)(x) === eachGreaterThanPreviousAsc(functions.map(f => f(x))))', async () => {
-      aok(r.gt([() => 1, async x => x])(2) instanceof Promise)
-      ase(await r.gt([() => 1, async x => x])(2), false)
-      ase(await r.gt([() => 1, async x => x])(1), false)
-      ase(await r.gt([() => 1, async x => x])(0), true)
+    it('[async] gt(f, g)(x) === (f(x) > g(x))', async () => {
+      aok(r.gt(x => x + 1, async x => x)(1) instanceof Promise)
+      ase(await r.gt(x => x + 1, async x => x)(1), true)
+      ase(await r.gt(async x => x, x => x)(1), false)
+      ase(await r.gt(async x => x, async x => x + 1)(1), false)
     })
-    it('throws TypeError on gt(nonArray)', async () => {
+    it('[async] gt(value, g)(x) === (value > g(x))', async () => {
+      aok(r.gt(1, async x => x)(2) instanceof Promise)
+      ase(await r.gt(1, async x => x)(0), true)
+      ase(await r.gt(1, async x => x)(1), false)
+      ase(await r.gt(1, async x => x)(2), false)
+    })
+    it('[sync] gt(valueA, valueB)(x) === (valueA > valueB)', async () => {
+      ase(r.gt(1, 0)('ayylmao'), true)
+      ase(r.gt(1, 1)('ayylmao'), false)
+      ase(r.gt(0, 1)('ayylmao'), false)
+    })
+    it('throws RangeError on not enough arguments', async () => {
       assert.throws(
         () => r.gt('hey'),
-        new TypeError('gt(x); x is not an array of functions'),
+        new RangeError('gt(...arguments); exactly two arguments required'),
       )
     })
-    it('throws TypeError on gt(arrayOfLengthLessThan2)', async () => {
+    it('throws RangeError on too many arguments', async () => {
       assert.throws(
-        () => r.gt([() => true]),
-        new RangeError('gt(x); x is not an array of at least two functions'),
-      )
-    })
-    it('throws TypeError on gt(x); any xi of x is not a function', async () => {
-      assert.throws(
-        () => r.gt([() => true, 'hey', 'yo']),
-        new TypeError('gt(x); x[1] is not a function'),
+        () => r.gt('hey', () => {}, 'ho'),
+        new RangeError('gt(...arguments); exactly two arguments required'),
       )
     })
   })
 
   describe('lt', () => {
-    it('[sync] lt(functions)(x) === eachLessThanPreviousAsc(functions.map(f => f(x))))', async () => {
-      ase(r.lt([x => x, () => 1])(2), false)
-      ase(r.lt([x => x, () => 1])(1), false)
-      ase(r.lt([x => x, () => 1])(0), true)
+    it('[sync] lt(f, g)(x) === (f(x) < g(x))', async () => {
+      ase(r.lt(x => x + 1, x => x)(1), false)
+      ase(r.lt(x => x, x => x)(1), false)
+      ase(r.lt(x => x, x => x + 1)(1), true)
     })
-    it('[async] lt(functions)(x) === eachLessThanPreviousAsc(functions.map(f => f(x))))', async () => {
-      aok(r.lt([x => x, async () => 1])(2) instanceof Promise)
-      ase(await r.lt([x => x, async () => 1])(2), false)
-      ase(await r.lt([x => x, async () => 1])(1), false)
-      ase(await r.lt([x => x, async () => 1])(0), true)
+    it('[async] lt(f, g)(x) === (f(x) < g(x))', async () => {
+      aok(r.lt(x => x + 1, async x => x)(1) instanceof Promise)
+      ase(await r.lt(x => x + 1, async x => x)(1), false)
+      ase(await r.lt(async x => x, x => x)(1), false)
+      ase(await r.lt(async x => x, async x => x + 1)(1), true)
     })
-    it('throws TypeError on lt(nonArray)', async () => {
+    it('[async] lt(value, g)(x) === (value < g(x))', async () => {
+      aok(r.lt(1, async x => x)(2) instanceof Promise)
+      ase(await r.lt(1, async x => x)(0), false)
+      ase(await r.lt(1, async x => x)(1), false)
+      ase(await r.lt(1, async x => x)(2), true)
+    })
+    it('[sync] lt(valueA, valueB)(x) === (valueA < valueB)', async () => {
+      ase(r.lt(1, 0)('ayylmao'), false)
+      ase(r.lt(1, 1)('ayylmao'), false)
+      ase(r.lt(0, 1)('ayylmao'), true)
+    })
+    it('throws RangeError on not enough arguments', async () => {
       assert.throws(
         () => r.lt('hey'),
-        new TypeError('lt(x); x is not an array of functions'),
+        new RangeError('lt(...arguments); exactly two arguments required'),
       )
     })
-    it('throws TypeError on lt(arrayOfLengthLessThan2)', async () => {
+    it('throws RangeError on too many arguments', async () => {
       assert.throws(
-        () => r.lt([() => true]),
-        new RangeError('lt(x); x is not an array of at least two functions'),
-      )
-    })
-    it('throws TypeError on lt(x); any xi of x is not a function', async () => {
-      assert.throws(
-        () => r.lt([() => true, 'hey', 'yo']),
-        new TypeError('lt(x); x[1] is not a function'),
+        () => r.lt('hey', () => {}, 'ho'),
+        new RangeError('lt(...arguments); exactly two arguments required'),
       )
     })
   })
 
   describe('gte', () => {
-    it('[sync] gte(functions)(x) === eachGreaterThanEqualsPreviousAsc(functions.map(f => f(x))))', async () => {
-      ase(r.gte([() => 1, x => x])(2), false)
-      ase(r.gte([() => 1, x => x])(1), true)
-      ase(r.gte([() => 1, x => x])(0), true)
+    it('[sync] gte(f, g)(x) === (f(x) >= g(x))', async () => {
+      ase(r.gte(x => x + 1, x => x)(1), true)
+      ase(r.gte(x => x, x => x)(1), true)
+      ase(r.gte(x => x, x => x + 1)(1), false)
     })
-    it('[async] gte(functions)(x) === eachGreaterThanEqualsPreviousAsc(functions.map(f => f(x))))', async () => {
-      aok(r.gte([() => 1, async x => x])(2) instanceof Promise)
-      ase(await r.gte([() => 1, async x => x])(2), false)
-      ase(await r.gte([() => 1, async x => x])(1), true)
-      ase(await r.gte([() => 1, async x => x])(0), true)
+    it('[async] gte(f, g)(x) === (f(x) >= g(x))', async () => {
+      aok(r.gte(x => x + 1, async x => x)(1) instanceof Promise)
+      ase(await r.gte(x => x + 1, async x => x)(1), true)
+      ase(await r.gte(async x => x, x => x)(1), true)
+      ase(await r.gte(async x => x, async x => x + 1)(1), false)
     })
-    it('throws TypeError on gte(nonArray)', async () => {
+    it('[async] gte(value, g)(x) === (value >= g(x))', async () => {
+      aok(r.gte(1, async x => x)(2) instanceof Promise)
+      ase(await r.gte(1, async x => x)(0), true)
+      ase(await r.gte(1, async x => x)(1), true)
+      ase(await r.gte(1, async x => x)(2), false)
+    })
+    it('[sync] gte(valueA, valueB)(x) === (valueA >= valueB)', async () => {
+      ase(r.gte(1, 0)('ayylmao'), true)
+      ase(r.gte(1, 1)('ayylmao'), true)
+      ase(r.gte(0, 1)('ayylmao'), false)
+    })
+    it('throws RangeError on not enough arguments', async () => {
       assert.throws(
         () => r.gte('hey'),
-        new TypeError('gte(x); x is not an array of functions'),
+        new RangeError('gte(...arguments); exactly two arguments required'),
       )
     })
-    it('throws TypeError on gte(arrayOfLengthLessThan2)', async () => {
+    it('throws RangeError on too many arguments', async () => {
       assert.throws(
-        () => r.gte([() => true]),
-        new RangeError('gte(x); x is not an array of at least two functions'),
-      )
-    })
-    it('throws TypeError on gte(x); any xi of x is not a function', async () => {
-      assert.throws(
-        () => r.gte([() => true, 'hey', 'yo']),
-        new TypeError('gte(x); x[1] is not a function'),
+        () => r.gte('hey', () => {}, 'ho'),
+        new RangeError('gte(...arguments); exactly two arguments required'),
       )
     })
   })
 
   describe('lte', () => {
-    it('[sync] lte(functions)(x) === eachLessThanEqualsPreviousAsc(functions.map(f => f(x))))', async () => {
-      ase(r.lte([x => x, () => 1])(2), false)
-      ase(r.lte([x => x, () => 1])(1), true)
-      ase(r.lte([x => x, () => 1])(0), true)
+    it('[sync] lte(f, g)(x) === (f(x) <= g(x))', async () => {
+      ase(r.lte(x => x + 1, x => x)(1), false)
+      ase(r.lte(x => x, x => x)(1), true)
+      ase(r.lte(x => x, x => x + 1)(1), true)
     })
-    it('[async] lte(functions)(x) === eachLessThanEqualsPreviousAsc(functions.map(f => f(x))))', async () => {
-      aok(r.lte([x => x, async () => 1])(2) instanceof Promise)
-      ase(await r.lte([x => x, async () => 1])(2), false)
-      ase(await r.lte([x => x, async () => 1])(1), true)
-      ase(await r.lte([x => x, async () => 1])(0), true)
+    it('[async] lte(f, g)(x) === (f(x) <= g(x))', async () => {
+      aok(r.lte(x => x + 1, async x => x)(1) instanceof Promise)
+      ase(await r.lte(x => x + 1, async x => x)(1), false)
+      ase(await r.lte(async x => x, x => x)(1), true)
+      ase(await r.lte(async x => x, async x => x + 1)(1), true)
     })
-    it('throws TypeError on lte(nonArray)', async () => {
+    it('[async] lte(value, g)(x) === (value <= g(x))', async () => {
+      aok(r.lte(1, async x => x)(2) instanceof Promise)
+      ase(await r.lte(1, async x => x)(0), false)
+      ase(await r.lte(1, async x => x)(1), true)
+      ase(await r.lte(1, async x => x)(2), true)
+    })
+    it('[sync] lte(valueA, valueB)(x) === (valueA <= valueB)', async () => {
+      ase(r.lte(1, 0)('ayylmao'), false)
+      ase(r.lte(1, 1)('ayylmao'), true)
+      ase(r.lte(0, 1)('ayylmao'), true)
+    })
+    it('throws RangeError on not enough arguments', async () => {
       assert.throws(
         () => r.lte('hey'),
-        new TypeError('lte(x); x is not an array of functions'),
+        new RangeError('lte(...arguments); exactly two arguments required'),
       )
     })
-    it('throws TypeError on lte(arrayOfLengthLessThan2)', async () => {
+    it('throws RangeError on too many arguments', async () => {
       assert.throws(
-        () => r.lte([() => true]),
-        new RangeError('lte(x); x is not an array of at least two functions'),
-      )
-    })
-    it('throws TypeError on lte(x); any xi of x is not a function', async () => {
-      assert.throws(
-        () => r.lte([() => true, 'hey', 'yo']),
-        new TypeError('lte(x); x[1] is not a function'),
+        () => r.lte('hey', () => {}, 'ho'),
+        new RangeError('lte(...arguments); exactly two arguments required'),
       )
     })
   })
