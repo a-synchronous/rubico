@@ -202,7 +202,7 @@ y = pipe(functions)(x)
 `x` is anything
 
 if `x` is a function, pipe chains `functions` from right to left,
-see [reduce](https://github.com/richytong/rubico#reduce)
+see [transducers](https://github.com/richytong/rubico#transducers)
 
 `y` is the output of running `x` through the chain of `functions`
 
@@ -303,7 +303,7 @@ assign({
 ```
 
 ## tap
-calls a sync or async function with input, returning input
+calls a sync or async function `f` with input `x`, returning `x`
 ```javascript
 y = tap(f)(x)
 ```
@@ -315,7 +315,7 @@ if `f` is synchronous, `y` is `x`
 
 if `f` is asynchronous, `y` is a Promise that resolves to `x`
 
-if `x` is a function
+if `x` is a function, tap calls `f` for each element `zi` of `z`, yielding `zi`
 ```javascript
 y = reduce(tap(f)(x))(z)
 ```
@@ -327,7 +327,7 @@ y = reduce(tap(f)(x))(z)
 
 `f` is a function that expects one argument `zi`
 
-`y` is `reduce(x)(z)`
+`y` is equivalent in value to `reduce(x)(z)`
 ```javascript
 tap(
   console.log, // > 'hey'
@@ -400,9 +400,11 @@ y = switchCase(functions)(x)
 
 `functions` is an array of functions
 
-given predicate functions `if1, if2, ..., ifN`;<br>
-corresponding functions `do1, do2, ..., doN`;<br>
-and default function `doDefault`;<br>
+given<br>
+  `if1, if2, ..., ifN` predicate functions<br>
+  `do1, do2, ..., doN` corresponding then functions<br>
+  `doDefault`          an else function
+
 `functions` is the array of functions `[if1, do1, if2, do2, ..., ifN, doN, doDefault]`
 
 switchCase evaluates supplied functions in series `evaluated` and breaks early on a truthy predicate
@@ -448,7 +450,79 @@ applies a sync or async function `f` to each element of a collection `x`
 ```javascript
 y = map(f)(x)
 ```
+`x` is an array, a string, a set, a map, a typed array, an object,<br>
+    an async iterator, a generated iterator, or a function
 
+`f` is a function
+
+`y` is `x` with `fn` applied to each element
+
+if `x` is an async iterator, `y` is not a Promise
+
+if `fn` is synchronous, `y` is not a Promise
+
+if `fn` is asynchronous and `x` is not an async iterator, `y` is a Promise
+
+if `x` is a function, map applies `f` to each element `zi` of `z`, yielding `f(zi)`
+```javascript
+y = reduce(map(f)(x))(z)
+```
+`reduce` is [reduce](https://github.com/richytong/rubico#reduce),
+
+`z` is an iterable, asyncIterable, or object
+
+`zi` is an element of `z`
+
+`f` is a function that expects one argument `zi`
+
+`y` is equivalent in value to `reduce(x)(map(f)(z))`
+```javascript
+map(
+  x => x + 1,
+)([1, 2, 3, 4, 5]) // => [2, 3, 4, 5, 6]
+
+map(
+  async x => x + 'yo',
+)(['a', 'he']) // => Promise { ['ayo', 'heyo'] }
+
+map(
+  x => Math.abs(x)
+)(new Set([-2, -1, 0, 1, 2])) // new Set([0, 1, 2])
+
+map(
+  async ([key, value]) => [key + key, value + value],
+)(new Map([['a', 1], ['b', 2]])) // Promise { Map { 'aa' => 2, 'bb' => 4 } }
+
+String.fromCharCode(
+  ...map(
+    x => x + 1,
+  )(new Uint8Array([97, 98, 99])) // 'abc' as bytes
+) // => 'bcd'
+
+map(
+  async x => x + 'z',
+)({ a: 'lol', b: 'cat' }) // => Promise { { a: 'lolz', b: 'catz' } }
+
+map(map(
+  x => x + 'z',
+))({ a: { a: 'lol' }, b: { b: 'cat' } }) // => { { a: { a: 'lolz' } }, { b: { b: 'catz' } } }
+
+const asyncNumbersGeneratedIterator = (async function*() {
+  for (let i = 0; i < 5; i++) { yield i + 1 }
+})() // generated asyncIterator that yields 1 2 3 4 5
+
+map(
+  x => x + 1,
+)(asyncNumbersGeneratedIterator) // => generated asyncIterator that yields 2 3 4 5 6
+
+const numbersGeneratedIterator = (function*() {
+  for (let i = 0; i < 5; i++) { yield i + 1 }
+})() // generated iterator that yields 1 2 3 4 5
+
+map(
+  x => x + 1,
+)(numbersGeneratedIterator) // => generated iterator that yields 2 3 4 5 6
+```
 ## filter
 filters elements out of a collection `x` based on predicate `f`
 ```javascript
