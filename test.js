@@ -71,6 +71,10 @@ const consumeReadStreamPull = s => new Promise((resolve, reject) => {
   s.on('error', err => reject(err))
 })
 
+const makeAsyncNumbers = async function*() {
+  for (let i = 0; i < 5; i++) yield i + 1
+}
+
 const asyncIteratorToArray = async x => {
   const y = []
   for await (const xi of x) y.push(xi)
@@ -510,6 +514,32 @@ describe('rubico', () => {
   })
 
   describe('map', () => {
+    it('lazily applies an async function in parallel to all values of an async iterable', async () => {
+      aok(!(r.map(async x => x + 1)(makeAsyncNumbers()) instanceof Promise))
+      aok(r.map(async x => x + 1)(makeAsyncNumbers())[Symbol.asyncIterator])
+      aok(asyncIteratorToArray(
+        r.map(async x => x + 1)(makeAsyncNumbers()),
+      ) instanceof Promise)
+      ade(
+        await asyncIteratorToArray(
+          r.map(async x => x + 1)(makeAsyncNumbers()),
+        ),
+        [2, 3, 4, 5, 6]
+      )
+    })
+    it('lazily applies a sync function in parallel to all values of an async iterable', async () => {
+      aok(!(r.map(x => x + 1)(makeAsyncNumbers()) instanceof Promise))
+      aok(r.map(x => x + 1)(makeAsyncNumbers())[Symbol.asyncIterator])
+      aok(asyncIteratorToArray(
+        r.map(x => x + 1)(makeAsyncNumbers()),
+      ) instanceof Promise)
+      ade(
+        await asyncIteratorToArray(
+          r.map(x => x + 1)(makeAsyncNumbers()),
+        ),
+        [2, 3, 4, 5, 6]
+      )
+    })
     it('applies an async function in parallel to all elements of an array', async () => {
       aok(r.map(asyncHey)(['yo', 1]) instanceof Promise)
       ade(
@@ -610,22 +640,6 @@ describe('rubico', () => {
         { a: 'yohi', b: '1hi' },
       )
     })
-    const makeAsyncNumbers = async function*() {
-      for (let i = 0; i < 5; i++) yield i + 1
-    }
-    it('applies an async function in parallel to all values of an async iterable', async () => {
-      aok(!(r.map(async x => x + 1)(makeAsyncNumbers()) instanceof Promise))
-      aok(r.map(async x => x + 1)(makeAsyncNumbers())[Symbol.asyncIterator])
-      aok(asyncIteratorToArray(
-        r.map(async x => x + 1)(makeAsyncNumbers()),
-      ) instanceof Promise)
-      ade(
-        await asyncIteratorToArray(
-          r.map(async x => x + 1)(makeAsyncNumbers()),
-        ),
-        [2, 3, 4, 5, 6]
-      )
-    })
     it('acts as a map transducer: binary function => reducer', async () => {
       const addHiReducer = r.map(hi)((y, xi) => y + xi)
       ase(typeof addHiReducer, 'function')
@@ -713,27 +727,122 @@ describe('rubico', () => {
   })
 
   describe('filter', () => {
-    it('filters elements from an array with a sync predicate', async () => {
+    it('lazily filters values from an async iterable based on an async predicate', async () => {
+      aok(!(r.filter(async x => x <= 3)(makeAsyncNumbers()) instanceof Promise))
+      aok(r.filter(async x => x <= 3)(makeAsyncNumbers())[Symbol.asyncIterator])
+      aok(asyncIteratorToArray(
+        r.filter(async x => x <= 3)(makeAsyncNumbers()),
+      ) instanceof Promise)
       ade(
-        r.filter(isOdd)([1, 2, 3, 4, 5]),
-        [1, 3, 5],
+        await asyncIteratorToArray(
+          r.filter(async x => x <= 3)(makeAsyncNumbers()),
+        ),
+        [1, 2, 3],
       )
+    })
+    it('lazily filters values from an async iterable based on a sync predicate', async () => {
+      aok(!(r.filter(x => x <= 3)(makeAsyncNumbers()) instanceof Promise))
+      aok(r.filter(x => x <= 3)(makeAsyncNumbers())[Symbol.asyncIterator])
+      aok(asyncIteratorToArray(
+        r.filter(x => x <= 3)(makeAsyncNumbers()),
+      ) instanceof Promise)
+      ade(
+        await asyncIteratorToArray(
+          r.filter(x => x <= 3)(makeAsyncNumbers()),
+        ),
+        [1, 2, 3],
+      )
+    })
+    it('filters characters from a string based on an async predicate', async () => {
+      aok(r.filter(async x => x !== 'o')('heyoheyohey') instanceof Promise)
+      ase(await r.filter(async x => x !== 'o')('heyoheyohey'), 'heyheyhey')
+    })
+    it('filters characters from a string based on a sync predicate', async () => {
+      ase(r.filter(x => x !== 'o')('heyoheyohey'), 'heyheyhey')
+    })
+    it('filters values from a set based on an async predicate', async () => {
+      aok(r.filter(async x => x <= 3)(new Set([1, 2, 3, 4, 5])) instanceof Promise)
+      ade(
+        await r.filter(async x => x <= 3)(new Set([1, 2, 3, 4, 5])),
+        new Set([1, 2, 3]),
+      )
+    })
+    it('filters values from a set based on a sync predicate', async () => {
+      ade(
+        r.filter(x => x <= 3)(new Set([1, 2, 3, 4, 5])),
+        new Set([1, 2, 3]),
+      )
+    })
+    it('filters entries from a map based on an async predicate', async () => {
+      const numsMap = new Map([[1, 1], [2, 2], [3, 3], [4, 4], [5, 5]])
+      aok(r.filter(async ([k, v]) => k <= 3 && v <= 3)(numsMap) instanceof Promise)
+      ade(
+        await r.filter(async ([k, v]) => k <= 3 && v <= 3)(numsMap),
+        new Map([[1, 1], [2, 2], [3, 3]]),
+      )
+    })
+    it('filters entries from a map based on a sync predicate', async () => {
+      const numsMap = new Map([[1, 1], [2, 2], [3, 3], [4, 4], [5, 5]])
+      ade(
+        r.filter(([k, v]) => k <= 3 && v <= 3)(numsMap),
+        new Map([[1, 1], [2, 2], [3, 3]]),
+      )
+    })
+    it('filters bytes from a number typed array based on an async predicate', async () => {
+      for (const constructor of numberTypedArrayConstructors) {
+        aok(r.filter(async x => x <= 3)(new constructor([1, 2, 3, 4, 5])) instanceof Promise)
+        ade(
+          await r.filter(async x => x <= 3)(new constructor([1, 2, 3, 4, 5])),
+          new constructor([1, 2, 3]),
+        )
+      }
+    })
+    it('filters bytes from a number typed array based on a sync predicate', async () => {
+      for (const constructor of numberTypedArrayConstructors) {
+        ade(
+          r.filter(x => x <= 3)(new constructor([1, 2, 3, 4, 5])),
+          new constructor([1, 2, 3]),
+        )
+      }
+    })
+    it('filters bytes from a bigint typed array based on an async predicate', async () => {
+      for (const constructor of bigIntTypedArrayConstructors) {
+        aok(r.filter(async x => x <= 3n)(new constructor([1n, 2n, 3n, 4n, 5n])) instanceof Promise)
+        ade(
+          await r.filter(async x => x <= 3)(new constructor([1n, 2n, 3n, 4n, 5n])),
+          new constructor([1n, 2n, 3n]),
+        )
+      }
+    })
+    it('filters bytes from a bigint typed array based on a sync predicate', async () => {
+      for (const constructor of bigIntTypedArrayConstructors) {
+        ade(
+          r.filter(x => x <= 3n)(new constructor([1n, 2n, 3n, 4n, 5n])),
+          new constructor([1n, 2n, 3n]),
+        )
+      }
     })
     it('filters elements from an array with an async predicate', async () => {
       const evens = r.filter(asyncIsEven)([1, 2, 3, 4, 5])
       aok(evens instanceof Promise)
       ade(await evens, [2, 4])
     })
-    it('filters entries from an object with a sync predicate', async () => {
+    it('filters elements from an array with a sync predicate', async () => {
       ade(
-        r.filter(isOdd)({ a: 1, b: 2, c: 3, d: 4, e: 5 }),
-        { a: 1, c: 3, e: 5 },
+        r.filter(isOdd)([1, 2, 3, 4, 5]),
+        [1, 3, 5],
       )
     })
     it('filters entries from an object with an async predicate', async () => {
       const evens = r.filter(asyncIsEven)({ a: 1, b: 2, c: 3, d: 4, e: 5 })
       aok(evens instanceof Promise)
       ade(await evens, { b: 2, d: 4 })
+    })
+    it('filters entries from an object with a sync predicate', async () => {
+      ade(
+        r.filter(isOdd)({ a: 1, b: 2, c: 3, d: 4, e: 5 }),
+        { a: 1, c: 3, e: 5 },
+      )
     })
     it('acts as a filter transducer: binary function => reducer', async () => {
       const addOddsReducer = r.filter(isOdd)((y, xi) => y + xi)
@@ -743,13 +852,13 @@ describe('rubico', () => {
       ase(typeof addEvensReducer, 'function')
       ase(addEvensReducer.length, 2)
     })
-    it('transducer handles sync predicates', async () => {
-      const addOddsReducer = r.filter(isOdd)((y, xi) => y + xi)
-      ase([1, 2, 3, 4, 5].reduce(addOddsReducer, 0), 9)
-    })
     it('transducer handles async predicates', async () => {
       const addEvensReducer = r.filter(asyncIsEven)((y, xi) => y + xi)
       ase(await asyncArrayReduce(addEvensReducer, 0)([1, 2, 3, 4, 5, 6], 0), 12)
+    })
+    it('transducer handles sync predicates', async () => {
+      const addOddsReducer = r.filter(isOdd)((y, xi) => y + xi)
+      ase([1, 2, 3, 4, 5].reduce(addOddsReducer, 0), 9)
     })
     it('throws a TypeError on filter({})', async () => {
       assert.throws(
@@ -759,7 +868,7 @@ describe('rubico', () => {
     })
     it('throws a TypeError on filter(...)(string)', async () => {
       assert.throws(
-        () => r.filter(hi)('yo'),
+        () => r.filter(hi)(null),
         new TypeError('filter(...)(x); x invalid')
       )
     })
