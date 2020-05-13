@@ -821,21 +821,17 @@ const lte = function(f, g) {
 }
 
 export {
-  pipe, fork, assign,
-  tap, tryCatch, switchCase,
+  pipe, fork, assign, tap, tryCatch, switchCase,
   map, filter, reduce, transform,
-  get, pick, omit,
-  any, all,
-  and, or, not,
+  any, all, and, or, not,
   eq, gt, lt, gte, lte,
+  get, pick, omit,
 }
 
 export default {
-  pipe, fork, assign,
-  tap, tryCatch, switchCase,
+  pipe, fork, assign, tap, tryCatch, switchCase,
   map, filter, reduce, transform,
-  get, pick, omit,
-  any, all,
-  and, or, not,
+  any, all, and, or, not,
   eq, gt, lt, gte, lte,
+  get, pick, omit,
 }

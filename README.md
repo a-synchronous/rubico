@@ -83,13 +83,11 @@ rubico works in server and browser JavaScript environments
 with deno;
 ```javascript
 import {
-  pipe, fork, assign,
-  tap, tryCatch, switchCase,
+  pipe, fork, assign, tap, tryCatch, switchCase,
   map, filter, reduce, transform,
-  get, pick, omit,
-  any, all,
-  and, or, not,
+  any, all, and, or, not,
   eq, gt, lt, gte, lte,
+  get, pick, omit,
 } from 'https://deno.land/x/rubico/mod.ts'
 ```
 with npm; `npm i rubico`
@@ -161,7 +159,6 @@ rubico exports 23 functions
 [pipe](https://github.com/richytong/rubico#pipe),
 [fork](https://github.com/richytong/rubico#fork),
 [assign](https://github.com/richytong/rubico#assign)
-
 [tap](https://github.com/richytong/rubico#tap),
 [tryCatch](https://github.com/richytong/rubico#tryCatch),
 [switchCase](https://github.com/richytong/rubico#switchCase)
@@ -171,13 +168,8 @@ rubico exports 23 functions
 [reduce](https://github.com/richytong/rubico#reduce),
 [transform](https://github.com/richytong/rubico#transform)
 
-[get](https://github.com/richytong/rubico#get),
-[pick](https://github.com/richytong/rubico#pick),
-[omit](https://github.com/richytong/rubico#omit)
-
 [any](https://github.com/richytong/rubico#any),
 [all](https://github.com/richytong/rubico#all)
-
 [and](https://github.com/richytong/rubico#and),
 [or](https://github.com/richytong/rubico#or),
 [not](https://github.com/richytong/rubico#not)
@@ -187,6 +179,10 @@ rubico exports 23 functions
 [lt](https://github.com/richytong/rubico#lt),
 [gte](https://github.com/richytong/rubico#gte),
 [lte](https://github.com/richytong/rubico#lte)
+
+[get](https://github.com/richytong/rubico#get),
+[pick](https://github.com/richytong/rubico#pick),
+[omit](https://github.com/richytong/rubico#omit)
 
 ## pipe
 chains sync or async functions from left to right
@@ -455,9 +451,6 @@ for each `zi` of `z`, `reduce` provides `x` with two arguments `y` and `zi`
 if `x0` is provided, `y` is initially `x0`, else `y` assumes the first `zi` of `z`
 
 ## transform
-## get
-## pick
-## omit
 ## any
 ## all
 ## and
@@ -468,6 +461,9 @@ if `x0` is provided, `y` is initially `x0`, else `y` assumes the first `zi` of `
 ## lt
 ## gte
 ## lte
+## get
+## pick
+## omit
 
 # More Examples
 ### Sync vs async
@@ -487,13 +483,11 @@ transform(null, map(req => {
 ```javascript
 import { serve } from 'https://deno.land/std/http/server.ts'
 import {
-  pipe, fork, assign,
-  tap, tryCatch, switchCase,
+  pipe, fork, assign, tap, tryCatch, switchCase,
   map, filter, reduce, transform,
-  get, pick, omit,
-  any, all,
-  and, or, not,
+  any, all, and, or, not,
   eq, gt, lt, gte, lte,
+  get, pick, omit,
 } from 'https://deno.land/x/rubico/mod.ts'
 
 const join = delim => x => x.join(delim)

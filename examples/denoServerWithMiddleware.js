@@ -1,12 +1,10 @@
 import { serve } from 'https://deno.land/std/http/server.ts'
 import {
-  pipe, fork, assign,
-  tap, tryCatch, switchCase,
+  pipe, fork, assign, tap, tryCatch, switchCase,
   map, filter, reduce, transform,
-  get, pick, omit,
-  any, all,
-  and, or, not,
+  any, all, and, or, not,
   eq, gt, lt, gte, lte,
+  get, pick, omit,
 } from '../mod.js'
 
 const join = delim => x => x.join(delim)
