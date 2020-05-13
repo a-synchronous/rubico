@@ -401,9 +401,9 @@ y = switchCase(functions)(x)
 `functions` is an array of functions
 
 given<br>
-  `if1, if2, ..., ifN` predicate functions<br>
-  `do1, do2, ..., doN` corresponding then functions<br>
-  `doDefault`          an else function
+`if1, if2, ..., ifN` predicate functions<br>
+`do1, do2, ..., doN` corresponding then functions<br>
+`doDefault`          an else function
 
 `functions` is the array of functions `[if1, do1, if2, do2, ..., ifN, doN, doDefault]`
 
