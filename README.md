@@ -526,7 +526,7 @@ reduce(
 )([1, 2, 3, 4, 5]) // => Promise { 20 }
 ```
 ## filter
-filters elements out of a collection `x` based on predicate `f`
+filters elements out of a collection `x` based on sync or async predicate `f`
 ```javascript
 y = filter(f)(x)
 ```
@@ -613,7 +613,7 @@ reduce(
 )([1, 2, 3, 4, 5]) // => Promise { 6 }
 ```
 ## reduce
-applies a reducing function `f` to each element of a collection `x`, returning a single value
+applies a sync or async reducing function `f` to each element of a collection `x`, returning a single value
 ```javascript
 y = reduce(f, x0)(x)
 ```
