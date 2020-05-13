@@ -88,7 +88,7 @@ import {
   any, all, and, or, not,
   eq, gt, lt, gte, lte,
   get, pick, omit,
-} from 'https://deno.land/x/rubico/mod.ts'
+} from 'https://deno.land/x/rubico/mod.js'
 ```
 with npm; `npm i rubico`
 
@@ -471,7 +471,7 @@ if `x0` is provided, `y` is initially `x0`, else `y` assumes the first `zi` of `
 ### A webserver using map, transform, and https://deno.land/std/http/server.ts serve
 ```javascript
 import { serve } from "https://deno.land/std/http/server.ts";
-import { map, transform } from "https://deno.land/x/rubico/mod.ts"
+import { map, transform } from "https://deno.land/x/rubico/mod.js"
 const s = serve({ port: 8001 });
 console.log("http://localhost:8001/");
 transform(null, map(req => {
@@ -488,7 +488,7 @@ import {
   any, all, and, or, not,
   eq, gt, lt, gte, lte,
   get, pick, omit,
-} from 'https://deno.land/x/rubico/mod.ts'
+} from 'https://deno.land/x/rubico/mod.js'
 
 const join = delim => x => x.join(delim)
 
