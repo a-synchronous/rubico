@@ -547,8 +547,8 @@ filter(
 
 const abcSet = new Set(['a', 'b', 'c'])
 filter(
-  letter => !abcSet.has(letter),
-)(new Set(['a', 'b', 'c', 'd'])) // => Set { 'd' }
+  letter => abcSet.has(letter),
+)(new Set(['a', 'z'])) // => Set { 'a' }
 
 filter(
   ([key, value]) => key === value,
