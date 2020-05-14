@@ -773,7 +773,7 @@ y = reduce(reducer)(x)
 A reducer takes two arguments: an aggregate `y` and an iterative value `xi`.<br>
 It can be something like `(y, xi) => doSomethingWith(y, xi)`
 
-A transducer is a function that takes a reducer and returns another reducer
+A `transducer` is a function that takes a reducer and returns another reducer
 ```javascript
 transducer = reducer => (y, xi) => reducer(doSomethingWith(y, xi))
 ```
