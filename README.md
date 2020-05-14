@@ -329,8 +329,10 @@ tap(
   console.log, // > 'hey'
 )('hey') // => 'hey'
 
+const asyncConsoleLog = async x => console.log(x)
+
 tap(
-  async x => console.log(x), // > 'hey'
+  asyncConsoleLog, // > 'hey'
 )('hey') // => Promise { 'hey' }
 
 const concat = (y, xi) => y.concat([xi])
@@ -408,24 +410,17 @@ switchCase evaluates functions in `functions` from left to right
   * any evaluated functions are asynchronous
 
 ```javascript
-switchCase([
-  x => x > 0, x => `${x} is greather than zero`,
-  x => `${x} is not greater than zero`,
-])(1) // => '1 is greater than zero'
+isOdd = x => x % 2 === 1
 
 switchCase([
-  x => x === 1, x => `${x} is one`,
-  x => x === 2, x => `${x} is two`,
-  x => x === 3, x => `${x} is three`,
-  async () => 'not one, two, nor three',
-])(1) // => '1 is one'
+  isOdd, () => 'odd',
+  () => 'even',
+])(1) // => 'odd'
 
 switchCase([
-  async x => x === 1, () => 'one',
-  x => x === 2, () => 'two',
-  x => x === 3, () => 'three',
-  x => `${x} is not one, two, nor three`,
-])(5) // => Promise { '5 is not one, two, nor three' }
+  async isOdd, () => 'odd',
+  () => 'even',
+])(1) // => Promise { 'odd' }
 ```
 
 ## map
