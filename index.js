@@ -582,6 +582,11 @@ const setTransform = (fn, x0) => reduce(
   new Set(x0),
 )
 
+const mapTransform = (fn, x0) => reduce(
+  fn((y, xi) => y.set(xi[0], xi[1])),
+  new Map(x0),
+)
+
 const stringToCharCodes = x => {
   const y = []
   for (let i = 0; i < x.length; i++) {
@@ -592,7 +597,7 @@ const stringToCharCodes = x => {
 
 const toNumberTypedArray = (constructor, x) => {
   if (isNumber(x)) return constructor.of(x)
-  if (isString(x)) return new constructor(stringToCharCodes(x)) // TODO: String.fromCharCode
+  if (isString(x)) return new constructor(stringToCharCodes(x))
   if (isNumberTypedArray(x)) return new constructor(x)
   if (isArray(x) && x.every(isNumber)) return new constructor(x)
   throw new TypeError([
@@ -671,6 +676,7 @@ const transform = (fn, x0) => {
   if (isArray(x0)) return arrayTransform(fn, x0)
   if (isString(x0)) return stringTransform(fn, x0)
   if (is(Set)(x0)) return setTransform(fn, x0)
+  if (is(Map)(x0)) return mapTransform(fn, x0)
   if (isNumberTypedArray(x0)) return numberTypedArrayTransform(fn, x0)
   if (isBigIntTypedArray(x0)) return bigIntTypedArrayTransform(fn, x0)
   if (isWritable(x0)) return writableTransform(fn, x0)

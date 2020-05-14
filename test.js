@@ -1129,6 +1129,27 @@ describe('rubico', () => {
         new Set([99, 2, 4]),
       )
     })
+    it('sync transforms iterable to map', async () => {
+      ade(
+        r.transform(r.map(
+          x => [x, x.charCodeAt(0)],
+        ), new Map())('abc'),
+        new Map([['a', 97], ['b', 98], ['c', 99]]),
+      )
+    })
+    it('async transforms iterable to map', async () => {
+      aok(
+        r.transform(r.map(
+          async x => [x, x.charCodeAt(0)],
+        ), new Map())('abc') instanceof Promise
+      )
+      ade(
+        await r.transform(r.map(
+          async x => [x, x.charCodeAt(0)],
+        ), new Map())('abc'),
+        new Map([['a', 97], ['b', 98], ['c', 99]]),
+      )
+    })
     it('strings are encoded into arrays of character codes for number TypedArrays', async () => {
       for (const constructor of numberTypedArrayConstructors) {
         ade(
