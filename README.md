@@ -192,8 +192,6 @@ rubico exports 23 functions
 
 TODO: revisit examples, use variables
 
-TODO: try `y = map(f)(x)`
-
 ## pipe
 chains functions from left to right; `functionN(...(function2(function1(function0(x)))))`
 ```javascript
@@ -319,7 +317,7 @@ y = tap(f)(x)
 
 if `x` is a function, `y` is a transduced reducing function, see [transducers](https://github.com/richytong/rubico#transducers)
 ```javascript
-reduced = reduce(tap(f)(x))(z)
+y = tap(f)(x); reduced = reduce(y)(z)
 ```
 `reduce` is [reduce](https://github.com/richytong/rubico#reduce),
 
@@ -462,7 +460,7 @@ y = map(f)(x)
 
 if `x` is a function, `y` is a transduced reducing function, see [transducers](https://github.com/richytong/rubico#transducers)
 ```javascript
-reduced = reduce(map(f)(x))(z)
+y = map(f)(x); reduced = reduce(y)(z)
 ```
 `reduce` is [reduce](https://github.com/richytong/rubico#reduce),
 
@@ -553,7 +551,7 @@ y = filter(f)(x)
 
 if `x` is a function, `y` is a transduced reducing function, see [transducers](https://github.com/richytong/rubico#transducers)
 ```javascript
-reduced = reduce(filter(f)(x))(z)
+y = filter(f)(x); reduced = reduce(y)(z)
 ```
 `reduce` is [reduce](https://github.com/richytong/rubico#reduce),
 
