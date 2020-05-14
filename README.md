@@ -204,7 +204,7 @@ see [transducers](https://github.com/richytong/rubico#transducers)
 
 `y` is the output of running `x` through the chain of `functions`
 
-`y` is a Promise if:
+`y` is wrapped in a Promise if:
   * any function of `functions` is asynchronous
 
 ```javascript
@@ -236,7 +236,7 @@ all functions of `functions` are run concurrently
 
 `y` is an object of entries `key: f(x)` for entry `key: f` of `functions` if `functions` is an object
 
-`y` is a Promise if:
+`y` is wrapped in a Promise if:
   * any function of `functions` is asynchronous
 
 ```javascript
@@ -280,7 +280,7 @@ all functions of `functions` are run concurrently
 
 `y` is `output` merged into `x`
 
-`y` is a Promise if:
+`y` is wrapped in a Promise if:
   * any function of `functions` is asynchronous
 
 ```javascript
@@ -310,7 +310,7 @@ y = tap(f)(x)
 
 `y` is `x`
 
-`y` is a Promise if:
+`y` is wrapped in a Promise if:
   * `f` is asynchronous
 
 if `x` is a function, `y` is a transduced reducing function, see [transducers](https://github.com/richytong/rubico#transducers)
@@ -358,7 +358,7 @@ y = tryCatch(f, g)(x)
 
 if `f(x)` throws `err`, `y` is `g(err, x)`, else `y` is `f(x)`
 
-`y` is a Promise if:
+`y` is wrapped in a Promise if:
   * `f` is asynchronous
   * `f` is synchronous, `g` is asynchronous, and `f(x)` threw
 
@@ -412,7 +412,7 @@ switchCase evaluates functions in `functions` from left to right
 
 `y` is the first `do(x)` whose corresponding `if(x)` is truthy
 
-`y` is a Promise if:
+`y` is wrapped in a Promise if:
   * any evaluated functions are asynchronous
 
 ```javascript
@@ -453,7 +453,7 @@ y = map(f)(x)
   * if `x` is an iterable but not a built-in type and `f` is asynchronous,
     `y` is an iterable of promises
 
-`y` is a Promise if:
+`y` is wrapped in a Promise if:
   * `f` is asynchronous and `x` is not an async iterable
 
 if `x` is a function, `y` is a transduced reducing function, see [transducers](https://github.com/richytong/rubico#transducers)
@@ -544,7 +544,7 @@ y = filter(f)(x)
   * if `x` is an iterable but not a bulit-in type and `f` is asynchronous,
     filter will throw a TypeError
 
-`y` is a Promise if:
+`y` is wrapped in a Promise if:
   * `f` is asynchronous and `x` is not an async iterable
 
 if `x` is a function, `y` is a transduced reducing function, see [transducers](https://github.com/richytong/rubico#transducers)
@@ -637,7 +637,7 @@ if `x0` is not provided:
 
 `y` is `f(y, xi)` for each successive `xi`
 
-`y` is a Promise if:
+`y` is wrapped in a Promise if:
   * `f` is asynchronous
   * `x` is an async iterable
 
@@ -680,7 +680,7 @@ y = transform(f, x0)(x)
 
 `y` is `x` transformed with `f` into `x0`
 
-`y` is a Promise if:
+`y` is wrapped in a Promise if:
   * `f` is asynchronous
   * `x` is an async iterable
 
