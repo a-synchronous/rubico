@@ -190,6 +190,10 @@ rubico exports 23 functions
 [pick](https://github.com/richytong/rubico#pick),
 [omit](https://github.com/richytong/rubico#omit)
 
+TODO: revisit examples, use variables
+
+TODO: try `y = map(f)(x)`
+
 ## pipe
 chains functions from left to right; `functionN(...(function2(function1(function0(x)))))`
 ```javascript
@@ -625,9 +629,7 @@ y = reduce(f, x0)(x)
 
 `f` is a reducing function that expects two arguments `y` and `xi`
 
-`x0` is optional
-
-if `x0` is provided:
+`x0` is optional, and if provided:
   * `y` starts as `x0`
   * iteration begins with the first element of `x`
 
