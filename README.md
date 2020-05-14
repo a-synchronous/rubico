@@ -77,7 +77,7 @@ const doAsyncThings = pipe([
 
 Enter rubico, a functional (programming) promise library.
 
-rubico resolves two promises:
+rubico resolves on two promises:
 1. simplify asynchronous programming in JavaScript
 2. enable functional programming in JavaScript
 
