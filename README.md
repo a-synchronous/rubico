@@ -794,7 +794,7 @@ squaredOdds([1, 2, 3, 4, 5]) // => [1, 9, 25]
 ```
 
 # More Examples
-### A webserver using map, transform, and https://deno.land/std/http/server.ts serve
+### A webserver using map, transform, and https://deno.land/std/http serve
 ```javascript
 import { serve } from "https://deno.land/std/http/server.ts";
 import { map, transform } from "https://deno.land/x/rubico/rubico.js"
