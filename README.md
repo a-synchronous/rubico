@@ -537,40 +537,29 @@ filter(
 )([1, 2, 3, 4, 5]) // => [1, 3, 5]
 
 const asyncIsOdd = async x => x % 2 === 1
-
 filter(
   asyncIsOdd,
 )([1, 2, 3, 4, 5]) // => Promise { [1, 3, 5] }
 
-const notY = x => x !== 'y'
-
 filter(
-  notY,
-)('yoyoyo') // => Promise { 'ooo' }
+  letter => letter !== 'y',
+)('yoyoyo') // => 'ooo'
 
 const abcSet = new Set(['a', 'b', 'c'])
-const notInAbcSet = x => !abcSet.has(x)
-
 filter(
-  notInAbcSet,
+  letter => !abcSet.has(letter),
 )(new Set(['a', 'b', 'c', 'd'])) // => Set { 'd' }
 
-const isTheSame === ([k, v]) => k === v,
-
 filter(
-  isTheSame,
+  ([key, value]) => key === value,
 )(new Map([[0, 1], [1, 1], [2, 1]])) // => { Map { 1 => 1 } }
 
-const lessThan3n = x => x <= 3n
-
 filter(
-  lessThan3n,
+  bigint => bigint <= 3n,
 )(new BigInt64Array([1n, 2n, 3n, 4n, 5n])) // => BigInt64Array [1n, 2n, 3n]
 
-const equals1 = x => x === 1
-
 filter(
-  equals1,
+  value => value === 1,
 )({ a: 1, b: 2, c: 3 }) // => { a: 1 }
 ```
 
