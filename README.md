@@ -531,54 +531,47 @@ y = filter(f)(x); reduced = reduce(y)(z)
 `reduced` is equivalent to `reduce(x)(filter(f)(z))`
 
 ```javascript
+const isOdd = x => x % 2 === 1
 filter(
-  x => x <= 3,
-)([1, 2, 3, 4, 5]) // => [1, 2, 3]
+  isOdd,
+)([1, 2, 3, 4, 5]) // => [1, 3, 5]
+
+const asyncIsOdd = async x => x % 2 === 1
 
 filter(
-  async x => x !== 'y',
+  asyncIsOdd,
+)([1, 2, 3, 4, 5]) // => Promise { [1, 3, 5] }
+
+const notY = x => x !== 'y'
+
+filter(
+  notY,
 )('yoyoyo') // => Promise { 'ooo' }
 
 const abcSet = new Set(['a', 'b', 'c'])
+const notInAbcSet = x => !abcSet.has(x)
 
 filter(
-  x => !abcSet.has(x),
+  notInAbcSet,
 )(new Set(['a', 'b', 'c', 'd'])) // => Set { 'd' }
 
-filter(
-  async ([key, value]) => key === value,
-)(new Map([[0, 1], [1, 1], [2, 1]])) // => Promise { Map { 1 => 1 } }
+const isTheSame === ([k, v]) => k === v,
 
 filter(
-  x => x <= 3n,
+  isTheSame,
+)(new Map([[0, 1], [1, 1], [2, 1]])) // => { Map { 1 => 1 } }
+
+const lessThan3n = x => x <= 3n
+
+filter(
+  lessThan3n,
 )(new BigInt64Array([1n, 2n, 3n, 4n, 5n])) // => BigInt64Array [1n, 2n, 3n]
 
-filter(
-  async x => x === 1,
-)({ a: 1, b: 2, c: 3 }) // => Promise { { a: 1 } }
-
-const asyncNumbersGeneratedIterable = (async function*() {
-  for (let i = 0; i < 5; i++) { yield i + 1 }
-})() // generated async iterable that yields 1 2 3 4 5
+const equals1 = x => x === 1
 
 filter(
-  x => x <= 3,
-)(asyncNumbersGeneratedIterable) // => generated async iterable that yields 1 2 3
-
-const numbersGeneratedIterable = (function*() {
-  for (let i = 0; i < 5; i++) { yield i + 1 }
-})() // generated iterable that yields 1 2 3 4 5
-
-filter(
-  x => x <= 3,
-)(numbersGeneratedIterable) // => generated iterable that yields 1 2 3
-
-reduce(
-  filter(
-    async xi => xi <= 3,
-  )((y, xi) => y + xi),
-  0,
-)([1, 2, 3, 4, 5]) // => Promise { 6 }
+  equals1,
+)({ a: 1, b: 2, c: 3 }) // => { a: 1 }
 ```
 
 ## reduce
