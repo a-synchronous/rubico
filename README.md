@@ -479,8 +479,10 @@ map(
   Math.abs,
 )(new Set([-2, -1, 0, 1, 2])) // => { Set { 0, 1, 2 } }
 
+const double = ([k, v]) => [k + k, v + v]
+
 map(
-  ([k, v]) => [k + k, v + v],
+  double,
 )(new Map([['a', 1], ['b', 2]])) // => Map { 'aa' => 2, 'bb' => 4 }
 
 map(
