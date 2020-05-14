@@ -193,7 +193,7 @@ rubico exports 23 functions
 [omit](https://github.com/richytong/rubico#omit)
 
 ## pipe
-chains sync or async functions from left to right
+chains functions from left to right; fN(...f2(f1(f0(x))))
 ```javascript
 y = pipe(functions)(x)
 ```
@@ -224,19 +224,24 @@ pipe([
 ```
 
 ## fork
-parallelizes sync or async functions
+parallelizes functions with input, retaining functions' type and shape
 ```javascript
 y = fork(functions)(x)
 ```
-`functions` is either an array of functions or an object of functions
+`functions` is an array of functions or an object of functions
 
 all functions of `functions` are run concurrently
 
 `x` is anything
 
-`y` assumes the shape of `functions`
+`y` is an array or an object
 
-`y` is the output of applying `x` to each function of `functions`
+if `functions` is an array of functions
+  * `y` is an array `functions.map(f => f(x))`
+
+if `functions` is an object of functions
+  * given `[key, f]` is an element of `Object.entries(functions)`
+  * `y` is an object of entries `[key, f(x)]`
 
 `y` is a Promise if:
   * any functions of `functions` are asynchronous
@@ -268,7 +273,7 @@ fork({
 ```
 
 ## assign
-parallelizes sync or async functions, then merges result with input
+parallelizes functions with input, merging output into input
 ```javascript
 y = assign(functions)(x)
 ```
@@ -276,11 +281,15 @@ y = assign(functions)(x)
 
 all functions of `functions` are run concurrently
 
-`x` is an object of anything
+`x` is an object
 
-`y` is an object of anything
+`y` is an object
 
-`y` is the output of mapping `x` to each function of `functions`, then merging `x` with that result
+given
+  * `[key, f]` is an element of `Object.entries(functions)`
+  * `result` is an object of entries `[key, f(x)]`
+
+`y` is `x` merged with `result`
 
 `y` is a Promise if:
   * any functions of `functions` are asynchronous
@@ -302,7 +311,7 @@ assign({
 ```
 
 ## tap
-calls a sync or async function `f` with input `x`, returning `x`
+calls a function with input, returning input
 ```javascript
 y = tap(f)(x)
 ```
@@ -315,9 +324,9 @@ y = tap(f)(x)
 `y` is a Promise if:
   * `f` is asynchronous
 
-if `x` is a function, tap calls `f` for each element `zi` of `z`, yielding `zi`
+if `x` is a function, `y` is a transduced reducing function, see [transducers](https://github.com/richytong/rubico#transducers)
 ```javascript
-y = reduce(tap(f)(x))(z)
+reduced = reduce(tap(f)(x))(z)
 ```
 `reduce` is [reduce](https://github.com/richytong/rubico#reduce),
 
@@ -327,7 +336,7 @@ y = reduce(tap(f)(x))(z)
 
 `f` is a function that expects one argument `zi`
 
-`y` is equivalent in value to `reduce(x)(z)`
+`reduced` is equivalent to `reduce(x)(z)`
 ```javascript
 tap(
   console.log, // > 'hey'
@@ -340,14 +349,13 @@ tap(
 reduce(
   tap(
     console.log, // > 1 2 3 4 5
-  )((y, xi) => y + xi),
-  0,
-)([1, 2, 3, 4, 5]) // => 15
+  )((y, xi) => y.concat(xi)),
+  [],
+)([1, 2, 3, 4, 5]) // => [1, 2, 3, 4, 5]
 ```
 
 ## tryCatch
-TODO: remove sync or async
-tries a sync or async function with input, catches with another sync or async function
+tries a function with input, catches with another function
 ```javascript
 y = tryCatch(f, g)(x)
 ```
@@ -355,11 +363,11 @@ y = tryCatch(f, g)(x)
 
 `g` is a function that expects two arguments `err` and `x`
 
-`err` is a value potentially thrown by `f(x)`
-
 `x` is anything
 
-`y` is `f(x)` if `f(x)` did not throw, else `g(err, x)`
+`err` is a value potentially thrown by `f(x)`
+
+if `f(x)` throws `err`, `y` is `g(err, x)`, else `y` is `f(x)`
 
 `y` is a Promise if:
   * `f` is asynchronous
@@ -388,7 +396,7 @@ tryCatch(
 ```
 
 ## switchCase
-if1(x) ? do1(x) : if2(x) ? do2(x) : ... ifN(x) ? doN(x) : else(x)
+an if, else if, else construct for functions
 ```javascript
 y = switchCase(functions)(x)
 ```
@@ -396,16 +404,24 @@ y = switchCase(functions)(x)
 
 `functions` is an array of functions
 
-given<br>
-`if1, if2, ..., ifN` `if` functions<br>
-`do1, do2, ..., doN` corresponding `do` functions<br>
-`else`               an `else` function
+given
+  * predicate `if` functions     `if1, if2, ..., ifN`
+  * corresponding `do` functions `do1, do2, ..., doN`
+  * an `else` function           `elseDo`
 
-`functions` is the array of functions `[if1, do1, if2, do2, ..., ifN, doN, else]`
+`functions` is an array of functions
+```javascript
+[
+  if1, do1,
+  if2, do2,
+  ..., ...,
+  elseDo,
+]
+```
 
 switchCase evaluates functions in `functions` from left to right
 
-`y` is the first `then(x)` whose corresponding `if(x)` is truthy
+`y` is the first `do(x)` whose corresponding `if(x)` is truthy
 
 `y` is a Promise if:
   * any evaluated functions are asynchronous
@@ -432,7 +448,7 @@ switchCase([
 ```
 
 ## map
-applies a sync or async function to each element of input
+applies a function to each element of input, retaining input type and shape
 ```javascript
 y = map(f)(x)
 ```
@@ -442,11 +458,11 @@ y = map(f)(x)
 
 `f` is a function that expects one argument `xi`
 
-`y` is `x` with `f` applied to each element
-
-if `x` is an async iterable, `y` is a generated async iterable
-
-if `x` is a generated iterable, `y` is a generated iterable
+`y` is of type and shape `x` with `f` applied to each element, with some exceptions:
+  * if `x` is an async iterable but not a built-in type, `y` is a generated async iterable
+  * if `x` is an iterable but not a built-in type, `y` is a generated iterable
+  * if `x` is an iterable but not a built-in type and `f` is asynchronous,
+    `y` is an iterable of promises
 
 `y` is a Promise if:
   * `f` is asynchronous and `x` is not an async iterable
@@ -521,8 +537,9 @@ reduce(
   0,
 )([1, 2, 3, 4, 5]) // => Promise { 20 }
 ```
+
 ## filter
-filters elements out of input based on a sync or async predicate
+filters elements out of input based on provided predicate
 ```javascript
 y = filter(f)(x)
 ```
@@ -532,9 +549,11 @@ y = filter(f)(x)
 
 `f` is a function that expects one argument `xi`
 
-`y` is `x` with elements `xi` where `f(xi)` is truthy
-
-if `x` is an async iterable, `y` is a generated async iterable
+`y` is of type and shape `x` with elements `xi` where `f(xi)` is truthy, with some exceptions:
+  * if `x` is an async iterable but not a built-in type, `y` is a generated async iterable
+  * if `x` is an iterable but not a built-in type, `y` is a generated iterable
+  * if `x` is an iterable but not a bulit-in type and `f` is asynchronous,
+    filter will throw a TypeError
 
 `y` is a Promise if:
   * `f` is asynchronous and `x` is not an async iterable
@@ -627,9 +646,7 @@ if `x0` is not provided:
   * `y` starts as the first element of `x`
   * iteration begins with the second element of `x`
 
-for each successive `xi`, `y` assumes the output of `f(y, xi)`
-
-the returned `y` is the output of the final iteration `f(y, xi)`
+`y` is `f(y, xi)` for each successive `xi`
 
 `y` is a Promise if:
   * `f` is asynchronous
