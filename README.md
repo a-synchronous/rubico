@@ -98,6 +98,7 @@ import {
   get, pick, omit,
 } from 'https://deno.land/x/rubico/rubico.js'
 ```
+
 with npm; `npm i rubico`
 
 # Examples
