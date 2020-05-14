@@ -50,4 +50,4 @@ const onRequest = pipe([
 
 const s = serve({ port: 8001 })
 console.log('http://localhost:8001/')
-transform(null, map(onRequest))(s)
+transform(map(onRequest), null)(s)
