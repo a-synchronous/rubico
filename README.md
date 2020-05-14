@@ -763,8 +763,8 @@ In this case, `pipe([filter(...), map(...)])` is a transducer, and we're writing
 to the console via `process.stdout`. `transform` consumes our `pipe([filter(...), map(...)])`<br>
 transducer and supplies it with `veryBigData`.
 
-Behind the scenes, `transform` is calling `reduce` with a reducer converted from<br>
-the transducer `pipe([filter(...), map(...)])` suitable for `process.stdout`
+Behind the scenes, `transform` is calling `reduce` with a reducing function suitable for writing<br>
+to `process.stdout` converted from the transducer `pipe([filter(...), map(...)])`
 
 A reducer is a reducing function, very much the same as the one supplied to [reduce](https://github.com/richytong/rubico#reduce)
 ```javascript
