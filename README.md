@@ -62,7 +62,7 @@ const doAsyncThings = async a => {
 }
 ```
 
-> maybe promises were on to something
+Meanwhile...
 ```javascript
 import { pipe } from 'rubico'
 
