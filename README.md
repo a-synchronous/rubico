@@ -48,7 +48,7 @@ const doAsyncThings = a => doAsyncThingA(a)
   .then(e => doAsyncThingE(e))
 ```
 
-This was fine until we started to miss variables
+This was fine until we missed imperative programming
 
 > [async/await](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function), the latest in asynchrony
 ```javascript
@@ -61,8 +61,6 @@ const doAsyncThings = async a => {
   return f
 }
 ```
-
-Some of us, however, did not miss variables
 
 > maybe promises were on to something
 ```javascript
