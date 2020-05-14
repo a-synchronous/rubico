@@ -232,8 +232,6 @@ all functions of `functions` are run concurrently
 
 `x` is anything
 
-`y` is an array or an object
-
 `y` is `functions.map(f => f(x))` if `functions` is an array
 
 `y` is an object of entries `key: f(x)` for entry `key: f` of `functions` if `functions` is an object
