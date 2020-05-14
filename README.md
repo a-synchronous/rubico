@@ -116,7 +116,7 @@ void (async () => {
 })()
 
 // rubico
-import { pipe } from 'rubico'
+import { pipe } from 'rubico.js'
 
 pipe([
   fetch,
@@ -148,7 +148,7 @@ void (async () => {
 })()
 
 // rubico
-import { pipe, map, filter } from 'rubico'
+import { pipe, map, filter } from 'rubico.js'
 
 pipe([
   filter(id => id <= 3),
