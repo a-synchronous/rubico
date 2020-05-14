@@ -562,22 +562,22 @@ const reduce = (fn, x0) => {
   }
 }
 
-const nullTransform = (x0, fn) => reduce(
+const nullTransform = (fn, x0) => reduce(
   fn(() => x0),
   x0,
 )
 
-const arrayTransform = (x0, fn) => reduce(
+const arrayTransform = (fn, x0) => reduce(
   fn((y, xi) => { y.push(xi); return y }),
   Array.from(x0),
 )
 
-const stringTransform = (x0, fn) => reduce(
+const stringTransform = (fn, x0) => reduce(
   fn((y, xi) => `${y}${xi}`),
   x0,
 )
 
-const setTransform = (x0, fn) => reduce(
+const setTransform = (fn, x0) => reduce(
   fn((y, xi) => y.add(xi)),
   new Set(x0),
 )
@@ -592,7 +592,7 @@ const stringToCharCodes = x => {
 
 const toNumberTypedArray = (constructor, x) => {
   if (isNumber(x)) return constructor.of(x)
-  if (isString(x)) return new constructor(stringToCharCodes(x))
+  if (isString(x)) return new constructor(stringToCharCodes(x)) // TODO: String.fromCharCode
   if (isNumberTypedArray(x)) return new constructor(x)
   if (isArray(x) && x.every(isNumber)) return new constructor(x)
   throw new TypeError([
@@ -620,7 +620,7 @@ const typedArrayConcat = (y, chunk, offset) => {
   return buf
 }
 
-const numberTypedArrayTransform = (x0, fn) => x => {
+const numberTypedArrayTransform = (fn, x0) => x => {
   const point = reduce(
     fn(({ y, offset }, xi) => {
       const chunk = toNumberTypedArray(x0.constructor, xi)
@@ -644,7 +644,7 @@ const toBigIntTypedArray = (constructor, x) => {
   ].join('; '))
 }
 
-const bigIntTypedArrayTransform = (x0, fn) => x => {
+const bigIntTypedArrayTransform = (fn, x0) => x => {
   const point = reduce(
     fn(({ y, offset }, xi) => {
       const chunk = toBigIntTypedArray(x0.constructor, xi)
@@ -658,23 +658,23 @@ const bigIntTypedArrayTransform = (x0, fn) => x => {
   ) : point.y.slice(0, point.offset)
 }
 
-const writeableTransform = (x0, fn) => reduce(
+const writeableTransform = (fn, x0) => reduce(
   fn((y, xi) => { y.write(xi); return y }),
   x0,
 )
 
-const transform = (x0, fn) => {
+const transform = (fn, x0) => {
   if (!isFunction(fn)) {
     throw new TypeError('transform(x, y); y is not a function')
   }
-  if (isNull(x0)) return nullTransform(x0, fn)
-  if (isArray(x0)) return arrayTransform(x0, fn)
-  if (isString(x0)) return stringTransform(x0, fn)
-  if (is(Set)(x0)) return setTransform(x0, fn)
-  if (isNumberTypedArray(x0)) return numberTypedArrayTransform(x0, fn)
-  if (isBigIntTypedArray(x0)) return bigIntTypedArrayTransform(x0, fn)
-  if (isWritable(x0)) return writeableTransform(x0, fn)
-  // TODO(richytong): if (isDataView(x0)) return dataViewTransform(x0, fn)
+  if (isNull(x0)) return nullTransform(fn, x0)
+  if (isArray(x0)) return arrayTransform(fn, x0)
+  if (isString(x0)) return stringTransform(fn, x0)
+  if (is(Set)(x0)) return setTransform(fn, x0)
+  if (isNumberTypedArray(x0)) return numberTypedArrayTransform(fn, x0)
+  if (isBigIntTypedArray(x0)) return bigIntTypedArrayTransform(fn, x0)
+  if (isWritable(x0)) return writeableTransform(fn, x0)
+  // TODO(richytong): if (isDataView(x0)) return dataViewTransform(fn, x0)
   throw new TypeError('transform(x, y); x invalid')
 }
 

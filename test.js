@@ -1049,7 +1049,6 @@ describe('rubico', () => {
         r.map(x => x + 'c'),
       ])
       ase(
-        // r.transform('', appendAlphas)('123'),
         r.reduce(appendAlphas(add), '')('123'),
         '1abc2abc3abc',
       )
@@ -1097,43 +1096,43 @@ describe('rubico', () => {
     const bigNumbers = [1n, 2n, 3n, 4n, 5n]
     it('sync transforms iterable to null', async () => {
       let y = ''
-      ase(r.transform(null, r.tap(x => { y += x }))(numbers), null)
+      ase(r.transform(r.tap(x => { y += x }), null)(numbers), null)
       ase(y, '12345')
     })
     it('async transforms iterable to null', async () => {
       let y = ''
-      aok(r.transform(null, r.tap(async () => {}))(numbers) instanceof Promise)
-      ase(await r.transform(null, r.tap(async x => { y += x }))(numbers), null)
+      aok(r.transform(r.tap(async () => {}), null)(numbers) instanceof Promise)
+      ase(await r.transform(r.tap(async x => { y += x }), null)(numbers), null)
       ase(y, '12345')
     })
     it('sync transforms iterable to array', async () => {
-      ade(r.transform([], squareOdds)(numbers), [1, 9, 25])
+      ade(r.transform(squareOdds, [])(numbers), [1, 9, 25])
     })
     it('async transforms iterable to array', async () => {
-      aok(r.transform([99], asyncEvens)(numbers) instanceof Promise)
-      ade(await r.transform([99], asyncEvens)(numbers), [99, 2, 4])
+      aok(r.transform(asyncEvens, [99])(numbers) instanceof Promise)
+      ade(await r.transform(asyncEvens, [99])(numbers), [99, 2, 4])
     })
     it('sync transforms iterable to string', async () => {
-      ase(r.transform('', squareOdds)(numbers), '1925')
+      ase(r.transform(squareOdds, '')(numbers), '1925')
     })
     it('async transforms iterable to string', async () => {
-      aok(r.transform('99', asyncEvens)(numbers) instanceof Promise)
-      ase(await r.transform('99', asyncEvens)(numbers), '9924')
+      aok(r.transform(asyncEvens, '99')(numbers) instanceof Promise)
+      ase(await r.transform(asyncEvens, '99')(numbers), '9924')
     })
     it('sync transforms iterable to set', async () => {
-      ade(r.transform(new Set(), squareOdds)(numbers), new Set([1, 9, 25]))
+      ade(r.transform(squareOdds, new Set())(numbers), new Set([1, 9, 25]))
     })
     it('async transforms iterable to set', async () => {
-      aok(r.transform(new Set([99]), asyncEvens)(numbers) instanceof Promise)
+      aok(r.transform(asyncEvens, new Set([99]))(numbers) instanceof Promise)
       ade(
-        await r.transform(new Set([99, 2]), asyncEvens)(numbers),
+        await r.transform(asyncEvens, new Set([99, 2]))(numbers),
         new Set([99, 2, 4]),
       )
     })
     it('strings are encoded into arrays of character codes for number TypedArrays', async () => {
       for (const constructor of numberTypedArrayConstructors) {
         ade(
-          r.transform(new constructor(0), squareOddsToString)(numbers),
+          r.transform(squareOddsToString, new constructor(0))(numbers),
           new constructor([49, 57, 50, 53]),
         )
         ase(String.fromCharCode(...(new constructor([49, 57, 50, 53]))), '1925')
@@ -1142,7 +1141,7 @@ describe('rubico', () => {
     it('sync transforms iterable to a number TypedArray', async () => {
       for (const constructor of numberTypedArrayConstructors) {
         ade(
-          r.transform(new constructor(0), squareOdds)(numbers),
+          r.transform(squareOdds, new constructor(0))(numbers),
           new constructor([1, 9, 25]),
         )
       }
@@ -1150,7 +1149,7 @@ describe('rubico', () => {
     it('async transforms iterable to number TypedArray', async () => {
       for (const constructor of numberTypedArrayConstructors) {
         const buffer99 = new constructor([9, 9])
-        const buffer9924 = r.transform(buffer99, asyncEvens)(numbers)
+        const buffer9924 = r.transform(asyncEvens, buffer99)(numbers)
         aok(buffer9924 instanceof Promise)
         ade(await buffer9924, new constructor([9, 9, 2, 4]))
       }
@@ -1158,7 +1157,7 @@ describe('rubico', () => {
     it('sync transforms iterable to a bigint TypedArray', async () => {
       for (const constructor of bigIntTypedArrayConstructors) {
         ade(
-          r.transform(new constructor(0), squareBigOdds)(bigNumbers),
+          r.transform(squareBigOdds, new constructor(0))(bigNumbers),
           new constructor([1n, 9n, 25n]),
         )
       }
@@ -1166,14 +1165,14 @@ describe('rubico', () => {
     it('async transforms iterable to a bigint TypedArray', async () => {
       for (const constructor of bigIntTypedArrayConstructors) {
         const buffer99 = new constructor([9n, 9n])
-        const buffer9924 = r.transform(buffer99, asyncBigEvens)(bigNumbers)
+        const buffer9924 = r.transform(asyncBigEvens, buffer99)(bigNumbers)
         aok(buffer9924 instanceof Promise)
         ade(await buffer9924, new constructor([9n, 9n, 2n, 4n]))
       }
     })
     it('sync transforms iterable to writeable stream', async () => {
       const tmpWriter = fs.createWriteStream(path.join(__dirname, './tmp'))
-      r.transform(tmpWriter, squareOddsToString)(numbers)
+      r.transform(squareOddsToString, tmpWriter)(numbers)
       ase(await consumeReadStreamPush(
         fs.createReadStream(path.join(__dirname, './tmp')),
       ), '1925')
@@ -1185,7 +1184,7 @@ describe('rubico', () => {
     it('async transforms iterable to writeable stream', async () => {
       const tmpWriter = fs.createWriteStream(path.join(__dirname, './tmp'))
       tmpWriter.write('99')
-      const writeEvens = r.transform(tmpWriter, asyncEvensToString)(numbers)
+      const writeEvens = r.transform(asyncEvensToString, tmpWriter)(numbers)
       aok(writeEvens instanceof Promise)
       await writeEvens
       ase(await consumeReadStreamPush(
@@ -1198,13 +1197,13 @@ describe('rubico', () => {
     })
     it('throws a TypeError for transform(Object, () => {})', async () => {
       assert.throws(
-        () => r.transform({}, () => {}),
+        () => r.transform(() => {}, {}),
         new TypeError('transform(x, y); x invalid'),
       )
     })
     it('throws a TypeError for non function transducer', async () => {
       assert.throws(
-        () => r.transform('hey', 'yo'),
+        () => r.transform('yo', 'hey'),
         new TypeError('transform(x, y); y is not a function'),
       )
     })
