@@ -724,6 +724,7 @@ We can create a chained reducer by passing a reducer to a chain of transducers.<
 Imagine dominos falling over. The reducer you pass to a chain of transducers is called last.<br>
 Because of this implementation detail,
 > if `x` is a function, pipe chains `functions` from right to left
+
 You can use `pipe` to construct chains of transducers. Pipe will read left to right in all cases.<br>
 
 There are two other functions you'll need to get started with transducers, `map` and `filter`.
