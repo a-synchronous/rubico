@@ -5,7 +5,7 @@ import {
   any, all, and, or, not,
   eq, gt, lt, gte, lte,
   get, pick, omit,
-} from '../mod.js'
+} from '../rubico.js'
 
 const join = delim => x => x.join(delim)
 

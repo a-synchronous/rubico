@@ -96,7 +96,7 @@ import {
   any, all, and, or, not,
   eq, gt, lt, gte, lte,
   get, pick, omit,
-} from 'https://deno.land/x/rubico/mod.js'
+} from 'https://deno.land/x/rubico/rubico.js'
 ```
 with npm; `npm i rubico`
 
@@ -786,7 +786,7 @@ squaredOdds([1, 2, 3, 4, 5]) // => [1, 9, 25]
 ### A webserver using map, transform, and https://deno.land/std/http/server.ts serve
 ```javascript
 import { serve } from "https://deno.land/std/http/server.ts";
-import { map, transform } from "https://deno.land/x/rubico/mod.js"
+import { map, transform } from "https://deno.land/x/rubico/rubico.js"
 const s = serve({ port: 8001 });
 console.log("http://localhost:8001/");
 transform(map(req => {
@@ -803,7 +803,7 @@ import {
   any, all, and, or, not,
   eq, gt, lt, gte, lte,
   get, pick, omit,
-} from 'https://deno.land/x/rubico/mod.js'
+} from 'https://deno.land/x/rubico/rubico.js'
 
 const join = delim => x => x.join(delim)
 

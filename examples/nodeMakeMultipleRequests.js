@@ -32,11 +32,11 @@ pipe([
 ])(todoIDs)
 
 // transform - a special way to consume transducers
-// transform(null, pipe(...))(x) transforms input x to null according to transducer pipe(...)
-transform(null, pipe([
+// transform(null, pipe(...))(x) transforms input x to null according to transducer pipe([...])
+transform(pipe([
   filter(id => id <= 3),
   map(id => `https://jsonplaceholder.typicode.com/todos/${id}`),
   map(fetch),
   map(res => res.json()),
   map(x => console.log('transform', x)), // > {...} {...} {...}
-]))(todoIDs)
+]), null)(todoIDs)
