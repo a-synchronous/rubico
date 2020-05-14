@@ -699,10 +699,10 @@ With some rubico functions, you could express the above transformation as a sing
 without incurring a memory penalty
 ```javascript
 veryBigData = [...]
-transform(process.stdout, pipe([
+transform(pipe([
   filter(datum => datum.isBig === true),
   map(memoryIntensiveProcess),
-]))(veryBigData)
+]), process.stdout)(veryBigData)
 ```
 In this case, `pipe([filter(...), map(...)])` is a transducer, and we're writing each datum<br>
 to the console via `process.stdout`. `transform` consumes our `pipe([filter(...), map(...)])`<br>
@@ -745,7 +745,7 @@ The following transformations `isOdd`, `square`, and `squaredOdds` are used as t
 ```javascript
 const isOdd = filter(x => x % 2 === 1)
 
-transform([], isOdd)([1, 2, 3, 4, 5]) // => [1, 3, 5]
+transform(isOdd, [])([1, 2, 3, 4, 5]) // => [1, 3, 5]
 reduce(
   isOdd((y, xi) => y.concat([xi])),
   [],
@@ -753,7 +753,7 @@ reduce(
 
 const square = map(x => x ** 2)
 
-transform([], square)([1, 2, 3, 4, 5]) // => [1, 4, 9, 16, 25]
+transform(square, [])([1, 2, 3, 4, 5]) // => [1, 4, 9, 16, 25]
 reduce(
   square((y, xi) => y.concat([xi])),
   [],
@@ -761,7 +761,7 @@ reduce(
 
 const squaredOdds = pipe([isOdd, square])
 
-transform([], squaredOdds)([1, 2, 3, 4, 5]) // => [1, 9, 25]
+transform(squaredOdds, [])([1, 2, 3, 4, 5]) // => [1, 9, 25]
 reduce(
   squaredOdds((y, xi) => y.concat([xi])),
   [],
@@ -789,9 +789,9 @@ import { serve } from "https://deno.land/std/http/server.ts";
 import { map, transform } from "https://deno.land/x/rubico/mod.js"
 const s = serve({ port: 8001 });
 console.log("http://localhost:8001/");
-transform(null, map(req => {
+transform(map(req => {
   req.respond({ body: "Hello World\n" });
-}))(s);
+}), null)(s);
 ```
 
 ### A server with middleware
@@ -848,5 +848,5 @@ const onRequest = pipe([
 
 const s = serve({ port: 8001 })
 console.log('http://localhost:8001/')
-transform(null, map(onRequest))(s)
+transform(map(onRequest), null)(s)
 ```
