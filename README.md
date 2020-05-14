@@ -9,6 +9,8 @@ a functional promise library
 
 [Documentation](https://github.com/richytong/rubico#documentation)
 
+[Transducers](https://github.com/richytong/rubico#transducers)
+
 [More Examples](https://github.com/richytong/rubico#more-examples)
 
 # Introduction
