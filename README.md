@@ -589,28 +589,35 @@ if `x0` is not provided:
   * `x` is an async iterable
 
 ```javascript
+const add = (y, xi) => y + xi
+
 reduce(
-  (y, xi) => y + xi,
+  add,
 )([1, 2, 3, 4, 5]) // => 15
 
 reduce(
-  async (y, xi) => y + xi,
-  100,
-)([1, 2, 3, 4, 5]) // => Promise { 115 }
+  add, 100,
+)([1, 2, 3, 4, 5]) // => 115
+
+const asyncAdd = async (y, xi) => y + xi
+
+reduce(
+  asyncAdd,
+)([1, 2, 3, 4, 5]) // => Promise { 15 }
 
 const asyncNumbersGeneratedIterable = (async function*() {
   for (let i = 0; i < 5; i++) { yield i + 1 }
 })() // generated async iterable that yields 1 2 3 4 5
 
+const concat = (y, xi) => y.concat([xi])
+
 reduce(
-  (y, xi) => y.concat([xi]),
-  [],
+  concat, [],
 )(asyncNumbersGeneratedIterable) // => Promise { [1, 2, 3, 4, 5] }
 
 reduce(
-  (y, xi) => y.add(xi),
-  new Set(),
-)({ a: 1, b: 1, c: 1, d: 1, e: 1 }) // => Set { 1 }
+  concat, [],
+)({ a: 1, b: 1, c: 1, d: 1, e: 1 }) // => [1, 2, 3, 4, 5]
 ```
 
 ## transform
