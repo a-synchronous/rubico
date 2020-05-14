@@ -361,25 +361,19 @@ if `f(x)` throws `err`, `y` is `g(err, x)`, else `y` is `f(x)`
   * `f` is synchronous, `g` is asynchronous, and `f(x)` threw
 
 ```javascript
-tryCatch(
-  x => x + 'yo',
-  (e, x) => x + e.message,
-)('a') // => 'ayo'
+onError = (e, x) => `${x} is invalid: ${e.message}`
 
-tryCatch(
-  x => { throw new Error(x) },
-  (e, x) => x + e.message,
-)('a') // => 'aa'
+tryCatch(x => x, onError)('hello') // => 'hello'
 
-tryCatch(
-  async x => x + 'yo',
-  (e, x) => x + e.message,
-)('a') // => Promise { 'ayo' }
+tryCatch(async x => x, onError)('hello') // => Promise { 'hello' }
 
-tryCatch(
-  x => Promise.reject(new Error(x)),
-  (e, x) => x + e.message,
-)('a') // => Promise { 'aa' }
+throwGoodbye = () => { throw new Error('goodbye') }
+
+tryCatch(throwGoodbye, onError)('hello') // => 'hello is invalid: goodbye'
+
+rejectWithGoodbye = () => Promise.reject(new Error('goodbye'))
+
+tryCatch(rejectWithGoodbye, onError)('hello') // => Promise { 'hello is invalid: goodbye' }
 ```
 
 ## switchCase
