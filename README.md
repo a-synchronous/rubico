@@ -680,7 +680,7 @@ reduce(
 ## omit
 
 # Transducers
-Transducers allow us to wrangle very large or infinite streams of data in a<br>
+Transducers allow us to wrangle very large or infinite streams of data in a
 composable and memory efficient way. Say you had `veryBigData` in an array
 ```javascript
 veryBigData = [...]
@@ -688,10 +688,10 @@ veryBigFilteredData = veryBigData.filter(datum => datum.isBig === true)
 veryBigProcessedData = veryBigFilteredData.map(memoryIntensiveProcess)
 console.log(veryBigProcessedData)
 ```
-The above is not very memory efficient because of the intermediate arrays `veryBigFilteredData`<br>
+The above is not very memory efficient because of the intermediate arrays `veryBigFilteredData`
 and `veryBigProcessedData`. We're also logging out a large quantity of data at once to the console.
 
-With some rubico functions, you could express the above transformation as a single pass<br>
+With some rubico functions, you could express the above transformation as a single pass
 without incurring a memory penalty
 ```javascript
 veryBigData = [...]
@@ -700,36 +700,36 @@ transform(process.stdout, pipe([
   map(memoryIntensiveProcess),
 ]))(veryBigData)
 ```
-In this case, `pipe([filter(...), map(...)])` is a transducer, and we're writing each datum<br>
+In this case, `pipe([filter(...), map(...)])` is a transducer, and we're writing each datum
 to the console via `process.stdout`. `transform` consumes our `pipe([filter(...), map(...)])`
 transducer and supplies it with `veryBigData`.
 
-Behind the scenes, `transform` is calling `reduce`, with a reducer converted from<br>
+Behind the scenes, `transform` is calling `reduce`, with a reducer converted from
 the transducer `pipe([filter(...), map(...)])` suitable for `process.stdout`
 
 A reducer is a reducing function, very much the same as the one supplied to `reduce`
 ```javascript
 y = reduce(reducer)(x)
 ```
-A reducer takes two arguments: an aggregate `y` and an iterative value `xi`.<br>
+A reducer takes two arguments: an aggregate `y` and an iterative value `xi`.
 It can be something like `(y, xi) => doSomethingWith(y, xi)`
 
 A transducer is a function that takes a reducer and returns another reducer
 ```javascript
 transducer = reducer => (y, xi) => reducer(doSomethingWith(y, xi))
 ```
-The transducer above, when passed a reducer, returns another reducer that<br>
-will do something with `y` and `xi`, then pass it to the input `reducer`.<br>
-We can create a chained reducer by passing a reducer to a chain of transducers.<br>
-Imagine dominos falling over. The reducer you pass to a chain of transducers is called last.<br>
+The transducer above, when passed a reducer, returns another reducer that
+will do something with `y` and `xi`, then pass it to the input `reducer`.
+We can create a chained reducer by passing a reducer to a chain of transducers.
+Imagine dominos falling over. The reducer you pass to a chain of transducers is called last.
 Because of this implementation detail,
 > if `x` is a function, pipe chains `functions` from right to left
 
-You can use `pipe` to construct chains of transducers. Pipe will read left to right in all cases.<br>
+You can use `pipe` to construct chains of transducers. Pipe will read left to right in all cases.
 
 There are two other functions you'll need to get started with transducers, `map` and `filter`.
 
-given `x` is a reducer, `f` is a mapping function; `map(f)(x)` is a transducer that applies `f`<br>
+given `x` is a reducer, `f` is a mapping function; `map(f)(x)` is a transducer that applies `f`
 to each element in the final `transform` pipeline.
 
 given `x` is a reducer, `f` is a predicate function; `filter(f)(x)` is a transducer that
