@@ -798,11 +798,13 @@ that filters each element in the final transform pipeline based on `f`
 
 The following transformations `isOdd`, `square`, and `squaredOdds` are used as transducers
 ```javascript
+const concat = (y, xi) => y.concat([xi])
+
 const isOdd = filter(x => x % 2 === 1)
 
 transform(isOdd, [])([1, 2, 3, 4, 5]) // => [1, 3, 5]
 reduce(
-  isOdd((y, xi) => y.concat([xi])),
+  isOdd(concat),
   [],
 )([1, 2, 3, 4, 5]) // => [1, 3, 5]
 
@@ -810,7 +812,7 @@ const square = map(x => x ** 2)
 
 transform(square, [])([1, 2, 3, 4, 5]) // => [1, 4, 9, 16, 25]
 reduce(
-  square((y, xi) => y.concat([xi])),
+  square(concat),
   [],
 )([1, 2, 3, 4, 5]) // => [1, 4, 9, 16, 25]
 
@@ -818,7 +820,7 @@ const squaredOdds = pipe([isOdd, square])
 
 transform(squaredOdds, [])([1, 2, 3, 4, 5]) // => [1, 9, 25]
 reduce(
-  squaredOdds((y, xi) => y.concat([xi])),
+  squaredOdds(concat),
   [],
 )([1, 2, 3, 4, 5]) // => [1, 9, 25]
 ```
