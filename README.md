@@ -321,7 +321,7 @@ y = reduce(tap(f)(x))(z)
 ```
 `reduce` is [reduce](https://github.com/richytong/rubico#reduce),
 
-`z` is an iterable, asyncIterable, or object
+`z` is an iterable, async iterable, or object
 
 `zi` is an element of `z`
 
@@ -439,8 +439,7 @@ applies a sync or async function `f` to each element of a collection `x`
 ```javascript
 y = map(f)(x)
 ```
-`x` is an array, a string, a set, a map, a typed array, an object,<br>
-    an async iterator, a generated iterator, or a function
+`x` is an iterable, an async iterable, an object, or a function
 
 `xi` is an element of `x`
 
@@ -448,11 +447,13 @@ y = map(f)(x)
 
 `y` is `x` with `f` applied to each element
 
-if `x` is an async iterator, `y` is a generated async iterator
+if `x` is an async iterable, `y` is a generated async iterable
+
+if `x` is a generated iterable, `y` is a generated iterable
 
 if `f` is synchronous, `y` is not a Promise
 
-if `f` is asynchronous and `x` is not an async iterator, `y` is a Promise
+if `f` is asynchronous and `x` is not an async iterable, `y` is a Promise
 
 if `x` is a function, map applies `f` to each element `zi` of `z`, yielding `f(zi)`
 ```javascript
@@ -460,7 +461,7 @@ y = reduce(map(f)(x))(z)
 ```
 `reduce` is [reduce](https://github.com/richytong/rubico#reduce),
 
-`z` is an iterable, asyncIterable, or object
+`z` is an iterable, async iterable, or object
 
 `zi` is an element of `z`
 
@@ -502,21 +503,21 @@ map(map(
   x => x + 'z',
 ))({ a: { a: 'lol' }, b: { b: 'cat' } }) // => { { a: { a: 'lolz' } }, { b: { b: 'catz' } } }
 
-const asyncNumbersGeneratedIterator = (async function*() {
+const asyncNumbersGeneratedIterable = (async function*() {
   for (let i = 0; i < 5; i++) { yield i + 1 }
-})() // generated asyncIterator that yields 1 2 3 4 5
+})() // generated async iterable that yields 1 2 3 4 5
 
 map(
   x => x + 1,
-)(asyncNumbersGeneratedIterator) // => generated asyncIterator that yields 2 3 4 5 6
+)(asyncNumbersGeneratedIterable) // => generated async iterable that yields 2 3 4 5 6
 
-const numbersGeneratedIterator = (function*() {
+const numbersGeneratedIterable = (function*() {
   for (let i = 0; i < 5; i++) { yield i + 1 }
-})() // generated iterator that yields 1 2 3 4 5
+})() // generated iterable that yields 1 2 3 4 5
 
 map(
   x => x + 1,
-)(numbersGeneratedIterator) // => generated iterator that yields 2 3 4 5 6
+)(numbersGeneratedIterable) // => generated iterable that yields 2 3 4 5 6
 
 reduce(
   map(
@@ -530,8 +531,7 @@ filters elements out of a collection `x` based on sync or async predicate `f`
 ```javascript
 y = filter(f)(x)
 ```
-`x` is an array, a string, a set, a map, a typed array, an object,<br>
-    an async iterator, a generated iterator, or a function
+`x` is an iterable, an async iterable, an object, or a function
 
 `xi` is an element of `x`
 
@@ -539,11 +539,11 @@ y = filter(f)(x)
 
 `y` is `x` with elements `xi` where `f(xi)` is truthy
 
-if `x` is an async iterator, `y` is a generated async iterator
+if `x` is an async iterable, `y` is a generated async iterable
 
 if `f` is synchronous, `y` is not a Promise
 
-if `f` is asynchronous and `x` is not an async iterator, `y` is a Promise
+if `f` is asynchronous and `x` is not an async iterable, `y` is a Promise
 
 if `x` is a function, filtering is based on elements of `z`
 ```javascript
@@ -551,7 +551,7 @@ y = reduce(filter(f)(x))(z)
 ```
 `reduce` is [reduce](https://github.com/richytong/rubico#reduce),
 
-`z` is an iterable, asyncIterable, or object
+`z` is an iterable, async iterable, or object
 
 `zi` is an element of `z`
 
@@ -589,21 +589,21 @@ filter(
   async x => x === 1,
 )({ a: 1, b: 2, c: 3 }) // => Promise { { a: 1 } }
 
-const asyncNumbersGeneratedIterator = (async function*() {
+const asyncNumbersGeneratedIterable = (async function*() {
   for (let i = 0; i < 5; i++) { yield i + 1 }
-})() // generated asyncIterator that yields 1 2 3 4 5
+})() // generated async iterable that yields 1 2 3 4 5
 
 filter(
   x => x <= 3,
-)(asyncNumbersGeneratedIterator) // => generated asyncIterator that yields 1 2 3
+)(asyncNumbersGeneratedIterable) // => generated async iterable that yields 1 2 3
 
-const numbersGeneratedIterator = (function*() {
+const numbersGeneratedIterable = (function*() {
   for (let i = 0; i < 5; i++) { yield i + 1 }
-})() // generated iterator that yields 1 2 3 4 5
+})() // generated iterable that yields 1 2 3 4 5
 
 filter(
   x => x <= 3,
-)(numbersGeneratedIterator) // => generated iterator that yields 1 2 3
+)(numbersGeneratedIterable) // => generated iterable that yields 1 2 3
 
 reduce(
   filter(
@@ -635,9 +635,9 @@ for each successive `xi` of `x`, `y` assumes the output of `f(y, xi)`
 
 the returned `y` is the output of the final iteration `f(y, xi)`
 
-if `x` is an async iterator, `y` is a promise
+if `x` is an async iterable, `y` is a promise
 
-if `f` is synchronous and `x` is not an async iterator, `y` is not a Promise
+if `f` is synchronous and `x` is not an async iterable, `y` is not a Promise
 
 if `f` is asynchronous, `y` is a Promise
 ```javascript
@@ -650,14 +650,14 @@ reduce(
   100,
 )([1, 2, 3, 4, 5]) // => Promise { 115 }
 
-const asyncNumbersGeneratedIterator = (async function*() {
+const asyncNumbersGeneratedIterable = (async function*() {
   for (let i = 0; i < 5; i++) { yield i + 1 }
-})() // generated async iterator that yields 1 2 3 4 5
+})() // generated async iterable that yields 1 2 3 4 5
 
 reduce(
   (y, xi) => y.concat([xi]),
   [],
-)(asyncNumbersGeneratedIterator) // => Promise { [1, 2, 3, 4, 5] }
+)(asyncNumbersGeneratedIterable) // => Promise { [1, 2, 3, 4, 5] }
 
 reduce(
   (y, xi) => y.add(xi),
@@ -667,8 +667,60 @@ reduce(
 ## transform
 transforms input according to provided transducer and initial value
 ```javascript
-y = transform(f, x0)
+y = transform(f, x0)(x)
 ```
+
+`x` is an iterable, an async iterable, or an object
+
+`f` is a transducer, see [transducers](https://github.com/richytong/rubico#transducers)
+
+`x0` is null, an array, a string, a set, a map, a typed array, or a writable
+
+`y` is `x` transformed with `f` into `x0`
+
+TODO: use this format for all docs
+`y` is a Promise if any of the following are true
+ * `f` is asynchronous
+ * `x` is an async iterable
+
+in the following examples, `map` is [map](https://github.com/richytong/rubico#map)
+```javascript
+transform(map(
+  x => x + 1,
+), null)([1, 2, 3, 4, 5]) // => null
+
+transform(map(
+  async x => x ** 2,
+), [0])([1, 2, 3, 4, 5]) // => Promise { [0, 1, 4, 9, 16, 25] }
+
+transform(map(
+  x => `${x}abc`,
+), '')([1, 2, 3, 4, 5]) // => '1abc2abc3abc4abc5abc'
+
+transform(map(
+  x => x,
+), new Set())([1, 1, 1, 1, 1]) // => Set { 1 }
+
+transform(map(
+  x => [x, String.fromCharCode(x)]
+), new Map())([97, 98, 99]) // => Map { 97 => 'a', 98 => 'b', 99 => 'c' }
+
+String.fromCharCode(
+  ...transform(map(
+    x => x.charCodeAt(0),
+  ), new Uint8Array())('abc'), // => Uint8Array [97, 98, 99]
+) // => 'abc'
+
+const asyncNumbersGeneratedIterable = (async function*() {
+  for (let i = 0; i < 5; i++) { yield i + 1 }
+})() // generated async iterable that yields 1 2 3 4 5
+
+j = transform(map(
+  x => `${x ** 2}\n`,
+), process.stdout)(asyncNumbersGeneratedIterable) // > 1 4 9 16 25
+// => Promise { process.stdout }
+```
+
 ## any
 ## all
 ## and
