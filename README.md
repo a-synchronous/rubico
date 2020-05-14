@@ -190,8 +190,6 @@ rubico exports 23 functions
 [pick](https://github.com/richytong/rubico#pick),
 [omit](https://github.com/richytong/rubico#omit)
 
-TODO: revisit examples, use variables
-
 ## pipe
 chains functions from left to right; `functionN(...(function2(function1(function0(x)))))`
 ```javascript
@@ -218,7 +216,7 @@ pipe([
 
 pipe([
   x => x + 'y',
-  x => Promise.resolve(x + 'e'),
+  x => x + 'e',
   async x => x + 'lmao',
 ])('a') // => Promise { 'ayelmao' }
 ```
