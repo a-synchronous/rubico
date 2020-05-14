@@ -658,7 +658,7 @@ const bigIntTypedArrayTransform = (fn, x0) => x => {
   ) : point.y.slice(0, point.offset)
 }
 
-const writeableTransform = (fn, x0) => reduce(
+const writableTransform = (fn, x0) => reduce(
   fn((y, xi) => { y.write(xi); return y }),
   x0,
 )
@@ -673,7 +673,7 @@ const transform = (fn, x0) => {
   if (is(Set)(x0)) return setTransform(fn, x0)
   if (isNumberTypedArray(x0)) return numberTypedArrayTransform(fn, x0)
   if (isBigIntTypedArray(x0)) return bigIntTypedArrayTransform(fn, x0)
-  if (isWritable(x0)) return writeableTransform(fn, x0)
+  if (isWritable(x0)) return writableTransform(fn, x0)
   // TODO(richytong): if (isDataView(x0)) return dataViewTransform(fn, x0)
   throw new TypeError('transform(x, y); x invalid')
 }
