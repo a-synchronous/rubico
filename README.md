@@ -737,51 +737,45 @@ to each element in the final `transform` pipeline.
 given `x` is a reducer, `f` is a predicate function; `filter(f)(x)` is a transducer that<br>
 filters each element in the final `transform` pipeline based on `f`
 
-The following transformations are used as transducers
+The following transformations `isOdd`, `square`, and `squaredOdds` are used as transducers
 ```javascript
-transformationA = filter(x => x <= 3)
+const isOdd = filter(x => x % 2 === 1)
 
-transform([], transformationA)([1, 2, 3, 4, 5]) // => [1, 2, 3]
+transform([], isOdd)([1, 2, 3, 4, 5]) // => [1, 3, 5]
 reduce(
-  transformationA((y, xi) => y.concat([xi])),
+  isOdd((y, xi) => y.concat([xi])),
   [],
-)([1, 2, 3, 4, 5]) // => [1, 2, 3]
+)([1, 2, 3, 4, 5]) // => [1, 3, 5]
 
-transformationB = map(x => x + 1)
+const square = map(x => x ** 2)
 
-transform([], transformationB)([1, 2, 3, 4, 5]) // => [2, 3, 4, 5, 6]
+transform([], square)([1, 2, 3, 4, 5]) // => [1, 4, 9, 16, 25]
 reduce(
-  transformationB((y, xi) => y.concat([xi])),
+  square((y, xi) => y.concat([xi])),
   [],
-)([1, 2, 3, 4, 5]) // => [2, 3, 4, 5, 6]
+)([1, 2, 3, 4, 5]) // => [1, 4, 9, 16, 25]
 
-transformationAB = pipe([
-  filter(x => x <= 3),
-  map(x => x + 1),
-])
+const squaredOdds = pipe([isOdd, square])
 
-transform([], transformationAB)([1, 2, 3, 4, 5]) // => [2, 3, 4]
+transform([], squaredOdds)([1, 2, 3, 4, 5]) // => [1, 9, 25]
 reduce(
-  transformationAB((y, xi) => y.concat([xi])),
+  squaredOdds((y, xi) => y.concat([xi])),
   [],
-)([1, 2, 3, 4, 5]) // => [2, 3, 4]
+)([1, 2, 3, 4, 5]) // => [1, 9, 25]
 ```
-The following transformations are not used as transducers
+The following transformations `isOdd`, `square`, and `squaredOdds` are not used as transducers
 ```javascript
-transformationA = filter(x => x <= 3)
+const isOdd = filter(x => x % 2 === 1)
 
-transformationA([1, 2, 3, 4, 5]) // => [1, 2, 3]
+isOdd([1, 2, 3, 4, 5]) // => [1, 3, 5]
 
-transformationB = map(x => x + 1)
+const square = map(x => x ** 2)
 
-transformationB([1, 2, 3, 4, 5]) // => [2, 3, 4, 5, 6]
+square([1, 2, 3, 4, 5]) // => [1, 4, 9, 16, 25]
 
-transformationAB = pipe([
-  filter(x => x <= 3),
-  map(x => x + 1),
-])
+const squaredOdds = pipe([isOdd, square])
 
-transformationAB([1, 2, 3, 4, 5]) // => [2, 3, 4]
+squaredOdds([1, 2, 3, 4, 5]) // => [1, 9, 25]
 ```
 
 # More Examples
