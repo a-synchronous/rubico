@@ -234,11 +234,9 @@ all functions of `functions` are run concurrently
 
 `y` is an array or an object
 
-if `functions` is an array of functions
-  * `y` is an array `functions.map(f => f(x))`
+`y` is `functions.map(f => f(x))` if `functions` is an array
 
-if `functions` is an object of functions
-  * `y` is an object of entries `[key, f(x)]` for entry `[key, f]` of `functions`
+`y` is an object of entries `key: f(x)` for entry `key: f` of `functions` if `functions` is an object
 
 `y` is a Promise if:
   * any function of `functions` is asynchronous
@@ -280,7 +278,7 @@ all functions of `functions` are run concurrently
 
 `x` is an object
 
-`result` is an object of entries `[key, f(x)]` for entry `[key, f]` of `functions`
+`result` is an object of entries `key: f(x)` for entry `key: f` of `functions`
 
 `y` is `x` merged with `result`
 
