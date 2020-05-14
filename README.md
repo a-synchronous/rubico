@@ -642,38 +642,42 @@ y = transform(f, x0)(x)
 
 in the following examples, `map` is [map](https://github.com/richytong/rubico#map)
 ```javascript
+const square = x => x ** 2
+
 transform(map(
-  x => x + 1,
+  square,
 ), null)([1, 2, 3, 4, 5]) // => null
 
-transform(map(
-  async x => x ** 2,
-), [0])([1, 2, 3, 4, 5]) // => Promise { [0, 1, 4, 9, 16, 25] }
+const asyncSquare = async x => x ** 2
 
 transform(map(
-  x => `${x}abc`,
-), '')([1, 2, 3, 4, 5]) // => '1abc2abc3abc4abc5abc'
+  asyncSquare,
+), [])([1, 2, 3, 4, 5]) // => Promise { [1, 4, 9, 16, 25] }
 
 transform(map(
-  x => x,
-), new Set())([1, 1, 1, 1, 1]) // => Set { 1 }
+  square,
+), '')([1, 2, 3, 4, 5]) // => '1491625'
 
 transform(map(
-  x => [x, String.fromCharCode(x)]
-), new Map())([97, 98, 99]) // => Map { 97 => 'a', 98 => 'b', 99 => 'c' }
+  square,
+), new Set())([1, 2, 3, 4, 5]) // => Set { 1, 4, 9, 16, 25 }
 
-String.fromCharCode(
-  ...transform(map(
-    x => x.charCodeAt(0),
-  ), new Uint8Array())('abc'), // => Uint8Array [97, 98, 99]
-) // => 'abc'
+transform(map(
+  number => [number, square(number)],
+), new Map())([1, 2, 3, 4, 5]) // => Map { 1 => 1, 2 => 4, 3 => 9, 4 => 16, 5 => 25 }
+
+const charToByte = x => x.charCodeAt(0)
+
+transform(map(
+  square,
+), new Uint8Array())([1, 2, 3, 4, 5]), // => Uint8Array [1, 4, 9, 16, 25]
 
 const asyncNumbersGeneratedIterable = (async function*() {
   for (let i = 0; i < 5; i++) { yield i + 1 }
 })() // generated async iterable that yields 1 2 3 4 5
 
 transform(map(
-  x => `${x ** 2}\n`,
+  square,
 ), process.stdout)(asyncNumbersGeneratedIterable) // > 1 4 9 16 25
 // => Promise { process.stdout }
 ```
