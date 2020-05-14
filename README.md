@@ -333,10 +333,10 @@ tap(
   async x => console.log(x), // > 'hey'
 )('hey') // => Promise { 'hey' }
 
+const concat = (y, xi) => y.concat([xi])
+
 reduce(
-  tap(
-    console.log, // > 1 2 3 4 5
-  )((y, xi) => y.concat(xi)),
+  tap(console.log)(concat), // > 1 2 3 4 5
   [],
 )([1, 2, 3, 4, 5]) // => [1, 2, 3, 4, 5]
 ```
