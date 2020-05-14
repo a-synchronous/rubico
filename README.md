@@ -463,58 +463,33 @@ y = map(f)(x); reduced = reduce(y)(z)
 `reduced` is equivalent to `reduce(x)(map(f)(z))`
 
 ```javascript
-map(
-  x => x + 1,
-)([1, 2, 3, 4, 5]) // => [2, 3, 4, 5, 6]
+square = x => x ** 2
 
 map(
-  async x => x + 'yo',
-)(['a', 'he']) // => Promise { ['ayo', 'heyo'] }
+  square,
+)([1, 2, 3, 4, 5]) // => [1, 4, 9, 16, 25]
+
+asyncSquare = async x => x ** 2
 
 map(
-  x => Math.abs(x)
-)(new Set([-2, -1, 0, 1, 2])) // new Set([0, 1, 2])
+  asyncSquare,
+)([1, 2, 3, 4, 5]) // => Promise { [1, 4, 9, 16, 25] }
 
 map(
-  async ([key, value]) => [key + key, value + value],
-)(new Map([['a', 1], ['b', 2]])) // Promise { Map { 'aa' => 2, 'bb' => 4 } }
-
-String.fromCharCode(
-  ...map(
-    x => x + 1,
-  )(new Uint8Array([97, 98, 99])) // 'abc' as bytes
-) // => 'bcd'
+  Math.abs,
+)(new Set([-2, -1, 0, 1, 2])) // => { Set { 0, 1, 2 } }
 
 map(
-  async x => x + 'z',
-)({ a: 'lol', b: 'cat' }) // => Promise { { a: 'lolz', b: 'catz' } }
-
-map(map(
-  x => x + 'z',
-))({ a: { a: 'lol' }, b: { b: 'cat' } }) // => { { a: { a: 'lolz' } }, { b: { b: 'catz' } } }
-
-const asyncNumbersGeneratedIterable = (async function*() {
-  for (let i = 0; i < 5; i++) { yield i + 1 }
-})() // generated async iterable that yields 1 2 3 4 5
+  ([k, v]) => [k + k, v + v],
+)(new Map([['a', 1], ['b', 2]])) // => Map { 'aa' => 2, 'bb' => 4 }
 
 map(
-  x => x + 1,
-)(asyncNumbersGeneratedIterable) // => generated async iterable that yields 2 3 4 5 6
-
-const numbersGeneratedIterable = (function*() {
-  for (let i = 0; i < 5; i++) { yield i + 1 }
-})() // generated iterable that yields 1 2 3 4 5
+  byte => byte + 1,
+)(new Uint8Array([97, 98, 99])) // Uint8Array [ 98, 99, 100 ]
 
 map(
-  x => x + 1,
-)(numbersGeneratedIterable) // => generated iterable that yields 2 3 4 5 6
-
-reduce(
-  map(
-    async xi => xi + 1,
-  )((y, xi) => y + xi),
-  0,
-)([1, 2, 3, 4, 5]) // => Promise { 20 }
+  word => word + 'z',
+)({ a: 'lol', b: 'cat' }) // => { a: 'lolz', b: 'catz' }
 ```
 
 ## filter
