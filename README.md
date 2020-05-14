@@ -701,7 +701,7 @@ transform(process.stdout, pipe([
 ]))(veryBigData)
 ```
 In this case, `pipe([filter(...), map(...)])` is a transducer, and we're writing each datum<br>
-to the console via `process.stdout`. `transform` consumes our `pipe([filter(...), map(...)])`
+to the console via `process.stdout`. `transform` consumes our `pipe([filter(...), map(...)])`<br>
 transducer and supplies it with `veryBigData`.
 
 Behind the scenes, `transform` is calling `reduce`, with a reducer converted from<br>
@@ -732,7 +732,7 @@ There are two other functions you'll need to get started with transducers, `map`
 given `x` is a reducer, `f` is a mapping function; `map(f)(x)` is a transducer that applies `f`<br>
 to each element in the final `transform` pipeline.
 
-given `x` is a reducer, `f` is a predicate function; `filter(f)(x)` is a transducer that
+given `x` is a reducer, `f` is a predicate function; `filter(f)(x)` is a transducer that<br>
 filters each element in the final `transform` pipeline based on `f`
 
 The following transformations are used as transducers
