@@ -361,17 +361,24 @@ if `f(x)` throws `err`, `y` is `g(err, x)`, else `y` is `f(x)`
 ```javascript
 onError = (e, x) => `${x} is invalid: ${e.message}`
 
-tryCatch(x => x, onError)('hello') // => 'hello'
-
-tryCatch(async x => x, onError)('hello') // => Promise { 'hello' }
+tryCatch(
+  x => x,
+  onError,
+)('hello') // => 'hello'
 
 throwGoodbye = () => { throw new Error('goodbye') }
 
-tryCatch(throwGoodbye, onError)('hello') // => 'hello is invalid: goodbye'
+tryCatch(
+  throwGoodbye,
+  onError,
+)('hello') // => 'hello is invalid: goodbye'
 
 rejectWithGoodbye = () => Promise.reject(new Error('goodbye'))
 
-tryCatch(rejectWithGoodbye, onError)('hello') // => Promise { 'hello is invalid: goodbye' }
+tryCatch(
+  rejectWithGoodbye,
+  onError,
+)('hello') // => Promise { 'hello is invalid: goodbye' }
 ```
 
 ## switchCase
