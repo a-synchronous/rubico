@@ -750,7 +750,7 @@ console.log(veryBigProcessedData)
 The above is not very memory efficient because of the intermediate arrays `veryBigFilteredData`<br>
 and `veryBigProcessedData`. We're also logging out a large quantity of data at once to the console.
 
-With some rubico functions, you could express the above transformation as a single pass<br>
+With rubico, you could express the above transformation as a single pass<br>
 without incurring a memory penalty
 ```javascript
 veryBigData = [...]
