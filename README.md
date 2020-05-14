@@ -209,16 +209,14 @@ see [transducers](https://github.com/richytong/rubico#transducers)
 
 ```javascript
 pipe([
-  x => x + 'y',
-  x => x + 'e',
-  x => x + 'lmao',
-])('a') // => 'ayelmao'
+  x => x + ' ',
+  x => x + 'world',
+])('hello') // => 'hello world'
 
 pipe([
-  x => x + 'y',
-  x => x + 'e',
-  async x => x + 'lmao',
-])('a') // => Promise { 'ayelmao' }
+  async x => x + ' ',
+  x => x + 'world',
+])('hello') // => Promise { 'hello world' }
 ```
 
 ## fork
@@ -241,26 +239,24 @@ if `functions` is an object, `y` is an object of entries `key: f(x)` for entry `
 
 ```javascript
 fork([
-  x => 'o' + x + 'o',
-  x => 'u' + x + 'u',
-])('w') // => ['owo', 'uwu']
+  x => x + 'world',
+  x => x + 'mom'
+])('hello') // => ['hello world', 'hello mom']
 
 fork([
-  x => 'o' + x + 'o',
-  async x => 'u' + x + 'u',
-])('w') // => Promise { ['owo', 'uwu'] }
+  x => x + 'world',
+  async x => x + 'mom'
+])('hello') // => Promise { ['hello world', 'hello mom'] }
 
 fork({
-  a: x => x + 1,
-  b: x => x + 2,
-  c: x => x + 3,
-})(0) // => { a: 1, b: 2, c: 3 }
+  a: x => x + 'world',
+  b: x => x + 'mom',
+})('hello') // => { a: 'hello world', b: 'hello mom' }
 
 fork({
-  a: x => x + 1,
-  b: x => x + 2,
-  c: async x => x + 3,
-})(0) // => Promise { { a: 1, b: 2, c: 3 } }
+  a: x => x + 'world',
+  b: async x => x + 'mom',
+})('hello') // => Promise { { a: 'hello world', b: 'hello mom' } }
 ```
 
 ## assign
@@ -283,18 +279,18 @@ all functions of `functions` are run concurrently
 
 ```javascript
 assign({
-  hello: x => 'hello ' + x.name,
-  goodbye: x => 'goodbye ' + x.name,
-})({ name: 'George' }) // => { hello: 'hello George', goodbye: 'goodbye George' }
+  hi: x => 'hi ' + x,
+  bye: x => 'bye ' + x,
+})({ name: 'Ed' }) // => { name: 'Ed', hi: 'hi Ed', bye: 'bye Ed' }
 
 assign({
-  hello: x => 'hello ' + x.name,
-  goodbye: async x => 'goodbye ' + x.name,
-})({ name: 'George' }) // => Promise { { hello: 'hello George', goodbye: 'goodbye George' } }
+  async hi: x => 'hi ' + x,
+  bye: x => 'bye ' + x,
+})({ name: 'Ed' }) // => Promise { { name: 'Ed', hi: 'hi Ed', bye: 'bye Ed' } }
 
 assign({
-  name: () => 'not George',
-})({ name: 'George' }) // => { name: 'not George' }
+  name: () => 'not Ed',
+})({ name: 'Ed' }) // => { name: 'not Ed' }
 ```
 
 ## tap
