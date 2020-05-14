@@ -766,7 +766,7 @@ transducer and supplies it with `veryBigData`.
 Behind the scenes, `transform` is calling `reduce` with a reducing function suitable for writing<br>
 to `process.stdout` converted from the transducer `pipe([filter(...), map(...)])`
 
-A reducer is a reducing function, very much the same as the one supplied to [reduce](https://github.com/richytong/rubico#reduce)
+`reducer` is an alias for reducing function, very much the same as the one supplied to [reduce](https://github.com/richytong/rubico#reduce)
 ```javascript
 y = reduce(reducer)(x)
 ```
