@@ -665,6 +665,10 @@ reduce(
 )({ a: 1, b: 1, c: 1, d: 1, e: 1 }) // => Set { 1 }
 ```
 ## transform
+transforms input according to provided transducer and initial value
+```javascript
+y = transform(f, x0)
+```
 ## any
 ## all
 ## and
