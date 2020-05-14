@@ -278,7 +278,7 @@ all functions of `functions` are run concurrently
 
 `output` is an object of entries `key: f(x)` for entry `key: f` of `functions`
 
-`y` is `x` merged with `output`
+`y` is `output` merged into `x`
 
 `y` is a Promise if:
   * any function of `functions` is asynchronous
