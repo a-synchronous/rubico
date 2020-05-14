@@ -791,10 +791,10 @@ You can use `pipe` to construct chains of transducers. Pipe will read left to ri
 There are two other functions you'll need to get started with transducers, `map` and `filter`.
 
 given `x` is a reducer, `f` is a mapping function; `map(f)(x)` is a transduced reducer<br>
-that applies `f` to each element in the final `transform` pipeline.
+that applies `f` to each element in the final transform pipeline.
 
 given `x` is a reducer, `f` is a predicate function; `filter(f)(x)` is a transduced reducer<br>
-that filters each element in the final `transform` pipeline based on `f`
+that filters each element in the final transform pipeline based on `f`
 
 The following transformations `isOdd`, `square`, and `squaredOdds` are used as transducers
 ```javascript
