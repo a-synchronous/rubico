@@ -737,7 +737,7 @@ j = transform(map(
 ## omit
 
 # Transducers
-Transducers allow us to wrangle very large or infinite streams of data in a<br>
+Transducers enable us to wrangle very large or infinite streams of data in a<br>
 composable and memory efficient way. Say you had `veryBigData` in an array
 ```javascript
 veryBigData = [...]
