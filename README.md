@@ -359,21 +359,21 @@ if `f(x)` throws `err`, `y` is `g(err, x)`, else `y` is `f(x)`
   * `f` is synchronous, `g` is asynchronous, and `f(x)` threw
 
 ```javascript
-onError = (e, x) => `${x} is invalid: ${e.message}`
+const onError = (e, x) => `${x} is invalid: ${e.message}`
 
 tryCatch(
   x => x,
   onError,
 )('hello') // => 'hello'
 
-throwGoodbye = () => { throw new Error('goodbye') }
+const throwGoodbye = () => { throw new Error('goodbye') }
 
 tryCatch(
   throwGoodbye,
   onError,
 )('hello') // => 'hello is invalid: goodbye'
 
-rejectWithGoodbye = () => Promise.reject(new Error('goodbye'))
+const rejectWithGoodbye = () => Promise.reject(new Error('goodbye'))
 
 tryCatch(
   rejectWithGoodbye,
@@ -413,7 +413,7 @@ switchCase evaluates functions in `functions` from left to right
   * any evaluated functions are asynchronous
 
 ```javascript
-isOdd = x => x % 2 === 1
+const isOdd = x => x % 2 === 1
 
 switchCase([
   isOdd, () => 'odd',
@@ -463,13 +463,13 @@ y = map(f)(x); reduced = reduce(y)(z)
 `reduced` is equivalent to `reduce(x)(map(f)(z))`
 
 ```javascript
-square = x => x ** 2
+const square = x => x ** 2
 
 map(
   square,
 )([1, 2, 3, 4, 5]) // => [1, 4, 9, 16, 25]
 
-asyncSquare = async x => x ** 2
+const asyncSquare = async x => x ** 2
 
 map(
   asyncSquare,
@@ -670,7 +670,7 @@ const asyncNumbersGeneratedIterable = (async function*() {
   for (let i = 0; i < 5; i++) { yield i + 1 }
 })() // generated async iterable that yields 1 2 3 4 5
 
-j = transform(map(
+transform(map(
   x => `${x ** 2}\n`,
 ), process.stdout)(asyncNumbersGeneratedIterable) // > 1 4 9 16 25
 // => Promise { process.stdout }
