@@ -191,7 +191,7 @@ rubico exports 23 functions
 [omit](https://github.com/richytong/rubico#omit)
 
 ## pipe
-chains functions from left to right; `fN(...f2(f1(f0(x))))`
+chains functions from left to right; `functionN(...(function2(function1(function0(x)))))`
 ```javascript
 y = pipe(functions)(x)
 ```
