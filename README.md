@@ -205,7 +205,7 @@ see [transducers](https://github.com/richytong/rubico#transducers)
 `y` is the output of running `x` through the chain of `functions`
 
 `y` is a Promise if:
-  * any functions of `functions` are asynchronous
+  * any function of `functions` is asynchronous
 
 ```javascript
 pipe([
