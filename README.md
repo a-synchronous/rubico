@@ -718,9 +718,11 @@ A transducer is a function that takes a reducer and returns another reducer
 ```javascript
 transducer = reducer => (y, xi) => reducer(doSomethingWith(y, xi))
 ```
-The transducer above, when passed a reducer, returns another reducer that<br>
-will do something with `y` and `xi`, then pass it to the input `reducer`.<br>
-We can create a chained reducer by passing a reducer to a chain of transducers.<br>
+The transducer above, when passed a reducer, returns another reducer that will do something<br>
+with `y` and `xi`, then pass it to the input `reducer`
+
+We can create a chained reducer by passing a reducer to a chain of transducers
+
 Imagine dominos falling over. The reducer you pass to a chain of transducers is called last.<br>
 Because of this implementation detail,
 > if `x` is a function, pipe chains `functions` from right to left
