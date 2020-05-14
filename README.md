@@ -793,10 +793,10 @@ There are two other functions you'll need to get started with transducers, `map`
 given `x` is a reducer, `f` is a mapping function; `map(f)(x)` is a transduced reducer\n
 that applies `f` to each element in the final `transform` pipeline.
 
-given `x` is a reducer, `f` is a predicate function; `filter(f)(x)` is a transduced reducer\n
+given `x` is a reducer, `f` is a predicate function; `filter(f)(x)` is a transduced reducer<br>
 that filters each element in the final `transform` pipeline based on `f`
 
-The following transformations `isOdd`, `square`, and `squaredOdds` are used as transducers
+The following transformations `isOdd`, `square`, and `squaredOdds` are used as transducers<br>
 ```javascript
 const isOdd = filter(x => x % 2 === 1)
 
