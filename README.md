@@ -238,8 +238,7 @@ if `functions` is an array of functions
   * `y` is an array `functions.map(f => f(x))`
 
 if `functions` is an object of functions
-  * given `[key, f]` is an element of `Object.entries(functions)`
-  * `y` is an object of entries `[key, f(x)]`
+  * `y` is an object of entries `[key, f(x)]` for entry `[key, f]` of `functions`
 
 `y` is a Promise if:
   * any function of `functions` is asynchronous
@@ -281,16 +280,12 @@ all functions of `functions` are run concurrently
 
 `x` is an object
 
-`y` is an object
-
-given
-  * `[key, f]` is an element of `Object.entries(functions)`
-  * `result` is an object of entries `[key, f(x)]`
+`result` is an object of entries `[key, f(x)]` for entry `[key, f]` of `functions`
 
 `y` is `x` merged with `result`
 
 `y` is a Promise if:
-  * any function of `functions` are asynchronous
+  * any function of `functions` is asynchronous
 
 ```javascript
 assign({
