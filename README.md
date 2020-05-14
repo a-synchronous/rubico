@@ -242,7 +242,7 @@ if `functions` is an object of functions
   * `y` is an object of entries `[key, f(x)]`
 
 `y` is a Promise if:
-  * any functions of `functions` are asynchronous
+  * any function of `functions` is asynchronous
 
 ```javascript
 fork([
@@ -290,7 +290,7 @@ given
 `y` is `x` merged with `result`
 
 `y` is a Promise if:
-  * any functions of `functions` are asynchronous
+  * any function of `functions` are asynchronous
 
 ```javascript
 assign({
