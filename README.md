@@ -99,7 +99,7 @@ import {
 with npm; `npm i rubico`
 
 # Examples
-The following examples compare algorithmically equivalent code between promise chains, async/await, and rubico
+The following examples compare promise chains, async/await, and rubico
 
 ### Make a request
 ```javascript
