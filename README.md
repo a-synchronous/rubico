@@ -206,9 +206,9 @@ see [transducers](https://github.com/richytong/rubico#transducers)
 
 `y` is the output of running `x` through the chain of `functions`
 
-if all functions of `functions` are synchronous, `y` is not a Promise
+`y` is a Promise if:
+  * any functions of `functions` are asynchronous
 
-if any functions of `functions` are asynchronous, `y` is a Promise
 ```javascript
 pipe([
   x => x + 'y',
@@ -236,11 +236,11 @@ all functions of `functions` are run concurrently
 
 `y` assumes the shape of `functions`
 
-`y` is the output of mapping `x` to each function of `functions`
+`y` is the output of applying `x` to each function of `functions`
 
-if all functions of `functions` are synchronous, `y` is not a Promise
+`y` is a Promise if:
+  * any functions of `functions` are asynchronous
 
-if any functions of `functions` are asynchronous, `y` is a Promise
 ```javascript
 fork([
   x => 'o' + x + 'o',
@@ -282,9 +282,8 @@ all functions of `functions` are run concurrently
 
 `y` is the output of mapping `x` to each function of `functions`, then merging `x` with that result
 
-if all functions of `functions` are synchronous, `y` is not a Promise
-
-if any functions of `functions` are asynchronous, `y` is a Promise
+`y` is a Promise if:
+  * any functions of `functions` are asynchronous
 
 ```javascript
 assign({
@@ -311,9 +310,10 @@ y = tap(f)(x)
 
 `f` is a function that expects one argument `x`
 
-if `f` is synchronous, `y` is `x`
+`y` is `x`
 
-if `f` is asynchronous, `y` is a Promise that resolves to `x`
+`y` is a Promise if:
+  * `f` is asynchronous
 
 if `x` is a function, tap calls `f` for each element `zi` of `z`, yielding `zi`
 ```javascript
@@ -346,7 +346,8 @@ reduce(
 ```
 
 ## tryCatch
-tries a sync or async function `f` with input `x`, catches with another sync or async function `g`
+TODO: remove sync or async
+tries a sync or async function with input, catches with another sync or async function
 ```javascript
 y = tryCatch(f, g)(x)
 ```
@@ -358,17 +359,12 @@ y = tryCatch(f, g)(x)
 
 `x` is anything
 
-if `f(x)` did not throw, `y` is `f(x)`
+`y` is `f(x)` if `f(x)` did not throw, else `g(err, x)`
 
-if `f(x)` threw, `y` is `g(err, x)`
+`y` is a Promise if:
+  * `f` is asynchronous
+  * `f` is synchronous, `g` is asynchronous, and `f(x)` threw
 
-if `f` and `g` are synchronous, `y` is not a Promise
-
-if `f` is asynchronous, `y` is a Promise
-
-if `f` is synchronous, `g` is asynchronous, and `f(x)` did not throw, `y` is not a Promise
-
-if `f` is synchronous, `g` is asynchronous, and `f(x)` threw, `y` is a Promise
 ```javascript
 tryCatch(
   x => x + 'yo',
@@ -392,7 +388,7 @@ tryCatch(
 ```
 
 ## switchCase
-if1(x) ? do1(x) : if2(x) ? do2(x) : ... ifN(x) ? doN(x) : doDefault(x)
+if1(x) ? do1(x) : if2(x) ? do2(x) : ... ifN(x) ? doN(x) : else(x)
 ```javascript
 y = switchCase(functions)(x)
 ```
@@ -401,17 +397,18 @@ y = switchCase(functions)(x)
 `functions` is an array of functions
 
 given<br>
-`if1, if2, ..., ifN` predicate functions<br>
-`do1, do2, ..., doN` corresponding then functions<br>
-`doDefault`          an else function
+`if1, if2, ..., ifN` `if` functions<br>
+`do1, do2, ..., doN` corresponding `do` functions<br>
+`else`               an `else` function
 
-`functions` is the array of functions `[if1, do1, if2, do2, ..., ifN, doN, doDefault]`
+`functions` is the array of functions `[if1, do1, if2, do2, ..., ifN, doN, else]`
 
-switchCase evaluates supplied functions in series `evaluated` and breaks early on a truthy predicate
+switchCase evaluates functions in `functions` from left to right
 
-if all functions of `evaluated` are synchronous, `y` is not a Promise
+`y` is the first `then(x)` whose corresponding `if(x)` is truthy
 
-if any functions of `evaluated` are asynchronous, `y` is a Promise
+`y` is a Promise if:
+  * any evaluated functions are asynchronous
 
 ```javascript
 switchCase([
@@ -435,7 +432,7 @@ switchCase([
 ```
 
 ## map
-applies a sync or async function `f` to each element of a collection `x`
+applies a sync or async function to each element of input
 ```javascript
 y = map(f)(x)
 ```
@@ -451,13 +448,12 @@ if `x` is an async iterable, `y` is a generated async iterable
 
 if `x` is a generated iterable, `y` is a generated iterable
 
-if `f` is synchronous, `y` is not a Promise
+`y` is a Promise if:
+  * `f` is asynchronous and `x` is not an async iterable
 
-if `f` is asynchronous and `x` is not an async iterable, `y` is a Promise
-
-if `x` is a function, map applies `f` to each element `zi` of `z`, yielding `f(zi)`
+if `x` is a function, `y` is a transduced reducing function, see [transducers](https://github.com/richytong/rubico#transducers)
 ```javascript
-y = reduce(map(f)(x))(z)
+reduced = reduce(map(f)(x))(z)
 ```
 `reduce` is [reduce](https://github.com/richytong/rubico#reduce),
 
@@ -467,11 +463,10 @@ y = reduce(map(f)(x))(z)
 
 `f` is a function that expects one argument `zi`
 
-`x` is a function that expects two arguments `y` and `f(zi)`
+`x` is a reducing function that expects two arguments `y` and `f(zi)`
 
-`map(f)(x)` is a transduced reducing function, see [transducers](https://github.com/richytong/rubico#transducers)
+`reduced` is equivalent to `reduce(x)(map(f)(z))`
 
-`y` is equivalent in value to `reduce(x)(map(f)(z))`
 ```javascript
 map(
   x => x + 1,
@@ -527,7 +522,7 @@ reduce(
 )([1, 2, 3, 4, 5]) // => Promise { 20 }
 ```
 ## filter
-filters elements out of a collection `x` based on sync or async predicate `f`
+filters elements out of input based on a sync or async predicate
 ```javascript
 y = filter(f)(x)
 ```
@@ -541,13 +536,12 @@ y = filter(f)(x)
 
 if `x` is an async iterable, `y` is a generated async iterable
 
-if `f` is synchronous, `y` is not a Promise
+`y` is a Promise if:
+  * `f` is asynchronous and `x` is not an async iterable
 
-if `f` is asynchronous and `x` is not an async iterable, `y` is a Promise
-
-if `x` is a function, filtering is based on elements of `z`
+if `x` is a function, `y` is a transduced reducing function, see [transducers](https://github.com/richytong/rubico#transducers)
 ```javascript
-y = reduce(filter(f)(x))(z)
+reduced = reduce(filter(f)(x))(z)
 ```
 `reduce` is [reduce](https://github.com/richytong/rubico#reduce),
 
@@ -557,11 +551,10 @@ y = reduce(filter(f)(x))(z)
 
 `f` is a function that expects one argument `zi`
 
-`x` is a function that expects two arguments `y` and `zi`
+`x` is a reducing function that expects two arguments `y` and `zi`
 
-`filter(f)(x)` is a transduced reducing function, see [transducers](https://github.com/richytong/rubico#transducers)
+`reduced` is equivalent to `reduce(x)(filter(f)(z))`
 
-`y` is equivalent in value to `reduce(x)(filter(f)(z))`
 ```javascript
 filter(
   x => x <= 3,
@@ -612,34 +605,36 @@ reduce(
   0,
 )([1, 2, 3, 4, 5]) // => Promise { 6 }
 ```
+
 ## reduce
-applies a sync or async reducing function `f` to each element of a collection `x`, returning a single value
+transforms input according to provided reducing function and initial value
 ```javascript
 y = reduce(f, x0)(x)
 ```
 `x` is an iterable, an async iterable, or an object
 
-`f` is a function that expects two arguments `y` and `xi`, an element of `x`
+`xi` is an element of `x`
+
+`f` is a reducing function that expects two arguments `y` and `xi`
 
 `x0` is optional
 
-if `x0` is provided
- * `y` starts as `x0`
- * iteration begins with the first element of `x`
+if `x0` is provided:
+  * `y` starts as `x0`
+  * iteration begins with the first element of `x`
 
-if `x0` is not provided
- * `y` starts as the first element of `x`
- * iteration begins with the second element of `x`
+if `x0` is not provided:
+  * `y` starts as the first element of `x`
+  * iteration begins with the second element of `x`
 
-for each successive `xi` of `x`, `y` assumes the output of `f(y, xi)`
+for each successive `xi`, `y` assumes the output of `f(y, xi)`
 
 the returned `y` is the output of the final iteration `f(y, xi)`
 
-if `x` is an async iterable, `y` is a promise
+`y` is a Promise if:
+  * `f` is asynchronous
+  * `x` is an async iterable
 
-if `f` is synchronous and `x` is not an async iterable, `y` is not a Promise
-
-if `f` is asynchronous, `y` is a Promise
 ```javascript
 reduce(
   (y, xi) => y + xi,
@@ -664,6 +659,7 @@ reduce(
   new Set(),
 )({ a: 1, b: 1, c: 1, d: 1, e: 1 }) // => Set { 1 }
 ```
+
 ## transform
 transforms input according to provided transducer and initial value
 ```javascript
@@ -678,10 +674,9 @@ y = transform(f, x0)(x)
 
 `y` is `x` transformed with `f` into `x0`
 
-TODO: use this format for all docs
-`y` is a Promise if any of the following are true
- * `f` is asynchronous
- * `x` is an async iterable
+`y` is a Promise if:
+  * `f` is asynchronous
+  * `x` is an async iterable
 
 in the following examples, `map` is [map](https://github.com/richytong/rubico#map)
 ```javascript
