@@ -232,9 +232,9 @@ all functions of `functions` are run concurrently
 
 `x` is anything
 
-`y` is `functions.map(f => f(x))` if `functions` is an array
+if `functions` is an array, `y` is `functions.map(f => f(x))`
 
-`y` is an object of entries `key: f(x)` for entry `key: f` of `functions` if `functions` is an object
+if `functions` is an object, `y` is an object of entries `key: f(x)` for entry `key: f` of `functions`
 
 `y` is wrapped in a Promise if:
   * any function of `functions` is asynchronous
@@ -243,14 +243,12 @@ all functions of `functions` are run concurrently
 fork([
   x => 'o' + x + 'o',
   x => 'u' + x + 'u',
-  x => 'x' + x + 'x',
-])('w') // => ['owo', 'uwu', 'xwx']
+])('w') // => ['owo', 'uwu']
 
 fork([
   x => 'o' + x + 'o',
-  x => Promise.resolve('u' + x + 'u'),
-  async x => 'x' + x + 'x',
-])('w') // => Promise { ['owo', 'uwu', 'xwx'] }
+  async x => 'u' + x + 'u',
+])('w') // => Promise { ['owo', 'uwu'] }
 
 fork({
   a: x => x + 1,
@@ -260,7 +258,7 @@ fork({
 
 fork({
   a: x => x + 1,
-  b: x => Promise.resolve(x + 2),
+  b: x => x + 2,
   c: async x => x + 3,
 })(0) // => Promise { { a: 1, b: 2, c: 3 } }
 ```
