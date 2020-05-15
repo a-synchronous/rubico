@@ -684,18 +684,69 @@ transform(map(
 ```
 
 ## any
+```javascript
+y = any(f)(x)
+```
+
 ## all
+```javascript
+y = all(f)(x)
+```
+
 ## and
+```javascript
+y = and(functions)(x)
+```
+
 ## or
+```javascript
+y = or(functions)(x)
+```
+
 ## not
+```javascript
+y = not(f)(x)
+```
+
 ## eq
+```javascript
+y = eq(f, g)(x)
+```
+
 ## gt
+```javascript
+y = gt(f, g)(x)
+```
+
 ## lt
+```javascript
+y = lt(f, g)(x)
+```
+
 ## gte
+```javascript
+y = gte(f, g)(x)
+```
+
 ## lte
+```javascript
+y = lte(f, g)(x)
+```
+
 ## get
+```javascript
+y = get(path)(x)
+```
+
 ## pick
+```javascript
+y = pick(properties)(x)
+```
+
 ## omit
+```javascript
+y = omit(properties)(x)
+```
 
 # Transducers
 Transducers enable us to wrangle very large or infinite streams of data in a<br>
