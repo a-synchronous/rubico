@@ -16,7 +16,7 @@ a functional promise library
 # Introduction
 Asynchronous programming in JavaScript has evolved over the years
 
-> In the beginning, there were [callbacks](http://callbackhell.com)
+In the beginning, there were [callbacks](http://callbackhell.com)
 ```javascript
 function doAsyncThings(a, cb) {
   doAsyncThingA(a, function(errA, b) {
@@ -41,7 +41,7 @@ function doAsyncThings(a, cb) {
 To stay within maximum line lengths, we created
 [Promises](https://developer.mozilla.org/en-US/docs/Mozilla/JavaScript_code_modules/Promise.jsm/Promise)
 
-> Then began the chains of `then`
+Then began the chains of `then`
 ```javascript
 const doAsyncThings = a => doAsyncThingA(a)
   .then(b => doAsyncThingB(b))
@@ -50,9 +50,9 @@ const doAsyncThings = a => doAsyncThingA(a)
   .then(e => doAsyncThingE(e))
 ```
 
-This was fine until we missed imperative programming
+This was fine until we wanted JavaScript to look like a normal language
 
-> [async/await](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function), the latest in asynchrony
+[async/await](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function), the latest in asynchrony
 ```javascript
 const doAsyncThings = async a => {
   const b = await doAsyncThingA(a)
@@ -64,7 +64,7 @@ const doAsyncThings = async a => {
 }
 ```
 
-Meanwhile...
+And now, a functional way to do async things
 ```javascript
 import { pipe } from 'rubico'
 
