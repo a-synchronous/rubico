@@ -1134,6 +1134,16 @@ y = pick(properties)(x)
 
 `x` is an object
 
+`properties` is an array of strings
+
+`y` is an object composed of all properties enumerated in `properties` and defined in `x`
+
+```javascript
+pick(['a', 'b'])({ a: 1, b: 2, c: 3 }) // => { a: 1, b: 2 }
+
+pick(['d'])({ a: 1, b: 2, c: 3 }) // => {}
+```
+
 ## omit
 constructs a new object from input without the provided properties
 ```javascript
@@ -1141,6 +1151,16 @@ y = omit(properties)(x)
 ```
 
 `x` is an object
+
+`properties` is an array of strings
+
+`y` is an object composed of every property in `x` except for those enumerated in `properties`
+
+```javascript
+omit(['a', 'b'])({ a: 1, b: 2, c: 3 }) // => { c: 3 }
+
+omit(['d'])({ a: 1, b: 2, c: 3 }) // => { a: 1, b: 2, c: 3 }
+```
 
 # Transducers
 Transducers enable us to wrangle very large or infinite streams of data in a<br>
