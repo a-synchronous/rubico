@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<script type="module">
+import r, {
+  pipe, fork, assign, tap, tryCatch, switchCase,
+  map, filter, reduce, transform,
+  any, all, and, or, not,
+  eq, gt, lt, gte, lte,
+  get, pick, omit,
+} from 'https://deno.land/x/rubico/rubico.js'
+
+const asyncNumbersGeneratedIterable = (async function*() {
+  for (let i = 0; i < 5; i++) { yield i + 1 }
+})() // generated async iterable that yields 1 2 3 4 5
+
+const square = x => x ** 2
+
+console.log('squaring [1, 2, 3, 4, 5]')
+
+transform(map(pipe([
+  square,
+  console.log,
+])), null)(asyncNumbersGeneratedIterable) // > 1 4 9 16 25
+</script>
+</body>
+</html>

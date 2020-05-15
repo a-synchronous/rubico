@@ -88,7 +88,7 @@ programs written with rubico follow a [point-free style](https://en.wikipedia.or
 rubico works in server and browser JavaScript environments
 
 # Installation
-with deno;
+with deno
 ```javascript
 import {
   pipe, fork, assign, tap, tryCatch, switchCase,
@@ -99,7 +99,23 @@ import {
 } from 'https://deno.land/x/rubico/rubico.js'
 ```
 
-with npm; `npm i rubico`
+in the browser
+```html
+<script type="module">
+  import r, {
+    pipe, fork, assign, tap, tryCatch, switchCase,
+    map, filter, reduce, transform,
+    any, all, and, or, not,
+    eq, gt, lt, gte, lte,
+    get, pick, omit,
+  } from 'https://deno.land/x/rubico/rubico.js'
+</script>
+```
+
+with npm
+```bash
+npm i rubico
+```
 
 # Examples
 The following examples compare promise chains, async/await, and rubico
