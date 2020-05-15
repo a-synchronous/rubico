@@ -761,6 +761,35 @@ y = and(functions)(x)
 
 `x` is anything
 
+`functions` is an array of functions
+
+`f` is a function of `functions`
+
+`y` is true if all `f(x)` are truthy, false otherwise
+
+```javascript
+const isOdd = x => x % 2 === 1
+
+const asyncIsOdd = async x => x % 2 === 1
+
+const lessThan3 = x => x < 3
+
+and([
+  isOdd,
+  lessThan3,
+])(1) // => true
+
+and([
+  asyncIsOdd,
+  lessThan3,
+])(1) // => Promise { true }
+
+and([
+  isOdd,
+  lessThan3,
+])(2) // => false
+```
+
 ## or
 applies each function of functions to input, returns any evaluations truthy
 ```javascript
@@ -768,6 +797,35 @@ y = or(functions)(x)
 ```
 
 `x` is anything
+
+`functions` is an array of functions
+
+`f` is a function of `functions`
+
+`y` is true if any `f(x)` are truthy, false otherwise
+
+```javascript
+const isOdd = x => x % 2 === 1
+
+const asyncIsOdd = async x => x % 2 === 1
+
+const lessThan3 = x => x < 3
+
+or([
+  isOdd,
+  lessThan3,
+])(5) // => true
+
+or([
+  asyncIsOdd,
+  lessThan3,
+])(5) // => Promise { true }
+
+or([
+  isOdd,
+  lessThan3,
+])(6) // => false
+```
 
 ## not
 applies a function to input, logically inverting the result
