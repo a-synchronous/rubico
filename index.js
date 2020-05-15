@@ -690,8 +690,8 @@ const isDelimitedBy = (delim, x) => (x
   && x.slice(1, x.length - 1).includes(delim))
 
 const arrayGet = (path, x, defaultValue) => {
-  if (!isDefined(x)) return defaultValue
   let y = x
+  if (!isDefined(y)) return defaultValue
   for (let i = 0; i < path.length; i++) {
     y = y[path[i]]
     if (!isDefined(y)) return defaultValue
