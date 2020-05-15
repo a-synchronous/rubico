@@ -193,8 +193,6 @@ rubico exports 23 functions
 [pick](https://github.com/richytong/rubico#pick),
 [omit](https://github.com/richytong/rubico#omit)
 
-TODO: `y` is wrapped in a Promise if -> `y` is wrapped in a Promise for any of the following
-
 ## pipe
 chains functions from left to right; `functionN(...(function2(function1(function0(x)))))`
 ```javascript
@@ -209,7 +207,7 @@ see [transducers](https://github.com/richytong/rubico#transducers)
 
 `y` is the output of running `x` through the chain of `functions`
 
-`y` is wrapped in a Promise if:
+`y` is wrapped in a Promise if any of the following are true:
   * any function of `functions` is asynchronous
 
 ```javascript
@@ -239,7 +237,7 @@ if `functions` is an array, `y` is `functions.map(f => f(x))`
 
 if `functions` is an object, `y` is an object of entries `key: f(x)` for entry `key: f` of `functions`
 
-`y` is wrapped in a Promise if:
+`y` is wrapped in a Promise if any of the following are true:
   * any function of `functions` is asynchronous
 
 ```javascript
@@ -279,7 +277,7 @@ all functions of `functions` are run concurrently
 
 `y` is `output` merged into `x`
 
-`y` is wrapped in a Promise if:
+`y` is wrapped in a Promise if any of the following are true:
   * any function of `functions` is asynchronous
 
 ```javascript
@@ -309,7 +307,7 @@ y = tap(f)(x)
 
 `y` is `x`
 
-`y` is wrapped in a Promise if:
+`y` is wrapped in a Promise if any of the following are true:
   * `f` is asynchronous
 
 if `x` is a function, `y` is a transduced reducing function, see [transducers](https://github.com/richytong/rubico#transducers)
@@ -359,7 +357,7 @@ y = tryCatch(f, g)(x)
 
 if `f(x)` throws `err`, `y` is `g(err, x)`, else `y` is `f(x)`
 
-`y` is wrapped in a Promise if:
+`y` is wrapped in a Promise if any of the following are true:
   * `f` is asynchronous
   * `f` is synchronous, `g` is asynchronous, and `f(x)` threw
 
@@ -414,7 +412,7 @@ switchCase evaluates functions in `functions` from left to right
 
 `y` is the first `do(x)` whose corresponding `if(x)` is truthy
 
-`y` is wrapped in a Promise if:
+`y` is wrapped in a Promise if any of the following are true:
   * any evaluated functions are asynchronous
 
 ```javascript
@@ -448,7 +446,7 @@ y = map(f)(x)
   * if `x` is an iterable but not a built-in type and `f` is asynchronous,
     `y` is an iterable of promises
 
-`y` is wrapped in a Promise if:
+`y` is wrapped in a Promise if any of the following are true:
   * `f` is asynchronous and `x` is not an async iterable
 
 if `x` is a function, `y` is a transduced reducing function, see [transducers](https://github.com/richytong/rubico#transducers)
@@ -516,7 +514,7 @@ y = filter(f)(x)
   * if `x` is an iterable but not a bulit-in type and `f` is asynchronous,
     filter will throw a TypeError
 
-`y` is wrapped in a Promise if:
+`y` is wrapped in a Promise if any of the following are true:
   * `f` is asynchronous and `x` is not an async iterable
 
 if `x` is a function, `y` is a transduced reducing function, see [transducers](https://github.com/richytong/rubico#transducers)
@@ -589,7 +587,7 @@ if `x0` is not provided:
 
 `y` is `f(y, xi)` for each successive `xi`
 
-`y` is wrapped in a Promise if:
+`y` is wrapped in a Promise if any of the following are true:
   * `f` is asynchronous
   * `x` is an async iterable
 
@@ -639,7 +637,7 @@ y = transform(f, x0)(x)
 
 `y` is `x` transformed with `f` into `x0`
 
-`y` is wrapped in a Promise if:
+`y` is wrapped in a Promise if any of the following are true:
   * `f` is asynchronous
   * `x` is an async iterable
 
@@ -699,7 +697,7 @@ y = any(f)(x)
 
 `y` is true if all `f(xi)` are truthy, false otherwise
 
-`y` is wrapped in a Promise if:
+`y` is wrapped in a Promise if any of the following are true:
   * `f` is asynchronous
 
 ```javascript
@@ -734,7 +732,7 @@ y = all(f)(x)
 
 `y` is true if any `f(xi)` are truthy, false otherwise
 
-`y` is wrapped in a Promise if:
+`y` is wrapped in a Promise if any of the following are true:
   * `f` is asynchronous
 
 ```javascript
@@ -769,7 +767,7 @@ y = and(functions)(x)
 
 `y` is true if all `f(x)` are truthy, false otherwise
 
-`y` is wrapped in a Promise if:
+`y` is wrapped in a Promise if any of the following are true:
   * any `f` is asynchronous
 
 ```javascript
@@ -809,7 +807,7 @@ y = or(functions)(x)
 
 `y` is true if any `f(x)` are truthy, false otherwise
 
-`y` is wrapped in a Promise if:
+`y` is wrapped in a Promise if any of the following are true:
   * any `f` is asynchronous
 
 ```javascript
@@ -847,7 +845,7 @@ y = not(f)(x)
 
 `y` is true if `f(x)` is falsy, false otherwise
 
-`y` is wrapped in a Promise if:
+`y` is wrapped in a Promise if any of the following are true:
   * `f` is asynchronous
 
 ```javascript
@@ -886,7 +884,7 @@ y = eq(left, right)(x)
 
 `y` is true if `leftCompare` strictly equals `rightCompare`, false otherwise
 
-`y` is wrapped in a Promise if:
+`y` is wrapped in a Promise if any of the following are true:
   * `left` is asynchronous
   * `right` is asynchronous
 
@@ -937,7 +935,7 @@ y = gt(left, right)(x)
 
 `y` is true if `leftCompare` is greater than `rightCompare`
 
-`y` is wrapped in a Promise if:
+`y` is wrapped in a Promise if any of the following are true:
   * `left` is asynchronous
   * `right` is asynchronous
 
@@ -980,7 +978,7 @@ y = lt(left, right)(x)
 
 `y` is true if `leftCompare` is less than `rightCompare`
 
-`y` is wrapped in a Promise if:
+`y` is wrapped in a Promise if any of the following are true:
   * `left` is asynchronous
   * `right` is asynchronous
 
@@ -1023,7 +1021,7 @@ y = gte(left, right)(x)
 
 `y` is true if `leftCompare` is greater than or equal to `rightCompare`
 
-`y` is wrapped in a Promise if:
+`y` is wrapped in a Promise if any of the following are true:
   * `left` is asynchronous
   * `right` is asynchronous
 
@@ -1066,7 +1064,7 @@ y = lte(left, right)(x)
 
 `y` is true if `leftCompare` is less than or equal to `rightCompare`
 
-`y` is wrapped in a Promise if:
+`y` is wrapped in a Promise if any of the following are true:
   * `left` is asynchronous
   * `right` is asynchronous
 
