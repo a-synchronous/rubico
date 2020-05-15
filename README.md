@@ -906,50 +906,174 @@ eq(
 )(1) // => Promise { true }
 
 eq(
+  square,
+  asyncSquare,
+)(1) // => Promise { true }
+
+eq(
   1,
   square,
 )(2) // => false
 
-eq(
-  square,
-  asyncSquare,
-)(2) // => Promise { true }
-
-eq(1, 1)('hello') // => true
-eq(0, 1)('hello') // => false
+eq(1, 1)() // => true
+eq(0, 1)() // => false
 ```
 
 ## gt
 tests left greater than right
 ```javascript
-y = gt(f, g)(x)
+y = gt(left, right)(x)
 ```
 
 `x` is anything
+
+`left` is a non-function value or a function that expects one argument `x`
+
+`right` is a non-function value or a function that expects one argument `x`
+
+`leftCompare` is `left` if `left` is a non-function value, else `left(x)`
+
+`rightCompare` is `right` if `right` is a non-function value, else `right(x)`
+
+`y` is true if `leftCompare` is greater than `rightCompare`
+
+```javascript
+gt(
+  x => x,
+  10,
+)(11) // => true
+
+gt(
+  async x => x,
+  10,
+)(11) // => Promise { true }
+
+gt(
+  x => x,
+  10,
+)(9) // => false
+
+gt(2, 1)() // => true
+gt(1, 1)() // => false
+gt(0, 1)() // => false
+```
 
 ## lt
 tests left less than right
 ```javascript
-y = lt(f, g)(x)
+y = lt(left, right)(x)
 ```
 
 `x` is anything
+
+`left` is a non-function value or a function that expects one argument `x`
+
+`right` is a non-function value or a function that expects one argument `x`
+
+`leftCompare` is `left` if `left` is a non-function value, else `left(x)`
+
+`rightCompare` is `right` if `right` is a non-function value, else `right(x)`
+
+`y` is true if `leftCompare` is less than `rightCompare`
+
+```javascript
+lt(
+  x => x,
+  10,
+)(9) // => true
+
+lt(
+  async x => x,
+  10,
+)(9) // => Promise { true }
+
+lt(
+  x => x,
+  10,
+)(11) // => false
+
+lt(0, 1)() // => true
+lt(1, 1)() // => false
+lt(2, 1)() // => false
+```
 
 ## gte
 tests left greater than or equal right
 ```javascript
-y = gte(f, g)(x)
+y = gte(left, right)(x)
 ```
 
 `x` is anything
+
+`left` is a non-function value or a function that expects one argument `x`
+
+`right` is a non-function value or a function that expects one argument `x`
+
+`leftCompare` is `left` if `left` is a non-function value, else `left(x)`
+
+`rightCompare` is `right` if `right` is a non-function value, else `right(x)`
+
+`y` is true if `leftCompare` is greater than or equal to `rightCompare`
+
+```javascript
+gte(
+  x => x,
+  10,
+)(11) // => true
+
+gte(
+  async x => x,
+  10,
+)(11) // => Promise { true }
+
+gte(
+  x => x,
+  10,
+)(9) // => false
+
+gte(2, 1)() // => true
+gte(1, 1)() // => true
+gte(0, 1)() // => false
+```
 
 ## lte
 tests left less than or equal right
 ```javascript
-y = lte(f, g)(x)
+y = lte(left, right)(x)
 ```
 
 `x` is anything
+
+`left` is a non-function value or a function that expects one argument `x`
+
+`right` is a non-function value or a function that expects one argument `x`
+
+`leftCompare` is `left` if `left` is a non-function value, else `left(x)`
+
+`rightCompare` is `right` if `right` is a non-function value, else `right(x)`
+
+`y` is true if `leftCompare` is less than or equal to `rightCompare`
+
+```javascript
+lte(
+  x => x,
+  10,
+)(9) // => true
+
+lte(
+  async x => x,
+  10,
+)(9) // => Promise { true }
+
+lte(
+  x => x,
+  10,
+)(11) // => false
+
+lte(0, 1)() // => true
+lte(1, 1)() // => true
+lte(2, 1)() // => false
+```
 
 ## get
 accesses a property by path
