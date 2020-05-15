@@ -767,6 +767,9 @@ y = and(functions)(x)
 
 `y` is true if all `f(x)` are truthy, false otherwise
 
+`y` is wrapped in a Promise if:
+  * any `f` is asynchronous
+
 ```javascript
 const isOdd = x => x % 2 === 1
 
@@ -804,6 +807,9 @@ y = or(functions)(x)
 
 `y` is true if any `f(x)` are truthy, false otherwise
 
+`y` is wrapped in a Promise if:
+  * any `f` is asynchronous
+
 ```javascript
 const isOdd = x => x % 2 === 1
 
@@ -834,6 +840,31 @@ y = not(f)(x)
 ```
 
 `x` is anything
+
+`f` is a function that expects one argument `x`
+
+`y` is true if `f(x)` is falsy, false otherwise
+
+`y` is wrapped in a Promise if:
+  * `f` is asynchronous
+
+```javascript
+const isOdd = x => x % 2 === 1
+
+const asyncIsOdd = async x => x % 2 === 1
+
+not(
+  isOdd,
+)(2) // => true
+
+not(
+  asyncIsOdd,
+)(2) // => Promise { true }
+
+not(
+  isOdd,
+)(3) // => false
+```
 
 ## eq
 applies input to two provided functions, returns both evaluations strict equal
