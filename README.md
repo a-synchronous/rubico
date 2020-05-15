@@ -691,6 +691,33 @@ y = any(f)(x)
 
 `x` is an iterable or an object
 
+`xi` is an element of `x`
+
+`f` is a function that expects one argument `xi`
+
+`y` is true if all `f(xi)` are truthy, false otherwise
+
+`y` is wrapped in a Promise if:
+  * `f` is asynchronous
+
+```javascript
+const isOdd = x => x % 2 === 1
+
+any(
+  isOdd,
+)([1, 2, 3, 4, 5]) // => true
+
+const asyncIsOdd = async x => x % 2 === 1
+
+any(
+  asyncIsOdd,
+)([1, 2, 3, 4, 5]) // => Promise { true }
+
+any(
+  isOdd,
+)({ b: 2, d: 4 }) // => false
+```
+
 ## all
 applies a function to each element of input, returns all evaluations truthy
 ```javascript
@@ -698,6 +725,33 @@ y = all(f)(x)
 ```
 
 `x` is an iterable or an object
+
+`xi` is an element of `x`
+
+`f` is a function that expects one argument `xi`
+
+`y` is true if any `f(xi)` are truthy, false otherwise
+
+`y` is wrapped in a Promise if:
+  * `f` is asynchronous
+
+```javascript
+const isOdd = x => x % 2 === 1
+
+all(
+  isOdd,
+)([1, 2, 3, 4, 5]) // => false
+
+const asyncIsOdd = async x => x % 2 === 1
+
+all(
+  asyncIsOdd,
+)([1, 2, 3, 4, 5]) // => Promise { false }
+
+all(
+  isOdd,
+)({ a: 1, c: 3 }) // => true
+```
 
 ## and
 applies each function of functions to input, returns all evaluations truthy
