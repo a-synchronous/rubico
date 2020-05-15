@@ -937,6 +937,10 @@ y = gt(left, right)(x)
 
 `y` is true if `leftCompare` is greater than `rightCompare`
 
+`y` is wrapped in a Promise if:
+  * `left` is asynchronous
+  * `right` is asynchronous
+
 ```javascript
 gt(
   x => x,
@@ -975,6 +979,10 @@ y = lt(left, right)(x)
 `rightCompare` is `right` if `right` is a non-function value, else `right(x)`
 
 `y` is true if `leftCompare` is less than `rightCompare`
+
+`y` is wrapped in a Promise if:
+  * `left` is asynchronous
+  * `right` is asynchronous
 
 ```javascript
 lt(
@@ -1015,6 +1023,10 @@ y = gte(left, right)(x)
 
 `y` is true if `leftCompare` is greater than or equal to `rightCompare`
 
+`y` is wrapped in a Promise if:
+  * `left` is asynchronous
+  * `right` is asynchronous
+
 ```javascript
 gte(
   x => x,
@@ -1054,6 +1066,10 @@ y = lte(left, right)(x)
 
 `y` is true if `leftCompare` is less than or equal to `rightCompare`
 
+`y` is wrapped in a Promise if:
+  * `left` is asynchronous
+  * `right` is asynchronous
+
 ```javascript
 lte(
   x => x,
@@ -1078,10 +1094,37 @@ lte(2, 1)() // => false
 ## get
 accesses a property by path
 ```javascript
-y = get(path)(x)
+y = get(path, defaultValue)(x)
 ```
 
-`x` is anything
+`x` is an object
+
+`path` is a number, string, a dot-delimited string, or an array
+
+`defaultValue` is optional; if not provided, it is undefined
+
+`y` depends on `path`:
+  * if `path` is a number or string, `y` is `x[path]`
+  * if `path` is a dot-delimited string `'p.a...t.h'`, `y` is `x['p']['a']...['t']['h']`
+  * if `path` is an array `['p', 'a', ..., 't', 'h']`, `y` is `x['p']['a']...['t']['h']`
+  * if `path` is not found in `x`, `y` is `defaultValue`
+
+```javascript
+get('a')({ a: 1, b: 2 }) // => 1
+
+get('a')({}) // => undefined
+
+get('a', 10)({}) // => 10
+
+get(0)(['hello', 'world']) // => 'hello'
+
+get('a.b.c')({ a: { b: { c: 'hey' } } }) // => 'hey'
+
+get([0, 'user', 'id'])([
+  { user: { id: '1' } },
+  { user: { id: '2' } },
+]) // => '1'
+```
 
 ## pick
 constructs a new object from input composed of the provided properties
