@@ -1258,6 +1258,11 @@ describe('rubico', () => {
       ase(r.get([0, 0, 0, 0, 1], 0)(nested), 0)
       ase(r.get(['a', 0])({ a: [1] }), 1)
     })
+    it('handles null and undefined initial value with default or undefined', async () => {
+      ase(r.get('a')(null), undefined)
+      ase(r.get('a', 'yo')(null), 'yo')
+      ase(r.get('a', 'yo')(undefined), 'yo')
+    })
     it('throws a TypeError on invalid path', async () => {
       assert.throws(
         () => r.get({}),

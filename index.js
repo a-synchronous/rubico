@@ -689,8 +689,8 @@ const isDelimitedBy = (delim, x) => (x
   && x[x.length - 1] !== delim
   && x.slice(1, x.length - 1).includes(delim))
 
-// TODO(richytong): support Map and Set; Set returns booleans
 const arrayGet = (path, x, defaultValue) => {
+  if (!isDefined(x)) return defaultValue
   let y = x
   for (let i = 0; i < path.length; i++) {
     y = y[path[i]]
