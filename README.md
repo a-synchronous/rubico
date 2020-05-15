@@ -684,69 +684,108 @@ transform(map(
 ```
 
 ## any
+applies a function to each element of input, returns any evaluations truthy
 ```javascript
 y = any(f)(x)
 ```
 
+`x` is an iterable or an object
+
 ## all
+applies a function to each element of input, returns all evaluations truthy
 ```javascript
 y = all(f)(x)
 ```
 
+`x` is an iterable or an object
+
 ## and
+applies each function of functions to input, returns all evaluations truthy
 ```javascript
 y = and(functions)(x)
 ```
 
+`x` is anything
+
 ## or
+applies each function of functions to input, returns any evaluations truthy
 ```javascript
 y = or(functions)(x)
 ```
 
+`x` is anything
+
 ## not
+applies a function to input, logically inverting the result
 ```javascript
 y = not(f)(x)
 ```
 
+`x` is anything
+
 ## eq
+applies input to two provided functions, returns both evaluations strict equal
 ```javascript
 y = eq(f, g)(x)
 ```
 
+`x` is anything
+
 ## gt
+applies input to two provided functions, returns first evaluation greater than second
 ```javascript
 y = gt(f, g)(x)
 ```
 
+`x` is anything
+
 ## lt
+applies input to two provided functions, returns first evaluation less than second
 ```javascript
 y = lt(f, g)(x)
 ```
 
+`x` is anything
+
 ## gte
+applies input to two provided functions, returns first evaluation greater than or equal to second
 ```javascript
 y = gte(f, g)(x)
 ```
 
+`x` is anything
+
 ## lte
+applies input to two provided functions, returns first evaluation less than or equal to second
 ```javascript
 y = lte(f, g)(x)
 ```
 
+`x` is anything
+
 ## get
+accesses a property by path
 ```javascript
 y = get(path)(x)
 ```
 
+`x` is anything
+
 ## pick
+constructs a new object from input composed of the provided properties
 ```javascript
 y = pick(properties)(x)
 ```
 
+`x` is an object
+
 ## omit
+constructs a new object from input without the provided properties
 ```javascript
 y = omit(properties)(x)
 ```
+
+`x` is an object
 
 # Transducers
 Transducers enable us to wrangle very large or infinite streams of data in a<br>
