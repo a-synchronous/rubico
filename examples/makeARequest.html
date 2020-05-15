@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>makeARequest</title>
+</head>
+<body>
+
+<script type="module">
+import r, {
+  pipe, fork, assign, tap, tryCatch, switchCase,
+  map, filter, reduce, transform,
+  any, all, and, or, not,
+  eq, gt, lt, gte, lte,
+  get, pick, omit,
+} from 'https://deno.land/x/rubico/rubico.js'
+
+const appendToBody = (name, data) => {
+  const div = document.createElement('div')
+  div.textContent = [name, JSON.stringify(data, null, 2)].join(' ')
+  document.body.appendChild(div)
+}
+
+// promise chains
+fetch('https://jsonplaceholder.typicode.com/todos/1')
+  .then(res => res.json())
+  .then(data => appendToBody('promise chains', data))
+
+// async/await
+void (async () => {
+  const res = await fetch('https://jsonplaceholder.typicode.com/todos/1')
+  const data = await res.json()
+  appendToBody('async/await', data)
+})()
+
+// rubico
+pipe([
+  fetch.bind(window),
+  res => res.json(),
+  data => appendToBody('rubico', data)
+])('https://jsonplaceholder.typicode.com/todos/1')
+</script>
+
+</body>
+</html>
+
