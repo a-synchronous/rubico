@@ -193,6 +193,8 @@ rubico exports 23 functions
 [pick](https://github.com/richytong/rubico#pick),
 [omit](https://github.com/richytong/rubico#omit)
 
+TODO: `y` is wrapped in a Promise if -> `y` is wrapped in a Promise for any of the following
+
 ## pipe
 chains functions from left to right; `functionN(...(function2(function1(function0(x)))))`
 ```javascript
@@ -684,7 +686,7 @@ transform(map(
 ```
 
 ## any
-applies a function to each element of input, returns any evaluations truthy
+applies a function to each element of input, returns true if any evaluations truthy
 ```javascript
 y = any(f)(x)
 ```
@@ -719,7 +721,7 @@ any(
 ```
 
 ## all
-applies a function to each element of input, returns all evaluations truthy
+applies a function to each element of input, returns true if all evaluations truthy
 ```javascript
 y = all(f)(x)
 ```
@@ -754,7 +756,7 @@ all(
 ```
 
 ## and
-applies each function of functions to input, returns all evaluations truthy
+applies each function of functions to input, returns true if all evaluations truthy
 ```javascript
 y = and(functions)(x)
 ```
@@ -794,7 +796,7 @@ and([
 ```
 
 ## or
-applies each function of functions to input, returns any evaluations truthy
+applies each function of functions to input, returns true if any evaluations truthy
 ```javascript
 y = or(functions)(x)
 ```
@@ -867,15 +869,58 @@ not(
 ```
 
 ## eq
-applies input to two provided functions, returns both evaluations strict equal
+tests left strictly equals right
 ```javascript
-y = eq(f, g)(x)
+y = eq(left, right)(x)
 ```
 
 `x` is anything
 
+`left` is a non-function value or a function that expects one argument `x`
+
+`right` is a non-function value or a function that expects one argument `x`
+
+`leftCompare` is `left` if `left` is a non-function value, else `left(x)`
+
+`rightCompare` is `right` if `right` is a non-function value, else `right(x)`
+
+`y` is true if `leftCompare` strictly equals `rightCompare`, false otherwise
+
+`y` is wrapped in a Promise if:
+  * `left` is asynchronous
+  * `right` is asynchronous
+
+```javascript
+const square = x => x ** 2
+
+const asyncSquare = async x => x ** 2
+
+eq(
+  square,
+  1,
+)(1) // => true
+
+eq(
+  asyncSquare,
+  1,
+)(1) // => Promise { true }
+
+eq(
+  1,
+  square,
+)(2) // => false
+
+eq(
+  square,
+  asyncSquare,
+)(2) // => Promise { true }
+
+eq(1, 1)('hello') // => true
+eq(0, 1)('hello') // => false
+```
+
 ## gt
-applies input to two provided functions, returns first evaluation greater than second
+tests left greater than right
 ```javascript
 y = gt(f, g)(x)
 ```
@@ -883,7 +928,7 @@ y = gt(f, g)(x)
 `x` is anything
 
 ## lt
-applies input to two provided functions, returns first evaluation less than second
+tests left less than right
 ```javascript
 y = lt(f, g)(x)
 ```
@@ -891,7 +936,7 @@ y = lt(f, g)(x)
 `x` is anything
 
 ## gte
-applies input to two provided functions, returns first evaluation greater than or equal to second
+tests left greater than or equal right
 ```javascript
 y = gte(f, g)(x)
 ```
@@ -899,7 +944,7 @@ y = gte(f, g)(x)
 `x` is anything
 
 ## lte
-applies input to two provided functions, returns first evaluation less than or equal to second
+tests left less than or equal right
 ```javascript
 y = lte(f, g)(x)
 ```
