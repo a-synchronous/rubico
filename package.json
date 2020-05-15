@@ -1,6 +1,6 @@
 {
   "name": "rubico",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "a functional promise library",
   "author": "Richard Tong",
   "license": "ISC",
