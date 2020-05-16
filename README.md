@@ -99,17 +99,27 @@ import {
 } from 'https://deno.land/x/rubico/rubico.js'
 ```
 
-in the browser
+browser quick start
 ```html
-<script type="module">
-  import r, {
-    pipe, fork, assign, tap, tryCatch, switchCase,
-    map, filter, reduce, transform,
-    any, all, and, or, not,
-    eq, gt, lt, gte, lte,
-    get, pick, omit,
-  } from 'https://deno.land/x/rubico/rubico.js'
-</script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Title Here</title>
+    <script type="module">
+import r, {
+  pipe, fork, assign, tap, tryCatch, switchCase,
+  map, filter, reduce, transform,
+  any, all, and, or, not,
+  eq, gt, lt, gte, lte,
+  get, pick, omit,
+} from 'https://deno.land/x/rubico/rubico.js'
+
+// your code here
+    </script>
+</head>
+<body></body>
+</html>
 ```
 
 with npm
