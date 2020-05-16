@@ -107,7 +107,7 @@ browser quick start
     <meta charset="UTF-8">
     <title>Your Title Here</title>
     <script type="module">
-import r, {
+import {
   pipe, fork, assign, tap, tryCatch, switchCase,
   map, filter, reduce, transform,
   any, all, and, or, not,
