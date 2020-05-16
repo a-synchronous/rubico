@@ -3,15 +3,15 @@
 
 a functional promise library
 
-[Installation](https://github.com/richytong/rubico#installation)
+[Installation](#installation)
 
-[Examples](https://github.com/richytong/rubico#examples)
+[Examples](#examples)
 
-[Documentation](https://github.com/richytong/rubico#documentation)
+[Documentation](#documentation)
 
-[Transducers](https://github.com/richytong/rubico#transducers)
+[Transducers](#transducers)
 
-[More Examples](https://github.com/richytong/rubico#more-examples)
+[More Examples](#more-examples)
 
 # Introduction
 Asynchronous programming in JavaScript has evolved over the years
@@ -191,33 +191,33 @@ pipe([
 # Documentation
 rubico exports 23 functions
 
-[pipe](https://github.com/richytong/rubico#pipe),
-[fork](https://github.com/richytong/rubico#fork),
-[assign](https://github.com/richytong/rubico#assign)
-[tap](https://github.com/richytong/rubico#tap),
-[tryCatch](https://github.com/richytong/rubico#tryCatch),
-[switchCase](https://github.com/richytong/rubico#switchCase)
+[pipe](#pipe),
+[fork](#fork),
+[assign](#assign)
+[tap](#tap),
+[tryCatch](#tryCatch),
+[switchCase](#switchCase)
 
-[map](https://github.com/richytong/rubico#map),
-[filter](https://github.com/richytong/rubico#filter),
-[reduce](https://github.com/richytong/rubico#reduce),
-[transform](https://github.com/richytong/rubico#transform)
+[map](#map),
+[filter](#filter),
+[reduce](#reduce),
+[transform](#transform)
 
-[any](https://github.com/richytong/rubico#any),
-[all](https://github.com/richytong/rubico#all)
-[and](https://github.com/richytong/rubico#and),
-[or](https://github.com/richytong/rubico#or),
-[not](https://github.com/richytong/rubico#not)
+[any](#any),
+[all](#all)
+[and](#and),
+[or](#or),
+[not](#not)
 
-[eq](https://github.com/richytong/rubico#eq),
-[gt](https://github.com/richytong/rubico#gt),
-[lt](https://github.com/richytong/rubico#lt),
-[gte](https://github.com/richytong/rubico#gte),
-[lte](https://github.com/richytong/rubico#lte)
+[eq](#eq),
+[gt](#gt),
+[lt](#lt),
+[gte](#gte),
+[lte](#lte)
 
-[get](https://github.com/richytong/rubico#get),
-[pick](https://github.com/richytong/rubico#pick),
-[omit](https://github.com/richytong/rubico#omit)
+[get](#get),
+[pick](#pick),
+[omit](#omit)
 
 ## pipe
 chains functions from left to right; `functionN(...(function2(function1(function0(x)))))`
@@ -229,7 +229,7 @@ y = pipe(functions)(x)
 `x` is anything
 
 if `x` is a function, pipe chains `functions` from right to left,
-see [transducers](https://github.com/richytong/rubico#transducers)
+see [transducers](#transducers)
 
 `y` is the output of running `x` through the chain of `functions`
 
@@ -336,11 +336,11 @@ y = tap(f)(x)
 `y` is wrapped in a Promise if any of the following are true:
   * `f` is asynchronous
 
-if `x` is a function, `y` is a transduced reducing function, see [transducers](https://github.com/richytong/rubico#transducers)
+if `x` is a function, `y` is a transduced reducing function, see [transducers](#transducers)
 ```javascript
 y = tap(f)(x); reduced = reduce(y)(z)
 ```
-`reduce` is [reduce](https://github.com/richytong/rubico#reduce),
+`reduce` is [reduce](#reduce),
 
 `z` is an iterable, async iterable, or object
 
@@ -475,11 +475,11 @@ y = map(f)(x)
 `y` is wrapped in a Promise if any of the following are true:
   * `f` is asynchronous and `x` is not an async iterable
 
-if `x` is a function, `y` is a transduced reducing function, see [transducers](https://github.com/richytong/rubico#transducers)
+if `x` is a function, `y` is a transduced reducing function, see [transducers](#transducers)
 ```javascript
 y = map(f)(x); reduced = reduce(y)(z)
 ```
-`reduce` is [reduce](https://github.com/richytong/rubico#reduce),
+`reduce` is [reduce](#reduce),
 
 `z` is an iterable, async iterable, or object
 
@@ -543,11 +543,11 @@ y = filter(f)(x)
 `y` is wrapped in a Promise if any of the following are true:
   * `f` is asynchronous and `x` is not an async iterable
 
-if `x` is a function, `y` is a transduced reducing function, see [transducers](https://github.com/richytong/rubico#transducers)
+if `x` is a function, `y` is a transduced reducing function, see [transducers](#transducers)
 ```javascript
 y = filter(f)(x); reduced = reduce(y)(z)
 ```
-`reduce` is [reduce](https://github.com/richytong/rubico#reduce),
+`reduce` is [reduce](#reduce),
 
 `z` is an iterable, async iterable, or object
 
@@ -657,7 +657,7 @@ y = transform(f, x0)(x)
 
 `x` is an iterable, an async iterable, or an object
 
-`f` is a transducer, see [transducers](https://github.com/richytong/rubico#transducers)
+`f` is a transducer, see [transducers](#transducers)
 
 `x0` is null, an array, a string, a set, a map, a typed array, or a writable
 
@@ -667,7 +667,7 @@ y = transform(f, x0)(x)
   * `f` is asynchronous
   * `x` is an async iterable
 
-in the following examples, `map` is [map](https://github.com/richytong/rubico#map)
+in the following examples, `map` is [map](#map)
 ```javascript
 const square = x => x ** 2
 
@@ -1214,7 +1214,7 @@ transducer and supplies it with `veryBigData`.
 Behind the scenes, `transform` is calling `reduce` with a reducing function suitable for writing<br>
 to `process.stdout` converted from the transducer `pipe([filter(...), map(...)])`
 
-`reducer` is an alias for reducing function, very much the same as the one supplied to [reduce](https://github.com/richytong/rubico#reduce)
+`reducer` is an alias for reducing function, very much the same as the one supplied to [reduce](#reduce)
 ```javascript
 y = reduce(reducer)(x)
 ```
