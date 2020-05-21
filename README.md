@@ -220,7 +220,7 @@ rubico exports 23 functions
 [omit](#omit)
 
 ## pipe
-chains functions from left to right; `functionN(...(function2(function1(function0(x)))))`
+chains functions from left to right in series; `functionN(...(function2(function1(function0(x)))))`
 ```javascript
 y = pipe(functions)(x)
 ```
@@ -456,7 +456,7 @@ switchCase([
 ```
 
 ## map
-applies a function to each element of input, retaining input type and shape
+applies a function to each element of input in parallel, retaining input type and shape
 ```javascript
 y = map(f)(x)
 ```
@@ -524,7 +524,7 @@ map(
 ```
 
 ## filter
-filters elements out of input based on provided predicate
+filters elements out of input in parallel based on provided predicate
 ```javascript
 y = filter(f)(x)
 ```
@@ -593,7 +593,7 @@ filter(
 ```
 
 ## reduce
-transforms input according to provided reducing function and initial value
+transforms input in series according to provided reducing function and initial value
 ```javascript
 y = reduce(f, x0)(x)
 ```
@@ -650,7 +650,7 @@ reduce(
 ```
 
 ## transform
-transforms input according to provided transducer and initial value
+transforms input in series according to provided transducer and initial value
 ```javascript
 y = transform(f, x0)(x)
 ```
@@ -710,7 +710,7 @@ transform(map(
 ```
 
 ## any
-applies a function to each element of input, returns true if any evaluations truthy
+applies a function to each element of input parallel, returns true if any evaluations truthy
 ```javascript
 y = any(f)(x)
 ```
@@ -745,7 +745,7 @@ any(
 ```
 
 ## all
-applies a function to each element of input, returns true if all evaluations truthy
+applies a function to each element of input in parallel, returns true if all evaluations truthy
 ```javascript
 y = all(f)(x)
 ```
@@ -780,7 +780,7 @@ all(
 ```
 
 ## and
-applies each function of functions to input, returns true if all evaluations truthy
+applies each function of functions in parallel to input, returns true if all evaluations truthy
 ```javascript
 y = and(functions)(x)
 ```
@@ -820,7 +820,7 @@ and([
 ```
 
 ## or
-applies each function of functions to input, returns true if any evaluations truthy
+applies each function of functions in parallel to input, returns true if any evaluations truthy
 ```javascript
 y = or(functions)(x)
 ```
