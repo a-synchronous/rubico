@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { pipe, tap, map, transform } = require('rubico')
+const { pipe, tap, map, transform } = require('..')
 const request = require('request')
 
 const urls = [
