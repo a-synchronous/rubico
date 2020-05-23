@@ -81,3 +81,5 @@ const finalMap = await pipe([
 ])(urls)
 
 console.log(finalMap, 'in', Date.now() - now, 'ms')
+
+// https://stackoverflow.com/questions/61798071/javascript-api-promise-problem-need-faster-solution
