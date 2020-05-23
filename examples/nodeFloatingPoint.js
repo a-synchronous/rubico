@@ -49,3 +49,5 @@ transform(
   map(floatingPointAverage({ historySize: 50 })),
   null,
 )(numbersStream)
+
+// https://stackoverflow.com/questions/60960080/javascript-transducers-for-a-data-flow-project/61944627#61944627
