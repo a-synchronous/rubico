@@ -680,7 +680,7 @@ const transform = (fn, x0) => {
   if (isNumberTypedArray(x0)) return numberTypedArrayTransform(fn, x0)
   if (isBigIntTypedArray(x0)) return bigIntTypedArrayTransform(fn, x0)
   if (isWritable(x0)) return writableTransform(fn, x0)
-  // TODO(richytong): if (isDataView(x0)) return dataViewTransform(fn, x0)
+  // TODO(richytong): if (isObject(x0)) return objectTransform(fn, x0)
   throw new TypeError('transform(x, y); x invalid')
 }
 
