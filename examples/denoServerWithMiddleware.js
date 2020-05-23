@@ -1,3 +1,5 @@
+#!/usr/bin/env -S deno run --allow-net
+
 import { serve } from 'https://deno.land/std/http/server.ts'
 import {
   pipe, fork, assign, tap, tryCatch, switchCase,

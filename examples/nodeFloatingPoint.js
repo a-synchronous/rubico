@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const { map, tap, transform } = require('..')
 
 function SimpleQueue({ size }) {

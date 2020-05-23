@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const fetch = require('node-fetch')
 
 const todoIDs = [1, 2, 3, 4, 5]
