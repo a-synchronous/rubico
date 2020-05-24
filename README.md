@@ -1,11 +1,11 @@
 # rubico
 🏞 a shallow river in northeastern Italy, just south of Ravenna
 
-asynchronous function composition
-
-no dependencies
-
-works in server and browser
+Features:
+ * asynchronous function composition
+ * no dependencies
+ * works in server and browser
+ * transducers for free
 
 [Installation](#installation)
 
