@@ -1,7 +1,7 @@
 {
   "name": "rubico",
   "version": "1.0.1",
-  "description": "a functional promise library",
+  "description": "🤞 asynchronous function composition; it just works",
   "author": "Richard Tong",
   "license": "ISC",
   "main": "index.js",

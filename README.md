@@ -1,7 +1,7 @@
 # rubico
 🏞 a shallow river in northeastern Italy, just south of Ravenna
 
-a functional promise library
+asynchronous function composition that just works.
 
 [Installation](#installation)
 
