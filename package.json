@@ -1,6 +1,6 @@
 {
   "name": "rubico",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "🤞 asynchronous function composition; it just works",
   "author": "Richard Tong",
   "license": "ISC",
