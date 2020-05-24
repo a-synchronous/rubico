@@ -2,10 +2,14 @@
 🏞 a shallow river in northeastern Italy, just south of Ravenna
 
 Features:
- * asynchronous function composition
+ * simple function composition - `pipe`, `fork`, `assign`
+ * simple predicate composition - `and`, `or`, `not`
+ * small, polymorphic API surface (23 functions)
+ * async is awaited, sync is returned; both are accepted anywhere a function is accepted
+ * transducers are easy - `map`, `filter`, `reduce`, `transform`
+ * works with built-in types (`Symbol.asyncIterator`, `Set`, `Map`, etc.)
  * no dependencies
  * works in server and browser
- * transducers for free
 
 [Installation](#installation)
 
