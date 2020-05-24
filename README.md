@@ -1,7 +1,11 @@
 # rubico
 🏞 a shallow river in northeastern Italy, just south of Ravenna
 
-asynchronous function composition that just works.
+asynchronous function composition
+
+no dependencies
+
+works in server and browser
 
 [Installation](#installation)
 
@@ -84,9 +88,31 @@ rubico resolves on three promises:
 2. enable functional programming in JavaScript
 3. simplify transducers in JavaScript
 
-programs written with rubico follow a [point-free style](https://en.wikipedia.org/wiki/Tacit_programming)
+programs written with rubico follow a [point-free style](https://en.wikipedia.org/wiki/Tacit_programming), otherwise known as **data last**.
 
-rubico works in server and browser JavaScript environments
+This is _data first_
+```javascript
+[1, 2, 3, 4, 5].map(number => number * 2) // => [2, 4, 6, 8, 10]
+```
+
+This is **data last**
+```javascript
+const { map } = require('rubico')
+map(number => number * 2)([1, 2, 3, 4, 5]) // => [2, 4, 6, 8, 10]
+```
+
+Data last saves you brain power when you name things
+```javascript
+const xyz = async x => {
+  const y = await foo(x)
+  const z = await bar(y)
+  const w = await baz(z)
+  return w
+} // data first
+
+const { pipe } = require('rubico')
+const xyz = pipe([foo, bar, baz]) // data last
+```
 
 # Installation
 with deno
