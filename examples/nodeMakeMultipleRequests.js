@@ -22,6 +22,17 @@ void (async () => {
   data.map(x => console.log('async/await', x)) // > {...} {...} {...}
 })()
 
+// ramda
+const R = require('ramda')
+
+R.pipe(
+  R.filter(id => id <= 3),
+  R.map(id => `https://jsonplaceholder.typicode.com/todos/${id}`),
+  R.map(fetch),
+  R.map(R.andThen(res => res.json())),
+  R.map(R.andThen(x => console.log('ramda', x))), // > {...} {...} {...}
+)(todoIDs)
+
 const { pipe, map, filter, transform } = require('..')
 
 // rubico
