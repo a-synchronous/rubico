@@ -8,10 +8,6 @@ const {
 
 const identity = x => x
 
-const people = Array.from((function*() {
-  for (let i = 0; i < 6; i++) yield `${i + 1}`
-})())
-
 // [person] => Map { person => (Set { person }) }
 const makeTracker = transform(
   map(fork([
@@ -80,7 +76,12 @@ const didEveryoneMatch = (tracker, people) => {
   return true
 }
 
+const makePeople = number => Array.from((function*() {
+  for (let i = 0; i < number; i++) yield `${i + 1}`
+})())
+
 const main = async () => {
+  const people = makePeople(99)
   console.log('people', people)
   let i = 0
   while (true) {
