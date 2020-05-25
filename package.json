@@ -1,7 +1,7 @@
 {
   "name": "rubico",
   "version": "1.0.2",
-  "description": "🤞 asynchronous function composition; it just works",
+  "description": "🏞 [a]synchronous function composition; it just works",
   "author": "Richard Tong",
   "license": "ISC",
   "main": "index.js",
