@@ -225,6 +225,8 @@ but exhibit differences in behavior (i.e. `map` executes in parallel while `map.
 `map.pool({ size: 10 })` defines a `map` function constrained to 10 asynchronous operations at a given instant.
 
 **[series]** and **[parallel]** are tags to denote the asynchronous behavior of methods that accept multiple functions.
+ * [series]: execute functions one at a time. If order is not implied, it is left to the implementation. (i.e. iterating an `Object`)
+ * [parallel]: execute functions in parallel.
 
 All higher order functions accept sync or async functions; if all provided functions are synchronous, the entire execution is synchronous.
 
@@ -236,14 +238,14 @@ All higher order functions accept sync or async functions; if all provided funct
 
 ## function + data composition
  * [fork](#fork) [parallel] - multiply data by functions
-   * `fork.series` [series] - `fork` one execution at a time
+   * `fork.series` [series]
  * [assign](#assign) [parallel] - set properties on data by functions
 
 ## data transformation
  * [map](#map) [parallel] - apply a function to data
-   * `map.pool({ size })` [parallel] - `map` asynchronously constrained by size
+   * `map.pool({ size })` [parallel] - `map` with asynchronous limit
    * `map.withIndex` [parallel] - `map` with index
-   * `map.series` [series] - `map` one execution at a time
+   * `map.series` [series]
    * `map.seriesWithIndex` [series] - `map.series` + `map.withIndex`
  * [filter](#filter) [parallel] - exclude data by predicate
  * [reduce](#reduce) [series] - execute data transformation (powerful)
