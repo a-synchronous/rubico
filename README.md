@@ -220,7 +220,7 @@ pipe([
 # Documentation
 rubico aims to hit the sweet spot between expressivity and interface surface area. There are 23 functions at the moment; this number is not expected to go up much more or at all. Instead, some methods will have property functions that represent the same signature (i.e. `map` vs `map.series`) but exhibit differences in behavior (i.e. `map` executes in parallel while `map.series` executes in series).
 
-`[series]` and `[parallel]` are tags to denote the asynchronous behavior of methods that accept multiple functions.
+**[series]** and **[parallel]** are tags to denote the asynchronous behavior of methods that accept multiple functions.
 
 All higher order functions accept sync or async functions; if all provided functions are synchronous, the entire execution is synchronous.
 
@@ -234,15 +234,15 @@ Some functions have attribute functions that define different asynchronous behav
 
 ## function + data composition
  * [fork](#fork) [parallel] - multiply data by functions
-   * `fork.series[series]` - `fork` one execution at a time
+   * `fork.series` [series] - `fork` one execution at a time
  * [assign](#assign) [parallel] - set properties on data by functions
 
 ## data transformation
  * [map](#map) [parallel] - apply a function to data
-   * `map.pool({ size })[parallel]` - `map` asynchronously constrained by size
-   * `map.withIndex[parallel*]` - `map` with index
-   * `map.series[series]` - `map` one execution at a time
-   * `map.seriesWithIndex[series]` - `map.series` + `map.withIndex`
+   * `map.pool({ size })` [parallel] - `map` asynchronously constrained by size
+   * `map.withIndex` [parallel*] - `map` with index
+   * `map.series` [series] - `map` one execution at a time
+   * `map.seriesWithIndex` [series] - `map.series` + `map.withIndex`
  * [filter](#filter) [parallel] - exclude data by predicate
  * [reduce](#reduce) [series] - execute data transformation (powerful)
  * [transform](#transform) [series] - execute data transformation (convenient)
