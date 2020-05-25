@@ -240,7 +240,7 @@ Some functions have attribute functions that define different asynchronous behav
 ## data transformation
  * [map](#map) [parallel] - apply a function to data
    * `map.pool({ size })` [parallel] - `map` asynchronously constrained by size
-   * `map.withIndex` [parallel*] - `map` with index
+   * `map.withIndex` [parallel] - `map` with index
    * `map.series` [series] - `map` one execution at a time
    * `map.seriesWithIndex` [series] - `map.series` + `map.withIndex`
  * [filter](#filter) [parallel] - exclude data by predicate
