@@ -218,35 +218,55 @@ pipe([
 ```
 
 # Documentation
-rubico exports 23 functions
+rubico aims to hit the sweet spot between expressivity and interface surface area. There are 23 functions at the moment; this number is not expected to go up much more or at all. Instead, some methods will have property functions that represent the same signature (i.e. `map` vs `map.series`) but exhibit differences in behavior (i.e. `map` executes in parallel while `map.series` executes in series).
 
-[pipe](#pipe),
-[fork](#fork),
-[assign](#assign)
-[tap](#tap),
-[tryCatch](#tryCatch),
-[switchCase](#switchCase)
+`[series]` and `[parallel]` are tags to denote the asynchronous behavior of methods that accept multiple functions.
 
-[map](#map),
-[filter](#filter),
-[reduce](#reduce),
-[transform](#transform)
+All higher order functions accept sync or async functions; if all provided functions are synchronous, the entire execution is synchronous.
 
-[any](#any),
-[all](#all)
-[and](#and),
-[or](#or),
-[not](#not)
+Some functions have attribute functions that define different asynchronous behavior. For example, `map.pool({ size: 10 })` defines a `map` function constrained to 10 asynchronous operations at a given instant.
 
-[eq](#eq),
-[gt](#gt),
-[lt](#lt),
-[gte](#gte),
-[lte](#lte)
+## function composition
+ * [pipe](#pipe)[series] - chain functions together
+ * [tap](#tap) - spy on data
+ * [tryCatch](#tryCatch)[series] - try a function, catch with another
+ * [switchCase](#switchCase)[series] - control flow
 
-[get](#get),
-[pick](#pick),
-[omit](#omit)
+## function + data composition
+ * [fork](#fork)[parallel] - multiply data by functions
+   * fork.series[series] - `fork` one execution at a time
+ * [assign](#assign)[parallel] - set properties on data by functions
+
+## data transformation
+ * [map](#map)[parallel] - apply a function to data
+   * map.pool({ size })[parallel] - `map` asynchronously constrained by size
+   * map.withIndex[parallel\*] - `map` with index
+   * map.series[series] - `map` one execution at a time
+   * map.seriesWithIndex[series] - `map.series` + `map.withIndex`
+ * [filter](#filter)[parallel] - exclude data by predicate
+ * [reduce](#reduce)[series] - execute data transformation (powerful)
+ * [transform](#transform)[series] - execute data transformation (convenient)
+
+## predicate composition
+ * [any](#any)[parallel] - is function of any data truthy?
+ * [all](#all)[parallel] - is function of all data truthy?
+ * [and](#and)[parallel] - any functions of data truthy?
+ * [or](#or)[parallel] - all functions of data truthy?
+ * [not](#not) - `not(equals)(x)` is `!equals(x)`
+
+## comparison
+ * [eq](#eq)[parallel] - left equals right?
+ * [gt](#gt)[parallel] - left > right?
+ * [lt](#lt)[parallel] - left < right?
+ * [gte](#gte)[parallel] - left >= right?
+ * [lte](#lte)[parallel] - left <= right?
+
+# property access
+ * [get](#get) - access property by path
+
+# scope
+ * [pick](#pick) - only allow provided properties
+ * [omit](#omit) - exclude provided properties
 
 ## pipe
 chains functions from left to right in series; `functionN(...(function2(function1(function0(x)))))`
