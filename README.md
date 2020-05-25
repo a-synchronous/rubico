@@ -227,39 +227,39 @@ All higher order functions accept sync or async functions; if all provided funct
 Some functions have attribute functions that define different asynchronous behavior. For example, `map.pool({ size: 10 })` defines a `map` function constrained to 10 asynchronous operations at a given instant.
 
 ## function composition
- * [pipe](#pipe)[series] - chain functions together
+ * [pipe](#pipe) [series] - chain functions together
  * [tap](#tap) - spy on data
- * [tryCatch](#tryCatch)[series] - try a function, catch with another
- * [switchCase](#switchCase)[series] - control flow
+ * [tryCatch](#tryCatch) [series] - try a function, catch with another
+ * [switchCase](#switchCase) [series] - control flow
 
 ## function + data composition
- * [fork](#fork)[parallel] - multiply data by functions
+ * [fork](#fork) [parallel] - multiply data by functions
    * fork.series[series] - `fork` one execution at a time
- * [assign](#assign)[parallel] - set properties on data by functions
+ * [assign](#assign) [parallel] - set properties on data by functions
 
 ## data transformation
- * [map](#map)[parallel] - apply a function to data
+ * [map](#map) [parallel] - apply a function to data
    * map.pool({ size })[parallel] - `map` asynchronously constrained by size
    * map.withIndex[parallel\*] - `map` with index
    * map.series[series] - `map` one execution at a time
    * map.seriesWithIndex[series] - `map.series` + `map.withIndex`
- * [filter](#filter)[parallel] - exclude data by predicate
- * [reduce](#reduce)[series] - execute data transformation (powerful)
- * [transform](#transform)[series] - execute data transformation (convenient)
+ * [filter](#filter) [parallel] - exclude data by predicate
+ * [reduce](#reduce) [series] - execute data transformation (powerful)
+ * [transform](#transform) [series] - execute data transformation (convenient)
 
 ## predicate composition
- * [any](#any)[parallel] - is function of any data truthy?
- * [all](#all)[parallel] - is function of all data truthy?
- * [and](#and)[parallel] - any functions of data truthy?
- * [or](#or)[parallel] - all functions of data truthy?
+ * [any](#any) [parallel] - is function of any data truthy?
+ * [all](#all) [parallel] - is function of all data truthy?
+ * [and](#and) [parallel] - any functions of data truthy?
+ * [or](#or) [parallel] - all functions of data truthy?
  * [not](#not) - `not(equals)(x)` is `!equals(x)`
 
 ## comparison
- * [eq](#eq)[parallel] - left equals right?
- * [gt](#gt)[parallel] - left > right?
- * [lt](#lt)[parallel] - left < right?
- * [gte](#gte)[parallel] - left >= right?
- * [lte](#lte)[parallel] - left <= right?
+ * [eq](#eq) [parallel] - left equals right?
+ * [gt](#gt) [parallel] - left > right?
+ * [lt](#lt) [parallel] - left < right?
+ * [gte](#gte) [parallel] - left >= right?
+ * [lte](#lte) [parallel] - left <= right?
 
 # property access
  * [get](#get) - access property by path
