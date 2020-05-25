@@ -6,7 +6,7 @@ Features:
  * simple predicate composition - `and`, `or`, `not`
  * small, polymorphic API surface (23 functions)
  * async is awaited, sync is returned; both are accepted anywhere a function is accepted
- * transducers are easy - `map`, `filter`, `reduce`, `transform`
+ * transducers are easy - just `transform` your `pipe` of `map` and `filter`
  * works with built-in types (`Symbol.asyncIterator`, `Set`, `Map`, etc.)
  * no dependencies
  * works in server and browser
