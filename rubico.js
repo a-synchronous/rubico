@@ -70,15 +70,7 @@ const range = (start, end) => Array.from({ length: end - start }, (x, i) => i + 
 
 const arrayOf = (item, length) => Array.from({ length }, () => item)
 
-const _chain = (fns, args, step) => {
-  let i, end
-  if (step === 1) {
-    i = 0; end = fns.length - 1
-  } else if (step === -1) {
-    i = fns.length - 1; end = 0
-  } else {
-    throw new RangeError('step must be 1 or -1')
-  }
+const _chain = (fns, args, step, i, end) => {
   let y = fns[i](...args)
   while (i !== end) {
     y = isPromise(y) ? y.then(fns[i + step]) : fns[i + step](y)
@@ -100,8 +92,8 @@ const pipe = fns => {
   }
   if (fns.length === 0) return x => x
   return (...args) => (isFunction(args[0])
-    ? _chain(fns, args, -1)
-    : _chain(fns, args, 1))
+    ? _chain(fns, args, -1, fns.length - 1, 0)
+    : _chain(fns, args, 1, 0, fns.length - 1))
 }
 
 const arrayFork = (fns, x) => {
@@ -680,7 +672,7 @@ const transform = (fn, x0) => {
   if (isNumberTypedArray(x0)) return numberTypedArrayTransform(fn, x0)
   if (isBigIntTypedArray(x0)) return bigIntTypedArrayTransform(fn, x0)
   if (isWritable(x0)) return writableTransform(fn, x0)
-  // TODO(richytong): if (isDataView(x0)) return dataViewTransform(fn, x0)
+  // TODO(richytong): if (isObject(x0)) return objectTransform(fn, x0)
   throw new TypeError('transform(x, y); x invalid')
 }
 
