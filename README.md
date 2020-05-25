@@ -218,13 +218,15 @@ pipe([
 ```
 
 # Documentation
-rubico aims to hit the sweet spot between expressivity and interface surface area. There are 23 functions at the moment; this number is not expected to go up much more or at all. Instead, some methods will have property functions that represent the same signature (i.e. `map` vs `map.series`) but exhibit differences in behavior (i.e. `map` executes in parallel while `map.series` executes in series).
+rubico aims to hit the sweet spot between expressivity and interface surface area.
+There are 23 functions at the moment; this number is not expected to go up much more or at all.
+Instead, some methods will have property functions that represent the same signature (i.e. `map` vs `map.series`)
+but exhibit differences in behavior (i.e. `map` executes in parallel while `map.series` executes in series).
+`map.pool({ size: 10 })` defines a `map` function constrained to 10 asynchronous operations at a given instant.
 
 **[series]** and **[parallel]** are tags to denote the asynchronous behavior of methods that accept multiple functions.
 
 All higher order functions accept sync or async functions; if all provided functions are synchronous, the entire execution is synchronous.
-
-Some functions have attribute functions that define different asynchronous behavior. For example, `map.pool({ size: 10 })` defines a `map` function constrained to 10 asynchronous operations at a given instant.
 
 ## function composition
  * [pipe](#pipe) [series] - chain functions together
