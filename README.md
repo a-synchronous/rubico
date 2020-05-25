@@ -234,15 +234,15 @@ Some functions have attribute functions that define different asynchronous behav
 
 ## function + data composition
  * [fork](#fork) [parallel] - multiply data by functions
-   * fork.series[series] - `fork` one execution at a time
+   * `fork.series[series]` - `fork` one execution at a time
  * [assign](#assign) [parallel] - set properties on data by functions
 
 ## data transformation
  * [map](#map) [parallel] - apply a function to data
-   * map.pool({ size })[parallel] - `map` asynchronously constrained by size
-   * map.withIndex[parallel\*] - `map` with index
-   * map.series[series] - `map` one execution at a time
-   * map.seriesWithIndex[series] - `map.series` + `map.withIndex`
+   * `map.pool({ size })[parallel]` - `map` asynchronously constrained by size
+   * `map.withIndex[parallel*]` - `map` with index
+   * `map.series[series]` - `map` one execution at a time
+   * `map.seriesWithIndex[series]` - `map.series` + `map.withIndex`
  * [filter](#filter) [parallel] - exclude data by predicate
  * [reduce](#reduce) [series] - execute data transformation (powerful)
  * [transform](#transform) [series] - execute data transformation (convenient)
