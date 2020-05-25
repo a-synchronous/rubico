@@ -117,7 +117,12 @@ const xyz = pipe([foo, bar, baz]) // data last
 ```
 
 # Installation
-with deno
+with `npm`
+```bash
+npm i rubico
+```
+
+with `deno`
 ```javascript
 import {
   pipe, fork, assign, tap, tryCatch, switchCase,
@@ -149,11 +154,6 @@ import {
 </head>
 <body></body>
 </html>
-```
-
-with npm
-```bash
-npm i rubico
 ```
 
 # Examples
