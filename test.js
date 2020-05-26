@@ -795,7 +795,8 @@ describe('rubico', () => {
       ade(await r.map.pool(1, asyncSquareEntry)(numbersMap), squaresMap)
       ade(await r.map.pool(9, asyncSquareEntry)(numbersMap), squaresMap)
     })
-    xit('pool throttle')
+    xit('abides by asynchronous limit', async () => {
+    })
     it('throws TypeError on map.pool(NaN)', async () => {
       assert.throws(
         () => r.map.pool(NaN),
