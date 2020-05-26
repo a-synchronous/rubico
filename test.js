@@ -943,6 +943,23 @@ describe('rubico', () => {
     })
   })
 
+  describe('filter.withIndex', () => {
+    it('filters characters from a string based on an async predicate', async () => {
+      aok(r.filter.withIndex(async (x, i) => x !== `${i}`)('01234555') instanceof Promise)
+      ase(await r.filter.withIndex(async (x, i) => x !== `${i}`)('01234555'), '55')
+    })
+    it('filters characters from a string based on a sync predicate', async () => {
+      ase(r.filter.withIndex((x, i) => x !== `${i}`)('01234555'), '55')
+    })
+    it('filters characters from an array based on an async predicate', async () => {
+      aok(r.filter.withIndex(async (x, i) => x !== i)([0, 1, 2, 3, 4, 5, 5, 5]) instanceof Promise)
+      ade(await r.filter.withIndex(async (x, i) => x !== i)([0, 1, 2, 3, 4, 5, 5, 5]), [5, 5])
+    })
+    it('filters characters from an array based on a sync predicate', async () => {
+      ade(r.filter.withIndex((x, i) => x !== i)([0, 1, 2, 3, 4, 5, 5, 5]), [5, 5])
+    })
+  })
+
   describe('reduce', () => {
     const iterables = [
       [1, 2, 3, 4, 5],

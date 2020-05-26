@@ -496,6 +496,53 @@ const filter = fn => {
   }
 }
 
+const createFilterWithIndexIndex = (fn, x) => {
+  let isAsync = false, i = 0
+  const filterIndex = []
+  for (const xi of x) {
+    const ok = fn(xi, i, x)
+    if (isPromise(ok)) isAsync = true
+    filterIndex.push(ok)
+    i += 1
+  }
+  return isAsync ? Promise.all(filterIndex) : filterIndex
+}
+
+const filterArrayWithIndex = (fn, x) => {
+  const index = createFilterWithIndexIndex(fn, x)
+  return (isPromise(index)
+    ? index.then(res => x.filter((_, i) => res[i]))
+    : x.filter((_, i) => index[i])
+  )
+}
+
+const filterStringWithIndex = (fn, x) => {
+  const index = createFilterWithIndexIndex(fn, x)
+  return (isPromise(index)
+    ? index.then(res => filterStringFromIndex(res, x))
+    : filterStringFromIndex(index, x)
+  )
+}
+
+filter.withIndex = fn => {
+  if (!isFunction(fn)) {
+    throw new TypeError('filter.withIndex(x); x is not a function')
+  }
+  return x => {
+    // if (isAsyncIterable(x)) return filterAsyncIterable(fn, x)
+    if (isArray(x)) return filterArrayWithIndex(fn, x)
+    if (isString(x)) return filterStringWithIndex(fn, x)
+    // if (is(Set)(x)) return filterSet(fn, x)
+    // if (is(Map)(x)) return filterMap(fn, x)
+    // if (isNumberTypedArray(x)) return filterTypedArray(fn, x)
+    // if (isBigIntTypedArray(x)) return filterTypedArray(fn, x)
+    // if (isIterable(x)) return filterIterable(fn, x) // for generators or custom iterators
+    // if (is(Object)(x)) return filterObject(fn, x)
+    // if (isFunction(x)) return filterReducer(fn, x)
+    throw new TypeError('filter(...)(x); x invalid')
+  }
+}
+
 const reduceIterable = (fn, x0, x) => {
   const iter = x[Symbol.iterator].bind(x)()
   let cursor = iter.next()
