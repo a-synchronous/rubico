@@ -466,6 +466,9 @@ map.pool = (size, fn) => {
 // TODO(richytong): map.indexed(fn); fn called with (item, index, array)
 map.withIndex = fn => {}
 
+// TODO(richytong): map.series + map.withIndex
+map.seriesWithIndex = fn => {}
+
 const filterAsyncIterable = (fn, x) => (async function*() {
   for await (const xi of x) { if (await fn(xi)) yield xi }
 })()
