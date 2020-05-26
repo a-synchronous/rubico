@@ -247,6 +247,7 @@ All higher order functions accept sync or async functions; if all provided funct
    * `map.series` [series]
    * `map.seriesWithIndex` [series] - `map.series` + `map.withIndex`
  * [filter](#filter) [parallel] - exclude data by predicate
+   * `filter.withIndex` [parallel] - `filter` with index
  * [reduce](#reduce) [series] - execute data transformation (powerful)
  * [transform](#transform) [series] - execute data transformation (convenient)
 
