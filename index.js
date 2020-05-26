@@ -49,7 +49,7 @@ const isBigIntTypedArray = x => x && x.constructor && (
   bigIntTypedArrays.has(x.constructor.name)
 )
 
-const isNumber = x => typeof x === 'number'
+const isNumber = x => typeof x === 'number' && !isNaN(x)
 
 const isBigInt = x => typeof x === 'bigint'
 
@@ -366,8 +366,102 @@ map.series = fn => {
   }
 }
 
-// TODO(richytong): map.pool(fn, poolSize); poolSize is max concurrency
-map.pool = (fn, poolSize) => {}
+const mapPoolIndexedWorker = insert => (size, fn, resolve, reject, x, y, i) => {
+  let point
+  try {
+    point = fn(x[i])
+  } catch (err) {
+    return reject(err)
+  }
+  if (isPromise(point)) {
+    point.then(res => {
+      insert(y, res, i)
+      if (isDefined(x[i + size])) {
+        mapPoolIndexedWorker(insert)(size, fn, resolve, reject, x, y, i + size)
+      } else if (i === x.length - 1) {
+        resolve(y)
+      }
+    }).catch(reject)
+  } else {
+    insert(y, point, i)
+    if (isDefined(x[i + size])) {
+      mapPoolIndexedWorker(insert)(size, fn, resolve, reject, x, y, i + size)
+    } else if (i === x.length - 1) {
+      resolve(y)
+    }
+  }
+}
+
+const mapPoolArrayWorker = mapPoolIndexedWorker((y, xi, i) => { y[i] = xi })
+
+const mapPoolArray = (size, fn, x) => new Promise((resolve, reject) => {
+  const y = []
+  for (let i = 0; i < Math.min(x.length, size); i++) {
+    mapPoolArrayWorker(size, fn, resolve, reject, x, y, i, i) // start off the workers
+  }
+})
+
+const mapPoolUnorderedWorker = insert => (
+  size, fn, resolve, reject, iter, y, promises,
+) => {
+  const { value, done } = iter.next()
+  if (done) {
+    if (resolve._called) return
+    resolve._called = true
+    return Promise.all(promises).then(() => resolve(y))
+  }
+  let point
+  try {
+    point = fn(value)
+  } catch (err) {
+    return reject(err)
+  }
+  if (isPromise(point)) {
+    promises.push(point.then(res => insert(y, res)).catch(reject))
+    mapPoolUnorderedWorker(insert)(size, fn, resolve, reject, iter, y, promises)
+  } else {
+    insert(y, point)
+    mapPoolUnorderedWorker(insert)(size, fn, resolve, reject, iter, y, promises)
+  }
+}
+
+const mapPoolSetWorker = mapPoolUnorderedWorker((y, xi) => y.add(xi))
+
+const mapPoolSet = (size, fn, x) => new Promise((resolve, reject) => {
+  const iter = x[Symbol.iterator].bind(x)()
+  const y = new Set()
+  for (let i = 0; i < Math.min(x.size, size); i++) {
+    mapPoolSetWorker(size, fn, resolve, reject, iter, y, []) // start off the workers
+  }
+})
+
+const mapPoolMapWorker = mapPoolUnorderedWorker((y, xi) => y.set(xi[0], xi[1]))
+
+const mapPoolMap = (size, fn, x) => new Promise((resolve, reject) => {
+  const iter = x[Symbol.iterator].bind(x)()
+  const y = new Map()
+  for (let i = 0; i < Math.min(x.size, size); i++) {
+    mapPoolMapWorker(size, fn, resolve, reject, iter, y, []) // start off the workers
+  }
+})
+
+map.pool = (size, fn) => {
+  if (!isNumber(size)) {
+    throw new TypeError('map.pool(size, f); size is not a number')
+  }
+  if (size < 1) {
+    throw new RangeError('map.pool(size, f); size must be 1 or more')
+  }
+  if (!isFunction(fn)) {
+    throw new TypeError('map.pool(size, f); f is not a function')
+  }
+  return x => {
+    if (isArray(x)) return mapPoolArray(size, fn, x)
+    if (is(Set)(x)) return mapPoolSet(size, fn, x)
+    if (is(Map)(x)) return mapPoolMap(size, fn, x)
+    throw new TypeError('map.pool(...)(x); x invalid')
+  }
+}
 
 // TODO(richytong): map.indexed(fn); fn called with (item, index, array)
 map.withIndex = fn => {}

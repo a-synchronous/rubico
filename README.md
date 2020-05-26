@@ -242,7 +242,7 @@ All higher order functions accept sync or async functions; if all provided funct
 
 ## data transformation
  * [map](#map) [parallel] - apply a function to data
-   * `map.pool({ size })` [parallel] - `map` with asynchronous limit
+   * `map.pool` [parallel] - `map` with asynchronous limit
    * `map.withIndex` [parallel] - `map` with index
    * `map.series` [series]
    * `map.seriesWithIndex` [series] - `map.series` + `map.withIndex`
