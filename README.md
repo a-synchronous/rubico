@@ -341,6 +341,12 @@ fork({
 })('hello') // => Promise { { a: 'hello world', b: 'hello mom' } }
 ```
 
+`fork.series`
+executes functions with input in series, retaining functions' type and shape
+```javascript
+y = fork.series(functions)(x)
+```
+
 ## assign
 parallelizes functions with input, merging output into input
 ```javascript
@@ -576,6 +582,30 @@ map(
 )({ a: 'lol', b: 'cat' }) // => { a: 'lolz', b: 'catz' }
 ```
 
+`map.pool`
+Apply a function to every element of data in parallel with limited concurrency
+```javascript
+y = map.pool(size, f)(x)
+```
+
+`map.withIndex`
+Apply a function to every element of data in parallel with index and reference to data
+```javascript
+y = map.withIndex(f)(x); yi = f(xi, i, x)
+```
+
+`map.series`
+Apply a function to every element of data in series
+```javascript
+y = map.series(f)(x)
+```
+
+`map.seriesWithIndex`
+Apply a function to every element of data in series with index and reference to data
+```javascript
+ = map.seriesWithIndex(f)(x); yi = f(xi, i, x)
+```
+
 ## filter
 filters elements out of input in parallel based on provided predicate
 ```javascript
@@ -643,6 +673,12 @@ filter(
 filter(
   value => value === 1,
 )({ a: 1, b: 2, c: 3 }) // => { a: 1 }
+```
+
+`filter.withIndex`
+Filter data based on predicate in parallel, each predicate is called with index and reference to data
+```javascript
+y = filter.withIndex(f)(x); yi = f(xi, i, x)
 ```
 
 ## reduce
