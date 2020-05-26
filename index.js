@@ -21,10 +21,7 @@ const isIterable = x => isDefined(x) && isDefined(x[Symbol.iterator])
 
 const isAsyncIterable = x => isDefined(x) && isDefined(x[Symbol.asyncIterator])
 
-const isReadable = x => (x
-  && x.readable
-  && typeof x._read === 'function'
-  && typeof x._readableState === 'object')
+const isReadable = x => x && typeof x.read === 'function'
 
 const isWritable = x => x && typeof x.write === 'function'
 
