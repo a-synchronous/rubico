@@ -676,7 +676,7 @@ filter(
 ```
 
 `filter.withIndex`
-Filter data based on predicate in parallel, each predicate is called with index and reference to data
+Filter, but with each predicate called with index and reference to data
 ```javascript
 y = filter.withIndex(f)(x); yi = f(xi, i, x)
 ```
