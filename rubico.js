@@ -21,10 +21,7 @@ const isIterable = x => isDefined(x) && isDefined(x[Symbol.iterator])
 
 const isAsyncIterable = x => isDefined(x) && isDefined(x[Symbol.asyncIterator])
 
-const isReadable = x => (x
-  && x.readable
-  && typeof x._read === 'function'
-  && typeof x._readableState === 'object')
+const isReadable = x => x && typeof x.read === 'function'
 
 const isWritable = x => x && typeof x.write === 'function'
 
@@ -52,7 +49,7 @@ const isBigIntTypedArray = x => x && x.constructor && (
   bigIntTypedArrays.has(x.constructor.name)
 )
 
-const isNumber = x => typeof x === 'number'
+const isNumber = x => typeof x === 'number' && !isNaN(x)
 
 const isBigInt = x => typeof x === 'bigint'
 
@@ -369,11 +366,108 @@ map.series = fn => {
   }
 }
 
-// TODO(richytong): map.pool(fn, poolSize); poolSize is max concurrency
-map.pool = (fn, poolSize) => {}
+const mapPoolIndexedWorker = insert => (size, fn, resolve, reject, x, y, i) => {
+  let point
+  try {
+    point = fn(x[i])
+  } catch (err) {
+    return reject(err)
+  }
+  if (isPromise(point)) {
+    point.then(res => {
+      insert(y, res, i)
+      if (isDefined(x[i + size])) {
+        mapPoolIndexedWorker(insert)(size, fn, resolve, reject, x, y, i + size)
+      } else if (i === x.length - 1) {
+        resolve(y)
+      }
+    }).catch(reject)
+  } else {
+    insert(y, point, i)
+    if (isDefined(x[i + size])) {
+      mapPoolIndexedWorker(insert)(size, fn, resolve, reject, x, y, i + size)
+    } else if (i === x.length - 1) {
+      resolve(y)
+    }
+  }
+}
+
+const mapPoolArrayWorker = mapPoolIndexedWorker((y, xi, i) => { y[i] = xi })
+
+const mapPoolArray = (size, fn, x) => new Promise((resolve, reject) => {
+  const y = []
+  for (let i = 0; i < Math.min(x.length, size); i++) {
+    mapPoolArrayWorker(size, fn, resolve, reject, x, y, i, i) // start off the workers
+  }
+})
+
+const mapPoolUnorderedWorker = insert => (
+  size, fn, resolve, reject, iter, y, promises,
+) => {
+  const { value, done } = iter.next()
+  if (done) {
+    if (resolve._called) return
+    resolve._called = true
+    return Promise.all(promises).then(() => resolve(y))
+  }
+  let point
+  try {
+    point = fn(value)
+  } catch (err) {
+    return reject(err)
+  }
+  if (isPromise(point)) {
+    promises.push(point.then(res => insert(y, res)).catch(reject))
+    mapPoolUnorderedWorker(insert)(size, fn, resolve, reject, iter, y, promises)
+  } else {
+    insert(y, point)
+    mapPoolUnorderedWorker(insert)(size, fn, resolve, reject, iter, y, promises)
+  }
+}
+
+const mapPoolSetWorker = mapPoolUnorderedWorker((y, xi) => y.add(xi))
+
+const mapPoolSet = (size, fn, x) => new Promise((resolve, reject) => {
+  const iter = x[Symbol.iterator].bind(x)()
+  const y = new Set()
+  for (let i = 0; i < Math.min(x.size, size); i++) {
+    mapPoolSetWorker(size, fn, resolve, reject, iter, y, []) // start off the workers
+  }
+})
+
+const mapPoolMapWorker = mapPoolUnorderedWorker((y, xi) => y.set(xi[0], xi[1]))
+
+const mapPoolMap = (size, fn, x) => new Promise((resolve, reject) => {
+  const iter = x[Symbol.iterator].bind(x)()
+  const y = new Map()
+  for (let i = 0; i < Math.min(x.size, size); i++) {
+    mapPoolMapWorker(size, fn, resolve, reject, iter, y, []) // start off the workers
+  }
+})
+
+map.pool = (size, fn) => {
+  if (!isNumber(size)) {
+    throw new TypeError('map.pool(size, f); size is not a number')
+  }
+  if (size < 1) {
+    throw new RangeError('map.pool(size, f); size must be 1 or more')
+  }
+  if (!isFunction(fn)) {
+    throw new TypeError('map.pool(size, f); f is not a function')
+  }
+  return x => {
+    if (isArray(x)) return mapPoolArray(size, fn, x)
+    if (is(Set)(x)) return mapPoolSet(size, fn, x)
+    if (is(Map)(x)) return mapPoolMap(size, fn, x)
+    throw new TypeError('map.pool(...)(x); x invalid')
+  }
+}
 
 // TODO(richytong): map.indexed(fn); fn called with (item, index, array)
 map.withIndex = fn => {}
+
+// TODO(richytong): map.series + map.withIndex
+map.seriesWithIndex = fn => {}
 
 const filterAsyncIterable = (fn, x) => (async function*() {
   for await (const xi of x) { if (await fn(xi)) yield xi }
@@ -492,6 +586,53 @@ const filter = fn => {
     if (isIterable(x)) return filterIterable(fn, x) // for generators or custom iterators
     if (is(Object)(x)) return filterObject(fn, x)
     if (isFunction(x)) return filterReducer(fn, x)
+    throw new TypeError('filter(...)(x); x invalid')
+  }
+}
+
+const createFilterWithIndexIndex = (fn, x) => {
+  let isAsync = false, i = 0
+  const filterIndex = []
+  for (const xi of x) {
+    const ok = fn(xi, i, x)
+    if (isPromise(ok)) isAsync = true
+    filterIndex.push(ok)
+    i += 1
+  }
+  return isAsync ? Promise.all(filterIndex) : filterIndex
+}
+
+const filterArrayWithIndex = (fn, x) => {
+  const index = createFilterWithIndexIndex(fn, x)
+  return (isPromise(index)
+    ? index.then(res => x.filter((_, i) => res[i]))
+    : x.filter((_, i) => index[i])
+  )
+}
+
+const filterStringWithIndex = (fn, x) => {
+  const index = createFilterWithIndexIndex(fn, x)
+  return (isPromise(index)
+    ? index.then(res => filterStringFromIndex(res, x))
+    : filterStringFromIndex(index, x)
+  )
+}
+
+filter.withIndex = fn => {
+  if (!isFunction(fn)) {
+    throw new TypeError('filter.withIndex(x); x is not a function')
+  }
+  return x => {
+    // if (isAsyncIterable(x)) return filterAsyncIterable(fn, x)
+    if (isArray(x)) return filterArrayWithIndex(fn, x)
+    if (isString(x)) return filterStringWithIndex(fn, x)
+    // if (is(Set)(x)) return filterSet(fn, x)
+    // if (is(Map)(x)) return filterMap(fn, x)
+    // if (isNumberTypedArray(x)) return filterTypedArray(fn, x)
+    // if (isBigIntTypedArray(x)) return filterTypedArray(fn, x)
+    // if (isIterable(x)) return filterIterable(fn, x) // for generators or custom iterators
+    // if (is(Object)(x)) return filterObject(fn, x)
+    // if (isFunction(x)) return filterReducer(fn, x)
     throw new TypeError('filter(...)(x); x invalid')
   }
 }
