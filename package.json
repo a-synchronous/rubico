@@ -7,22 +7,25 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "github:richytong/rubico"
+    "url": "github:a-synchronous/rubico"
   },
-  "homepage": "https://github.com/richytong/rubico#rubico",
+  "homepage": "https://github.com/a-synchronous/rubico",
   "keywords": [
-    "composition",
-    "callback",
-    "async",
-    "await",
-    "functional",
-    "fp",
-    "point-free",
+    "functional-composition",
+    "asynchronous",
+    "transducers",
+    "parallel",
+    "async-iterable",
+    "series",
+    "data-truthy",
+    "evaluations-truthy",
+    "functional-programming",
     "promise",
-    "promises",
-    "toolkit",
+    "async-await",
+    "node",
+    "deno",
+    "javascript",
     "tacit",
-    "utils",
-    "utility"
+    "pointfree"
   ]
 }
