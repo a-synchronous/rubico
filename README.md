@@ -265,11 +265,12 @@ All higher order functions accept sync or async functions; if all provided funct
  * [gte](#gte) [parallel] - left >= right?
  * [lte](#lte) [parallel] - left <= right?
 
-# property access
- * [get](#get) - access property by path
+# property + index access
+ * [get](#get) - access a value by path or index
 
-# scope
+# data composition
  * [pick](#pick) - only allow provided properties
+   * `pick.range` - only allow provided range
  * [omit](#omit) - exclude provided properties
 
 ## pipe
