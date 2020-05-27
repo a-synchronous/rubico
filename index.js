@@ -463,8 +463,44 @@ map.pool = (size, fn) => {
   }
 }
 
-// TODO(richytong): map.indexed(fn); fn called with (item, index, array)
-map.withIndex = fn => {}
+const mapArrayWithIndex = (fn, x) => {
+  let isAsync = false
+  const y = x.map((xi, i) => {
+    const point = fn(xi, i, x)
+    if (isPromise(point)) isAsync = true
+    return point
+  })
+  return isAsync ? Promise.all(y) : y
+}
+
+const mapIterableWithIndexToArray = (fn, x) => {
+  let isAsync = false
+  const primer = []
+  let i = 0
+  for (const xi of x) {
+    const point = fn(xi, i, x)
+    if (isPromise(point)) isAsync = true
+    primer.push(point)
+    i += 1
+  }
+  return isAsync ? Promise.all(primer) : primer
+}
+
+const mapStringWithIndex = (fn, x) => {
+  const y = mapIterableWithIndexToArray(fn, x)
+  return isPromise(y) ? y.then(res => res.join('')) : y.join('')
+}
+
+map.withIndex = fn => {
+  if (!isFunction(fn)) {
+    throw new TypeError('map.withIndex(x); x is not a function')
+  }
+  return x => {
+    if (isArray(x)) return mapArrayWithIndex(fn, x)
+    if (isString(x)) return mapStringWithIndex(fn, x)
+    throw new TypeError('map.withIndex(...)(x); x invalid')
+  }
+}
 
 // TODO(richytong): map.series + map.withIndex
 map.seriesWithIndex = fn => {}

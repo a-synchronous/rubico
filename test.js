@@ -835,6 +835,51 @@ describe('rubico', () => {
     })
   })
 
+  describe('map.withIndex', () => {
+    it('[sync] applies a function to each item of array with index and reference to array', async () => {
+      const numbers = [100, 100, 100, 100, 100]
+      ade(
+        r.map.withIndex((xi, i, x) => xi + i - x[i])(numbers),
+        [0, 1, 2, 3, 4],
+      )
+    })
+    it('[async] applies a function to each item of array with index and reference to array', async () => {
+      const numbers = [100, 100, 100, 100, 100]
+      aok(r.map.withIndex(async (xi, i, x) => xi + i - x[i])(numbers) instanceof Promise)
+      ade(
+        await r.map.withIndex(async (xi, i, x) => xi + i - x[i])(numbers),
+        [0, 1, 2, 3, 4],
+      )
+    })
+    it('[sync] applies a function to each character of a string with index and value of string', async () => {
+      ase(
+        r.map.withIndex((xi, i, x) => xi + i + x[i])('abc'),
+        'a0ab1bc2c',
+      )
+    })
+    it('[async] applies a function to each character of a string with index and value of string', async () => {
+      aok(
+        r.map.withIndex(async (xi, i, x) => xi + i + x[i])('abc') instanceof Promise
+      )
+      ase(
+        await r.map.withIndex(async (xi, i, x) => xi + i + x[i])('abc'),
+        'a0ab1bc2c',
+      )
+    })
+    it('throws a TypeError on map.withIndex(nonFunction)', async () => {
+      assert.throws(
+        () => r.map.withIndex({}),
+        new TypeError('map.withIndex(x); x is not a function'),
+      )
+    })
+    it('throws a TypeError on map.withIndex(...)(null)', async () => {
+      assert.throws(
+        () => r.map.withIndex(() => 'hi')(null),
+        new TypeError('map.withIndex(...)(x); x invalid')
+      )
+    })
+  })
+
   describe('filter', () => {
     it('lazily filters values from an async iterable based on an async predicate', async () => {
       aok(!(r.filter(async x => x <= 3)(makeAsyncNumbers()) instanceof Promise))
