@@ -366,28 +366,35 @@ map.series = fn => {
   }
 }
 
+// TODO: look into i === x.length - 1 breaking down; allDone?
 const mapPoolIndexedWorker = insert => (size, fn, resolve, reject, x, y, i) => {
-  let point
+  if (i >= x.length) return
+  if (reject._called) return
+  let yi
   try {
-    point = fn(x[i])
+    yi = fn(x[i])
   } catch (err) {
+    reject._called = true
     return reject(err)
   }
-  if (isPromise(point)) {
-    point.then(res => {
+  if (isPromise(yi)) {
+    yi.then(res => {
       insert(y, res, i)
-      if (isDefined(x[i + size])) {
-        mapPoolIndexedWorker(insert)(size, fn, resolve, reject, x, y, i + size)
-      } else if (i === x.length - 1) {
+      if (i === x.length - 1) {
         resolve(y)
+      } else {
+        mapPoolIndexedWorker(insert)(size, fn, resolve, reject, x, y, i + size)
       }
-    }).catch(reject)
+    }).catch(err => {
+      reject._called = true
+      reject(err)
+    })
   } else {
-    insert(y, point, i)
-    if (isDefined(x[i + size])) {
-      mapPoolIndexedWorker(insert)(size, fn, resolve, reject, x, y, i + size)
-    } else if (i === x.length - 1) {
+    insert(y, yi, i)
+    if (i === x.length - 1) {
       resolve(y)
+    } else {
+      mapPoolIndexedWorker(insert)(size, fn, resolve, reject, x, y, i + size)
     }
   }
 }
@@ -395,33 +402,48 @@ const mapPoolIndexedWorker = insert => (size, fn, resolve, reject, x, y, i) => {
 const mapPoolArrayWorker = mapPoolIndexedWorker((y, xi, i) => { y[i] = xi })
 
 const mapPoolArray = (size, fn, x) => new Promise((resolve, reject) => {
+  if (x.length < 1) return resolve([])
   const y = []
   for (let i = 0; i < Math.min(x.length, size); i++) {
-    mapPoolArrayWorker(size, fn, resolve, reject, x, y, i, i) // start off the workers
+    mapPoolArrayWorker(size, fn, resolve, reject, x, y, i) // start off the workers
   }
 })
 
 const mapPoolUnorderedWorker = insert => (
-  size, fn, resolve, reject, iter, y, promises,
+  size, fn, resolve, reject, iter, y, promises, allDone,
 ) => {
+  if (reject._called) return
   const { value, done } = iter.next()
   if (done) {
-    if (resolve._called) return
-    resolve._called = true
-    return Promise.all(promises).then(() => resolve(y))
+    allDone.ct += 1
+    if (allDone.ct === size) {
+      return Promise.all(promises).then(() => resolve(y))
+    } else {
+      return
+    }
   }
-  let point
+  let yi
   try {
-    point = fn(value)
+    yi = fn(value)
   } catch (err) {
+    reject._called = true
     return reject(err)
   }
-  if (isPromise(point)) {
-    promises.push(point.then(res => insert(y, res)).catch(reject))
-    mapPoolUnorderedWorker(insert)(size, fn, resolve, reject, iter, y, promises)
+  if (isPromise(yi)) {
+    promises.push(yi.then(res => {
+      insert(y, res)
+      mapPoolUnorderedWorker(insert)(
+        size, fn, resolve, reject, iter, y, promises, allDone,
+      )
+    }).catch(err => {
+      reject._called = true
+      reject(err)
+    }))
   } else {
-    insert(y, point)
-    mapPoolUnorderedWorker(insert)(size, fn, resolve, reject, iter, y, promises)
+    insert(y, yi)
+    mapPoolUnorderedWorker(insert)(
+      size, fn, resolve, reject, iter, y, promises, allDone,
+    )
   }
 }
 
@@ -429,9 +451,12 @@ const mapPoolSetWorker = mapPoolUnorderedWorker((y, xi) => y.add(xi))
 
 const mapPoolSet = (size, fn, x) => new Promise((resolve, reject) => {
   const iter = x[Symbol.iterator].bind(x)()
-  const y = new Set()
-  for (let i = 0; i < Math.min(x.size, size); i++) {
-    mapPoolSetWorker(size, fn, resolve, reject, iter, y, []) // start off the workers
+  const actualSize = Math.min(size, x.size)
+  const y = new Set(), promises = [], allDone = { ct: 0 }
+  for (let i = 0; i < actualSize; i++) {
+    mapPoolSetWorker(
+      actualSize, fn, resolve, reject, iter, y, promises, allDone,
+    ) // start off the workers
   }
 })
 
@@ -439,9 +464,12 @@ const mapPoolMapWorker = mapPoolUnorderedWorker((y, xi) => y.set(xi[0], xi[1]))
 
 const mapPoolMap = (size, fn, x) => new Promise((resolve, reject) => {
   const iter = x[Symbol.iterator].bind(x)()
-  const y = new Map()
-  for (let i = 0; i < Math.min(x.size, size); i++) {
-    mapPoolMapWorker(size, fn, resolve, reject, iter, y, []) // start off the workers
+  const actualSize = Math.min(size, x.size)
+  const y = new Map(), promises = [], allDone = { ct: 0 }
+  for (let i = 0; i < actualSize; i++) {
+    mapPoolMapWorker(
+      actualSize, fn, resolve, reject, iter, y, promises, allDone,
+    ) // start off the workers
   }
 })
 
