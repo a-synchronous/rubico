@@ -1351,9 +1351,35 @@ describe('rubico', () => {
       ), '9924')
       fs.unlinkSync('./tmp')
     })
+    it('sync transforms an iterable to an object', async () => {
+      ade(
+        r.transform(r.map(n => [n, n]), {})([1, 2, 3, 4, 5]),
+        { '1': 1, '2': 2, '3': 3, '4': 4, '5': 5 },
+      )
+      ade(
+        r.transform(r.map(n => ({ [n]: n })), {})([1, 2, 3, 4, 5]),
+        { '1': 1, '2': 2, '3': 3, '4': 4, '5': 5 },
+      )
+    })
+    it('async transforms an iterable to an object', async () => {
+      aok(
+        r.transform(r.map(async n => [n, n]), {})([1, 2, 3, 4, 5]) instanceof Promise,
+      )
+      aok(
+        r.transform(r.map(async n => ({ [n]: n })), {})([1, 2, 3, 4, 5]) instanceof Promise,
+      )
+      ade(
+        await r.transform(r.map(async n => [n, n]), {})([1, 2, 3, 4, 5]),
+        { '1': 1, '2': 2, '3': 3, '4': 4, '5': 5 },
+      )
+      ade(
+        await r.transform(r.map(async n => ({ [n]: n })), {})([1, 2, 3, 4, 5]),
+        { '1': 1, '2': 2, '3': 3, '4': 4, '5': 5 },
+      )
+    })
     it('throws a TypeError for transform(Object, () => {})', async () => {
       assert.throws(
-        () => r.transform(() => {}, {}),
+        () => r.transform(() => {}, undefined),
         new TypeError('transform(x, y); x invalid'),
       )
     })
