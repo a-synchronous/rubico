@@ -795,7 +795,19 @@ describe('rubico', () => {
       ade(await r.map.pool(1, asyncSquareEntry)(numbersMap), squaresMap)
       ade(await r.map.pool(9, asyncSquareEntry)(numbersMap), squaresMap)
     })
-    xit('abides by asynchronous limit', async () => {
+    it('abides by asynchronous limit', async () => {
+      let i = 0, maxi = 0
+      const plusSleepMinus = n => (async () => {
+        i += 1
+        maxi = Math.max(maxi, i)
+      })().then(() => sleep(10)).then(() => {
+        i -=1
+        return n
+      })
+      await r.map.pool(2, plusSleepMinus)([1, 2, 3, 4, 5, 6])
+      assert.strictEqual(maxi, 2)
+      await r.map.pool(6, plusSleepMinus)([1, 2, 3, 4, 5, 6])
+      assert.strictEqual(maxi, 6)
     })
     it('throws TypeError on map.pool(NaN)', async () => {
       assert.throws(
