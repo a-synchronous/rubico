@@ -463,11 +463,44 @@ map.pool = (size, fn) => {
   }
 }
 
-// TODO(richytong): map.indexed(fn); fn called with (item, index, array)
-map.withIndex = fn => {}
+const mapArrayWithIndex = (fn, x) => {
+  let isAsync = false
+  const y = x.map((xi, i) => {
+    const point = fn(xi, i, x)
+    if (isPromise(point)) isAsync = true
+    return point
+  })
+  return isAsync ? Promise.all(y) : y
+}
 
-// TODO(richytong): map.series + map.withIndex
-map.seriesWithIndex = fn => {}
+const mapIterableWithIndexToArray = (fn, x) => {
+  let isAsync = false
+  const primer = []
+  let i = 0
+  for (const xi of x) {
+    const point = fn(xi, i, x)
+    if (isPromise(point)) isAsync = true
+    primer.push(point)
+    i += 1
+  }
+  return isAsync ? Promise.all(primer) : primer
+}
+
+const mapStringWithIndex = (fn, x) => {
+  const y = mapIterableWithIndexToArray(fn, x)
+  return isPromise(y) ? y.then(res => res.join('')) : y.join('')
+}
+
+map.withIndex = fn => {
+  if (!isFunction(fn)) {
+    throw new TypeError('map.withIndex(x); x is not a function')
+  }
+  return x => {
+    if (isArray(x)) return mapArrayWithIndex(fn, x)
+    if (isString(x)) return mapStringWithIndex(fn, x)
+    throw new TypeError('map.withIndex(...)(x); x invalid')
+  }
+}
 
 const filterAsyncIterable = (fn, x) => (async function*() {
   for await (const xi of x) { if (await fn(xi)) yield xi }
@@ -801,6 +834,14 @@ const writableTransform = (fn, x0) => reduce(
   x0,
 )
 
+const objectTransform = (fn, x0) => reduce(
+  fn((y, xi) => {
+    if (isArray(xi)) { y[xi[0]] = xi[1]; return y }
+    return Object.assign(y, xi)
+  }),
+  x0,
+)
+
 const transform = (fn, x0) => {
   if (!isFunction(fn)) {
     throw new TypeError('transform(x, y); y is not a function')
@@ -813,7 +854,7 @@ const transform = (fn, x0) => {
   if (isNumberTypedArray(x0)) return numberTypedArrayTransform(fn, x0)
   if (isBigIntTypedArray(x0)) return bigIntTypedArrayTransform(fn, x0)
   if (isWritable(x0)) return writableTransform(fn, x0)
-  // TODO(richytong): if (isObject(x0)) return objectTransform(fn, x0)
+  if (is(Object)(x0)) return objectTransform(fn, x0)
   throw new TypeError('transform(x, y); x invalid')
 }
 
