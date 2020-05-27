@@ -366,111 +366,35 @@ map.series = fn => {
   }
 }
 
-const mapPoolIndexedWorker = insert => (size, fn, resolve, reject, allDone, x, y, i) => {
-  if (reject._called) return
-  if (i >= x.length) {
-    if (allDone.ct < size - 1) {
-      allDone.ct += 1
-      return
+// https://stackoverflow.com/questions/62037349/rubicos-map-pool-array-implementation
+// https://stackoverflow.com/questions/39195441/limited-parallelism-with-async-await-in-typescript-es7
+const mapPoolConstructor = construct => async (size, fn, x) => {
+  const y = []
+  const promises = new Set()
+  for (const xi of x) {
+    if (promises.size >= size) {
+      await Promise.race(promises)
+    }
+    const yi = fn(xi)
+    if (isPromise(yi)) {
+      const p = yi.then(res => {
+        promises.delete(p)
+        return res
+      })
+      promises.add(p)
+      y.push(p)
     } else {
-      return resolve(y)
+      y.push(yi)
     }
   }
-  let yi
-  try {
-    yi = fn(x[i])
-  } catch (err) {
-    reject._called = true
-    return reject(err)
-  }
-  if (isPromise(yi)) {
-    yi.then(res => {
-      insert(y, res, i)
-      mapPoolIndexedWorker(insert)(size, fn, resolve, reject, allDone, x, y, i + size)
-    }).catch(err => {
-      reject._called = true
-      reject(err)
-    })
-  } else {
-    insert(y, yi, i)
-    mapPoolIndexedWorker(insert)(size, fn, resolve, reject, allDone, x, y, i + size)
-  }
+  return construct(await Promise.all(y))
 }
 
-const mapPoolArrayWorker = mapPoolIndexedWorker((y, xi, i) => { y[i] = xi })
+const mapPoolArray = mapPoolConstructor(y => y)
 
-const mapPoolArray = (size, fn, x) => new Promise((resolve, reject) => {
-  if (x.length < 1) return resolve([])
-  const y = [], allDone = { ct: 0 }
-  const actualSize = Math.min(size, x.length)
-  for (let i = 0; i < actualSize; i++) {
-    mapPoolArrayWorker(actualSize, fn, resolve, reject, allDone, x, y, i) // start off the workers
-  }
-})
+const mapPoolSet = mapPoolConstructor(y => new Set(y))
 
-const mapPoolUnorderedWorker = insert => (
-  size, fn, resolve, reject, allDone, iter, y, promises,
-) => {
-  if (reject._called) return
-  const { value, done } = iter.next()
-  if (done) {
-    allDone.ct += 1
-    if (allDone.ct === size) {
-      return Promise.all(promises).then(() => resolve(y))
-    } else {
-      return
-    }
-  }
-  let yi
-  try {
-    yi = fn(value)
-  } catch (err) {
-    reject._called = true
-    return reject(err)
-  }
-  if (isPromise(yi)) {
-    promises.push(yi.then(res => {
-      insert(y, res)
-      mapPoolUnorderedWorker(insert)(
-        size, fn, resolve, reject, allDone, iter, y, promises,
-      )
-    }).catch(err => {
-      reject._called = true
-      reject(err)
-    }))
-  } else {
-    insert(y, yi)
-    mapPoolUnorderedWorker(insert)(
-      size, fn, resolve, reject, allDone, iter, y, promises,
-    )
-  }
-}
-
-const mapPoolSetWorker = mapPoolUnorderedWorker((y, xi) => y.add(xi))
-
-const mapPoolSet = (size, fn, x) => new Promise((resolve, reject) => {
-  const iter = x[Symbol.iterator].bind(x)()
-  const actualSize = Math.min(size, x.size)
-  const y = new Set(), promises = [], allDone = { ct: 0 }
-  for (let i = 0; i < actualSize; i++) {
-    mapPoolSetWorker(
-      actualSize, fn, resolve, reject, allDone, iter, y, promises,
-    ) // start off the workers
-  }
-})
-
-const mapPoolMapWorker = mapPoolUnorderedWorker((y, xi) => y.set(xi[0], xi[1]))
-
-const mapPoolMap = (size, fn, x) => new Promise((resolve, reject) => {
-  const iter = x[Symbol.iterator].bind(x)()
-  const actualSize = Math.min(size, x.size)
-  const y = new Map(), promises = [], allDone = { ct: 0 }
-  for (let i = 0; i < actualSize; i++) {
-    mapPoolMapWorker(
-      actualSize, fn, resolve, reject, allDone, iter, y, promises,
-    ) // start off the workers
-  }
-})
+const mapPoolMap = mapPoolConstructor(y => new Map(y))
 
 map.pool = (size, fn) => {
   if (!isNumber(size)) {
