@@ -773,6 +773,15 @@ describe('rubico', () => {
       ade(await r.map.pool(1, asyncSquare)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
       ade(await r.map.pool(9, asyncSquare)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
     })
+    it('=> [] for empty array', async () => {
+      aok(r.map.pool(1, square)([]) instanceof Promise)
+      ade(await r.map.pool(1, square)([]), [])
+    })
+    it('works for arrays of undefined values', async () => {
+      ade(await r.map.pool(1, square)([,,,,,]), Array(5).fill(NaN))
+      ade(await r.map.pool(1, square)(Array(5)), Array(5).fill(NaN))
+      ade(await r.map.pool(1, square)(Array(5).fill(null)), Array(5).fill(0))
+    })
     it('maps with asynchronous limit for Sets', async () => {
       const numbersSet = new Set([1, 2, 3, 4, 5])
       const squaresSet = new Set([1, 4, 9, 16, 25])
@@ -795,20 +804,31 @@ describe('rubico', () => {
       ade(await r.map.pool(1, asyncSquareEntry)(numbersMap), squaresMap)
       ade(await r.map.pool(9, asyncSquareEntry)(numbersMap), squaresMap)
     })
-    it('abides by asynchronous limit', async () => {
-      let i = 0, maxi = 0
+    it('abides by asynchronous limit for arrays and sets', async () => {
+      const numbers = [1, 2, 3, 4, 5, 6]
+      let i = 0, maxi = 0, period = 10
       const plusSleepMinus = n => (async () => {
         i += 1
         maxi = Math.max(maxi, i)
-      })().then(() => sleep(10)).then(() => {
+      })().then(() => sleep(period)).then(() => {
         i -=1
         return n
       })
-      await r.map.pool(2, plusSleepMinus)([1, 2, 3, 4, 5, 6])
+      ade(await r.map.pool(2, plusSleepMinus)(numbers), numbers)
       assert.strictEqual(maxi, 2)
-      await r.map.pool(6, plusSleepMinus)([1, 2, 3, 4, 5, 6])
-      assert.strictEqual(maxi, 6)
-    })
+      assert.strictEqual(i, 0)
+      maxi = 0
+      ade(await r.map.pool(3, plusSleepMinus)([1, 2, 3, 4, 5, 6]), numbers)
+      assert.strictEqual(maxi, 3)
+      assert.strictEqual(i, 0)
+      maxi = 0
+      const x = await r.map.pool(2, plusSleepMinus)(new Set([1, 2, 3, 4, 5, 6]))
+      assert.strictEqual(maxi, 2)
+      assert.strictEqual(i, 0)
+      maxi = 0
+      await r.map.pool(3, plusSleepMinus)(new Set([1, 2, 3, 4, 5, 6]))
+      assert.strictEqual(maxi, 3)
+    }).timeout(20000)
     it('throws TypeError on map.pool(NaN)', async () => {
       assert.throws(
         () => r.map.pool(NaN),
