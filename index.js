@@ -834,6 +834,14 @@ const writableTransform = (fn, x0) => reduce(
   x0,
 )
 
+const objectTransform = (fn, x0) => reduce(
+  fn((y, xi) => {
+    if (isArray(xi)) { y[xi[0]] = xi[1]; return y }
+    return Object.assign(y, xi)
+  }),
+  x0,
+)
+
 const transform = (fn, x0) => {
   if (!isFunction(fn)) {
     throw new TypeError('transform(x, y); y is not a function')
@@ -846,7 +854,7 @@ const transform = (fn, x0) => {
   if (isNumberTypedArray(x0)) return numberTypedArrayTransform(fn, x0)
   if (isBigIntTypedArray(x0)) return bigIntTypedArrayTransform(fn, x0)
   if (isWritable(x0)) return writableTransform(fn, x0)
-  // TODO(richytong): if (isObject(x0)) return objectTransform(fn, x0)
+  if (is(Object)(x0)) return objectTransform(fn, x0)
   throw new TypeError('transform(x, y); x invalid')
 }
 
