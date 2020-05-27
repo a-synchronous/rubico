@@ -778,9 +778,9 @@ describe('rubico', () => {
       ade(await r.map.pool(1, square)([]), [])
     })
     it('works for arrays of undefined values', async () => {
-      ade(await r.map.pool(1, square)([,,,,,]), Array(5).fill(NaN))
-      ade(await r.map.pool(1, square)(Array(5)), Array(5).fill(NaN))
-      ade(await r.map.pool(1, square)(Array(5).fill(null)), Array(5).fill(0))
+      ade(await r.map.pool(1, x => x)([,,,,,]), Array(5).fill(undefined))
+      ade(await r.map.pool(1, x => x)(Array(5)), Array(5).fill(undefined))
+      ade(await r.map.pool(1, x => x)(Array(5).fill(null)), Array(5).fill(null))
     })
     it('maps with asynchronous limit for Sets', async () => {
       const numbersSet = new Set([1, 2, 3, 4, 5])
