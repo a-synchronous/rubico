@@ -366,10 +366,16 @@ map.series = fn => {
   }
 }
 
-// TODO: look into i === x.length - 1 breaking down; allDone?
-const mapPoolIndexedWorker = insert => (size, fn, resolve, reject, x, y, i) => {
-  if (i >= x.length) return
+const mapPoolIndexedWorker = insert => (size, fn, resolve, reject, allDone, x, y, i) => {
   if (reject._called) return
+  if (i >= x.length) {
+    if (allDone.ct < size - 1) {
+      allDone.ct += 1
+      return
+    } else {
+      return resolve(y)
+    }
+  }
   let yi
   try {
     yi = fn(x[i])
@@ -380,22 +386,14 @@ const mapPoolIndexedWorker = insert => (size, fn, resolve, reject, x, y, i) => {
   if (isPromise(yi)) {
     yi.then(res => {
       insert(y, res, i)
-      if (i === x.length - 1) {
-        resolve(y)
-      } else {
-        mapPoolIndexedWorker(insert)(size, fn, resolve, reject, x, y, i + size)
-      }
+      mapPoolIndexedWorker(insert)(size, fn, resolve, reject, allDone, x, y, i + size)
     }).catch(err => {
       reject._called = true
       reject(err)
     })
   } else {
     insert(y, yi, i)
-    if (i === x.length - 1) {
-      resolve(y)
-    } else {
-      mapPoolIndexedWorker(insert)(size, fn, resolve, reject, x, y, i + size)
-    }
+    mapPoolIndexedWorker(insert)(size, fn, resolve, reject, allDone, x, y, i + size)
   }
 }
 
@@ -403,14 +401,15 @@ const mapPoolArrayWorker = mapPoolIndexedWorker((y, xi, i) => { y[i] = xi })
 
 const mapPoolArray = (size, fn, x) => new Promise((resolve, reject) => {
   if (x.length < 1) return resolve([])
-  const y = []
-  for (let i = 0; i < Math.min(x.length, size); i++) {
-    mapPoolArrayWorker(size, fn, resolve, reject, x, y, i) // start off the workers
+  const y = [], allDone = { ct: 0 }
+  const actualSize = Math.min(size, x.length)
+  for (let i = 0; i < actualSize; i++) {
+    mapPoolArrayWorker(actualSize, fn, resolve, reject, allDone, x, y, i) // start off the workers
   }
 })
 
 const mapPoolUnorderedWorker = insert => (
-  size, fn, resolve, reject, iter, y, promises, allDone,
+  size, fn, resolve, reject, allDone, iter, y, promises,
 ) => {
   if (reject._called) return
   const { value, done } = iter.next()
@@ -433,7 +432,7 @@ const mapPoolUnorderedWorker = insert => (
     promises.push(yi.then(res => {
       insert(y, res)
       mapPoolUnorderedWorker(insert)(
-        size, fn, resolve, reject, iter, y, promises, allDone,
+        size, fn, resolve, reject, allDone, iter, y, promises,
       )
     }).catch(err => {
       reject._called = true
@@ -442,7 +441,7 @@ const mapPoolUnorderedWorker = insert => (
   } else {
     insert(y, yi)
     mapPoolUnorderedWorker(insert)(
-      size, fn, resolve, reject, iter, y, promises, allDone,
+      size, fn, resolve, reject, allDone, iter, y, promises,
     )
   }
 }
@@ -455,7 +454,7 @@ const mapPoolSet = (size, fn, x) => new Promise((resolve, reject) => {
   const y = new Set(), promises = [], allDone = { ct: 0 }
   for (let i = 0; i < actualSize; i++) {
     mapPoolSetWorker(
-      actualSize, fn, resolve, reject, iter, y, promises, allDone,
+      actualSize, fn, resolve, reject, allDone, iter, y, promises,
     ) // start off the workers
   }
 })
@@ -468,7 +467,7 @@ const mapPoolMap = (size, fn, x) => new Promise((resolve, reject) => {
   const y = new Map(), promises = [], allDone = { ct: 0 }
   for (let i = 0; i < actualSize; i++) {
     mapPoolMapWorker(
-      actualSize, fn, resolve, reject, iter, y, promises, allDone,
+      actualSize, fn, resolve, reject, allDone, iter, y, promises,
     ) // start off the workers
   }
 })
