@@ -833,6 +833,18 @@ describe('rubico', () => {
         new TypeError('map.pool(...)(x); x invalid'),
       )
     })
+    it('handles sync errors good', async () => {
+      assert.rejects(
+        () => r.map.pool(1, x => { throw new Error(`throwing ${x}`) })(['yo']),
+        new Error('throwing yo')
+      )
+    })
+    it('handles async errors good', async () => {
+      assert.rejects(
+        () => r.map.pool(1, async x => { throw new Error(`throwing ${x}`) })(['yo']),
+        new Error('throwing yo'),
+      )
+    })
   })
 
   describe('map.withIndex', () => {
