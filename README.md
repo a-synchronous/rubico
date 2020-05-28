@@ -156,6 +156,9 @@ import {
 </html>
 ```
 
+### System Requirements
+ * minimum node version: 10.3
+
 # Examples
 The following examples compare promise chains, async/await, and rubico
 
