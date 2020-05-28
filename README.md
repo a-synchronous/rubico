@@ -5,7 +5,7 @@ Features:
  * simple function composition - `pipe`, `fork`, `assign`
  * simple predicate composition - `and`, `or`, `not`
  * small, polymorphic API surface (23 functions)
- * async is awaited, sync is returned; both are accepted anywhere a function is accepted
+ * async agnostic ([a]sync); you are free to use sync, async, or a mix of both
  * transducers are easy - just `transform` your `pipe` of `map` and `filter`
  * works with built-in types (`Symbol.asyncIterator`, `Set`, `Map`, etc.)
  * no dependencies
