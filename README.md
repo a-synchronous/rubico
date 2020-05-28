@@ -76,12 +76,13 @@ And now, a functional way to do async things
 ```javascript
 import { pipe } from 'rubico'
 
+// a => f
 const doAsyncThings = pipe([
-  doAsyncThingA,
-  doAsyncThingB,
-  doAsyncThingC,
-  doAsyncThingD,
-  doAsyncThingE,
+  doAsyncThingA, // a => b
+  doAsyncThingB, // b => c
+  doAsyncThingC, // c => d
+  doAsyncThingD, // d => e
+  doAsyncThingE, // e => f
 ])
 ```
 
