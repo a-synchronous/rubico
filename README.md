@@ -278,7 +278,7 @@ All higher order functions accept sync or async functions; if all provided funct
  * [omit](#omit) - exclude provided properties
 
 ## pipe
-chains functions from left to right in series; `functionN(...(function2(function1(function0(x)))))`
+chains functions from left to right in series
 ```javascript
 y = pipe(functions)(x)
 ```
