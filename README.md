@@ -307,7 +307,7 @@ pipe([
 ```
 
 ## fork
-parallelizes functions with input, retaining functions' type and shape
+parallelizes functions with data, retaining functions' type and shape
 ```javascript
 y = fork(functions)(x)
 ```
@@ -347,13 +347,13 @@ fork({
 ```
 
 `fork.series`
-executes functions with input in series, retaining functions' type and shape
+executes functions with data in series, retaining functions' type and shape
 ```javascript
 y = fork.series(functions)(x)
 ```
 
 ## assign
-parallelizes functions with input, merging output into input
+parallelizes functions with data, merging output into data
 ```javascript
 y = assign(functions)(x)
 ```
@@ -387,7 +387,7 @@ assign({
 ```
 
 ## tap
-calls a function with input, returning input
+calls a function with data, returning data
 ```javascript
 y = tap(f)(x)
 ```
@@ -433,7 +433,7 @@ reduce(
 ```
 
 ## tryCatch
-tries a function with input, catches with another function
+tries a function with data, catches with another function
 ```javascript
 y = tryCatch(f, g)(x)
 ```
@@ -520,7 +520,7 @@ switchCase([
 ```
 
 ## map
-applies a function to each element of input in parallel, retaining input type and shape
+applies a function to each element of data in parallel, retaining data type and shape
 ```javascript
 y = map(f)(x)
 ```
@@ -612,7 +612,7 @@ Apply a function to every element of data in series with index and reference to 
 ```
 
 ## filter
-filters elements out of input in parallel based on provided predicate
+filters elements out of data in parallel based on provided predicate
 ```javascript
 y = filter(f)(x)
 ```
@@ -687,7 +687,7 @@ y = filter.withIndex(f)(x); yi = f(xi, i, x)
 ```
 
 ## reduce
-transforms input in series according to provided reducing function and initial value
+transforms data in series according to provided reducing function and initial value
 ```javascript
 y = reduce(f, x0)(x)
 ```
@@ -744,7 +744,7 @@ reduce(
 ```
 
 ## transform
-transforms input in series according to provided transducer and initial value
+transforms data in series according to provided transducer and initial value
 ```javascript
 y = transform(f, x0)(x)
 ```
@@ -804,7 +804,7 @@ transform(map(
 ```
 
 ## any
-applies a function to each element of input parallel, returns true if any evaluations truthy
+applies a function to each element of data parallel, returns true if any evaluations truthy
 ```javascript
 y = any(f)(x)
 ```
@@ -839,7 +839,7 @@ any(
 ```
 
 ## all
-applies a function to each element of input in parallel, returns true if all evaluations truthy
+applies a function to each element of data in parallel, returns true if all evaluations truthy
 ```javascript
 y = all(f)(x)
 ```
@@ -874,7 +874,7 @@ all(
 ```
 
 ## and
-applies each function of functions in parallel to input, returns true if all evaluations truthy
+applies each function of functions in parallel to data, returns true if all evaluations truthy
 ```javascript
 y = and(functions)(x)
 ```
@@ -914,7 +914,7 @@ and([
 ```
 
 ## or
-applies each function of functions in parallel to input, returns true if any evaluations truthy
+applies each function of functions in parallel to data, returns true if any evaluations truthy
 ```javascript
 y = or(functions)(x)
 ```
@@ -954,7 +954,7 @@ or([
 ```
 
 ## not
-applies a function to input, logically inverting the result
+applies a function to data, logically inverting the result
 ```javascript
 y = not(f)(x)
 ```
@@ -1245,7 +1245,7 @@ get([0, 'user', 'id'])([
 ```
 
 ## pick
-constructs a new object from input composed of the provided properties
+constructs a new object from data composed of the provided properties
 ```javascript
 y = pick(properties)(x)
 ```
@@ -1263,7 +1263,7 @@ pick(['d'])({ a: 1, b: 2, c: 3 }) // => {}
 ```
 
 ## omit
-constructs a new object from input without the provided properties
+constructs a new object from data without the provided properties
 ```javascript
 y = omit(properties)(x)
 ```
