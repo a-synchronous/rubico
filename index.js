@@ -1,10 +1,14 @@
+/* rubico v1.0.5
+ * https://github.com/a-synchronous/rubico
+ * (c) 2019 Richard Tong
+ * rubico may be freely distributed under the ISC license.
+ */
+
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
   typeof define === 'function' && define.amd ? define(['exports'], factory) :
   (global = global || self, factory(global.rubico = {}));
-}(this, function (exports) {
-
-'use strict'
+}(this, function (exports) { 'use strict'
 
 /* design principles
  *
@@ -1038,32 +1042,28 @@ const lte = function(f, g) {
   return compare((a, b) => a <= b, f, g)
 }
 
-const r = {
-  pipe,
-  fork,
-  assign,
-  tap,
-  tryCatch,
-  switchCase,
-  map,
-  filter,
-  reduce,
-  transform,
-  get,
-  pick,
-  omit,
-  any,
-  all,
-  and,
-  or,
-  not,
-  eq,
-  gt,
-  lt,
-  gte,
-  lte,
-}
-
-module.exports = r
+exports.pipe = pipe
+exports.fork = fork
+exports.assign = assign
+exports.tap = tap
+exports.tryCatch = tryCatch
+exports.switchCase = switchCase
+exports.map = map
+exports.filter = filter
+exports.reduce = reduce
+exports.transform = transform
+exports.get = get
+exports.pick = pick
+exports.omit = omit
+exports.any = any
+exports.all = all
+exports.and = and
+exports.or = or
+exports.not = not
+exports.eq = eq
+exports.gt = gt
+exports.lt = lt
+exports.gte = gte
+exports.lte = lte
 
 }))
