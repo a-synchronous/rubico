@@ -58,7 +58,7 @@ const doAsyncThings = a => doAsyncThingA(a)
   .then(e => doAsyncThingE(e))
 ```
 
-This was fine until we wanted JavaScript to look like a normal language
+This was fine until we needed more variables in scope
 
 [async/await](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function), the latest in asynchrony
 ```javascript
@@ -72,7 +72,7 @@ const doAsyncThings = async a => {
 }
 ```
 
-And now, a functional way to do async things
+Perhaps we didn't really need all those variables in scope
 ```javascript
 import { pipe } from 'rubico'
 
