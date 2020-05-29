@@ -1,6 +1,8 @@
 # rubico
 🏞 a shallow river in northeastern Italy, just south of Ravenna
 
+[a]synchronous functional syntax; the [a] is for async/sync [agnostic](https://en.wikipedia.org/wiki/Agnostic_(data))
+
 ## Motivation
 You are suddenly dropped into a world where all people write code in assembly.
 
