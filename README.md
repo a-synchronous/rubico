@@ -207,18 +207,18 @@ but exhibit differences in behavior (i.e. `map` executes in parallel while `map.
 
 All higher order functions accept sync or async functions; if all provided functions are synchronous, the entire execution is synchronous.
 
-## function composition
+### function composition
  * [pipe](#pipe) [series] - chain functions together
  * [tap](#tap) - spy on data
  * [tryCatch](#tryCatch) [series] - try a function, catch with another
  * [switchCase](#switchCase) [series] - control flow
 
-## function + data composition
+### function + data composition
  * [fork](#fork) [parallel] - multiply data by functions
    * `fork.series` [series]
  * [assign](#assign) [parallel] - set properties on data by functions
 
-## data transformation
+### data transformation
  * [map](#map) [parallel] - apply a function to data
    * `map.pool` [parallel] - `map` with asynchronous limit
    * `map.withIndex` [parallel] - `map` with index
@@ -229,24 +229,24 @@ All higher order functions accept sync or async functions; if all provided funct
  * [reduce](#reduce) [series] - execute data transformation (powerful)
  * [transform](#transform) [series] - execute data transformation (convenient)
 
-## predicate composition
+### predicate composition
  * [any](#any) [parallel] - is function of any data truthy?
  * [all](#all) [parallel] - is function of all data truthy?
  * [and](#and) [parallel] - any functions of data truthy?
  * [or](#or) [parallel] - all functions of data truthy?
  * [not](#not) - `not(equals)(x)` is `!equals(x)`
 
-## comparison
+### comparison
  * [eq](#eq) [parallel] - left equals right?
  * [gt](#gt) [parallel] - left > right?
  * [lt](#lt) [parallel] - left < right?
  * [gte](#gte) [parallel] - left >= right?
  * [lte](#lte) [parallel] - left <= right?
 
-## property + index access
+### property + index access
  * [get](#get) - access a value by path or index
 
-## data composition
+### data composition
  * [pick](#pick) - only allow provided properties
    * `pick.range` - only allow provided range [todo](https://github.com/a-synchronous/rubico/issues/13)
  * [omit](#omit) - exclude provided properties
