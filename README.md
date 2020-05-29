@@ -164,7 +164,7 @@ import {
 } from 'https://deno.land/x/rubico/rubico.js'
 ```
 
-browser script
+browser script, global `rubico`
 ```html
 <script src="https://unpkg.com/rubico/index.js" crossorigin></script>
 ```
