@@ -1,119 +1,149 @@
 # rubico
 🏞 a shallow river in northeastern Italy, just south of Ravenna
 
-Features:
- * simple function composition - `pipe`, `fork`, `assign`
- * simple predicate composition - `and`, `or`, `not`
- * small, polymorphic API surface (23 functions)
- * async agnostic ([a]sync); you are free to use sync, async, or a mix of both
- * transducers are easy - just `transform` your `pipe` of `map` and `filter`
- * works with built-in types (`Symbol.asyncIterator`, `Set`, `Map`, etc.)
- * no dependencies
- * works in server and browser
+## Motivation
+You are suddenly dropped into a world where all people write code in assembly.
 
+![Language Hierarchy](https://www.webopedia.com/imagesvr_ce/4096/high-level-language.gif)
+
+There is no "High Level Language", only "Assembly Language".
+There is no C, just ASM.  There are no variables, only registers.
+You are in charge of managing all memory in your programs: `mov`ing data from register to register, `push`ing and `pop`ing data on the hardware supported stack.
+
+How would you write a webserver, or a database? How long would that take?
+How much longer would it take you to do whatever it is that you are currently doing?
+
+We need not stay here any longer.
+
+..._interdimensional warp_...
+
+Welcome back to reality, where the world is rife with [programming languages above assembly](https://insights.stackoverflow.com/survey/2020#most-popular-technologies)
+
+How did this come to be? Why would anyone not want to spend their day to day in assembly?
+According to [an answer thread on stack overflow](https://stackoverflow.com/questions/2684364/why-arent-programs-written-in-assembly-more-often/2684384),
+
+> ASM has poor legibility and isn't really maintainable compared to higher-level languages.
+
+> [Assembly] takes more code to do the same thing as in a high-level languge, and there is a direct correlation between lines of code and bugs.
+
+Another take from [wikipedia](https://en.wikipedia.org/wiki/High-level_programming_language)
+
+> In contrast to low-level programming languages, [high-level programming languages] may use natural language elements, be easier to use, or may automate (or even hide entirely) significant areas of computing systems (e.g. memory management), making the process of developing a program simpler and more understandable than when using a lower-level language.
+
+Perhaps the abundance of higher level languages comes down to [readability versus performance](https://stackoverflow.com/questions/183201/should-a-developer-aim-for-readability-or-performance-first)
+
+> First code for correctness, then for clarity (the two are often connected, of course!). Finally, and only if you have real empirical evidence that you actually need to, you can look at optimizing.
+
+> IMO the obvious readable version first, until performance is measured and a faster version is required.
+
+> I would go for **readability** first.
+
+Great, looks like people are for readability, so where does that leave us? And what does any of this have to do with rubico?
+
+Consider these two samples of JavaScript code. Both execute an asynchronous function for every element of an array
+```javascript
+Promise.all(array.map(doAsyncThing)) // vanilla JavaScript
+
+map(doAsyncThing)(array) // rubico
+```
+
+It looks like you can write a little less to do the same thing with rubico.
+Is the rubico version more readable? I'd say it's up for debate.
+
+What if we wanted to do multiple asynchronous things in parallel for every item of the array?
+```javascript
+Promise.all([
+  Promise.all(array.map(doAsyncThingA)),
+  Promise.all(array.map(doAsyncThingB)),
+  Promise.all(array.map(doAsyncThingC)),
+]) // vanilla JavaScript
+
+map(fork([
+  doAsyncThingA,
+  doAsyncThingB,
+  doAsyncThingC,
+]))(array) // rubico
+```
+
+It looks like vanilla JavaScript has four more `Promise.all` statements, and two more `map` keywords.
+rubico, on the other hand, has one `map` and one `fork`. Simpler? Hold your horses.
+
+What if we now want to do another async thing per item of each of the responses?
+```javascript
+Promise.all([
+  Promise.all(array.map(doAsyncThingA).then(
+    arrayA => Promise.all(arrayA.map(doAsyncThingAA))
+  )),
+  Promise.all(array.map(doAsyncThingB).then(
+    arrayB => Promise.all(arrayB.map(doAsyncThingBB))
+  )),
+  Promise.all(array.map(doAsyncThingC).then(
+    arrayC => Promise.all(arrayC.map(doAsyncThingCC))
+  )),
+]) // vanilla JavaScript
+
+map(fork([
+  pipe([doAsyncThingA, map(doAsyncThingAA)]),
+  pipe([doAsyncThingB, map(doAsyncThingBB)]),
+  pipe([doAsyncThingC, map(doAsyncThingCC)]),
+]))(array) // rubico
+```
+
+I think it's safe to say that rubico is more expressive here.
+
+Back to assembly. You could compare what rubico does for JavaScript to what C does for assembly.
+
+> In contrast to assembly, C uses natural language elements, is easier to use, and automates (but doesn't hide entirely) memory management.
+C makes the process of developing a program simpler and more understandable than when using assembly.
+
+> In contrast to vanilla JavaScript, rubico automates (hides entirely) the cruft surrounding Promises. rubico makes the process
+of developing a program simpler and more understandable than when using vanilla JavaScript.
+
+I should also mention that when you use rubico, you get the benefits of the
+[functional programming paradigm](https://en.wikipedia.org/wiki/Functional_programming)
+(but not the [confusion](https://stackoverflow.com/questions/44965/what-is-a-monad)) for free.
+
+At your leisure, motivations
+[1](https://www.freecodecamp.org/news/how-and-why-to-use-functional-programming-in-modern-javascript-fda2df86ad1b/),
+[2](https://hackernoon.com/why-functional-programming-matters-c647f56a7691),
+and [3](https://www.google.com/search?q=why+functional+programming+javascript&oq=why+functional+programming+javascript)
+for functional programming.
+
+## Introduction
 [Installation](#installation)
-
-[Examples](#examples)
 
 [Documentation](#documentation)
 
 [Transducers](#transducers)
 
-[More Examples](#more-examples)
+[Examples](#examples)
 
-# Introduction
-Asynchronous programming in JavaScript has evolved over the years
+rubico resolves the `Promise.all` of three Promises
+1. simplify asynchronous programming
+2. enable functional programming
+3. free transducers
 
-In the beginning, there were [callbacks](http://callbackhell.com)
-```javascript
-function doAsyncThings(a, cb) {
-  doAsyncThingA(a, function(errA, b) {
-    if (errA) return cb(errA)
-    doAsyncThingB(b, function(errB, c) {
-      if (errB) return cb(errB)
-      doAsyncThingC(c, function(errC, d) {
-        if (errC) return cb(errC)
-        doAsyncThingD(d, function(errD, e) {
-          if (errD) return cb(errD)
-          doAsyncThingE(e, function(errE, f) {
-            if (errE) return cb(errE)
-            cb(null, f)
-          })
-        })
-      })
-    })
-  })
-}
-```
+programs written with rubico follow a [functional style](https://en.wikipedia.org/wiki/Tacit_programming), otherwise known as _data last_.
 
-To stay within maximum line lengths, we created
-[Promises](https://developer.mozilla.org/en-US/docs/Mozilla/JavaScript_code_modules/Promise.jsm/Promise)
-
-Then began the chains of `then`
-```javascript
-const doAsyncThings = a => doAsyncThingA(a)
-  .then(b => doAsyncThingB(b))
-  .then(c => doAsyncThingC(c))
-  .then(d => doAsyncThingD(d))
-  .then(e => doAsyncThingE(e))
-```
-
-This was fine until we needed more variables in scope
-
-[async/await](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function), the latest in asynchrony
-```javascript
-const doAsyncThings = async a => {
-  const b = await doAsyncThingA(a)
-  const c = await doAsyncThingB(b)
-  const d = await doAsyncThingC(c)
-  const e = await doAsyncThingD(d)
-  const f = await doAsyncThingE(e)
-  return f
-}
-```
-
-Perhaps we didn't really need all those variables in scope
-```javascript
-import { pipe } from 'rubico'
-
-// a => f
-const doAsyncThings = pipe([
-  doAsyncThingA, // a => b
-  doAsyncThingB, // b => c
-  doAsyncThingC, // c => d
-  doAsyncThingD, // d => e
-  doAsyncThingE, // e => f
-])
-```
-
-rubico resolves on three promises:
-1. simplify asynchronous programming in JavaScript
-2. enable functional programming in JavaScript
-3. simplify transducers in JavaScript
-
-programs written with rubico follow a [point-free style](https://en.wikipedia.org/wiki/Tacit_programming), otherwise known as **data last**.
-
-This is _data first_
+This is data first
 ```javascript
 [1, 2, 3, 4, 5].map(number => number * 2) // => [2, 4, 6, 8, 10]
 ```
 
-This is **data last**
+This is _data last_
 ```javascript
-const { map } = require('rubico')
 map(number => number * 2)([1, 2, 3, 4, 5]) // => [2, 4, 6, 8, 10]
 ```
 
 Data last saves you brain power when you name things
 ```javascript
 const xyz = async x => {
-  const y = await foo(x)
-  const z = await bar(y)
-  const w = await baz(z)
-  return w
+  const resultOfFoo = await foo(x)
+  const resultOfBar = await bar(resultOfFoo)
+  const resultOfBaz = await baz(resultOfBar)
+  return resultOfBaz
 } // data first
 
-const { pipe } = require('rubico')
 const xyz = pipe([foo, bar, baz]) // data last
 ```
 
@@ -134,7 +164,12 @@ import {
 } from 'https://deno.land/x/rubico/rubico.js'
 ```
 
-browser quick start
+browser script
+```html
+<script src="https://unpkg.com/rubico/index.js" crossorigin></script>
+```
+
+browser module
 ```html
 <!DOCTYPE html>
 <html lang="en">
@@ -159,67 +194,6 @@ import {
 
 ### System Requirements
  * minimum node version: 10.3
-
-# Examples
-The following examples compare promise chains, async/await, and rubico
-
-### Make a request
-```javascript
-// promise chains
-fetch('https://jsonplaceholder.typicode.com/todos/1')
-  .then(res => res.json())
-  .then(console.log) // > {...}
-
-// async/await
-void (async () => {
-  const res = await fetch('https://jsonplaceholder.typicode.com/todos/1')
-  const data = await res.json()
-  console.log(data) // > {...}
-})()
-
-// rubico
-import { pipe } from 'rubico.js'
-
-pipe([
-  fetch,
-  res => res.json(),
-  console.log, // > {...}
-])('https://jsonplaceholder.typicode.com/todos/1')
-```
-
-### Make multiple requests
-```javascript
-const todoIDs = [1, 2, 3, 4, 5]
-
-// promise chains
-Promise.resolve(todoIDs.filter(id => id <= 3))
-  .then(filtered => Promise.all(filtered.map(
-    id => `https://jsonplaceholder.typicode.com/todos/${id}`
-  )))
-  .then(urls => Promise.all(urls.map(fetch)))
-  .then(responses => Promise.all(responses.map(res => res.json())))
-  .then(data => data.map(x => console.log(x))) // > {...} {...} {...}
-
-// async/await
-void (async () => {
-  const filtered = todoIDs.filter(id => id <= 3)
-  const urls = await Promise.all(filtered.map(id => `https://jsonplaceholder.typicode.com/todos/${id}`))
-  const responses = await Promise.all(urls.map(fetch))
-  const data = await Promise.all(responses.map(res => res.json()))
-  data.map(x => console.log(x)) // > {...} {...} {...}
-})()
-
-// rubico
-import { pipe, map, filter } from 'rubico.js'
-
-pipe([
-  filter(id => id <= 3),
-  map(id => `https://jsonplaceholder.typicode.com/todos/${id}`),
-  map(fetch),
-  map(res => res.json()),
-  map(console.log), // > {...} {...} {...}
-])(todoIDs)
-```
 
 # Documentation
 rubico aims to hit the sweet spot between expressivity and interface surface area.
@@ -269,10 +243,10 @@ All higher order functions accept sync or async functions; if all provided funct
  * [gte](#gte) [parallel] - left >= right?
  * [lte](#lte) [parallel] - left <= right?
 
-# property + index access
+## property + index access
  * [get](#get) - access a value by path or index
 
-# data composition
+## data composition
  * [pick](#pick) - only allow provided properties
    * `pick.range` - only allow provided range [todo](https://github.com/a-synchronous/rubico/issues/13)
  * [omit](#omit) - exclude provided properties
@@ -305,6 +279,8 @@ pipe([
   x => x + 'world',
 ])('hello') // => Promise { 'hello world' }
 ```
+
+[back to documentation](#documentation)
 
 ## fork
 parallelizes functions with data, retaining functions' type and shape
@@ -352,6 +328,8 @@ executes functions with data in series, retaining functions' type and shape
 y = fork.series(functions)(x)
 ```
 
+[back to documentation](#documentation)
+
 ## assign
 parallelizes functions with data, merging output into data
 ```javascript
@@ -385,6 +363,8 @@ assign({
   name: () => 'not Ed',
 })({ name: 'Ed' }) // => { name: 'not Ed' }
 ```
+
+[back to documentation](#documentation)
 
 ## tap
 calls a function with data, returning data
@@ -432,6 +412,8 @@ reduce(
 )([1, 2, 3, 4, 5]) // => [1, 2, 3, 4, 5]
 ```
 
+[back to documentation](#documentation)
+
 ## tryCatch
 tries a function with data, catches with another function
 ```javascript
@@ -473,6 +455,8 @@ tryCatch(
   onError,
 )('hello') // => Promise { 'hello is invalid: goodbye' }
 ```
+
+[back to documentation](#documentation)
 
 ## switchCase
 an if, else if, else construct for functions
@@ -518,6 +502,8 @@ switchCase([
   () => 'even',
 ])(1) // => Promise { 'odd' }
 ```
+
+[back to documentation](#documentation)
 
 ## map
 applies a function to each element of data in parallel, retaining data type and shape
@@ -611,6 +597,8 @@ Apply a function to every element of data in series with index and reference to 
  = map.seriesWithIndex(f)(x); yi = f(xi, i, x)
 ```
 
+[back to documentation](#documentation)
+
 ## filter
 filters elements out of data in parallel based on provided predicate
 ```javascript
@@ -686,6 +674,8 @@ Filter, but with each predicate called with index and reference to data
 y = filter.withIndex(f)(x); yi = f(xi, i, x)
 ```
 
+[back to documentation](#documentation)
+
 ## reduce
 transforms data in series according to provided reducing function and initial value
 ```javascript
@@ -742,6 +732,8 @@ reduce(
   concat, [],
 )({ a: 1, b: 1, c: 1, d: 1, e: 1 }) // => [1, 2, 3, 4, 5]
 ```
+
+[back to documentation](#documentation)
 
 ## transform
 transforms data in series according to provided transducer and initial value
@@ -803,6 +795,8 @@ transform(map(
 // => Promise { process.stdout }
 ```
 
+[back to documentation](#documentation)
+
 ## any
 applies a function to each element of data parallel, returns true if any evaluations truthy
 ```javascript
@@ -838,6 +832,8 @@ any(
 )({ b: 2, d: 4 }) // => false
 ```
 
+[back to documentation](#documentation)
+
 ## all
 applies a function to each element of data in parallel, returns true if all evaluations truthy
 ```javascript
@@ -872,6 +868,8 @@ all(
   isOdd,
 )({ a: 1, c: 3 }) // => true
 ```
+
+[back to documentation](#documentation)
 
 ## and
 applies each function of functions in parallel to data, returns true if all evaluations truthy
@@ -913,6 +911,8 @@ and([
 ])(2) // => false
 ```
 
+[back to documentation](#documentation)
+
 ## or
 applies each function of functions in parallel to data, returns true if any evaluations truthy
 ```javascript
@@ -953,6 +953,8 @@ or([
 ])(6) // => false
 ```
 
+[back to documentation](#documentation)
+
 ## not
 applies a function to data, logically inverting the result
 ```javascript
@@ -985,6 +987,8 @@ not(
   isOdd,
 )(3) // => false
 ```
+
+[back to documentation](#documentation)
 
 ## eq
 tests left strictly equals right
@@ -1037,6 +1041,8 @@ eq(1, 1)() // => true
 eq(0, 1)() // => false
 ```
 
+[back to documentation](#documentation)
+
 ## gt
 tests left greater than right
 ```javascript
@@ -1079,6 +1085,8 @@ gt(2, 1)() // => true
 gt(1, 1)() // => false
 gt(0, 1)() // => false
 ```
+
+[back to documentation](#documentation)
 
 ## lt
 tests left less than right
@@ -1123,6 +1131,8 @@ lt(1, 1)() // => false
 lt(2, 1)() // => false
 ```
 
+[back to documentation](#documentation)
+
 ## gte
 tests left greater than or equal right
 ```javascript
@@ -1165,6 +1175,8 @@ gte(2, 1)() // => true
 gte(1, 1)() // => true
 gte(0, 1)() // => false
 ```
+
+[back to documentation](#documentation)
 
 ## lte
 tests left less than or equal right
@@ -1209,6 +1221,8 @@ lte(1, 1)() // => true
 lte(2, 1)() // => false
 ```
 
+[back to documentation](#documentation)
+
 ## get
 accesses a property by path
 ```javascript
@@ -1244,6 +1258,8 @@ get([0, 'user', 'id'])([
 ]) // => '1'
 ```
 
+[back to documentation](#documentation)
+
 ## pick
 constructs a new object from data composed of the provided properties
 ```javascript
@@ -1261,6 +1277,8 @@ pick(['a', 'b'])({ a: 1, b: 2, c: 3 }) // => { a: 1, b: 2 }
 
 pick(['d'])({ a: 1, b: 2, c: 3 }) // => {}
 ```
+
+[back to documentation](#documentation)
 
 ## omit
 constructs a new object from data without the provided properties
@@ -1381,7 +1399,7 @@ const squaredOdds = pipe([isOdd, square])
 squaredOdds([1, 2, 3, 4, 5]) // => [1, 9, 25]
 ```
 
-# More Examples
+# Examples
 ### A webserver using map, transform, and https://deno.land/std/http serve
 ```javascript
 import { serve } from "https://deno.land/std/http/server.ts";
