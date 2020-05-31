@@ -96,6 +96,10 @@ import {
 
 ### System Requirements
  * minimum node version: 10.3
+ * minimum Chrome version: 63
+ * minimum Firefox version: 57
+ * minimum Edge version: 79
+ * minimum Safari version: 11.1
 
 # Documentation
 rubico aims to hit the sweet spot between expressivity and interface surface area.
