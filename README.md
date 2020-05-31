@@ -1,117 +1,21 @@
 # rubico
 🏞 a shallow river in northeastern Italy, just south of Ravenna
 
-[a]synchronous functional syntax; the [a] is for async/sync [agnostic](https://en.wikipedia.org/wiki/Agnostic_(data))
+[a]synchronous functional syntax; the [a] is for optionally asynchronous
 
 ## Motivation
-You are suddenly dropped into a world where all people write code in assembly.
+> I created this library because I got tired of repeating myself. At a certain point in my career, I felt unhappy with my style, and knew something needed to change. This library is the product of my work on that front. - richytong
 
-![Language Hierarchy](https://www.webopedia.com/imagesvr_ce/4096/high-level-language.gif)
+The core motivation for rubico lies at the intersection of the following three principles
+ * [asynchronous code should be simple](https://dev.to/richytong/rubico-a-synchrnous-functional-syntax-motivation-20hf)
+ * functional style should not care about async
+ * functional transformations should be composable, performant, and simple to express
 
-There is no "High Level Language", only "Assembly Language".
-There is no C, just ASM.  There are no variables, only registers.
-You are in charge of managing all memory in your programs: `mov`ing data from register to register, `push`ing and `pop`ing data on the hardware supported stack.
-
-How would you write a webserver, or a database? How long would that take?
-How much longer would it take you to do whatever it is that you are currently doing?
-
-We need not stay here any longer.
-
-..._interdimensional warp_...
-
-Welcome back to reality, where the world is rife with [programming languages above assembly](https://insights.stackoverflow.com/survey/2020#most-popular-technologies)
-
-How did this come to be? Why would anyone not want to spend their day to day in assembly?
-According to [an answer thread on stack overflow](https://stackoverflow.com/questions/2684364/why-arent-programs-written-in-assembly-more-often/2684384),
-
-> ASM has poor legibility and isn't really maintainable compared to higher-level languages.
-
-> [Assembly] takes more code to do the same thing as in a high-level languge, and there is a direct correlation between lines of code and bugs.
-
-Another take from [wikipedia](https://en.wikipedia.org/wiki/High-level_programming_language)
-
-> In contrast to low-level programming languages, [high-level programming languages] may use natural language elements, be easier to use, or may automate (or even hide entirely) significant areas of computing systems (e.g. memory management), making the process of developing a program simpler and more understandable than when using a lower-level language.
-
-Perhaps the abundance of higher level languages comes down to [readability versus performance](https://stackoverflow.com/questions/183201/should-a-developer-aim-for-readability-or-performance-first)
-
-> First code for correctness, then for clarity (the two are often connected, of course!). Finally, and only if you have real empirical evidence that you actually need to, you can look at optimizing.
-
-> IMO the obvious readable version first, until performance is measured and a faster version is required.
-
-> I would go for **readability** first.
-
-Great, looks like people are for readability, so where does that leave us? And what does any of this have to do with rubico?
-
-Consider these two samples of JavaScript code. Both execute an asynchronous function for every element of an array
-```javascript
-Promise.all(array.map(doAsyncThing)) // vanilla JavaScript
-
-map(doAsyncThing)(array) // rubico
-```
-
-It looks like you can write a little less to do the same thing with rubico.
-Is the rubico version more readable? I'd say it's up for debate.
-
-What if we wanted to do multiple asynchronous things in parallel for every item of the array?
-```javascript
-Promise.all([
-  Promise.all(array.map(doAsyncThingA)),
-  Promise.all(array.map(doAsyncThingB)),
-  Promise.all(array.map(doAsyncThingC)),
-]) // vanilla JavaScript
-
-map(fork([
-  doAsyncThingA,
-  doAsyncThingB,
-  doAsyncThingC,
-]))(array) // rubico
-```
-
-It looks like vanilla JavaScript has four more `Promise.all` statements, and two more `map` keywords.
-rubico, on the other hand, has one `map` and one `fork`. Simpler? Hold your horses.
-
-What if we now want to do another async thing per item of each of the responses?
-```javascript
-Promise.all([
-  Promise.all(array.map(doAsyncThingA).then(
-    arrayA => Promise.all(arrayA.map(doAsyncThingAA))
-  )),
-  Promise.all(array.map(doAsyncThingB).then(
-    arrayB => Promise.all(arrayB.map(doAsyncThingBB))
-  )),
-  Promise.all(array.map(doAsyncThingC).then(
-    arrayC => Promise.all(arrayC.map(doAsyncThingCC))
-  )),
-]) // vanilla JavaScript
-
-map(fork([
-  pipe([doAsyncThingA, map(doAsyncThingAA)]),
-  pipe([doAsyncThingB, map(doAsyncThingBB)]),
-  pipe([doAsyncThingC, map(doAsyncThingCC)]),
-]))(array) // rubico
-```
-
-I think it's safe to say that rubico is more expressive here.
-
-Back to assembly. You could compare what rubico does for JavaScript to what C does for assembly.
-
-> In contrast to assembly, C uses natural language elements, is easier to use, and automates (but doesn't hide entirely) memory management.
-C makes the process of developing a program simpler and more understandable than when using assembly.
-
-> In contrast to vanilla JavaScript, rubico automates (hides entirely) the cruft surrounding Promises. rubico makes the process
-of developing a program simpler and more understandable than when using vanilla JavaScript.
-
-I should also mention that when you use rubico, you get the benefits of the
-[functional programming paradigm](https://en.wikipedia.org/wiki/Functional_programming)
-(but not the [confusion](https://stackoverflow.com/questions/44965/what-is-a-monad)) for free.
-
-At your leisure, motivations
-[1](https://www.freecodecamp.org/news/how-and-why-to-use-functional-programming-in-modern-javascript-fda2df86ad1b/),
-[2](https://hackernoon.com/why-functional-programming-matters-c647f56a7691),
-and [3](https://www.google.com/search?q=why+functional+programming+javascript&oq=why+functional+programming+javascript)
-for functional programming.
+When you use this library, you obtain the freedom that comes only from having those three points fulfilled. Just as a compiler would optimize the performance of the code it compiles, each method in this library strives to optimize the JavaScript it exports. The result is something you may enjoy.
 
 ## Introduction
+[Tour](https://github.com/a-synchronous/rubico/issues/14)
+
 [Installation](#installation)
 
 [Documentation](#documentation)
@@ -120,12 +24,7 @@ for functional programming.
 
 [Examples](#examples)
 
-rubico resolves the `Promise.all` of three Promises
-1. simplify asynchronous programming
-2. enable functional programming
-3. free transducers
-
-programs written with rubico follow a [functional style](https://en.wikipedia.org/wiki/Tacit_programming), otherwise known as _data last_.
+programs written with rubico follow a [point-free style](https://en.wikipedia.org/wiki/Tacit_programming), otherwise known as _data last_.
 
 This is data first
 ```javascript
@@ -137,16 +36,16 @@ This is _data last_
 map(number => number * 2)([1, 2, 3, 4, 5]) // => [2, 4, 6, 8, 10]
 ```
 
-Data last saves you brain power when you name things
+Data last enables modularity by function composition. This is a powerful concept for code reuse.
 ```javascript
-const xyz = async x => {
-  const resultOfFoo = await foo(x)
-  const resultOfBar = await bar(resultOfFoo)
-  const resultOfBaz = await baz(resultOfBar)
-  return resultOfBaz
-} // data first
+const square = x => x ** 2
 
-const xyz = pipe([foo, bar, baz]) // data last
+const isOdd = x => x % 2 === 1
+
+const squaredOdds = pipe([
+  filter(isOdd),
+  map(square),
+])
 ```
 
 # Installation
