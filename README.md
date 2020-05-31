@@ -5,9 +5,9 @@
 
 ## Motivation
 A note from the author
-> At a certain point in my career, I felt unhappy with my own style, and created this library in the pursuit of something better. Many iterations since then, the library has grown into something I personally enjoy using, and continue to use to this day. I would now like to share that enjoyment with you.
+> At a certain point in my career, I grew frustrated with the entanglement of my own code. While looking for something better, I found functional programming. I was excited by the idea of functional composition, but disillusioned by the complex hierarchy of effectful types. I started this project to capitalize on the prior while rebuking the latter. Many iterations since then, the library has grown into something I personally enjoy using, and continue to use to this day.
 
-The core motivation for rubico lies at the intersection of the following three principles
+rubico's value resides at the intersection of the following principles:
  * [asynchronous code should be simple](https://dev.to/richytong/rubico-a-synchrnous-functional-syntax-motivation-20hf)
  * functional style should not care about async
  * functional transformations should be composable, performant, and simple to express
