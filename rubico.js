@@ -1,14 +1,7 @@
-'use strict'
-
-/* design principles
- *
- * rubico is a module, not a utility library
- * functional code should not care about async
- * exported methods are time and space optimal
- * memory used by exported methods is properly garbage collected
- * no special types; use built-in types
- * no currying; write new functions
- * avoid variadic functions; use lists
+/* rubico v1.0.5
+ * https://github.com/a-synchronous/rubico
+ * (c) 2019 Richard Tong
+ * rubico may be freely distributed under the ISC license.
  */
 
 const isDefined = x => x !== undefined && x !== null
@@ -622,7 +615,7 @@ filter.withIndex = fn => {
 }
 
 const reduceIterable = (fn, x0, x) => {
-  const iter = x[Symbol.iterator].bind(x)()
+  const iter = x[Symbol.iterator].call(x)
   let cursor = iter.next()
   if (cursor.done) {
     throw new TypeError('reduce(...)(x); x cannot be empty')
@@ -642,7 +635,7 @@ const reduceIterable = (fn, x0, x) => {
 }
 
 const reduceAsyncIterable = async (fn, x0, x) => {
-  const iter = x[Symbol.asyncIterator].bind(x)()
+  const iter = x[Symbol.asyncIterator].call(x)
   let cursor = await iter.next()
   if (cursor.done) {
     throw new TypeError('reduce(...)(x); x cannot be empty')
