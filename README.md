@@ -5,7 +5,7 @@
 
 ## Motivation
 A note from the author
-> At a certain point in my career, I felt unhappy with the way I wrote code. At the time, I knew something needed to change, but I didn't know exactly what. This library is the result of my ongoing journey that is the commitment to code style, system quality, and consequently, my love for programming.
+> At a certain point in my career, I felt unhappy with the way I wrote code. At the time, I knew something needed to change, but I didn't know exactly what. This library is the result of my ongoing journey towards style, quality, and consequently, a love for programming.
 
 The core motivation for rubico lies at the intersection of the following three principles
  * [asynchronous code should be simple](https://dev.to/richytong/rubico-a-synchrnous-functional-syntax-motivation-20hf)
