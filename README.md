@@ -5,9 +5,7 @@
 
 ## Motivation
 A note from the author
-> I created this library because I got tired of repeating myself. At a certain point in my career, I felt unhappy with my style, and knew something needed to change.
->
-> This library is the product of my work on that front.
+> I created this library because I got tired of repeating myself. At a certain point in my career, I felt unhappy with my style, and I knew something needed to change. This library is the product of my work on that front.
 
 The core motivation for rubico lies at the intersection of the following three principles
  * [asynchronous code should be simple](https://dev.to/richytong/rubico-a-synchrnous-functional-syntax-motivation-20hf)
