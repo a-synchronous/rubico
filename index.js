@@ -77,14 +77,18 @@ const range = (start, end) => Array.from({ length: end - start }, (x, i) => i + 
 
 const arrayOf = (item, length) => Array.from({ length }, () => item)
 
-const _chain = (fns, args, step, i, end) => {
-  let y = fns[i](...args)
-  while (i !== end) {
-    y = isPromise(y) ? y.then(fns[i + step]) : fns[i + step](y)
-    i += step
+const _chain = (fnsIter, args) => {
+  const { value: f0 } = fnsIter.next()
+  let y = f0(...args)
+  for (const fn of fnsIter) {
+    y = isPromise(y) ? y.then(fn) : fn(y)
   }
   return y
 }
+
+const reverseArrayIter = arr => (function*() {
+  for (let i = arr.length - 1; i >= 0; i--) yield arr[i]
+})()
 
 const pipe = fns => {
   if (!isArray(fns)) {
@@ -99,8 +103,9 @@ const pipe = fns => {
   }
   if (fns.length === 0) return x => x
   return (...args) => (isFunction(args[0])
-    ? _chain(fns, args, -1, fns.length - 1, 0)
-    : _chain(fns, args, 1, 0, fns.length - 1))
+    ? _chain(reverseArrayIter(fns), args)
+    : _chain(fns[Symbol.iterator].call(fns), args)
+  )
 }
 
 const arrayFork = (fns, x) => {
