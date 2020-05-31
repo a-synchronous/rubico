@@ -632,7 +632,7 @@ filter.withIndex = fn => {
 }
 
 const reduceIterable = (fn, x0, x) => {
-  const iter = x[Symbol.iterator].bind(x)()
+  const iter = x[Symbol.iterator].call(x)
   let cursor = iter.next()
   if (cursor.done) {
     throw new TypeError('reduce(...)(x); x cannot be empty')
@@ -652,7 +652,7 @@ const reduceIterable = (fn, x0, x) => {
 }
 
 const reduceAsyncIterable = async (fn, x0, x) => {
-  const iter = x[Symbol.asyncIterator].bind(x)()
+  const iter = x[Symbol.asyncIterator].call(x)
   let cursor = await iter.next()
   if (cursor.done) {
     throw new TypeError('reduce(...)(x); x cannot be empty')
