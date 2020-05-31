@@ -1234,9 +1234,7 @@ transducer = reducer => (y, xi) => reducer(doSomethingWith(y, xi))
 ```
 The transducer above, when passed a reducer, returns another reducer that will do something with `y` and `xi`, then pass it to the input `reducer`
 
-We can create a chained reducer by passing a reducer to a chain of transducers
-
-Imagine dominos falling over. The reducer you pass to a chain of transducers is called last. Because of this implementation detail,
+We can create a chained reducer by passing a reducer to a chain of transducers. Imagine dominos falling over. The reducer you pass to a chain of transducers is called last. Because of this implementation detail,
 
 > if `x` is a function, pipe chains `functions` from right to left
 
