@@ -17,9 +17,9 @@ When you use this library, you obtain the freedom that comes only from having th
 ## Introduction
 Welcome! To get started, please [take the tour (todo)](https://github.com/a-synchronous/rubico/issues/14). Then, give the [docs](#documentation) a glance. If you would like further reference after that, please check out the [examples](#examples).
 
-Programs written with rubico follow a [point-free style](https://en.wikipedia.org/wiki/Tacit_programming), otherwise known as _data last_.
-
 ...temporary tour...
+
+Programs written with rubico follow a [point-free style](https://en.wikipedia.org/wiki/Tacit_programming), otherwise known as _data last_.
 
 This is data first
 ```javascript
