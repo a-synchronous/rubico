@@ -19,6 +19,8 @@ Welcome! To get started, please [take the tour (todo)](https://github.com/a-sync
 
 Programs written with rubico follow a [point-free style](https://en.wikipedia.org/wiki/Tacit_programming), otherwise known as _data last_.
 
+...temporary tour...
+
 This is data first
 ```javascript
 [1, 2, 3, 4, 5].map(number => number * 2) // => [2, 4, 6, 8, 10]
