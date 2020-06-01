@@ -664,22 +664,15 @@ const reduceIterable = (fn, possiblyY0, x) => {
   return y
 }
 
-const reduceAsyncIterable = async (fn, x0, x) => {
-  const iter = x[Symbol.asyncIterator].call(x)
-  let cursor = await iter.next()
-  if (cursor.done) {
+const reduceAsyncIterable = async (fn, possiblyY0, x) => {
+  const iter = x[Symbol.asyncIterator]()
+  const y0 = isUndefined(possiblyY0) ? (await iter.next()).value : possiblyY0
+  if (isUndefined(y0)) {
     throw new TypeError('reduce(...)(x); x cannot be empty')
   }
-  let y = !isUndefined(x0) ? await fn(x0, cursor.value) : await (async () => {
-    const x0 = cursor.value
-    cursor = await iter.next()
-    return cursor.done ? x0 : fn(x0, cursor.value)
-  })()
-  cursor = await iter.next()
-  while (!cursor.done) {
-    const { value } = cursor
-    const res = await Promise.all([fn(y, value), iter.next()])
-    y = res[0]; cursor = res[1]
+  let y = await fn(y0, (await iter.next()).value)
+  for await (const xi of iter) {
+    y = await fn(y, xi)
   }
   return y
 }
