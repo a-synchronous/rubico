@@ -636,22 +636,30 @@ filter.withIndex = fn => {
   }
 }
 
-const reduceIterable = (fn, x0, x) => {
-  const iter = x[Symbol.iterator].call(x)
-  let cursor = iter.next()
-  if (cursor.done) {
+const asyncReduceIterator = async (fn, y0, iter) => {
+  let y = y0
+  for (const xi of iter) {
+    y = await fn(y, xi)
+  }
+  return y
+}
+
+// https://stackoverflow.com/questions/62112863/what-are-the-performance-implications-if-any-of-chaining-too-many-thens-on
+const reduceIterable = (fn, possiblyY0, x) => {
+  const iter = x[Symbol.iterator]()
+  const y0 = isUndefined(possiblyY0) ? iter.next().value : possiblyY0
+  if (isUndefined(y0)) {
     throw new TypeError('reduce(...)(x); x cannot be empty')
   }
-  let y = !isUndefined(x0) ? fn(x0, cursor.value) : (() => {
-    const x0 = cursor.value
-    cursor = iter.next()
-    return cursor.done ? x0 : fn(x0, cursor.value)
-  })()
-  cursor = iter.next()
-  while (!cursor.done) {
-    const { value } = cursor
-    y = isPromise(y) ? y.then(res => fn(res, value)) : fn(y, value)
-    cursor = iter.next()
+  let y = fn(y0, iter.next().value)
+  if (isPromise(y)) {
+    return y.then(res => asyncReduceIterator(fn, res, iter))
+  }
+  for (const xi of iter) {
+    y = fn(y, xi)
+    if (isPromise(y)) {
+      return y.then(res => asyncReduceIterator(fn, res, iter))
+    }
   }
   return y
 }
