@@ -48,7 +48,7 @@ const squaredOdds = pipe([
   map(square),
 ])
 ```
-`squaredOdds` as a composition of `isOdd` and `square`.
+`squaredOdds` is a composition of `isOdd` and `square`.
 
 # Installation
 with `npm`
