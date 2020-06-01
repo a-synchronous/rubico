@@ -25,7 +25,7 @@ When you use this library, you obtain the freedom that comes only from having th
 
 [Examples](#examples)
 
-programs written with rubico follow a [point-free style](https://en.wikipedia.org/wiki/Tacit_programming), otherwise known as _data last_.
+Programs written with rubico follow a [point-free style](https://en.wikipedia.org/wiki/Tacit_programming), otherwise known as _data last_.
 
 This is data first
 ```javascript
@@ -48,6 +48,7 @@ const squaredOdds = pipe([
   map(square),
 ])
 ```
+`squaredOdds` as a composition of `isOdd` and `square`.
 
 # Installation
 with `npm`
