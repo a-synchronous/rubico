@@ -1358,4 +1358,4 @@ transform(map(onRequest), null)(s)
 ```
 
 # License
-rubico is [ISC Licensed](https://github.com/a-synchronous/rubico/blob/master/LICENSE).
+rubico is [MIT Licensed](https://github.com/a-synchronous/rubico/blob/master/LICENSE).
