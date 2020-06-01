@@ -1356,3 +1356,6 @@ const s = serve({ port: 8001 })
 console.log('http://localhost:8001/')
 transform(map(onRequest), null)(s)
 ```
+
+# License
+rubico is [ISC Licensed](https://github.com/a-synchronous/rubico/blob/master/LICENSE).
