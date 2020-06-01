@@ -1,4 +1,4 @@
-/* rubico v1.0.5
+/* rubico v1.1.7
  * https://github.com/a-synchronous/rubico
  * (c) 2019 Richard Tong
  * rubico may be freely distributed under the ISC license.
