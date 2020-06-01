@@ -15,7 +15,7 @@ rubico's value resides at the intersection of the following principles:
 When you use this library, you obtain the freedom that comes only from having those three points fulfilled. Just as a compiler would optimize the performance of the code it compiles, each method in this library strives to optimize the JavaScript it exports. The result is something you may enjoy.
 
 ## Introduction
-[Tour](https://github.com/a-synchronous/rubico/issues/14)
+[Tour (TODO)](https://github.com/a-synchronous/rubico/issues/14)
 
 [Installation](#installation)
 
