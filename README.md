@@ -14,35 +14,8 @@ rubico's value resides at the intersection of the following principles:
 
 When you use this library, you obtain the freedom that comes only from having those three points fulfilled. Just as a compiler would optimize the performance of the code it compiles, each method in this library strives to optimize the JavaScript it exports. The result is something you may enjoy.
 
-## Introduction
-Welcome! To get started, please [take the tour (todo)](https://github.com/a-synchronous/rubico/issues/14). Then, give the [docs](#documentation) a glance. If you would like further reference after that, please check out the [examples](#examples).
-
-...temporary tour...
-
-Programs written with rubico follow a [point-free style](https://en.wikipedia.org/wiki/Tacit_programming), otherwise known as _data last_.
-
-This is data first
-```javascript
-[1, 2, 3, 4, 5].map(number => number * 2) // => [2, 4, 6, 8, 10]
-```
-
-This is _data last_
-```javascript
-map(number => number * 2)([1, 2, 3, 4, 5]) // => [2, 4, 6, 8, 10]
-```
-
-Data last enables modularity by function composition. This is a powerful concept for code reuse.
-```javascript
-const square = x => x ** 2
-
-const isOdd = x => x % 2 === 1
-
-const squaredOdds = pipe([
-  filter(isOdd),
-  map(square),
-])
-```
-`squaredOdds` is a composition of `isOdd` and `square`.
+## [Introduction](https://tour.rubico.land)
+Welcome! To get started, please [take the tour](https://tour.rubico.land). Then, give the [docs](#documentation) a glance. If you would like further reference after that, please check out the [examples](#examples).
 
 # Installation
 with `npm`
