@@ -16,9 +16,9 @@ When you use this library, you obtain the freedom that comes only from having th
 
 # Introduction
 Welcome! To get started,
- 1. take the [tour](https://tour.rubico.land)
- 2. read the [docs](#documentation) header
- 3. check out some [examples](#examples)
+ 1. [take the tour](https://tour.rubico.land)
+ 2. [read the docs](#documentation) (just the header)
+ 3. check out [some examples](#examples)
 
 # Installation
 with `npm`
