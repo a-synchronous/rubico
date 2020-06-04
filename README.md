@@ -14,8 +14,11 @@ rubico's value resides at the intersection of the following principles:
 
 When you use this library, you obtain the freedom that comes only from having those three points fulfilled. Just as a compiler would optimize the performance of the code it compiles, each method in this library strives to optimize the JavaScript it exports. The result is something you may enjoy.
 
-# [Introduction](https://tour.rubico.land)
-Welcome! To get started, please [take the tour](https://tour.rubico.land). Then, give the [docs](#documentation) a glance. If you would like further reference after that, please check out the [examples](#examples).
+# Introduction
+Welcome! To get started,
+ 1. take the [tour](https://tour.rubico.land)
+ 2. read the [docs](#documentation) header
+ 3. check out some [examples](#examples)
 
 # Installation
 with `npm`
