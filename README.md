@@ -3,7 +3,7 @@
 
 [a]synchronous functional syntax; the [a] is for optionally asynchronous
 
-## Motivation
+# Motivation
 A note from the author
 > At a certain point in my career, I grew frustrated with the entanglement of my own code. While looking for something better, I found functional programming. I was excited by the idea of functional composition, but disillusioned by the complex hierarchy of effectful types. I started rubico to capitalize on the prior while rebuking the latter. Many iterations since then, the library has grown into something I personally enjoy using, and continue to use to this day.
 
@@ -14,7 +14,7 @@ rubico's value resides at the intersection of the following principles:
 
 When you use this library, you obtain the freedom that comes only from having those three points fulfilled. Just as a compiler would optimize the performance of the code it compiles, each method in this library strives to optimize the JavaScript it exports. The result is something you may enjoy.
 
-## [Introduction](https://tour.rubico.land)
+# [Introduction](https://tour.rubico.land)
 Welcome! To get started, please [take the tour](https://tour.rubico.land). Then, give the [docs](#documentation) a glance. If you would like further reference after that, please check out the [examples](#examples).
 
 # Installation
