@@ -4,6 +4,4 @@ Your feedback and contributions are welcome. rubico is still young, and no where
 
 Pull requests should provide some basic context and link the relevant issue[s]. My intention is that progress on the library follow an issue -> pull request format. See this [pull request](https://github.com/a-synchronous/rubico/pull/12) for an example.
 
-`index.js` is the single source of truth. I recommend you fork and work off your own local copy of the library.
-
 You can start contributing by checking out the [help wanted](https://github.com/a-synchronous/rubico/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) tag.
