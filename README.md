@@ -74,13 +74,13 @@ import {
 
 # Documentation
 rubico aims to hit the sweet spot between expressivity and interface surface area.
-There are 23 functions at the moment; this number is not expected to go up much more or at all.
-Instead, some methods will have property functions that represent the same signature (i.e. `map` vs `map.series`)
-but exhibit differences in behavior (i.e. `map` executes in parallel while `map.series` executes in series).
+There are 23 functions at the moment; this number could go up with your help.
+Additionally, some methods will have property functions that represent the same signature (i.e. `map` vs `map.series`)
+but exhibit differences in asynchronous behavior (i.e. `map` executes in parallel while `map.series` executes in series).
 
-**[series]** and **[parallel]** are tags to denote the asynchronous behavior of methods that accept multiple functions.
- * [series]: execute functions one at a time. If order is not implied, it is left to the implementation. (i.e. iterating an `Object`)
- * [parallel]: execute functions in parallel.
+**series** and **parallel** are tags to denote the asynchronous behavior of methods that accept multiple functions.
+ * **series**: execute functions one at a time. If order is not implied, it is left to the implementation. (i.e. iterating an `Object`)
+ * **parallel**: execute functions in parallel.
 
 All higher order functions accept sync or async functions; if all provided functions are synchronous, the entire execution is synchronous.
 
