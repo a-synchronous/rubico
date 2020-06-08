@@ -1,6 +1,7 @@
 # Contributing
 
 Your feedback and contributions are welcome. rubico is still young, and no where close to how great it could be. There are 23 functions; I challenge you to come up with the 24th. If you have a suggestion, please raise an issue. Prior to that, make sure to search through the issues first in case your suggestion has been made already.
+If you decide to work on an issue, please announce on the issue thread that you will work on it.
 
 Enhancements should follow the principles of the library:
  * asynchronous code should be simple
