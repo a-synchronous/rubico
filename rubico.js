@@ -60,14 +60,31 @@ const range = (start, end) => Array.from({ length: end - start }, (x, i) => i + 
 
 const arrayOf = (item, length) => Array.from({ length }, () => item)
 
-const _chain = (fns, args, step, i, end) => {
-  let y = fns[i](...args)
-  while (i !== end) {
-    y = isPromise(y) ? y.then(fns[i + step]) : fns[i + step](y)
-    i += step
+const curryFunction = (fn, ...args) => {
+  if (args.length >= fn.length) return fn(...args)
+  return (...moreArgs) => curryFunction(fn, ...args.concat(moreArgs))
+}
+
+// TODO: convert this to special curry https://github.com/a-synchronous/rubico/issues/18
+const curry = fn => {
+  if (!isFunction(fn)) {
+    throw new TypeError(`${type(fn)} is not a function`)
+  }
+  return (...args) => curryFunction(fn, ...args)
+}
+
+const _chain = (fnsIter, args) => {
+  const { value: f0 } = fnsIter.next()
+  let y = f0(...args)
+  for (const fn of fnsIter) {
+    y = isPromise(y) ? y.then(fn) : fn(y)
   }
   return y
 }
+
+const reverseArrayIter = arr => (function*() {
+  for (let i = arr.length - 1; i >= 0; i--) yield arr[i]
+})()
 
 const pipe = fns => {
   if (!isArray(fns)) {
@@ -82,8 +99,9 @@ const pipe = fns => {
   }
   if (fns.length === 0) return x => x
   return (...args) => (isFunction(args[0])
-    ? _chain(fns, args, -1, fns.length - 1, 0)
-    : _chain(fns, args, 1, 0, fns.length - 1))
+    ? _chain(reverseArrayIter(fns), args)
+    : _chain(fns[Symbol.iterator].call(fns), args)
+  )
 }
 
 const arrayFork = (fns, x) => {
@@ -614,42 +632,43 @@ filter.withIndex = fn => {
   }
 }
 
-const reduceIterable = (fn, x0, x) => {
-  const iter = x[Symbol.iterator].call(x)
-  let cursor = iter.next()
-  if (cursor.done) {
-    throw new TypeError('reduce(...)(x); x cannot be empty')
-  }
-  let y = !isUndefined(x0) ? fn(x0, cursor.value) : (() => {
-    const x0 = cursor.value
-    cursor = iter.next()
-    return cursor.done ? x0 : fn(x0, cursor.value)
-  })()
-  cursor = iter.next()
-  while (!cursor.done) {
-    const { value } = cursor
-    y = isPromise(y) ? y.then(res => fn(res, value)) : fn(y, value)
-    cursor = iter.next()
+const asyncReduceIterator = async (fn, y0, iter) => {
+  let y = y0
+  for (const xi of iter) {
+    y = await fn(y, xi)
   }
   return y
 }
 
-const reduceAsyncIterable = async (fn, x0, x) => {
-  const iter = x[Symbol.asyncIterator].call(x)
-  let cursor = await iter.next()
-  if (cursor.done) {
+// https://stackoverflow.com/questions/62112863/what-are-the-performance-implications-if-any-of-chaining-too-many-thens-on
+const reduceIterable = (fn, possiblyY0, x) => {
+  const iter = x[Symbol.iterator]()
+  const y0 = isUndefined(possiblyY0) ? iter.next().value : possiblyY0
+  if (isUndefined(y0)) {
     throw new TypeError('reduce(...)(x); x cannot be empty')
   }
-  let y = !isUndefined(x0) ? await fn(x0, cursor.value) : await (async () => {
-    const x0 = cursor.value
-    cursor = await iter.next()
-    return cursor.done ? x0 : fn(x0, cursor.value)
-  })()
-  cursor = await iter.next()
-  while (!cursor.done) {
-    const { value } = cursor
-    const res = await Promise.all([fn(y, value), iter.next()])
-    y = res[0]; cursor = res[1]
+  let y = fn(y0, iter.next().value)
+  if (isPromise(y)) {
+    return y.then(res => asyncReduceIterator(fn, res, iter))
+  }
+  for (const xi of iter) {
+    y = fn(y, xi)
+    if (isPromise(y)) {
+      return y.then(res => asyncReduceIterator(fn, res, iter))
+    }
+  }
+  return y
+}
+
+const reduceAsyncIterable = async (fn, possiblyY0, x) => {
+  const iter = x[Symbol.asyncIterator]()
+  const y0 = isUndefined(possiblyY0) ? (await iter.next()).value : possiblyY0
+  if (isUndefined(y0)) {
+    throw new TypeError('reduce(...)(x); x cannot be empty')
+  }
+  let y = await fn(y0, (await iter.next()).value)
+  for await (const xi of iter) {
+    y = await fn(y, xi)
   }
   return y
 }
