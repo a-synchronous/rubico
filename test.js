@@ -163,6 +163,12 @@ describe('rubico', () => {
         new Error('throwing yohihey'),
       )
     })
+    it('catches errors rejected from inner function', async () => {
+      assert.rejects(
+        () => r.pipe([hi, hi, async x => { throw new Error(`throwing ${x}`) }])('yo'),
+        new Error('throwing yohihi'),
+      )
+    })
   })
 
   describe('fork', () => {
