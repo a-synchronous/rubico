@@ -238,6 +238,20 @@ describe('rubico', () => {
         new TypeError('fork(x); x invalid'),
       )
     })
+    it('catches errors thrown from inner function', async () => {
+      const thrower = () => { throw new Error('hey') }
+      assert.throws(
+        () => r.fork([thrower])(1),
+        new Error('hey'),
+      )
+    })
+    it('catches errors rejected from inner function', async () => {
+      const thrower = async () => { throw new Error('hey') }
+      assert.rejects(
+        () => r.fork([thrower])(1),
+        new Error('hey'),
+      )
+    })
   })
 
   describe('fork.series', () => {
