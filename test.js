@@ -4,6 +4,8 @@ const path = require('path')
 const fs = require('fs')
 const r = require('.')
 
+const identity = x => x
+
 const ase = assert.strictEqual
 
 const ade = assert.deepEqual
@@ -149,13 +151,13 @@ describe('rubico', () => {
         new TypeError('pipe(x); x[1] is not a function'),
       )
     })
-    it('handles sync errors good', async () => {
+    it('catches errors thrown from inner function', async () => {
       assert.throws(
         () => r.pipe([hi, hi, x => { throw new Error(`throwing ${x}`) }])('yo'),
         new Error('throwing yohihi'),
       )
     })
-    it('handles async errors good', async () => {
+    it('catches errors rejected from inner function', async () => {
       assert.rejects(
         () => r.pipe([hi, asyncHey, x => { throw new Error(`throwing ${x}`) }])('yo'),
         new Error('throwing yohihey'),
@@ -1167,6 +1169,36 @@ describe('rubico', () => {
       for (const x of makeAsyncIterables()) {
         ase(await r.reduce(asyncMult, 10)(x), 1200)
       }
+    })
+    it('catches errors thrown from inner function', async () => {
+      const thrower = () => { throw new Error('hey') }
+      assert.throws(
+        () => r.reduce(thrower, 0)([1, 2, 3]),
+        new Error('hey'),
+      )
+      const throwerGenerator = function*() {
+        yield 1; yield 2; throw new Error('hey')
+      }
+      const add = (a, b) => a + b
+      assert.throws(
+        () => r.reduce(add, 0)(throwerGenerator()),
+        new Error('hey'),
+      )
+    })
+    it('catches errors rejected from inner function', async () => {
+      const thrower = async () => { throw new Error('hey') }
+      assert.rejects(
+        () => r.reduce(thrower, 0)([1, 2, 3]),
+        new Error('hey'),
+      )
+      const throwerGenerator = async function*() {
+        yield 1; yield 2; throw new Error('hey')
+      }
+      const add = (a, b) => a + b
+      assert.rejects(
+        () => r.reduce(add, 0)(throwerGenerator()),
+        new Error('hey'),
+      )
     })
     it('throws a TypeError on reduce(nonFunction)', async () => {
       assert.throws(
