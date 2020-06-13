@@ -63,4 +63,4 @@ typings/
 # package-lock
 package-lock.json
 
-benchmarks/data
+data

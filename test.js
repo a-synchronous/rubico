@@ -1177,7 +1177,7 @@ describe('rubico', () => {
       const p = r.reduce(add, 0)(infiniteAsyncIterable())
       aok(p instanceof Promise)
       p.cancel()
-      ase(undefined, await p)
+      assert.rejects(p, new Error('cancelled'))
     })
     it('throws a TypeError on reduce(nonFunction)', async () => {
       assert.throws(
