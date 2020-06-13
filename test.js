@@ -1168,6 +1168,17 @@ describe('rubico', () => {
         ase(await r.reduce(asyncMult, 10)(x), 1200)
       }
     })
+    xit('returns a cancellable Promise for async iterables', async () => {
+      const infiniteAsyncIterable = async function*() {
+        await new Promise(() => {})
+        yield 'unreachable'
+      }
+      const add = (a, b) => a + b
+      const p = r.reduce(add, 0)(infiniteAsyncIterable())
+      aok(p instanceof Promise)
+      p.cancel()
+      ase(undefined, await p)
+    })
     it('throws a TypeError on reduce(nonFunction)', async () => {
       assert.throws(
         () => r.reduce({}),
