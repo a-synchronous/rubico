@@ -1168,9 +1168,9 @@ describe('rubico', () => {
         ase(await r.reduce(asyncMult, 10)(x), 1200)
       }
     })
-    xit('returns a cancellable Promise for async iterables', async () => {
+    it('returns a cancellable Promise for async iterables', async () => {
       const infiniteAsyncIterable = async function*() {
-        await new Promise(() => {})
+        await Promise.race([]),
         yield 'unreachable'
       }
       const add = (a, b) => a + b

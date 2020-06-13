@@ -658,9 +658,9 @@ const asyncReduceIterator = async (fn, y0, iter) => {
 }
 
 // https://stackoverflow.com/questions/62112863/what-are-the-performance-implications-if-any-of-chaining-too-many-thens-on
-const reduceIterable = (fn, possiblyY0, x) => {
+const reduceIterable = (fn, possiblyX0, x) => {
   const iter = x[Symbol.iterator]()
-  const y0 = isUndefined(possiblyY0) ? iter.next().value : possiblyY0
+  const y0 = isUndefined(possiblyX0) ? iter.next().value : possiblyX0
   if (isUndefined(y0)) {
     throw new TypeError('reduce(...)(x); x cannot be empty')
   }
@@ -677,9 +677,10 @@ const reduceIterable = (fn, possiblyY0, x) => {
   return y
 }
 
-const reduceAsyncIterable = async (fn, possiblyY0, x) => {
+// https://stackoverflow.com/questions/30233302/promise-is-it-possible-to-force-cancel-a-promise/30235261#30235261
+const reduceAsyncIterable = async (fn, possiblyX0, x) => {
   const iter = x[Symbol.asyncIterator]()
-  const y0 = isUndefined(possiblyY0) ? (await iter.next()).value : possiblyY0
+  const y0 = isUndefined(possiblyX0) ? (await iter.next()).value : possiblyX0
   if (isUndefined(y0)) {
     throw new TypeError('reduce(...)(x); x cannot be empty')
   }
@@ -702,7 +703,15 @@ const reduce = (fn, x0) => {
   }
   return x => {
     if (isIterable(x)) return reduceIterable(fn, x0, x)
-    if (isAsyncIterable(x)) return reduceAsyncIterable(fn, x0, x)
+    if (isAsyncIterable(x)) {
+      const state = { cancel: () => {} }
+      const p = Promise.race([
+        reduceAsyncIterable(fn, x0, x),
+        new Promise(resolve => { state.cancel = resolve }),
+      ])
+      p.cancel = () => { state.cancel() }
+      return p
+    }
     if (is(Object)(x)) return reduceObject(fn, x0, x)
     throw new TypeError('reduce(...)(x); x invalid')
   }
