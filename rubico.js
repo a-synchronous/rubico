@@ -641,9 +641,9 @@ const asyncReduceIterator = async (fn, y0, iter) => {
 }
 
 // https://stackoverflow.com/questions/62112863/what-are-the-performance-implications-if-any-of-chaining-too-many-thens-on
-const reduceIterable = (fn, possiblyY0, x) => {
+const reduceIterable = (fn, possiblyX0, x) => {
   const iter = x[Symbol.iterator]()
-  const y0 = isUndefined(possiblyY0) ? iter.next().value : possiblyY0
+  const y0 = isUndefined(possiblyX0) ? iter.next().value : possiblyX0
   if (isUndefined(y0)) {
     throw new TypeError('reduce(...)(x); x cannot be empty')
   }
@@ -679,13 +679,24 @@ const reduceObject = (fn, x0, x) => reduceIterable(
   (function* () { for (const k in x) yield x[k] })(),
 )
 
+// https://stackoverflow.com/questions/30233302/promise-is-it-possible-to-force-cancel-a-promise/30235261#30235261
+// https://stackoverflow.com/questions/62336381/is-this-promise-cancellation-implementation-for-reducing-an-async-iterable-on-th
 const reduce = (fn, x0) => {
   if (!isFunction(fn)) {
     throw new TypeError('reduce(x, y); x is not a function')
   }
   return x => {
     if (isIterable(x)) return reduceIterable(fn, x0, x)
-    if (isAsyncIterable(x)) return reduceAsyncIterable(fn, x0, x)
+    if (isAsyncIterable(x)) {
+      const state = { cancel: () => {} }
+      const cancelToken = new Promise((_, reject) => { state.cancel = reject })
+      const p = Promise.race([
+        reduceAsyncIterable(fn, x0, x),
+        cancelToken,
+      ])
+      p.cancel = () => { state.cancel(new Error('cancelled')) }
+      return p
+    }
     if (is(Object)(x)) return reduceObject(fn, x0, x)
     throw new TypeError('reduce(...)(x); x invalid')
   }
