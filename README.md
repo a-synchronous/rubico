@@ -80,7 +80,6 @@ All higher order functions accept sync or async functions; if all provided funct
    * `map.pool` [parallel] - `map` with asynchronous limit
    * `map.withIndex` [parallel] - `map` with index
    * `map.series` [series]
-   * `map.sleep` [series] - `map.series` with delay in between [todo](https://github.com/a-synchronous/rubico/issues/13)
  * [filter](#filter) [parallel] - exclude data by predicate
    * `filter.withIndex` [parallel] - `filter` with index
  * [reduce](#reduce) [series] - execute data transformation (powerful)
@@ -105,7 +104,6 @@ All higher order functions accept sync or async functions; if all provided funct
 
 ### data composition
  * [pick](#pick) - only allow provided properties
-   * `pick.range` - only allow provided range [todo](https://github.com/a-synchronous/rubico/issues/13)
  * [omit](#omit) - exclude provided properties
 
 ## pipe
