@@ -12,7 +12,7 @@ rubico's value resides at the intersection of the following principles:
  * functional style should not care about async
  * functional transformations should be composable, performant, and simple to express
 
-When you use this library, you obtain the freedom that comes only from having those three points fulfilled. Just as a compiler would optimize the performance of the code it compiles, rubico optimizes the performance of its exported methods. The result is something you may enjoy.
+When you use this library, you obtain the freedom that comes only from having those three points fulfilled. Just as a compiler optimizes the performance of the code it compiles, rubico optimizes the performance of the code it exports. The result is something you may enjoy.
 
 # Introduction
 Here are my recommendations for getting started with rubico
