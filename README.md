@@ -19,7 +19,7 @@ Here are my recommendations for getting started with rubico
  1. [take the tour](https://tour.rubico.land)
  2. [read the docs](#documentation)
  3. use rubico in a project
- 4. at your leisure, [peruse the awesome resources](#awesome resources)
+ 4. at your leisure, [peruse the awesome resources](#awesome-resources)
  5. [help with rubico](https://github.com/a-synchronous/rubico/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
 
 # Installation
