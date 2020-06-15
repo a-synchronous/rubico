@@ -26,43 +26,14 @@ with `npm`
 npm i rubico
 ```
 
-with `deno`
-```javascript
-import {
-  pipe, fork, assign, tap, tryCatch, switchCase,
-  map, filter, reduce, transform,
-  any, all, and, or, not,
-  eq, gt, lt, gte, lte,
-  get, pick, omit,
-} from 'https://deno.land/x/rubico/rubico.js'
-```
-
 browser script, global `rubico`
 ```html
-<script src="https://unpkg.com/rubico/index.js" crossorigin></script>
+<script src="https://unpkg.com/rubico"></script>
 ```
 
-browser module
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Your Title Here</title>
-    <script type="module">
-import {
-  pipe, fork, assign, tap, tryCatch, switchCase,
-  map, filter, reduce, transform,
-  any, all, and, or, not,
-  eq, gt, lt, gte, lte,
-  get, pick, omit,
-} from 'https://deno.land/x/rubico/rubico.js'
-
-// your code here
-    </script>
-</head>
-<body></body>
-</html>
+with `deno`
+```javascript
+import rubico from 'https://deno.land/x/rubico/rubico.js'
 ```
 
 ### System Requirements
@@ -71,6 +42,18 @@ import {
  * minimum Firefox version: 57
  * minimum Edge version: 79
  * minimum Safari version: 11.1
+
+# Usage
+```javascript
+const {
+  pipe, fork, assign,
+  tap, tryCatch, switchCase,
+  map, filter, reduce, transform,
+  any, all, and, or, not,
+  eq, gt, lt, gte, lte,
+  get, pick, omit,
+} = rubico
+```
 
 # Documentation
 rubico aims to hit the sweet spot between expressivity and interface surface area.
