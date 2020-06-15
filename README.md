@@ -1245,7 +1245,13 @@ squaredOdds([1, 2, 3, 4, 5]) // => [1, 9, 25]
 ```
 
 # Awesome Resources
+## Beginner
 [Practical Functional Programming in JavaScript - Why it's worth it](https://dev.to/richytong/practical-functional-programming-in-javascript-why-it-s-worth-it-ep1) - richytong
+
+## Intermediate
+
+## Advanced
+[Practical Functional Programming in JavaScript - Transducers](#transducers) - richytong
 
 # Contributing
 Your feedback and contributions are welcome. If you have a suggestion, please raise an issue. Prior to that, make sure to search through the issues first in case your suggestion has been made already. If you decide to work on an issue, please announce on the issue thread that you will work on it.
