@@ -1,7 +1,7 @@
 # rubico
 🏞 a shallow river in northeastern Italy, just south of Ravenna
 
-[a]synchronous functional syntax; the [a] is for optionally asynchronous
+[a]synchronous functional syntax
 
 # Motivation
 A note from the author
@@ -12,13 +12,15 @@ rubico's value resides at the intersection of the following principles:
  * functional style should not care about async
  * functional transformations should be composable, performant, and simple to express
 
-When you use this library, you obtain the freedom that comes only from having those three points fulfilled. Just as a compiler would optimize the performance of the code it compiles, each method in this library strives to optimize the JavaScript it exports. The result is something you may enjoy.
+When you use this library, you obtain the freedom that comes only from having those three points fulfilled. Just as a compiler would optimize the performance of the code it compiles, rubico optimizes the performance of the JavaScript it exports. The result is something you may enjoy.
 
 # Introduction
-Welcome! To get started,
+Here are my recommendations for getting started with rubico
  1. [take the tour](https://tour.rubico.land)
- 2. [read the docs](#documentation) (just the header)
- 3. check out [some examples](#examples)
+ 2. [read the docs](#documentation)
+ 3. use rubico in a project
+ 4. at your leisure, [peruse the awesome resources](#awesome resources)
+ 5. [help with rubico](https://github.com/a-synchronous/rubico/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
 
 # Installation
 with `npm`
@@ -56,14 +58,9 @@ const {
 ```
 
 # Documentation
-rubico aims to hit the sweet spot between expressivity and interface surface area.
-There are 23 functions at the moment; this number could go up with your help.
-Additionally, some methods will have property functions that represent the same signature (i.e. `map` vs `map.series`)
-but exhibit differences in asynchronous behavior (i.e. `map` executes in parallel while `map.series` executes in series).
+rubico hits the sweet spot between expressivity and interface surface area. Some methods have property functions that represent the same signature (i.e. `map` vs `map.series`) but exhibit differences in asynchronous behavior; `map` executes in parallel while `map.series` executes in series.
 
-**series** and **parallel** are tags to denote the asynchronous behavior of methods that accept multiple functions.
- * **series**: execute functions one at a time. If order is not implied, it is left to the implementation. (i.e. iterating an `Object`)
- * **parallel**: execute functions in parallel.
+**series** and **parallel** are tags to denote the asynchronous behavior of methods that accept multiple functions. A `series` tag means the method executes its provided functions one at a time. If order is not implied, it is left to the implementation. (i.e. iterating an `Object`). A `parallel` tag means the method executes its provided functions in parallel.
 
 All higher order functions accept sync or async functions; if all provided functions are synchronous, the entire execution is synchronous.
 
@@ -1247,86 +1244,16 @@ const squaredOdds = pipe([isOdd, square])
 squaredOdds([1, 2, 3, 4, 5]) // => [1, 9, 25]
 ```
 
-# Examples
-### A webserver using map, transform, and https://deno.land/std/http serve
-```javascript
-import { serve } from "https://deno.land/std/http/server.ts";
-import { map, transform } from "https://deno.land/x/rubico/rubico.js"
-const s = serve({ port: 8001 });
-console.log("http://localhost:8001/");
-transform(map(req => {
-  req.respond({ body: "Hello World\n" });
-}), null)(s);
-```
-
-### A server with middleware
-```javascript
-import { serve } from 'https://deno.land/std/http/server.ts'
-import {
-  pipe, fork, assign, tap, tryCatch, switchCase,
-  map, filter, reduce, transform,
-  any, all, and, or, not,
-  eq, gt, lt, gte, lte,
-  get, pick, omit,
-} from 'https://deno.land/x/rubico/rubico.js'
-
-const join = delim => x => x.join(delim)
-
-const addServerTime = req => {
-  req.serverTime = (new Date()).toJSON()
-  return req
-}
-
-const traceRequest = pipe([
-  fork([
-    pipe([get('serverTime'), x => '[' + x + ']']),
-    get('method'),
-    get('url'),
-  ]),
-  join(' '),
-  console.log,
-])
-
-const respondWithHelloWorld = req => {
-  req.respond({ body: 'Hello World\n' })
-}
-
-const respondWithServerTime = req => {
-  req.respond({ body: `The server time is ${req.serverTime}\n` })
-}
-
-const respondWithNotFound = req => {
-  req.respond({ body: 'Not Found\n' })
-}
-
-const route = switchCase([
-  eq('/', get('url')), respondWithHelloWorld,
-  eq('/time', get('url')), respondWithServerTime,
-  respondWithNotFound,
-])
-
-const onRequest = pipe([
-  addServerTime,
-  tap(traceRequest),
-  route,
-])
-
-const s = serve({ port: 8001 })
-console.log('http://localhost:8001/')
-transform(map(onRequest), null)(s)
-```
+# Awesome Resources
+[Practical Functional Programming in JavaScript - Why it's worth it](https://dev.to/richytong/practical-functional-programming-in-javascript-why-it-s-worth-it-ep1) - richytong
 
 # Contributing
-
-Your feedback and contributions are welcome. rubico is still young, and no where close to how great it could be. There are 23 functions; I challenge you to come up with the 24th. If you have a suggestion, please raise an issue. Prior to that, make sure to search through the issues first in case your suggestion has been made already.
-If you decide to work on an issue, please announce on the issue thread that you will work on it.
+Your feedback and contributions are welcome. If you have a suggestion, please raise an issue. Prior to that, make sure to search through the issues first in case your suggestion has been made already. If you decide to work on an issue, please announce on the issue thread that you will work on it.
 
 Enhancements should follow the principles of the library:
  * asynchronous code should be simple
  * functional style should not care about async
  * functional transformations should be composable, performant, and simple to express
-
-For example, I am open to the addition of a [curry](https://github.com/a-synchronous/rubico/issues/18) function because it could potentially improve function composability.
 
 Pull requests should provide some basic context and link the relevant issue. My intention is that progress on the library follow an issue -> pull request format. See this [pull request](https://github.com/a-synchronous/rubico/pull/12) for an example.
 
