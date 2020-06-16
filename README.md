@@ -60,44 +60,44 @@ const {
 # Documentation
 rubico hits the sweet spot between expressivity and interface surface area. Some methods have property functions that represent the same signature (i.e. `map` vs `map.series`) but exhibit differences in asynchronous behavior; `map` executes in parallel while `map.series` executes in series.
 
-**series** and **parallel** are tags to denote the asynchronous behavior of methods that accept multiple functions. A `series` tag means the method executes its provided functions one at a time. If order is not implied, it is left to the implementation (i.e. iterating an `Object`). A `parallel` tag means the method executes its provided functions in parallel.
+[🔗] and [⛓️] are tags to denote the asynchronous behavior of methods that accept multiple functions. A 🔗 tag means the method executes its provided functions one at a time. If order is  not implied, it is left to the implementation (i.e. iterating an `Object`). A ⛓️ tag means the method executes its provided functions in parallel.
 
 All higher order functions accept sync or async functions; if all provided functions are synchronous, the entire execution is synchronous.
 
 ### function composition
- * [pipe](#pipe) [series] - chain functions together
+ * [pipe](#pipe) [🔗] - chain functions together
  * [tap](#tap) - spy on data
- * [tryCatch](#tryCatch) [series] - try a function, catch with another
- * [switchCase](#switchCase) [series] - control flow
+ * [tryCatch](#tryCatch) [🔗] - try a function, catch with another
+ * [switchCase](#switchCase) [🔗] - control flow
 
 ### function + data composition
- * [fork](#fork) [parallel] - multiply data by functions
-   * `fork.series` [series]
- * [assign](#assign) [parallel] - set properties on data by functions
+ * [fork](#fork) [⛓️] - multiply data by functions
+   * `fork.series` [🔗]
+ * [assign](#assign) [⛓️] - set properties on data by functions
 
 ### data transformation
- * [map](#map) [parallel] - apply a function to data
-   * `map.pool` [parallel] - `map` with asynchronous limit
-   * `map.withIndex` [parallel] - `map` with index
-   * `map.series` [series]
- * [filter](#filter) [parallel] - exclude data by predicate
-   * `filter.withIndex` [parallel] - `filter` with index
- * [reduce](#reduce) [series] - execute data transformation (powerful)
- * [transform](#transform) [series] - execute data transformation (convenient)
+ * [map](#map) [⛓️] - apply a function to data
+   * `map.pool` [⛓️] - `map` with asynchronous limit
+   * `map.withIndex` [⛓️] - `map` with index
+   * `map.series` [🔗]
+ * [filter](#filter) [⛓️] - exclude data by predicate
+   * `filter.withIndex` [⛓️] - `filter` with index
+ * [reduce](#reduce) [🔗] - execute data transformation (powerful)
+ * [transform](#transform) [🔗] - execute data transformation (convenient)
 
 ### predicate composition
- * [any](#any) [parallel] - is function of any data truthy?
- * [all](#all) [parallel] - is function of all data truthy?
- * [and](#and) [parallel] - any functions of data truthy?
- * [or](#or) [parallel] - all functions of data truthy?
+ * [any](#any) [⛓️] - is function of any data truthy?
+ * [all](#all) [⛓️] - is function of all data truthy?
+ * [and](#and) [⛓️] - any functions of data truthy?
+ * [or](#or) [⛓️] - all functions of data truthy?
  * [not](#not) - `not(equals)(x)` is `!equals(x)`
 
 ### comparison
- * [eq](#eq) [parallel] - left equals right?
- * [gt](#gt) [parallel] - left > right?
- * [lt](#lt) [parallel] - left < right?
- * [gte](#gte) [parallel] - left >= right?
- * [lte](#lte) [parallel] - left <= right?
+ * [eq](#eq) [⛓️] - left equals right?
+ * [gt](#gt) [⛓️] - left > right?
+ * [lt](#lt) [⛓️] - left < right?
+ * [gte](#gte) [⛓️] - left >= right?
+ * [lte](#lte) [⛓️] - left <= right?
 
 ### property + index access
  * [get](#get) - access a value by path or index
