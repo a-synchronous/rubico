@@ -12,10 +12,12 @@ rubico's value resides at the intersection of the following principles:
  * functional style should not care about async
  * functional transformations should be composable, performant, and simple to express
 
-When you use this library, you obtain the freedom that comes only from having those three points fulfilled. Just as a compiler optimizes the performance of the code it compiles, rubico optimizes the performance of the code it exports. The result is something you may enjoy.
+When you use this library, you obtain the freedom that comes only from having those three points fulfilled. The result is something you may enjoy.
 
 # Introduction
-Here are my recommendations for getting started with rubico
+rubico is a robust, highly optimized, dependency free JavaScript library that defines a syntax for painless [a]synchronous functional programming. rubico abstracts away the complex fluff of Promise management behind an expressive functional API, enabling you to do a lot with very little. The syntax is meant to be an extension of idiomatic JavaScript, which means no special types, no gotchas, and no confusion. Programs written with rubico behave reliably and predictably; did I mention the nice stack traces?
+
+Here are my recommendations for getting started.
  1. [take the tour](https://tour.rubico.land)
  2. [read the docs](#documentation)
  3. use rubico in a project
