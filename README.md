@@ -60,7 +60,7 @@ const {
 # Documentation
 rubico hits the sweet spot between expressivity and interface surface area. Some methods have property functions that represent the same signature (i.e. `map` vs `map.series`) but exhibit differences in asynchronous behavior; `map` executes in parallel while `map.series` executes in series.
 
-**series** and **parallel** are tags to denote the asynchronous behavior of methods that accept multiple functions. A `series` tag means the method executes its provided functions one at a time. If order is not implied, it is left to the implementation. (i.e. iterating an `Object`). A `parallel` tag means the method executes its provided functions in parallel.
+**series** and **parallel** are tags to denote the asynchronous behavior of methods that accept multiple functions. A `series` tag means the method executes its provided functions one at a time. If order is not implied, it is left to the implementation (i.e. iterating an `Object`). A `parallel` tag means the method executes its provided functions in parallel.
 
 All higher order functions accept sync or async functions; if all provided functions are synchronous, the entire execution is synchronous.
 
