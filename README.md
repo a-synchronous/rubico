@@ -6,9 +6,9 @@
 ```javascript
 import { pipe, map, filter } from 'rubico'
 
-const square = x => x ** 2
-
 const isOdd = x => x % 2 === 1
+
+const square = x => x ** 2
 
 pipe([
   filter(isOdd),
