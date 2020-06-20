@@ -37,6 +37,18 @@ Here are my recommendations for getting started.
  4. at your leisure, [peruse the awesome resources](#awesome-resources)
  5. [help with rubico](https://github.com/a-synchronous/rubico/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
 
+# API
+```javascript
+const {
+  pipe, fork, assign,
+  tap, tryCatch, switchCase,
+  map, filter, reduce, transform,
+  any, all, and, or, not,
+  eq, gt, lt, gte, lte,
+  get, pick, omit,
+} = rubico
+```
+
 # Installation
 with `npm`
 ```bash
@@ -59,18 +71,6 @@ import rubico from 'https://deno.land/x/rubico/rubico.js'
  * minimum Firefox version: 57
  * minimum Edge version: 79
  * minimum Safari version: 11.1
-
-# Usage
-```javascript
-const {
-  pipe, fork, assign,
-  tap, tryCatch, switchCase,
-  map, filter, reduce, transform,
-  any, all, and, or, not,
-  eq, gt, lt, gte, lte,
-  get, pick, omit,
-} = rubico
-```
 
 # Documentation
 rubico hits the sweet spot between expressivity and interface surface area. Some methods have property functions that represent the same signature (i.e. `map` vs `map.series`) but exhibit differences in asynchronous behavior; `map` executes in parallel while `map.series` executes in series.
