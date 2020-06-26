@@ -476,8 +476,10 @@ map.withIndex = fn => {
 // TODO
 const flatMapAsyncIterable = (fn, x) => {}
 
-// TODO
-const flatMapArray = (fn, x) => {}
+const flatMapArray = (fn, x) => {
+  const y = mapArray(fn, x)
+  return isPromise(y) ? y.then(res => res.flat(1)) : y.flat(1)
+}
 
 // TODO
 const flatMapString = (fn, x) => {}
@@ -506,7 +508,7 @@ const flatMap = fn => {
   }
   return x => {
     // TODO: if (isAsyncIterable(x)) return flatMapAsyncIterable(fn, x)
-    // TODO: if (isArray(x)) return flatMapArray(fn, x)
+    if (isArray(x)) return flatMapArray(fn, x)
     // TODO: if (isString(x)) return flatMapString(fn, x)
     // TODO: if (is(Set)(x)) return flatMapSet(fn, x)
     // TODO: if (is(Map)(x)) return flatMapMap(fn, x)
