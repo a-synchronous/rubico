@@ -1125,6 +1125,7 @@ exports.tap = tap
 exports.tryCatch = tryCatch
 exports.switchCase = switchCase
 exports.map = map
+exports.flatMap = flatMap
 exports.filter = filter
 exports.reduce = reduce
 exports.transform = transform
