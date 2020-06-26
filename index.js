@@ -476,7 +476,7 @@ map.withIndex = fn => {
 // TODO
 const flatMapAsyncIterable = (fn, x) => {}
 
-const flatten = x => {
+const flattenArray = x => {
   const y = []
   for (const xi of x) y.push(...xi)
   return y
@@ -484,7 +484,7 @@ const flatten = x => {
 
 const flatMapArray = (fn, x) => {
   const y = mapArray(fn, x)
-  return isPromise(y) ? y.then(flatten) : flatten(y)
+  return isPromise(y) ? y.then(flattenArray) : flattenArray(y)
 }
 
 // TODO
@@ -502,8 +502,8 @@ const flatMapTypedArray = (fn, x) => {}
 // TODO
 const flatMapIterable = (fn, x) => {}
 
-// TODO
-const flatMapObject = (fn, x) => {}
+const flatMapObject = (fn, x) => {
+}
 
 // TODO
 const flatMapReducer = (fn, x) => {}
@@ -521,7 +521,7 @@ const flatMap = fn => {
     // TODO: if (isNumberTypedArray(x)) return flatMapTypedArray(fn, x)
     // TODO: if (isBigIntTypedArray(x)) return flatMapTypedArray(fn, x)
     // TODO: if (isIterable(x)) return flatMapIterable(fn, x) // for generators or custom iterators
-    // TODO: if (is(Object)(x)) return flatMapObject(fn, x)
+    if (is(Object)(x)) return flatMapObject(fn, x)
     // TODO: if (isFunction(x)) return flatMapReducer(fn, x)
     throw new TypeError('flatMap(...)(x); x invalid')
   }
