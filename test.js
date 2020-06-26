@@ -912,6 +912,36 @@ describe('rubico', () => {
     })
   })
 
+  describe('flatMap', () => {
+    it('maps then flattens an array, async + parallel', async () => {
+      const asyncPowers = async x => [x ** 2, x ** 3]
+      aok(r.flatMap(asyncPowers)([1, 2, 3, 4, 5]) instanceof Promise)
+      ade(
+        await r.flatMap(asyncPowers)([1, 2, 3, 4, 5]),
+        [1, 1, 4, 8, 9, 27, 16, 64, 25, 125],
+      )
+    })
+    it('maps then flattens an array, sync', async () => {
+      const powers = x => [x ** 2, x ** 3]
+      ade(
+        r.flatMap(powers)([1, 2, 3, 4, 5]),
+        [1, 1, 4, 8, 9, 27, 16, 64, 25, 125],
+      )
+    })
+    it('throws a TypeError on flatMap(nonFunction)', async () => {
+      assert.throws(
+        () => r.map.withIndex({}),
+        new TypeError('map.withIndex(x); x is not a function'),
+      )
+    })
+    it('throws a TypeError on flatMap(...)(null)', async () => {
+      assert.throws(
+        () => r.map.withIndex(() => 'hi')(null),
+        new TypeError('map.withIndex(...)(x); x invalid')
+      )
+    })
+  })
+
   describe('filter', () => {
     it('lazily filters values from an async iterable based on an async predicate', async () => {
       aok(!(r.filter(async x => x <= 3)(makeAsyncNumbers()) instanceof Promise))
