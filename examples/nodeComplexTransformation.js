@@ -17,6 +17,35 @@ const incMap = (m, { record_uLID, vendor_uLID }) => {
   return m
 }
 
+/*
+// normal version
+const createRecordToVendorMap = pipe([
+  flatMap(vendor => pipe([
+    get('productVariations'),
+    flatMap(pipe([
+      get('variationOptions'),
+      map(fork({
+        record_uLID: get('record_uLID'),
+        vendor_uLID: () => vendor.vendor_uLID,
+      })),
+    ]))
+  ])(vendor)),
+  reduce(incMap, new Map()),
+])
+
+// transducer version
+reduce(flatMap(vendor => pipe([
+  get('productVariations'),
+  flatMap(pipe([
+    get('variationOptions'),
+    map(fork({
+      record_uLID: get('record_uLID'),
+      vendor_uLID: () => vendor.vendor_uLID,
+    })),
+  ]))
+])(vendor))(incMap), new Map())
+*/
+
 const combineMaps = (mA, mB) => {
   for (const [record_uLID, linkedVendors] of mB) {
     for (const vendor_uLID of linkedVendors) {
