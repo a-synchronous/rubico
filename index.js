@@ -481,6 +481,52 @@ map.withIndex = fn => {
   }
 }
 
+// TODO
+const flatMapAsyncIterable = (fn, x) => {}
+
+// TODO
+const flatMapArray = (fn, x) => {}
+
+// TODO
+const flatMapString = (fn, x) => {}
+
+// TODO
+const flatMapSet = (fn, x) => {}
+
+// TODO
+const flatMapMap = (fn, x) => {}
+
+// TODO
+const flatMapTypedArray = (fn, x) => {}
+
+// TODO
+const flatMapIterable = (fn, x) => {}
+
+// TODO
+const flatMapObject = (fn, x) => {}
+
+// TODO
+const flatMapReducer = (fn, x) => {}
+
+const flatMap = fn => {
+  if (!isFunction(fn)) {
+    throw new TypeError('map.withIndex(x); x is not a function')
+  }
+  return x => {
+    // TODO: if (isAsyncIterable(x)) return flatMapAsyncIterable(fn, x)
+    // TODO: if (isArray(x)) return flatMapArray(fn, x)
+    // TODO: if (isString(x)) return flatMapString(fn, x)
+    // TODO: if (is(Set)(x)) return flatMapSet(fn, x)
+    // TODO: if (is(Map)(x)) return flatMapMap(fn, x)
+    // TODO: if (isNumberTypedArray(x)) return flatMapTypedArray(fn, x)
+    // TODO: if (isBigIntTypedArray(x)) return flatMapTypedArray(fn, x)
+    // TODO: if (isIterable(x)) return flatMapIterable(fn, x) // for generators or custom iterators
+    // TODO: if (is(Object)(x)) return flatMapObject(fn, x)
+    // TODO: if (isFunction(x)) return flatMapReducer(fn, x)
+    throw new TypeError('flatMap(...)(x); x invalid')
+  }
+}
+
 const filterAsyncIterable = (fn, x) => (async function*() {
   for await (const xi of x) { if (await fn(xi)) yield xi }
 })()
