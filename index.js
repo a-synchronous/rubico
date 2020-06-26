@@ -82,14 +82,6 @@ const curryFunction = (fn, ...args) => {
   return (...moreArgs) => curryFunction(fn, ...args.concat(moreArgs))
 }
 
-// TODO: convert this to special curry https://github.com/a-synchronous/rubico/issues/18
-const curry = fn => {
-  if (!isFunction(fn)) {
-    throw new TypeError(`${type(fn)} is not a function`)
-  }
-  return (...args) => curryFunction(fn, ...args)
-}
-
 const _chain = (fnsIter, args) => {
   const { value: f0 } = fnsIter.next()
   let y = f0(...args)
