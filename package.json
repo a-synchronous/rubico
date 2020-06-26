@@ -29,6 +29,7 @@
     "pointfree"
   ],
   "devDependencies": {
+    "eslint": "^7.3.1",
     "mocha": "^7.2.0"
   }
 }
