@@ -1846,7 +1846,7 @@ describe('rubico', () => {
     })
   })
 
-  it('exports 23 functions', async () => {
-    ase(Object.keys(r).length, 23)
+  it('exports 24 functions', async () => {
+    ase(Object.keys(r).length, 24)
   })
 })
