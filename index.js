@@ -476,9 +476,15 @@ map.withIndex = fn => {
 // TODO
 const flatMapAsyncIterable = (fn, x) => {}
 
+const flatten = x => {
+  const y = []
+  for (const xi of x) y.push(...xi)
+  return y
+}
+
 const flatMapArray = (fn, x) => {
   const y = mapArray(fn, x)
-  return isPromise(y) ? y.then(res => res.flat(1)) : y.flat(1)
+  return isPromise(y) ? y.then(flatten) : flatten(y)
 }
 
 // TODO
