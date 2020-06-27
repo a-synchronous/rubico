@@ -927,6 +927,18 @@ describe('rubico', () => {
         r.flatMap(powers)([1, 2, 3, 4, 5]),
         [1, 1, 4, 8, 9, 27, 16, 64, 25, 125],
       )
+      ade(
+        r.flatMap(powers)([1, 2, 3, 4, 5]),
+        [1, 1, 4, 8, 9, 27, 16, 64, 25, 125],
+      )
+      ade(
+        r.flatMap(x => new Set([x ** 2]))([1, 2, 3, 4, 5]),
+        [1, 4, 9, 16, 25],
+      )
+      assert.throws(
+        () => r.flatMap(x => x)([1, 2, 3, 4, 5]),
+        new TypeError('flatMap(...)(x); cannot flatten element of x'),
+      )
     })
     it('throws a TypeError on flatMap(nonFunction)', async () => {
       assert.throws(
