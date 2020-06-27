@@ -490,7 +490,6 @@ const flattenIterable = (reducer, x0, x) => {
 const flatten = (reducer, y, x) => {
   if (isIterable(x)) return flattenIterable(reducer, y, x)
   // TODO if (isAsyncIterable(x)) return flattenAsyncIterable(reducer, y, x)
-  if (is(Object)(x)) return flattenObject(reducer, y, x)
   throw new TypeError('flatMap(...)(x); cannot flatten x')
 }
 
