@@ -473,37 +473,46 @@ map.withIndex = fn => {
   }
 }
 
-// TODO
-const flatMapAsyncIterable = (fn, x) => {}
-
-const flattenArray = x => {
-  const y = []
-  for (const xi of x) y.push(...xi)
+const flattenIterable = (reducer, x0, x) => {
+  let y = x0
+  for (const xi of x) {
+    if (isIterable(xi)) {
+      for (const xii of xi) y = reducer(y, xii)
+    } else if (is(Object)(xi)) {
+      for (const k in xi) y = reducer(y, xi[k])
+    } else {
+      throw new TypeError('flatMap(...)(x); cannot flatten element of x')
+    }
+  }
   return y
 }
 
-const flatMapArray = (fn, x) => {
-  const y = mapArray(fn, x)
-  return isPromise(y) ? y.then(flattenArray) : flattenArray(y)
+const flatten = (reducer, y, x) => {
+  if (isIterable(x)) return flattenIterable(reducer, y, x)
+  // TODO if (isAsyncIterable(x)) return flattenAsyncIterable(reducer, y, x)
+  if (is(Object)(x)) return flattenObject(reducer, y, x)
+  throw new TypeError('flatMap(...)(x); cannot flatten x')
 }
 
+const flattenToArray = x => flatten(
+  (y, xii) => { y.push(xii); return y },
+  [],
+  x,
+)
+
 // TODO
-const flatMapString = (fn, x) => {}
+const flatMapAsyncIterable = (fn, x) => {}
+
+const flatMapArray = (fn, x) => {
+  const y = mapArray(fn, x)
+  return isPromise(y) ? y.then(flattenToArray) : flattenToArray(y)
+}
 
 // TODO
 const flatMapSet = (fn, x) => {}
 
 // TODO
-const flatMapMap = (fn, x) => {}
-
-// TODO
-const flatMapTypedArray = (fn, x) => {}
-
-// TODO
 const flatMapIterable = (fn, x) => {}
-
-const flatMapObject = (fn, x) => {
-}
 
 // TODO
 const flatMapReducer = (fn, x) => {}
@@ -515,13 +524,8 @@ const flatMap = fn => {
   return x => {
     // TODO: if (isAsyncIterable(x)) return flatMapAsyncIterable(fn, x)
     if (isArray(x)) return flatMapArray(fn, x)
-    // TODO: if (isString(x)) return flatMapString(fn, x)
     // TODO: if (is(Set)(x)) return flatMapSet(fn, x)
-    // TODO: if (is(Map)(x)) return flatMapMap(fn, x)
-    // TODO: if (isNumberTypedArray(x)) return flatMapTypedArray(fn, x)
-    // TODO: if (isBigIntTypedArray(x)) return flatMapTypedArray(fn, x)
     // TODO: if (isIterable(x)) return flatMapIterable(fn, x) // for generators or custom iterators
-    if (is(Object)(x)) return flatMapObject(fn, x)
     // TODO: if (isFunction(x)) return flatMapReducer(fn, x)
     throw new TypeError('flatMap(...)(x); x invalid')
   }
