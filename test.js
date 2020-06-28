@@ -935,6 +935,14 @@ describe('rubico', () => {
         r.flatMap(x => new Set([x ** 2]))([1, 2, 3, 4, 5]),
         [1, 4, 9, 16, 25],
       )
+      ade(
+        r.flatMap(
+          x => x,
+        )(
+          r.flatMap(x => new Map([[x, x ** 2]]))([1, 2, 3, 4, 5]),
+        ),
+        [1, 1, 2, 4, 3, 9, 4, 16, 5, 25],
+      )
       assert.throws(
         () => r.flatMap(x => x)([1, 2, 3, 4, 5]),
         new TypeError('flatMap(...)(x); cannot flatten element of x'),

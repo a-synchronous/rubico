@@ -511,6 +511,9 @@ const flatMapArray = (fn, x) => {
 const flatMapSet = (fn, x) => {}
 
 // TODO
+const flatMapMap = (fn, x) => {}
+
+// TODO
 const flatMapIterable = (fn, x) => {}
 
 // TODO
@@ -524,6 +527,7 @@ const flatMap = fn => {
     // TODO: if (isAsyncIterable(x)) return flatMapAsyncIterable(fn, x)
     if (isArray(x)) return flatMapArray(fn, x)
     // TODO: if (is(Set)(x)) return flatMapSet(fn, x)
+    if (is(Map)(x)) return flatMapMap(fn, x)
     // TODO: if (isIterable(x)) return flatMapIterable(fn, x) // for generators or custom iterators
     // TODO: if (isFunction(x)) return flatMapReducer(fn, x)
     throw new TypeError('flatMap(...)(x); x invalid')
