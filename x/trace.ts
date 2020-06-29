@@ -1,4 +1,4 @@
-import { tap } from '../rubico.js'
+import { tap } from '..'
 
 const trace = (x: any) => tap(console.log)(x)
 
