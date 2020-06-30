@@ -49,6 +49,10 @@ pipe([
 ### METHOD
 DESCRIPTION
 ```javascript
+// SIGNATURE
+```
+RULES
+```javascript
 // EXAMPLE
 ```
 
