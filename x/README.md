@@ -51,3 +51,6 @@ DESCRIPTION
 ```javascript
 // EXAMPLE
 ```
+
+# Contributing
+[See this issue](https://github.com/a-synchronous/rubico/issues/41)
