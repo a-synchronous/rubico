@@ -1,4 +1,4 @@
-import { pipe, tap } from '..'
+import { pipe, tap } from '../..'
 
 const tracef = (
   transformationFn: (any) => any,

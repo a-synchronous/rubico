@@ -1,5 +1,5 @@
 import { assert } from 'chai'
-import tracef from './tracef.ts'
+import tracef from '.'
 
 describe('tracef', () => {
   it('logs transformed input to console, returning input', async () => {

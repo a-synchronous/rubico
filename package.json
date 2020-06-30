@@ -35,6 +35,6 @@
     "ts-mocha": "^7.0.0"
   },
   "scripts": {
-    "test": "mocha test.js x/*.test.js x && ts-mocha x/*.test.ts"
+    "test": "mocha test.js x/*/*.js x && ts-mocha x/*/*.ts"
   }
 }
