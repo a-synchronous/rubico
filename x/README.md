@@ -11,7 +11,7 @@ import myUtil from 'rubico/x/my-util' // ESM
 
 # Documentation
 
-## trace
+### trace
 logs data to console, returning data
 ```javascript
 y = trace(x)
@@ -29,7 +29,7 @@ pipe([
 ])('hello')
 ```
 
-## tracef
+### tracef
 logs transformed data to console, returning original data
 ```javascript
 y = tracef(f)(x)
@@ -46,7 +46,7 @@ pipe([
 ])({ name: 'george', location: 'the jungle' })
 ```
 
-## METHOD
+### METHOD
 DESCRIPTION
 ```javascript
 // EXAMPLE
