@@ -7,5 +7,4 @@ const tracef = (
   console.log,
 ]))(x)
 
-tracef.default = tracef
 export = tracef
