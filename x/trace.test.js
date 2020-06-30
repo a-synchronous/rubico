@@ -1,5 +1,5 @@
-import { assert } from 'chai'
-import trace from '.'
+const assert = require('assert')
+const trace = require('./trace')
 
 describe('trace', () => {
   it('logs input to console, returning input', async () => {
