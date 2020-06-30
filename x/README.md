@@ -1,6 +1,6 @@
-# x
+# rubico/x/
 
-rubico's library
+The rubico namespace
 
 ## trace
 logs data to console, returning data
