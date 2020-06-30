@@ -2,7 +2,7 @@ import { pipe, tap } from '../..'
 
 const tracef = (
   transformationFn: (any) => any,
-) => (x: any) => tap(pipe([
+) => (x: T): T => tap(pipe([
   transformationFn,
   console.log,
 ]))(x)
