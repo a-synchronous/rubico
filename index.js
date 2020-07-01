@@ -1,4 +1,4 @@
-/* rubico v1.1.9
+/* rubico v1.1.10
  * https://github.com/a-synchronous/rubico
  * (c) 2019 Richard Tong
  * rubico may be freely distributed under the MIT license.
