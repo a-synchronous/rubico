@@ -165,6 +165,7 @@ squaredOdds([1, 2, 3, 4, 5]) // => [1, 9, 25]
 ## Beginner
  * [Practical Functional Programming in JavaScript - Why it's worth it](https://dev.to/richytong/practical-functional-programming-in-javascript-why-it-s-worth-it-ep1)
  * [Practical Functional Programming in JavaScript - Data last](https://dev.to/richytong/practical-functional-programming-in-javascript-data-last-1gjo)
+ * [Practical Functional Programming in JavaScript - Side Effects and Purity](https://dev.to/richytong/practical-functional-programming-in-javascript-side-effects-and-purity-1838)
 
 ## Advanced
  * [Practical Functional Programming in JavaScript - Transducers](#transducers)
