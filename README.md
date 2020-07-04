@@ -13,7 +13,7 @@ const square = x => x ** 2
 pipe([
   filter(isOdd),
   map(square),
-])([1, 2, 3, 4, 5]) // > [1, 9, 25]
+])([1, 2, 3, 4, 5]) // [1, 9, 25]
 ```
 
 # Motivation
