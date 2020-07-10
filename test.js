@@ -968,6 +968,63 @@ describe('rubico', () => {
         [1, 4, 9, 1, 4, 9, 1, 4, 9],
       )
     })
+    it('maps then flattens a Set', async () => {
+      const powers = x => [x ** 2, x ** 3]
+      ade(
+        r.flatMap(
+          powers,
+        )(new Set([1, 2, 3])),
+        new Set([1, 4, 8, 9, 27]),
+      )
+      ade(
+        r.flatMap(
+          x => new Set(powers(x)),
+        )(new Set([1, 2, 3])),
+        new Set([1, 4, 8, 9, 27]),
+      )
+      ade(
+        r.flatMap(
+          x => ({ square: x ** 2, cube: x ** 3 })
+        )(new Set([1, 2, 3])),
+        new Set([1, 4, 8, 9, 27]),
+      )
+    })
+    it('[async] maps then flattens a Set', async () => {
+      const powers = async x => [x ** 2, x ** 3]
+      aok(
+        r.flatMap(
+          powers,
+        )(new Set([1, 2, 3])) instanceof Promise
+      )
+      ade(
+        await r.flatMap(
+          powers,
+        )(new Set([1, 2, 3])),
+        new Set([1, 4, 8, 9, 27]),
+      )
+      aok(
+        r.flatMap(
+          x => powers(x).then(x => new Set(x))
+        )(new Set([1, 2, 3])) instanceof Promise
+      )
+      ade(
+        await r.flatMap(
+          x => powers(x).then(x => new Set(x))
+        )(new Set([1, 2, 3])),
+        new Set([1, 4, 8, 9, 27]),
+      )
+      aok(
+        r.flatMap(
+          async x => ({ square: x ** 2, cube: x ** 3 })
+        )(new Set([1, 2, 3])) instanceof Promise
+      )
+      ade(
+        await r.flatMap(
+          async x => ({ square: x ** 2, cube: x ** 3 })
+        )(new Set([1, 2, 3])),
+        new Set([1, 4, 8, 9, 27]),
+      )
+    })
     it('throws a TypeError on flatMap(nonFunction)', async () => {
       assert.throws(
         () => r.map.withIndex({}),
