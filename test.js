@@ -917,128 +917,6 @@ describe('rubico', () => {
     })
   })
 
-  describe('flatMap', () => {
-    it('maps then flattens an array, async + parallel', async () => {
-      const asyncPowers = async x => [x ** 2, x ** 3]
-      aok(r.flatMap(asyncPowers)([1, 2, 3, 4, 5]) instanceof Promise)
-      ade(
-        await r.flatMap(asyncPowers)([1, 2, 3, 4, 5]),
-        [1, 1, 4, 8, 9, 27, 16, 64, 25, 125],
-      )
-    })
-    it('maps then flattens an array, sync', async () => {
-      const powers = x => [x ** 2, x ** 3]
-      ade(
-        r.flatMap(powers)([1, 2, 3, 4, 5]),
-        [1, 1, 4, 8, 9, 27, 16, 64, 25, 125],
-      )
-      ade(
-        r.flatMap(powers)([1, 2, 3, 4, 5]),
-        [1, 1, 4, 8, 9, 27, 16, 64, 25, 125],
-      )
-      ade(
-        r.flatMap(x => new Set([x ** 2]))([1, 2, 3, 4, 5]),
-        [1, 4, 9, 16, 25],
-      )
-      ade(
-        r.flatMap(
-          x => x,
-        )(
-          r.flatMap(x => new Map([[x, x ** 2]]))([1, 2, 3, 4, 5]),
-        ),
-        [1, 1, 2, 4, 3, 9, 4, 16, 5, 25],
-      )
-      assert.throws(
-        () => r.flatMap(x => x)([1, 2, 3, 4, 5]),
-        new TypeError('flatMap(...)(x); cannot flatten element of x'),
-      )
-    })
-    it('maps then flattens an array of objects', async () => {
-      const createObject = () => ({ a: 1, b: 2, c: 3 })
-      ade(
-        r.flatMap(
-          x => x,
-        )(arrayOf(createObject, 3)),
-        [1, 2, 3, 1, 2, 3, 1, 2, 3],
-      )
-      ade(
-        r.flatMap(
-          r.map(x => x ** 2),
-        )(arrayOf(createObject, 3)),
-        [1, 4, 9, 1, 4, 9, 1, 4, 9],
-      )
-    })
-    it('maps then flattens a Set', async () => {
-      const powers = x => [x ** 2, x ** 3]
-      ade(
-        r.flatMap(
-          powers,
-        )(new Set([1, 2, 3])),
-        new Set([1, 4, 8, 9, 27]),
-      )
-      ade(
-        r.flatMap(
-          x => new Set(powers(x)),
-        )(new Set([1, 2, 3])),
-        new Set([1, 4, 8, 9, 27]),
-      )
-      ade(
-        r.flatMap(
-          x => ({ square: x ** 2, cube: x ** 3 })
-        )(new Set([1, 2, 3])),
-        new Set([1, 4, 8, 9, 27]),
-      )
-    })
-    it('[async] maps then flattens a Set', async () => {
-      const powers = async x => [x ** 2, x ** 3]
-      aok(
-        r.flatMap(
-          powers,
-        )(new Set([1, 2, 3])) instanceof Promise
-      )
-      ade(
-        await r.flatMap(
-          powers,
-        )(new Set([1, 2, 3])),
-        new Set([1, 4, 8, 9, 27]),
-      )
-      aok(
-        r.flatMap(
-          x => powers(x).then(x => new Set(x))
-        )(new Set([1, 2, 3])) instanceof Promise
-      )
-      ade(
-        await r.flatMap(
-          x => powers(x).then(x => new Set(x))
-        )(new Set([1, 2, 3])),
-        new Set([1, 4, 8, 9, 27]),
-      )
-      aok(
-        r.flatMap(
-          async x => ({ square: x ** 2, cube: x ** 3 })
-        )(new Set([1, 2, 3])) instanceof Promise
-      )
-      ade(
-        await r.flatMap(
-          async x => ({ square: x ** 2, cube: x ** 3 })
-        )(new Set([1, 2, 3])),
-        new Set([1, 4, 8, 9, 27]),
-      )
-    })
-    it('throws a TypeError on flatMap(nonFunction)', async () => {
-      assert.throws(
-        () => r.map.withIndex({}),
-        new TypeError('map.withIndex(x); x is not a function'),
-      )
-    })
-    it('throws a TypeError on flatMap(...)(null)', async () => {
-      assert.throws(
-        () => r.map.withIndex(() => 'hi')(null),
-        new TypeError('map.withIndex(...)(x); x invalid')
-      )
-    })
-  })
-
   describe('filter', () => {
     it('lazily filters values from an async iterable based on an async predicate', async () => {
       aok(!(r.filter(async x => x <= 3)(makeAsyncNumbers()) instanceof Promise))
@@ -1557,6 +1435,172 @@ describe('rubico', () => {
       assert.throws(
         () => r.transform('yo', 'hey'),
         new TypeError('transform(x, y); y is not a function'),
+      )
+    })
+  })
+
+  describe('flatMap', () => {
+    it('maps then flattens an array, async + parallel', async () => {
+      const asyncPowers = async x => [x ** 2, x ** 3]
+      aok(r.flatMap(asyncPowers)([1, 2, 3, 4, 5]) instanceof Promise)
+      ade(
+        await r.flatMap(asyncPowers)([1, 2, 3, 4, 5]),
+        [1, 1, 4, 8, 9, 27, 16, 64, 25, 125],
+      )
+    })
+    it('maps then flattens an array, sync', async () => {
+      const powers = x => [x ** 2, x ** 3]
+      ade(
+        r.flatMap(powers)([1, 2, 3, 4, 5]),
+        [1, 1, 4, 8, 9, 27, 16, 64, 25, 125],
+      )
+      ade(
+        r.flatMap(powers)([1, 2, 3, 4, 5]),
+        [1, 1, 4, 8, 9, 27, 16, 64, 25, 125],
+      )
+      ade(
+        r.flatMap(x => new Set([x ** 2]))([1, 2, 3, 4, 5]),
+        [1, 4, 9, 16, 25],
+      )
+      ade(
+        r.flatMap(
+          x => x,
+        )(
+          r.flatMap(x => new Map([[x, x ** 2]]))([1, 2, 3, 4, 5]),
+        ),
+        [1, 1, 2, 4, 3, 9, 4, 16, 5, 25],
+      )
+      assert.throws(
+        () => r.flatMap(x => x)([1, 2, 3, 4, 5]),
+        new TypeError('flatMap(...)(x); cannot flatten element of x'),
+      )
+    })
+    it('maps then flattens an array of objects', async () => {
+      const createObject = () => ({ a: 1, b: 2, c: 3 })
+      ade(
+        r.flatMap(
+          x => x,
+        )(arrayOf(createObject, 3)),
+        [1, 2, 3, 1, 2, 3, 1, 2, 3],
+      )
+      ade(
+        r.flatMap(
+          r.map(x => x ** 2),
+        )(arrayOf(createObject, 3)),
+        [1, 4, 9, 1, 4, 9, 1, 4, 9],
+      )
+    })
+    it('maps then flattens a Set', async () => {
+      const powers = x => [x ** 2, x ** 3]
+      ade(
+        r.flatMap(
+          powers,
+        )(new Set([1, 2, 3])),
+        new Set([1, 4, 8, 9, 27]),
+      )
+      ade(
+        r.flatMap(
+          x => new Set(powers(x)),
+        )(new Set([1, 2, 3])),
+        new Set([1, 4, 8, 9, 27]),
+      )
+      ade(
+        r.flatMap(
+          x => ({ square: x ** 2, cube: x ** 3 })
+        )(new Set([1, 2, 3])),
+        new Set([1, 4, 8, 9, 27]),
+      )
+    })
+    it('[async] maps then flattens a Set', async () => {
+      const powers = async x => [x ** 2, x ** 3]
+      aok(
+        r.flatMap(
+          powers,
+        )(new Set([1, 2, 3])) instanceof Promise
+      )
+      ade(
+        await r.flatMap(
+          powers,
+        )(new Set([1, 2, 3])),
+        new Set([1, 4, 8, 9, 27]),
+      )
+      aok(
+        r.flatMap(
+          x => powers(x).then(x => new Set(x))
+        )(new Set([1, 2, 3])) instanceof Promise
+      )
+      ade(
+        await r.flatMap(
+          x => powers(x).then(x => new Set(x))
+        )(new Set([1, 2, 3])),
+        new Set([1, 4, 8, 9, 27]),
+      )
+      aok(
+        r.flatMap(
+          async x => ({ square: x ** 2, cube: x ** 3 })
+        )(new Set([1, 2, 3])) instanceof Promise
+      )
+      ade(
+        await r.flatMap(
+          async x => ({ square: x ** 2, cube: x ** 3 })
+        )(new Set([1, 2, 3])),
+        new Set([1, 4, 8, 9, 27]),
+      )
+    })
+    it('maps then flattens a reducer function', async () => {
+      const powers = x => [x ** 2, x ** 3]
+      ade(
+        r.transform(
+          r.flatMap(powers),
+          [],
+        )([1, 2, 3]),
+        [1, 1, 4, 8, 9, 27],
+      )
+    })
+    it('[async] maps then flattens a reducer function', async () => {
+      const powers = async x => [x ** 2, x ** 3]
+      aok(
+        r.transform(
+          r.flatMap(powers),
+          [],
+        )([1, 2, 3]) instanceof Promise
+      )
+      ade(
+        await r.transform(
+          r.flatMap(powers),
+          [],
+        )([1, 2, 3]),
+        [1, 1, 4, 8, 9, 27],
+      )
+    })
+    it('throws error on non iterable reducer xi', async () => {
+      // TODO: better error message here
+      const square = x => x ** 2
+      assert.throws(
+        () => r.transform(
+          r.flatMap(square),
+          [],
+        )([1, 2, 3]),
+        new TypeError('reduce(...)(x); x invalid'),
+      )
+      assert.rejects(
+        () => r.transform(
+          r.flatMap(async x => square(x)),
+          [],
+        )([1, 2, 3]),
+        new TypeError('reduce(...)(x); x invalid'),
+      )
+    })
+    it('throws a TypeError on flatMap(nonFunction)', async () => {
+      assert.throws(
+        () => r.map.withIndex({}),
+        new TypeError('map.withIndex(x); x is not a function'),
+      )
+    })
+    it('throws a TypeError on flatMap(...)(null)', async () => {
+      assert.throws(
+        () => r.map.withIndex(() => 'hi')(null),
+        new TypeError('map.withIndex(...)(x); x invalid')
       )
     })
   })

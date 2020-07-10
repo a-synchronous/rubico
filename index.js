@@ -473,66 +473,6 @@ map.withIndex = fn => {
   }
 }
 
-const flattenIterable = (reducer, x0, x) => {
-  let y = x0
-  for (const xi of x) {
-    if (isIterable(xi)) {
-      for (const xii of xi) y = reducer(y, xii)
-    } else if (is(Object)(xi)) {
-      for (const k in xi) y = reducer(y, xi[k])
-    } else {
-      throw new TypeError('flatMap(...)(x); cannot flatten element of x')
-    }
-  }
-  return y
-}
-
-const flatten = (reducer, y, x) => {
-  if (isIterable(x)) return flattenIterable(reducer, y, x)
-  throw new TypeError('flatMap(...)(x); cannot flatten x')
-}
-
-const flattenToArray = x => flatten(
-  (y, xii) => { y.push(xii); return y },
-  [],
-  x,
-)
-
-const flattenToSet = x => flatten(
-  (y, xii) => y.add(xii),
-  new Set(),
-  x,
-)
-
-const flatMapArray = (fn, x) => {
-  const y = mapArray(fn, x)
-  return isPromise(y) ? y.then(flattenToArray) : flattenToArray(y)
-}
-
-const flatMapSet = (fn, x) => {
-  const y = mapSet(fn, x)
-  return isPromise(y) ? y.then(flattenToSet) : flattenToSet(y)
-}
-
-// TODO
-const flatMapMap = (fn, x) => {}
-
-// TODO
-const flatMapReducer = (fn, x) => {}
-
-const flatMap = fn => {
-  if (!isFunction(fn)) {
-    throw new TypeError('map.withIndex(x); x is not a function')
-  }
-  return x => {
-    if (isArray(x)) return flatMapArray(fn, x)
-    if (is(Set)(x)) return flatMapSet(fn, x)
-    // TODO: if (is(Map)(x)) return flatMapMap(fn, x)
-    // TODO: if (isFunction(x)) return flatMapReducer(fn, x)
-    throw new TypeError('flatMap(...)(x); x invalid')
-  }
-}
-
 const filterAsyncIterable = (fn, x) => (async function*() {
   for await (const xi of x) { if (await fn(xi)) yield xi }
 })()
@@ -755,6 +695,7 @@ const reduce = (fn, x0) => {
     throw new TypeError('reduce(x, y); x is not a function')
   }
   return x => {
+    // TODO: copy x0/check x0 func here
     if (isIterable(x)) return reduceIterable(fn, x0, x)
     if (isAsyncIterable(x)) {
       const state = { cancel: () => {} }
@@ -899,6 +840,64 @@ const transform = (fn, x0) => {
   if (isWritable(x0)) return writableTransform(fn, x0)
   if (is(Object)(x0)) return objectTransform(fn, x0)
   throw new TypeError('transform(x, y); x invalid')
+}
+
+const flattenIterable = (reducer, x0, x) => {
+  let y = x0
+  for (const xi of x) {
+    if (isIterable(xi)) {
+      for (const xii of xi) y = reducer(y, xii)
+    } else if (is(Object)(xi)) {
+      for (const k in xi) y = reducer(y, xi[k])
+    } else {
+      throw new TypeError('flatMap(...)(x); cannot flatten element of x')
+    }
+  }
+  return y
+}
+
+const flatten = (reducer, y, x) => {
+  if (isIterable(x)) return flattenIterable(reducer, y, x)
+  throw new TypeError('flatMap(...)(x); cannot flatten x')
+}
+
+const flattenToArray = x => flatten(
+  (y, xii) => { y.push(xii); return y },
+  [],
+  x,
+)
+
+const flattenToSet = x => flatten(
+  (y, xii) => y.add(xii),
+  new Set(),
+  x,
+)
+
+const flatMapArray = (fn, x) => {
+  const y = mapArray(fn, x)
+  return isPromise(y) ? y.then(flattenToArray) : flattenToArray(y)
+}
+
+const flatMapSet = (fn, x) => {
+  const y = mapSet(fn, x)
+  return isPromise(y) ? y.then(flattenToSet) : flattenToSet(y)
+}
+
+const flatMapReducer = (fn, reducer) => (y, xi) => {
+  const yi = fn(xi)
+  return isPromise(yi) ? yi.then(reduce(reducer, y)) : reduce(reducer, y)(yi)
+}
+
+const flatMap = fn => {
+  if (!isFunction(fn)) {
+    throw new TypeError('flatMap(x); x is not a function')
+  }
+  return x => {
+    if (isArray(x)) return flatMapArray(fn, x)
+    if (is(Set)(x)) return flatMapSet(fn, x)
+    if (isFunction(x)) return flatMapReducer(fn, x)
+    throw new TypeError('flatMap(...)(x); x invalid')
+  }
 }
 
 const isDelimitedBy = (delim, x) => (x
