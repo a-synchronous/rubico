@@ -20,6 +20,11 @@ const isOdd = x => (x % 2 === 1)
 
 const square = x => x ** 2
 
+const arrayOf = (getter, length) => Array.from(
+  { length },
+  typeof getter === 'function' ? getter : () => getter,
+)
+
 const asyncIsEven = x => new Promise(resolve => {
   setImmediate(() => resolve(x % 2 === 0))
 })
@@ -946,6 +951,21 @@ describe('rubico', () => {
       assert.throws(
         () => r.flatMap(x => x)([1, 2, 3, 4, 5]),
         new TypeError('flatMap(...)(x); cannot flatten element of x'),
+      )
+    })
+    it('maps then flattens an array of objects', async () => {
+      const createObject = () => ({ a: 1, b: 2, c: 3 })
+      ade(
+        r.flatMap(
+          x => x,
+        )(arrayOf(createObject, 3)),
+        [1, 2, 3, 1, 2, 3, 1, 2, 3],
+      )
+      ade(
+        r.flatMap(
+          r.map(x => x ** 2),
+        )(arrayOf(createObject, 3)),
+        [1, 4, 9, 1, 4, 9, 1, 4, 9],
       )
     })
     it('throws a TypeError on flatMap(nonFunction)', async () => {
