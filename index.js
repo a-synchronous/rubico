@@ -498,13 +498,21 @@ const flattenToArray = x => flatten(
   x,
 )
 
+const flattenToSet = x => flatten(
+  (y, xii) => y.add(xii),
+  new Set(),
+  x,
+)
+
 const flatMapArray = (fn, x) => {
   const y = mapArray(fn, x)
   return isPromise(y) ? y.then(flattenToArray) : flattenToArray(y)
 }
 
-// TODO
-const flatMapSet = (fn, x) => {}
+const flatMapSet = (fn, x) => {
+  const y = mapSet(fn, x)
+  return isPromise(y) ? y.then(flattenToSet) : flattenToSet(y)
+}
 
 // TODO
 const flatMapMap = (fn, x) => {}
@@ -518,7 +526,7 @@ const flatMap = fn => {
   }
   return x => {
     if (isArray(x)) return flatMapArray(fn, x)
-    // TODO: if (is(Set)(x)) return flatMapSet(fn, x)
+    if (is(Set)(x)) return flatMapSet(fn, x)
     // TODO: if (is(Map)(x)) return flatMapMap(fn, x)
     // TODO: if (isFunction(x)) return flatMapReducer(fn, x)
     throw new TypeError('flatMap(...)(x); x invalid')
