@@ -489,7 +489,6 @@ const flattenIterable = (reducer, x0, x) => {
 
 const flatten = (reducer, y, x) => {
   if (isIterable(x)) return flattenIterable(reducer, y, x)
-  // TODO if (isAsyncIterable(x)) return flattenAsyncIterable(reducer, y, x)
   throw new TypeError('flatMap(...)(x); cannot flatten x')
 }
 
@@ -498,9 +497,6 @@ const flattenToArray = x => flatten(
   [],
   x,
 )
-
-// TODO
-const flatMapAsyncIterable = (fn, x) => {}
 
 const flatMapArray = (fn, x) => {
   const y = mapArray(fn, x)
@@ -514,9 +510,6 @@ const flatMapSet = (fn, x) => {}
 const flatMapMap = (fn, x) => {}
 
 // TODO
-const flatMapIterable = (fn, x) => {}
-
-// TODO
 const flatMapReducer = (fn, x) => {}
 
 const flatMap = fn => {
@@ -524,11 +517,9 @@ const flatMap = fn => {
     throw new TypeError('map.withIndex(x); x is not a function')
   }
   return x => {
-    // TODO: if (isAsyncIterable(x)) return flatMapAsyncIterable(fn, x)
     if (isArray(x)) return flatMapArray(fn, x)
     // TODO: if (is(Set)(x)) return flatMapSet(fn, x)
-    if (is(Map)(x)) return flatMapMap(fn, x)
-    // TODO: if (isIterable(x)) return flatMapIterable(fn, x) // for generators or custom iterators
+    // TODO: if (is(Map)(x)) return flatMapMap(fn, x)
     // TODO: if (isFunction(x)) return flatMapReducer(fn, x)
     throw new TypeError('flatMap(...)(x); x invalid')
   }
