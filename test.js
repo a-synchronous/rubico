@@ -1184,6 +1184,42 @@ describe('rubico', () => {
       p.cancel()
       assert.rejects(p, new Error('cancelled'))
     })
+    it('initial value can be a function', async () => {
+      ade(
+        r.reduce((a, b) => a + b, () => 0)([1, 2, 3, 4, 5]),
+        15,
+      )
+    })
+    it('initial value can be an async function', async () => {
+      aok(
+        r.reduce((a, b) => a + b, async () => 0)([1, 2, 3, 4, 5]) instanceof Promise,
+      )
+      ade(
+        await r.reduce((a, b) => a + b, async () => 0)([1, 2, 3, 4, 5]),
+        15,
+      )
+    })
+    it('referential initial values are unsafe', async () => {
+      const square = x => x ** 2
+      const unsafeSquareAll = r.reduce((a, b) => { a.push(square(b)); return a }, [])
+      ade(
+        unsafeSquareAll([1, 2, 3]),
+        [1, 4, 9],
+      )
+      ade(
+        unsafeSquareAll([1, 2, 3]),
+        [1, 4, 9, 1, 4, 9],
+      )
+      const safeSquareAll = r.reduce((a, b) => { a.push(square(b)); return a }, () => [])
+      ade(
+        safeSquareAll([1, 2, 3]),
+        [1, 4, 9],
+      )
+      ade(
+        safeSquareAll([1, 2, 3]),
+        [1, 4, 9],
+      )
+    })
     it('throws a TypeError on reduce(nonFunction)', async () => {
       assert.throws(
         () => r.reduce({}),
@@ -1425,9 +1461,47 @@ describe('rubico', () => {
         { '1': 1, '2': 2, '3': 3, '4': 4, '5': 5 },
       )
     })
+    it('initial value can be a function', async () => {
+      const square = x => x ** 2
+      ade(
+        r.transform(r.map(square), () => [])([1, 2, 3]),
+        [1, 4, 9],
+      )
+    })
+    it('initial value can be an async function', async () => {
+      const square = x => x ** 2
+      aok(
+        r.transform(r.map(square), async () => [])([1, 2, 3]) instanceof Promise,
+      )
+      ade(
+        await r.transform(r.map(square), async () => [])([1, 2, 3]),
+        [1, 4, 9],
+      )
+    })
+    it('referential initial values are unsafe', async () => {
+      const square = x => x ** 2
+      const unsafeSquareAllTransform = r.transform(r.map(square), [])
+      ade(
+        unsafeSquareAllTransform([1, 2, 3]),
+        [1, 4, 9],
+      )
+      ade(
+        unsafeSquareAllTransform([1, 2, 3]),
+        [1, 4, 9, 1, 4, 9],
+      )
+      const safeSquareAllTransform = r.transform(r.map(square), () => [])
+      ade(
+        safeSquareAllTransform([1, 2, 3]),
+        [1, 4, 9],
+      )
+      ade(
+        safeSquareAllTransform([1, 2, 3]),
+        [1, 4, 9],
+      )
+    })
     it('throws a TypeError for transform(Object, () => {})', async () => {
       assert.throws(
-        () => r.transform(() => {}, undefined),
+        () => r.transform(() => {}, undefined)('hey'),
         new TypeError('transform(x, y); x invalid'),
       )
     })
