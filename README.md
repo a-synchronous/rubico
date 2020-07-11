@@ -42,7 +42,7 @@ Here are my recommendations for getting started.
 const {
   pipe, fork, assign,
   tap, tryCatch, switchCase,
-  map, filter, reduce, transform,
+  map, filter, reduce, transform, flatMap,
   any, all, and, or, not,
   eq, gt, lt, gte, lte,
   get, pick, omit,
