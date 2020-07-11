@@ -695,7 +695,6 @@ const reduce = (fn, x0) => {
     throw new TypeError('reduce(x, y); x is not a function')
   }
   return x => {
-    // TODO: copy x0/check x0 func here
     if (isIterable(x)) return reduceIterable(fn, x0, x)
     if (isAsyncIterable(x)) {
       const state = { cancel: () => {} }
