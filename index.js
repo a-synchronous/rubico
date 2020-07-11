@@ -690,17 +690,22 @@ const reduceObject = (fn, x0, x) => reduceIterable(
 
 // https://stackoverflow.com/questions/30233302/promise-is-it-possible-to-force-cancel-a-promise/30235261#30235261
 // https://stackoverflow.com/questions/62336381/is-this-promise-cancellation-implementation-for-reducing-an-async-iterable-on-th
-const reduce = (fn, x0) => {
+const reduce = (fn, init) => {
   if (!isFunction(fn)) {
     throw new TypeError('reduce(x, y); x is not a function')
   }
   return x => {
-    if (isIterable(x)) return reduceIterable(fn, x0, x)
+    const x0 = isFunction(init) ? init(x) : init
+    if (isIterable(x)) return (isPromise(x0)
+      ? x0.then(res => reduceIterable(fn, res, x))
+      : reduceIterable(fn, x0, x))
     if (isAsyncIterable(x)) {
       const state = { cancel: () => {} }
       const cancelToken = new Promise((_, reject) => { state.cancel = reject })
       const p = Promise.race([
-        reduceAsyncIterable(fn, x0, x),
+        (isPromise(x0)
+          ? x0.then(res => reduceAsyncIterable(fn, res, x))
+          : reduceAsyncIterable(fn, x0, x)),
         cancelToken,
       ])
       p.cancel = () => { state.cancel(new Error('cancelled')) }
@@ -716,10 +721,10 @@ const nullTransform = (fn, x0) => reduce(
   x0,
 )
 
-const arrayTransform = (fn, x0) => reduce(
+const arrayTransform = (fn, x0) => x => reduce(
   fn((y, xi) => { y.push(xi); return y }),
-  Array.from(x0),
-)
+  x0,
+)(x)
 
 const stringTransform = (fn, x0) => reduce(
   fn((y, xi) => `${y}${xi}`),
@@ -728,12 +733,12 @@ const stringTransform = (fn, x0) => reduce(
 
 const setTransform = (fn, x0) => reduce(
   fn((y, xi) => y.add(xi)),
-  new Set(x0),
+  x0,
 )
 
 const mapTransform = (fn, x0) => reduce(
   fn((y, xi) => y.set(xi[0], xi[1])),
-  new Map(x0),
+  x0,
 )
 
 const stringToCharCodes = x => {
@@ -821,24 +826,36 @@ const objectTransform = (fn, x0) => reduce(
   fn((y, xi) => {
     if (isArray(xi)) { y[xi[0]] = xi[1]; return y }
     return Object.assign(y, xi)
+    // TODO: implement
+    // if (is(Object)(xi)) Object.assign(y, xi)
+    // else throw new TypeError('...')
   }),
   x0,
 )
 
-const transform = (fn, x0) => {
+const _transformBranch = (fn, x0, x) => {
+  if (isNull(x0)) return nullTransform(fn, x0)(x)
+  if (isArray(x0)) return arrayTransform(fn, x0)(x)
+  if (isString(x0)) return stringTransform(fn, x0)(x)
+  if (is(Set)(x0)) return setTransform(fn, x0)(x)
+  if (is(Map)(x0)) return mapTransform(fn, x0)(x)
+  if (isNumberTypedArray(x0)) return numberTypedArrayTransform(fn, x0)(x)
+  if (isBigIntTypedArray(x0)) return bigIntTypedArrayTransform(fn, x0)(x)
+  if (isWritable(x0)) return writableTransform(fn, x0)(x)
+  if (is(Object)(x0)) return objectTransform(fn, x0)(x)
+  throw new TypeError('transform(x, y); x invalid')
+}
+
+const transform = (fn, init) => {
   if (!isFunction(fn)) {
     throw new TypeError('transform(x, y); y is not a function')
   }
-  if (isNull(x0)) return nullTransform(fn, x0)
-  if (isArray(x0)) return arrayTransform(fn, x0)
-  if (isString(x0)) return stringTransform(fn, x0)
-  if (is(Set)(x0)) return setTransform(fn, x0)
-  if (is(Map)(x0)) return mapTransform(fn, x0)
-  if (isNumberTypedArray(x0)) return numberTypedArrayTransform(fn, x0)
-  if (isBigIntTypedArray(x0)) return bigIntTypedArrayTransform(fn, x0)
-  if (isWritable(x0)) return writableTransform(fn, x0)
-  if (is(Object)(x0)) return objectTransform(fn, x0)
-  throw new TypeError('transform(x, y); x invalid')
+  return x => {
+    const x0 = isFunction(init) ? init(x) : init
+    return (isPromise(x0)
+      ? x0.then(res => _transformBranch(fn, res, x))
+      : _transformBranch(fn, x0, x))
+  }
 }
 
 const flattenIterable = (reducer, x0, x) => {
