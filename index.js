@@ -656,7 +656,9 @@ const reduceIterable = (fn, possiblyX0, x) => {
   if (isUndefined(y0)) {
     throw new TypeError('reduce(...)(x); x cannot be empty')
   }
-  let y = fn(y0, iter.next().value)
+  const { value, done } = iter.next()
+  if (done) return y0
+  let y = fn(y0, value)
   if (isPromise(y)) {
     return y.then(res => asyncReduceIterator(fn, res, iter))
   }
@@ -675,7 +677,9 @@ const reduceAsyncIterable = async (fn, possiblyY0, x) => {
   if (isUndefined(y0)) {
     throw new TypeError('reduce(...)(x); x cannot be empty')
   }
-  let y = await fn(y0, (await iter.next()).value)
+  const { value, done } = await iter.next()
+  if (done) return y0
+  let y = await fn(y0, value)
   for await (const xi of iter) {
     y = await fn(y, xi)
   }

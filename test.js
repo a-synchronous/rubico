@@ -1220,6 +1220,18 @@ describe('rubico', () => {
         [1, 4, 9],
       )
     })
+    it('=> [] for initial () => [] and input []', async () => {
+      const square = x => x ** 2
+      ade(
+        r.reduce(r.map(square)((a, b) => (a.push(b), a)), () => [])([]),
+        [],
+      )
+      const emptyAsyncIterator = (async function*(){})()
+      ade(
+        await r.reduce(r.map(square)((a, b) => (a.push(b), a)), () => [])(emptyAsyncIterator),
+        [],
+      )
+    })
     it('throws a TypeError on reduce(nonFunction)', async () => {
       assert.throws(
         () => r.reduce({}),
@@ -1497,6 +1509,18 @@ describe('rubico', () => {
       ade(
         safeSquareAllTransform([1, 2, 3]),
         [1, 4, 9],
+      )
+    })
+    it('=> [] for initial () => [] and input []', async () => {
+      const square = x => x ** 2
+      ade(
+        r.transform(r.map(square), () => [])([]),
+        [],
+      )
+      const emptyAsyncIterator = (async function*(){})()
+      ade(
+        await r.transform(r.map(square), () => [])(emptyAsyncIterator),
+        [],
       )
     })
     it('throws a TypeError for transform(Object, () => {})', async () => {
