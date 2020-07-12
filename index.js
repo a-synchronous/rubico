@@ -77,6 +77,8 @@ const range = (start, end) => Array.from({ length: end - start }, (x, i) => i + 
 
 const arrayOf = (item, length) => Array.from({ length }, () => item)
 
+const optionalThunk = (f, x) => isFunction(f) ? f(x) : f
+
 const curryFunction = (fn, ...args) => {
   if (args.length >= fn.length) return fn(...args)
   return (...moreArgs) => curryFunction(fn, ...args.concat(moreArgs))
@@ -699,7 +701,7 @@ const reduce = (fn, init) => {
     throw new TypeError('reduce(x, y); x is not a function')
   }
   return x => {
-    const x0 = isFunction(init) ? init(x) : init
+    const x0 = optionalThunk(init, x)
     if (isIterable(x)) return (isPromise(x0)
       ? x0.then(res => reduceIterable(fn, res, x))
       : reduceIterable(fn, x0, x))
@@ -855,7 +857,7 @@ const transform = (fn, init) => {
     throw new TypeError('transform(x, y); y is not a function')
   }
   return x => {
-    const x0 = isFunction(init) ? init(x) : init
+    const x0 = optionalThunk(init, x)
     return (isPromise(x0)
       ? x0.then(res => _transformBranch(fn, res, x))
       : _transformBranch(fn, x0, x))
@@ -927,10 +929,10 @@ const isDelimitedBy = (delim, x) => (x
 
 const arrayGet = (path, x, defaultValue) => {
   let y = x
-  if (!isDefined(y)) return defaultValue
+  if (!isDefined(y)) return optionalThunk(defaultValue, x)
   for (let i = 0; i < path.length; i++) {
     y = y[path[i]]
-    if (!isDefined(y)) return defaultValue
+    if (!isDefined(y)) return optionalThunk(defaultValue, x)
   }
   return y
 }
