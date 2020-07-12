@@ -11,6 +11,24 @@ import myUtil from 'rubico/x/my-util' // ESM
 
 # Documentation
 
+### is
+directly checks the constructor
+```javascript
+y = is(constructor)(x)
+```
+
+`constructor` is any function
+
+`x` is anything
+
+`y` is a boolean
+
+```javascript
+is(Array)([]) // true
+is(Array)({}) // false
+is(Object)([]) // false
+```
+
 ### trace
 logs data to console, returning data
 ```javascript
