@@ -1736,6 +1736,10 @@ describe('rubico', () => {
       ase(r.get('a', 'yo')(null), 'yo')
       ase(r.get('a', 'yo')(undefined), 'yo')
     })
+    it('defaultValue can be a function', async () => {
+      ase(r.get('a', obj => obj.b)({ b: 1 }), 1)
+      ase(r.get('a', obj => obj.b)({}), undefined)
+    })
     it('throws a TypeError on invalid path', async () => {
       assert.throws(
         () => r.get({}),
