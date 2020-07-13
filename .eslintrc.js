@@ -181,7 +181,7 @@ module.exports = {
         'no-new-func': 'error',
         'no-new-object': 'error',
         'no-new-require': 'error',
-        'no-new-wrappers': 'error',
+        'no-new-wrappers': 'off',
         'no-octal-escape': 'error',
         'no-param-reassign': 'off',
         'no-path-concat': 'error',
