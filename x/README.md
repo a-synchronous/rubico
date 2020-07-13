@@ -93,6 +93,35 @@ is(Array)({}) // false
 is(Object)([]) // false
 ```
 
+### isObject
+is object?
+```javascript
+y = isObject(x)
+```
+`x` is anything
+
+`y` is a boolean, True if `x` is directly an Object
+
+```javascript
+isObject({}) // true
+isObject([]) // false
+```
+
+### isString
+is string?
+```javascript
+y = isString(x)
+```
+`x` is anything
+
+`y` is a boolean, True if `x` is a string
+
+```javascript
+isString('hey') // true
+isString(1) // false
+isString(new String('ayo')) // true
+```
+
 ### pluck
 create a new collection by getting a path from every item of an old collection
 ```javascript
