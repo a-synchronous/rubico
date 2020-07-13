@@ -215,6 +215,30 @@ pipe([
 ])({ name: 'george', location: 'the jungle' })
 ```
 
+### unionWith
+create a flattened unique array with uniques given by a binary predicate
+```javascript
+y = unionWith((a, b) => boolean)(x)
+```
+`a` and `b` are items of items of `x`
+
+`(a, b) => boolean` returns True if a and b are duplicates
+
+`x` is an Array of Arrays of anything
+
+`y` is a flattened Array of unique items of items of `x` determined by `(a, b) => boolean`
+
+`y` is a Promise if any of the following are true
+ * `(a, b) => boolean` is asynchronous
+
+```javascript
+unionWith((a, b) => a.a === b.a)([
+  [{ a: 1 }, { a: 2 }],
+  [{ a: 2 }, { a: 3 }],
+  [{ b: 5 }, { a: 5 }],
+]) // [{ a: 1 }, { a: 2 }, { a: 3 }, { b: 5 }, { a: 5 }]
+```
+
 ### METHOD
 DESCRIPTION
 ```javascript
