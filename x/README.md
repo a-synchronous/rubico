@@ -11,6 +11,40 @@ import myUtil from 'rubico/x/my-util' // ESM
 
 # Documentation
 
+### defaultsDeep
+Deeply assigns defaults
+```javascript
+y = defaultsDeep(defaultObj, xk => boolean)(x)
+```
+
+`defaultObj` is an Object or Array
+
+`xk` is an element of `x` or any nested Objects or Arrays of `x`
+
+`xk => boolean` determines whether to assign a corresponding value from `defaultObj` in `y`
+
+`xk => boolean` is optional (defaults to `xk => typeof xk !== 'undefined' && xk !== null`)
+
+`x` is an Object or Array
+
+`y` is `x` deeply defaulted by `defaultObj`
+
+```javascript
+defaultsDeep({
+  a: 1,
+  b: { c: 2 },
+  e: [1, 2, { f: 3 }],
+})({
+  a: 1,
+  b: { d: 3 },
+  e: [1, 2, { g: 5 }],
+}) /* {
+  a: 1,
+  b: { c: 2, d: 3 },
+  e: [1, 2, { f: 3, g: 5 }],
+} */
+```
+
 ### is
 directly checks the constructor
 ```javascript
