@@ -45,6 +45,26 @@ defaultsDeep({
 } */
 ```
 
+### find
+get the first item in a collection that passes the test
+```javascript
+y = find(xi => boolean)(x)
+```
+
+`xi` is an element of `x`
+
+`x` is an Iterable or Object
+
+`y` is the first `xi` that passes the test `xi => boolean`
+
+`y` is a Promise if any of the following is true
+ * `xi => boolean` is asynchronous
+
+```javascript
+find(number => number > 2)([1, 2, 3]) // 3
+find(number => number > 2)({ a: 1, b: 2, c: 3 }) // 3
+```
+
 ### forEach
 execute a function for each item of a collection, returning input
 ```javascript
