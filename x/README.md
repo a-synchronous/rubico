@@ -75,6 +75,22 @@ forEach(console.log)([1, 2, 3])
 // 6
 ```
 
+### isEqual
+left strictly equals right? eager version of [eq](https://doc.rubico.land/#eq)
+```javascript
+y = isEqual(a, b)
+```
+`a` is anything but a function
+
+`b` is anything but a function
+
+`y` is a boolean, true if `a` strictly equals `b`
+
+```javascript
+isEqual({}, {}) // false
+isEqual(1, 1) // true
+```
+
 ### is
 directly checks the constructor
 ```javascript
