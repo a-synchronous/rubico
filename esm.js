@@ -1,4 +1,4 @@
-/* rubico v1.1.9
+/* rubico v1.2.0
  * https://github.com/a-synchronous/rubico
  * (c) 2019 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -60,17 +60,11 @@ const range = (start, end) => Array.from({ length: end - start }, (x, i) => i + 
 
 const arrayOf = (item, length) => Array.from({ length }, () => item)
 
+const optionalThunk = (f, x) => isFunction(f) ? f(x) : f
+
 const curryFunction = (fn, ...args) => {
   if (args.length >= fn.length) return fn(...args)
   return (...moreArgs) => curryFunction(fn, ...args.concat(moreArgs))
-}
-
-// TODO: convert this to special curry https://github.com/a-synchronous/rubico/issues/18
-const curry = fn => {
-  if (!isFunction(fn)) {
-    throw new TypeError(`${type(fn)} is not a function`)
-  }
-  return (...args) => curryFunction(fn, ...args)
 }
 
 const _chain = (fnsIter, args) => {
@@ -647,7 +641,9 @@ const reduceIterable = (fn, possiblyX0, x) => {
   if (isUndefined(y0)) {
     throw new TypeError('reduce(...)(x); x cannot be empty')
   }
-  let y = fn(y0, iter.next().value)
+  const { value, done } = iter.next()
+  if (done) return y0
+  let y = fn(y0, value)
   if (isPromise(y)) {
     return y.then(res => asyncReduceIterator(fn, res, iter))
   }
@@ -666,7 +662,9 @@ const reduceAsyncIterable = async (fn, possiblyY0, x) => {
   if (isUndefined(y0)) {
     throw new TypeError('reduce(...)(x); x cannot be empty')
   }
-  let y = await fn(y0, (await iter.next()).value)
+  const { value, done } = await iter.next()
+  if (done) return y0
+  let y = await fn(y0, value)
   for await (const xi of iter) {
     y = await fn(y, xi)
   }
@@ -681,17 +679,22 @@ const reduceObject = (fn, x0, x) => reduceIterable(
 
 // https://stackoverflow.com/questions/30233302/promise-is-it-possible-to-force-cancel-a-promise/30235261#30235261
 // https://stackoverflow.com/questions/62336381/is-this-promise-cancellation-implementation-for-reducing-an-async-iterable-on-th
-const reduce = (fn, x0) => {
+const reduce = (fn, init) => {
   if (!isFunction(fn)) {
     throw new TypeError('reduce(x, y); x is not a function')
   }
   return x => {
-    if (isIterable(x)) return reduceIterable(fn, x0, x)
+    const x0 = optionalThunk(init, x)
+    if (isIterable(x)) return (isPromise(x0)
+      ? x0.then(res => reduceIterable(fn, res, x))
+      : reduceIterable(fn, x0, x))
     if (isAsyncIterable(x)) {
       const state = { cancel: () => {} }
       const cancelToken = new Promise((_, reject) => { state.cancel = reject })
       const p = Promise.race([
-        reduceAsyncIterable(fn, x0, x),
+        (isPromise(x0)
+          ? x0.then(res => reduceAsyncIterable(fn, res, x))
+          : reduceAsyncIterable(fn, x0, x)),
         cancelToken,
       ])
       p.cancel = () => { state.cancel(new Error('cancelled')) }
@@ -707,10 +710,10 @@ const nullTransform = (fn, x0) => reduce(
   x0,
 )
 
-const arrayTransform = (fn, x0) => reduce(
+const arrayTransform = (fn, x0) => x => reduce(
   fn((y, xi) => { y.push(xi); return y }),
-  Array.from(x0),
-)
+  x0,
+)(x)
 
 const stringTransform = (fn, x0) => reduce(
   fn((y, xi) => `${y}${xi}`),
@@ -719,12 +722,12 @@ const stringTransform = (fn, x0) => reduce(
 
 const setTransform = (fn, x0) => reduce(
   fn((y, xi) => y.add(xi)),
-  new Set(x0),
+  x0,
 )
 
 const mapTransform = (fn, x0) => reduce(
   fn((y, xi) => y.set(xi[0], xi[1])),
-  new Map(x0),
+  x0,
 )
 
 const stringToCharCodes = x => {
@@ -812,24 +815,94 @@ const objectTransform = (fn, x0) => reduce(
   fn((y, xi) => {
     if (isArray(xi)) { y[xi[0]] = xi[1]; return y }
     return Object.assign(y, xi)
+    // TODO: implement
+    // if (is(Object)(xi)) Object.assign(y, xi)
+    // else throw new TypeError('...')
   }),
   x0,
 )
 
-const transform = (fn, x0) => {
+const _transformBranch = (fn, x0, x) => {
+  if (isNull(x0)) return nullTransform(fn, x0)(x)
+  if (isArray(x0)) return arrayTransform(fn, x0)(x)
+  if (isString(x0)) return stringTransform(fn, x0)(x)
+  if (is(Set)(x0)) return setTransform(fn, x0)(x)
+  if (is(Map)(x0)) return mapTransform(fn, x0)(x)
+  if (isNumberTypedArray(x0)) return numberTypedArrayTransform(fn, x0)(x)
+  if (isBigIntTypedArray(x0)) return bigIntTypedArrayTransform(fn, x0)(x)
+  if (isWritable(x0)) return writableTransform(fn, x0)(x)
+  if (is(Object)(x0)) return objectTransform(fn, x0)(x)
+  throw new TypeError('transform(x, y); x invalid')
+}
+
+const transform = (fn, init) => {
   if (!isFunction(fn)) {
     throw new TypeError('transform(x, y); y is not a function')
   }
-  if (isNull(x0)) return nullTransform(fn, x0)
-  if (isArray(x0)) return arrayTransform(fn, x0)
-  if (isString(x0)) return stringTransform(fn, x0)
-  if (is(Set)(x0)) return setTransform(fn, x0)
-  if (is(Map)(x0)) return mapTransform(fn, x0)
-  if (isNumberTypedArray(x0)) return numberTypedArrayTransform(fn, x0)
-  if (isBigIntTypedArray(x0)) return bigIntTypedArrayTransform(fn, x0)
-  if (isWritable(x0)) return writableTransform(fn, x0)
-  if (is(Object)(x0)) return objectTransform(fn, x0)
-  throw new TypeError('transform(x, y); x invalid')
+  return x => {
+    const x0 = optionalThunk(init, x)
+    return (isPromise(x0)
+      ? x0.then(res => _transformBranch(fn, res, x))
+      : _transformBranch(fn, x0, x))
+  }
+}
+
+const flattenIterable = (reducer, x0, x) => {
+  let y = x0
+  for (const xi of x) {
+    if (isIterable(xi)) {
+      for (const xii of xi) y = reducer(y, xii)
+    } else if (is(Object)(xi)) {
+      for (const k in xi) y = reducer(y, xi[k])
+    } else {
+      throw new TypeError('flatMap(...)(x); cannot flatten element of x')
+    }
+  }
+  return y
+}
+
+const flatten = (reducer, y, x) => {
+  if (isIterable(x)) return flattenIterable(reducer, y, x)
+  throw new TypeError('flatMap(...)(x); cannot flatten x')
+}
+
+const flattenToArray = x => flatten(
+  (y, xii) => { y.push(xii); return y },
+  [],
+  x,
+)
+
+const flattenToSet = x => flatten(
+  (y, xii) => y.add(xii),
+  new Set(),
+  x,
+)
+
+const flatMapArray = (fn, x) => {
+  const y = mapArray(fn, x)
+  return isPromise(y) ? y.then(flattenToArray) : flattenToArray(y)
+}
+
+const flatMapSet = (fn, x) => {
+  const y = mapSet(fn, x)
+  return isPromise(y) ? y.then(flattenToSet) : flattenToSet(y)
+}
+
+const flatMapReducer = (fn, reducer) => (y, xi) => {
+  const yi = fn(xi)
+  return isPromise(yi) ? yi.then(reduce(reducer, y)) : reduce(reducer, y)(yi)
+}
+
+const flatMap = fn => {
+  if (!isFunction(fn)) {
+    throw new TypeError('flatMap(x); x is not a function')
+  }
+  return x => {
+    if (isArray(x)) return flatMapArray(fn, x)
+    if (is(Set)(x)) return flatMapSet(fn, x)
+    if (isFunction(x)) return flatMapReducer(fn, x)
+    throw new TypeError('flatMap(...)(x); x invalid')
+  }
 }
 
 const isDelimitedBy = (delim, x) => (x
@@ -839,10 +912,10 @@ const isDelimitedBy = (delim, x) => (x
 
 const arrayGet = (path, x, defaultValue) => {
   let y = x
-  if (!isDefined(y)) return defaultValue
+  if (!isDefined(y)) return optionalThunk(defaultValue, x)
   for (let i = 0; i < path.length; i++) {
     y = y[path[i]]
-    if (!isDefined(y)) return defaultValue
+    if (!isDefined(y)) return optionalThunk(defaultValue, x)
   }
   return y
 }
