@@ -93,6 +93,25 @@ is(Array)({}) // false
 is(Object)([]) // false
 ```
 
+### pluck
+create a new collection by getting a path from every item of an old collection
+```javascript
+y = pluck(path, defaultValue)(x)
+```
+`path` is a Number, String, dot-deliminated String, or Array
+
+`defaultValue` is anything, including a function
+
+if `defaultValue` is a function, it is lazily evaluated with `x`
+
+`x` is an Iterable, AsyncIterable, Object, or reducer function
+
+```javascript
+pluck('a.b')([{ a: { b: 1 } }, { a: { b: 2 } }]) // [1, 2]
+
+transform(pluck('a'), () => [])([{ a: 1 }, { a: 2 }, { a: 3 }]) // [1, 2, 3]
+```
+
 ### trace
 logs data to console, returning data
 ```javascript
