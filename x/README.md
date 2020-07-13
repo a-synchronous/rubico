@@ -45,6 +45,36 @@ defaultsDeep({
 } */
 ```
 
+### forEach
+execute a function for each item of a collection, returning input
+```javascript
+y = forEach(f)(x)
+```
+`f` is a function
+
+`f` is called for each item of `x`
+
+`x` is an Iterable, AsyncIterable, Object, or reducer function
+
+`y` is `x`
+
+```javascript
+forEach(console.log)([1, 2, 3])
+// 1
+// 2
+// 3
+// [1, 2, 3]
+
+[1, 2, 3].reduce(
+  forEach(console.log)((a, b) => a + b),
+  0,
+)
+// 1
+// 2
+// 3
+// 6
+```
+
 ### is
 directly checks the constructor
 ```javascript
