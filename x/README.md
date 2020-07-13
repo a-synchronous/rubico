@@ -75,6 +75,29 @@ forEach(console.log)([1, 2, 3])
 // 6
 ```
 
+### isDeepEqual
+left deeply equals right? eager version of eq.deep
+```javascript
+y = isDeepEqual(a, b)
+```
+`a` is anything but a function
+
+`b` is anything but a function
+
+`y` is a boolean, true if `a` deeply equals `b`
+
+```javascript
+isDeepEqual({ a: 1 }, { b: 2 }) // false
+isDeepEqual(
+  [1, 2, { a: new Set([3, 4, new Map([[5, { b: 6 }]])]) }],
+  [1, 2, { a: new Set([3, 4, new Map([[5, { b: 6 }]])]) }],
+) // true
+isDeepEqual(
+  [1, 2, { a: new Set([3, 4, new Map([[5, { b: 6 }]])]) }],
+  [1, 2, { a: new Set([3, 4, new Map([[5, { b: 7 }]])]) }],
+) // false
+```
+
 ### isEqual
 left strictly equals right? eager version of [eq](https://doc.rubico.land/#eq)
 ```javascript
