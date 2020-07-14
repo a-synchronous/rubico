@@ -60,9 +60,9 @@ browser script, global `rubico`
 <script src="https://unpkg.com/rubico"></script>
 ```
 
-with `deno`
+browser module
 ```javascript
-import rubico from 'https://deno.land/x/rubico/rubico.js'
+import rubico from 'https://unpkg.com/rubico/esm.js'
 ```
 
 ### System Requirements
