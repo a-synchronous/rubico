@@ -129,8 +129,7 @@ y = isEmpty(x)
 
 ```javascript
 isEmpty({}) // true
-isEmpty([]) // true
-isEmpty('hey') // false
+isEmpty([1, 2, 3]) // false
 isEmpty(0) // TypeError
 ```
 
