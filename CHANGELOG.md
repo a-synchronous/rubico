@@ -1,3 +1,8 @@
+## v1.2.2
+ * rubico/x/isEmpty - check if a collection is empty
+ * rubico/x/first - get first item from a collection
+ * rubico/x/last - get last item from a collection
+
 ## v1.2.0
  * flatMap; map + flatten
  * transform(f, init), reduce(f, init); init can be a function
