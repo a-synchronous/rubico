@@ -118,6 +118,22 @@ isDeepEqual(
 ) // false
 ```
 
+### isEmpty
+Checks if a collection is empty
+```javascript
+y = isEmpty(x)
+```
+`x` is an Object, Array, Set, or Map
+
+`y` is a boolean value, true if `x` is empty
+
+```javascript
+isEmpty({}) // true
+isEmpty([]) // true
+isEmpty('hey') // false
+isEmpty(0) // TypeError
+```
+
 ### isEqual
 left strictly equals right? eager version of [eq](https://doc.rubico.land/#eq)
 ```javascript
