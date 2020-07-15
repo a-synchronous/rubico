@@ -210,6 +210,20 @@ isString(1) // false
 isString(new String('ayo')) // true
 ```
 
+### last
+get the last element from a collection
+```javascript
+y = last(x)
+```
+
+`x` is a String or Array
+
+`y` is the last item of `x`
+
+```javascript
+last([1,2,3]) // 3
+```
+
 ### pluck
 create a new collection by getting a path from every item of an old collection
 ```javascript
