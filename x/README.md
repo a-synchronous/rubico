@@ -65,6 +65,20 @@ find(number => number > 2)([1, 2, 3]) // 3
 find(number => number > 2)({ a: 1, b: 2, c: 3 }) // 3
 ```
 
+### first
+get the first element from a collection
+```javascript
+y = first(x)
+```
+
+`x` is a String or Array
+
+`y` is the last item of `x`
+
+```javascript
+first([1,2,3]) // 1
+```
+
 ### forEach
 execute a function for each item of a collection, returning input
 ```javascript
