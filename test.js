@@ -547,6 +547,37 @@ describe('rubico', () => {
         new TypeError('switchCase(x); x[1] is not a function'),
       )
     })
+    it('catches errors thrown from inner function', async () => {
+      assert.throws(
+        () => r.switchCase([
+          () => false, x => x,
+          () => {
+            throw new Error('hey')
+          },
+        ])(),
+        new Error('hey'),
+      )
+    })
+    it('catches errors rejected from inner function', async () => {
+      assert.rejects(
+        () => r.switchCase([
+          async () => false, x => x,
+          () => {
+            throw new Error('hey')
+          },
+        ])(),
+        new Error('hey'),
+      )
+      assert.rejects(
+        () => r.switchCase([
+          () => false, x => x,
+          async () => {
+            throw new Error('hey')
+          },
+        ])(),
+        new Error('hey'),
+      )
+    })
   })
 
   describe('map', () => {
