@@ -20,13 +20,22 @@ const defaultsDeep = (defaultCollection, checkingFunc = isDefined) => {
     ].join('; '))
   }
   return x => reduce(
-    (y, [k, v]) => switchCase([
+    (y, [k, defaultValue]) => switchCase([
       or([
         is(Object),
         is(Array),
-      ]), xk => (y[k] = defaultsDeep(v, checkingFunc)(xk), y),
-      checkingFunc, xk => (y[k] = xk, y),
-      () => (y[k] = v, y),
+      ]), xk => {
+        y[k] = defaultsDeep(defaultValue, checkingFunc)(xk)
+        return y
+      },
+      checkingFunc, xk => {
+        y[k] = xk
+        return y
+      },
+      () => {
+        y[k] = defaultValue
+        return y
+      },
     ])(get(k)(x)),
     () => new x.constructor(x)
   )(entries(defaultCollection))
