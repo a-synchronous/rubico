@@ -756,8 +756,6 @@ const stringToCharCodes = x => {
 const toNumberTypedArray = (constructor, x) => {
   if (isNumber(x)) return constructor.of(x)
   if (isString(x)) return new constructor(stringToCharCodes(x))
-  if (isNumberTypedArray(x)) return new constructor(x)
-  if (isArray(x) && x.every(isNumber)) return new constructor(x)
   throw new TypeError([
     `toNumberTypedArray(${constructor.name}, y)`,
     `cannot convert y to ${constructor.name}`,
