@@ -357,6 +357,18 @@ describe('rubico', () => {
     })
   })
 
+  describe('tap.if', () => {
+    xit('tap(condition, f); conditional tap; only calls fn on truthy condition', async () => {
+      const isOdd = x => x % 2 === 1
+      const oddNumbers = []
+      ade(
+        r.tap.if(isOdd, number => oddNumbers.push(number))([1, 2, 3, 4, 5]),
+        [1, 2, 3, 4, 5],
+      )
+      ade(oddNumbers, [1, 3, 5])
+    })
+  })
+
   describe('tryCatch', () => {
     it('tries a sync function and catches with a sync function', async () => {
       const errProp = (err, x) => { err.x = x; return err }

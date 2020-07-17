@@ -194,6 +194,7 @@ const tapReducer = (fn, reducer) => (y, xi) => {
   return isPromise(point) ? point.then(() => reducer(y, xi)) : reducer(y, xi)
 }
 
+// function fn => any x => any x
 const tap = fn => {
   if (!isFunction(fn)) {
     throw new TypeError('tap(x); x is not a function')
@@ -204,6 +205,10 @@ const tap = fn => {
     return isPromise(point) ? point.then(() => x) : x
   }
 }
+
+/* TODO: https://github.com/a-synchronous/rubico/issues/100
+tap.if = fn => {}
+*/
 
 const tryCatch = (fn, onError) => {
   if (!isFunction(fn)) {
