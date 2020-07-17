@@ -11,10 +11,9 @@ const find = f => {
     throw new TypeError('find(f); f is not a function')
   }
   return x => reduce(
-    (y, xi) => isDefined(y) ? y : switchCase([
-      f, identity,
-      () => undefined,
-    ])(xi),
+    (y, xi) => (isDefined(y)
+      ? y
+      : switchCase([f, identity, () => undefined])(xi)),
     () => null,
   )(x)
 }

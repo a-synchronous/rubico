@@ -23,6 +23,10 @@ describe('find', () => {
       find(x => x > 3)([1, 2, 3]),
       undefined,
     )
+    assert.strictEqual(
+      find(x => x === 1)([1, 2, 3]),
+      1,
+    )
   })
   it('works with async functions', async () => {
     assert.strictEqual(
