@@ -1230,15 +1230,6 @@ describe('rubico', () => {
         15,
       )
     })
-    it('initial value can be an async function', async () => {
-      aok(
-        r.reduce((a, b) => a + b, async () => 0)([1, 2, 3, 4, 5]) instanceof Promise,
-      )
-      ade(
-        await r.reduce((a, b) => a + b, async () => 0)([1, 2, 3, 4, 5]),
-        15,
-      )
-    })
     it('referential initial values are unsafe', async () => {
       const square = x => x ** 2
       const unsafeSquareAll = r.reduce((a, b) => { a.push(square(b)); return a }, [])
