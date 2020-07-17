@@ -64,7 +64,7 @@ browser script, global `rubico`
 
 browser module
 ```javascript
-import rubico from 'https://unpkg.com/rubico/esm.js'
+import rubico from 'https://unpkg.com/rubico/es.js'
 ```
 
 ### System Requirements
