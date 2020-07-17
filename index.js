@@ -621,7 +621,7 @@ const filterStringWithIndex = (fn, x) => {
 
 filter.withIndex = fn => {
   if (!isFunction(fn)) {
-    throw new TypeError('filter.withIndex(x); x is not a function')
+    throw new TypeError('filter.withIndex(f); f is not a function')
   }
   return x => {
     // if (isAsyncIterable(x)) return filterAsyncIterable(fn, x)
@@ -634,7 +634,7 @@ filter.withIndex = fn => {
     // if (isIterable(x)) return filterIterable(fn, x) // for generators or custom iterators
     // if (is(Object)(x)) return filterObject(fn, x)
     // if (isFunction(x)) return filterReducer(fn, x)
-    throw new TypeError('filter(...)(x); x invalid')
+    throw new TypeError('filter.withIndex(...)(x); x invalid')
   }
 }
 

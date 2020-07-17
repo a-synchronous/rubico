@@ -1113,6 +1113,18 @@ describe('rubico', () => {
     it('filters characters from an array based on a sync predicate', async () => {
       ade(r.filter.withIndex((x, i) => x !== i)([0, 1, 2, 3, 4, 5, 5, 5]), [5, 5])
     })
+    it('throws TypeError on filter.withIndex(nonFunction)', async () => {
+      assert.throws(
+        () => r.filter.withIndex('yo'),
+        new TypeError('filter.withIndex(f); f is not a function'),
+      )
+    })
+    it('throws TypeError on filter.withIndex(...)(invalid)', async () => {
+      assert.throws(
+        () => r.filter.withIndex(x => x)(0),
+        new TypeError('filter.withIndex(...)(x); x invalid'),
+      )
+    })
   })
 
   describe('reduce', () => {
