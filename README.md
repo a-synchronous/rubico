@@ -16,6 +16,13 @@ pipe([
   filter(isOdd),
   map(square),
 ])([1, 2, 3, 4, 5]) // [1, 9, 25]
+
+const asyncSquare = async x => x ** 2
+
+pipe([
+  filter(isOdd),
+  map(asyncSquare),
+])([1, 2, 3, 4, 5]) // Promise { [1, 9, 25] }
 ```
 
 # Motivation
