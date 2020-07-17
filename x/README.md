@@ -302,6 +302,21 @@ unionWith((a, b) => a.a === b.a)([
 ]) // [{ a: 1 }, { a: 2 }, { a: 3 }, { b: 5 }, { a: 5 }]
 ```
 
+# Contributing
+**Additions to this list are welcome and encouraged!**. If you have a suggestion, open a new issue as `rubico/x/your-suggested-module`.
+
+project structure
+```
+x/
+  yourUtilHere.js
+  yourUtilHere.test.js - uses mocha, run this with `npm test`
+```
+
+Requirements for modules in `rubico/x/`
+ * must use rubico
+ * must work in node environment
+ * must include a documentation entry following this format
+
 ### METHOD
 DESCRIPTION
 ```javascript
@@ -311,6 +326,3 @@ RULES
 ```javascript
 // EXAMPLE
 ```
-
-# Contributing
-[See this issue](https://github.com/a-synchronous/rubico/issues/41)
