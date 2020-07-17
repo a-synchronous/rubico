@@ -757,8 +757,8 @@ const toNumberTypedArray = (constructor, x) => {
   if (isNumber(x)) return constructor.of(x)
   if (isString(x)) return new constructor(stringToCharCodes(x))
   throw new TypeError([
-    `toNumberTypedArray(${constructor.name}, y)`,
-    `cannot convert y to ${constructor.name}`,
+    `toNumberTypedArray(typedArray, y)`,
+    `cannot convert y to typedArray`,
   ].join('; '))
 }
 

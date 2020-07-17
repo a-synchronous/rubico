@@ -1431,9 +1431,9 @@ describe('rubico', () => {
     })
     it('sync transforms iterable to a number TypedArray', async () => {
       for (const constructor of numberTypedArrayConstructors) {
-        ade(
-          r.transform(squareOdds, new constructor(0))([1, 2, 3, 4, 5]),
-          new constructor([1, 9, 25]),
+        assert.throws(
+          () => r.transform(r.map(x => x), new constructor(0))([true, false, false]),
+          new TypeError('toNumberTypedArray(typedArray, y); cannot convert y to typedArray'),
         )
       }
     })
