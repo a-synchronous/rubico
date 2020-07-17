@@ -79,11 +79,6 @@ const arrayOf = (item, length) => Array.from({ length }, () => item)
 
 const optionalThunk = (f, x) => isFunction(f) ? f(x) : f
 
-const curryFunction = (fn, ...args) => {
-  if (args.length >= fn.length) return fn(...args)
-  return (...moreArgs) => curryFunction(fn, ...args.concat(moreArgs))
-}
-
 const _chain = (fnsIter, args) => {
   const { value: f0 } = fnsIter.next()
   let y = f0(...args)
