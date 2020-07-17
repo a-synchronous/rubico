@@ -334,10 +334,10 @@ describe('rubico', () => {
   })
 
   describe('tap', () => {
-    it('calls a provided sync function with input, returning input', async () => {
+    it('[sync] calls a provided function with input, returning input', async () => {
       ase(r.tap(x => x + 1)(1), 1)
     })
-    it('calls a provided async function with input, returning input', async () => {
+    it('[async] calls a provided function with input, returning input', async () => {
       aok(r.tap(async x => x + 1)(1) instanceof Promise)
       ase(await r.tap(async x => x + 1)(1), 1)
     })
@@ -358,7 +358,7 @@ describe('rubico', () => {
   })
 
   describe('tap.if', () => {
-    xit('tap(condition, f); conditional tap; only calls fn on truthy condition', async () => {
+    xit('[sync] tap.if(condition, f); conditional tap; only calls fn on truthy condition', async () => {
       const isOdd = x => x % 2 === 1
       const oddNumbers = []
       ade(
@@ -367,6 +367,11 @@ describe('rubico', () => {
       )
       ade(oddNumbers, [1, 3, 5])
     })
+    xit('[async] tap.if(condition, f); conditional tap; only calls fn on truthy condition')
+    xit('throws TypeError on tap.if(nonFunction, f)')
+    xit('throws TypeError on tap.if(condition, nonFunction)')
+    xit('handles errors thrown from condition of tap.if(condition, f)')
+    xit('handles errors thrown from f of tap.if(condition, f)')
   })
 
   describe('tryCatch', () => {
