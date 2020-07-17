@@ -1,4 +1,6 @@
 # rubico
+![Node.js CI](https://github.com/a-synchronous/rubico/workflows/Node.js%20CI/badge.svg?branch=master)
+
 🏞 a shallow river in northeastern Italy, just south of Ravenna
 
 [a]synchronous functional syntax
