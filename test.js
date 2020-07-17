@@ -1185,6 +1185,15 @@ describe('rubico', () => {
         ase(await r.reduce(asyncMult, 10)(x), 1200)
       }
     })
+    it('reduces an iterable with variadic sync/async reducer', async () => {
+      ade(
+        await r.reduce(
+          (a, b) => b === 1 ? a + b : Promise.resolve(a + b),
+          0,
+        )([1, 2, 3, 4, 5]),
+        15,
+      )
+    })
     it('returns a cancellable Promise for async iterables', async () => {
       const infiniteAsyncIterable = async function*() {
         await Promise.race([]),
