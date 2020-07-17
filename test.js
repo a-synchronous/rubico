@@ -1739,13 +1739,13 @@ describe('rubico', () => {
     it('throws a TypeError on flatMap(nonFunction)', async () => {
       assert.throws(
         () => r.flatMap({}),
-        new TypeError('map.withIndex(x); x is not a function'),
+        new TypeError('flatMap(x); x is not a function'),
       )
     })
     it('throws a TypeError on flatMap(...)(null)', async () => {
       assert.throws(
         () => r.flatMap(() => 'hi')(null),
-        new TypeError('map.withIndex(...)(x); x invalid')
+        new TypeError('flatMap(...)(x); x invalid')
       )
     })
   })
@@ -1840,7 +1840,7 @@ describe('rubico', () => {
   describe('any', () => {
     const numbers = [1, 2, 3, 4, 5]
     const numbersObject = { a: 1, b: 2, c: 3, d: 4, e: 5 }
-    it('syncly evaluates fn against all items in iterable, true if any evaluation is truthy', async () => {
+    it('[sync] tests fn against all items of iterable, true if any evaluation is truthy', async () => {
       ase(r.any(x => x > 5)(numbers), false)
       ase(r.any(x => x > 0)(numbers), true)
       ase(r.any(x => x > 5)(new Set(numbers)), false)
@@ -1848,7 +1848,7 @@ describe('rubico', () => {
       ase(r.any(x => x > 5)(numbersObject), false)
       ase(r.any(x => x > 0)(numbersObject), true)
     })
-    it('asyncly evaluates fn against all items in iterable, true if any evaluation is truthy', async () => {
+    it('[async] tests fn against all items of iterable, true if any evaluation is truthy', async () => {
       aok(r.any(async x => x > 5)(numbers) instanceof Promise)
       ase(await r.any(async x => x > 5)(numbers), false)
       ase(await r.any(async x => x > 0)(numbers), true)
@@ -1856,6 +1856,12 @@ describe('rubico', () => {
       ase(await r.any(async x => x > 0)(new Set(numbers)), true)
       ase(await r.any(async x => x > 5)(numbersObject), false)
       ase(await r.any(async x => x > 0)(numbersObject), true)
+    })
+    it('tests a variadic async function', async () => {
+      ase(
+        await r.any(x => x < 2 ? Promise.resolve(false) : true)([1, 2, 3, 4, 5]),
+        true,
+      )
     })
     it('throws TypeError on non function setup', async () => {
       assert.throws(
@@ -1890,6 +1896,12 @@ describe('rubico', () => {
       ase(await r.all(async x => x > 0)(new Set(numbers)), true)
       ase(await r.all(async x => x > 5)(numbersObject), false)
       ase(await r.all(async x => x > 0)(numbersObject), true)
+    })
+    it('tests a variadic async function', async () => {
+      ase(
+        await r.all(x => x < 2 ? Promise.resolve(true) : false)([1, 2, 3, 4, 5]),
+        false,
+      )
     })
     it('throws TypeError on all(nonFunction)', async () => {
       assert.throws(
