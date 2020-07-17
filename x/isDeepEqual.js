@@ -3,10 +3,6 @@ const is = require('./is')
 
 const identity = x => x
 
-const isDefined = x => x !== undefined && x !== null
-
-const isIterable = x => isDefined(x) && isDefined(x[Symbol.iterator])
-
 const isTraversable = (a, b) => or([
   ([a, b]) => is(Object)(a) && is(Object)(b),
   ([a, b]) => is(Array)(a) && is(Array)(b),
@@ -15,36 +11,27 @@ const isTraversable = (a, b) => or([
 ])([a, b])
 
 const entries = x => {
-  if (isDefined(x) && typeof x.entries === 'function') return x.entries()
   if (is(Object)(x)) return (function*(obj) {
     for (const k in obj) yield [k, x[k]]
   })(x)
-  throw new Error('cannot get entries')
+  return x.entries()
 }
 
-const findByKey = (key, collection) => switchCase([
-  or([
-    is(Array),
-    is(Object),
-  ]), col => get(key)(col),
+const findValueByKey = (key, collection) => switchCase([
   is(Set), col => col.has(key) ? key : null,
   is(Map), col => col.get(key),
-  () => {
-    throw new Error('cannot find by key')
-  },
+  col => get(key)(col),
 ])(collection)
-
-const concat = (a, b) => a.concat(b)
 
 const isDeepEqual = (collection, x) => isTraversable(collection, x) ? pipe([
   transform(
-    map(([k, v]) => isDeepEqual(findByKey(k, collection), v)),
+    map(([k, v]) => isDeepEqual(findValueByKey(k, collection), v)),
     () => [],
   ),
   all(eq(true, identity)),
 ])(entries(x)) && pipe([
   transform(
-    map(([k, v]) => isDeepEqual(findByKey(k, x), v)),
+    map(([k, v]) => isDeepEqual(findValueByKey(k, x), v)),
     () => [],
   ),
   all(eq(true, identity)),
