@@ -712,7 +712,10 @@ const reduce = (fn, init) => {
       p.cancel = () => { state.cancel(new Error('cancelled')) }
       return p
     }
-    if (is(Object)(x)) return reduceObject(fn, x0, x)
+    if (is(Object)(x)) return (isPromise(x0)
+      ? x0.then(res => reduceObject(fn, res, x))
+      : reduceObject(fn, x0, x)
+    )
     throw new TypeError('reduce(...)(x); x invalid')
   }
 }

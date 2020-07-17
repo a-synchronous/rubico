@@ -1201,6 +1201,34 @@ describe('rubico', () => {
         r.reduce((a, b) => a + b, () => 0)([1, 2, 3, 4, 5]),
         15,
       )
+      const asyncNumbers = async function*() {
+        for (let i = 1; i <= 5; i++) yield i
+      }
+      ade(
+        await r.reduce((a, b) => a + b, () => 0)(asyncNumbers()),
+        15,
+      )
+      ade(
+        await r.reduce((a, b) => a + b, () => 0)({ a: 1, b: 2, c: 3, d: 4, e: 5 }),
+        15,
+      )
+    })
+    it('initial value can be an async function', async () => {
+      ade(
+        await r.reduce((a, b) => a + b, async () => 0)([1, 2, 3, 4, 5]),
+        15,
+      )
+      const asyncNumbers = async function*() {
+        for (let i = 1; i <= 5; i++) yield i
+      }
+      ade(
+        await r.reduce((a, b) => a + b, async () => 0)(asyncNumbers()),
+        15,
+      )
+      ade(
+        await r.reduce((a, b) => a + b, async () => 0)({ a: 1, b: 2, c: 3, d: 4, e: 5 }),
+        15,
+      )
     })
     it('initial value can be an async function', async () => {
       aok(
