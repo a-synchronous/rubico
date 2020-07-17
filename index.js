@@ -872,18 +872,13 @@ const flattenIterable = (reducer, x0, x) => {
   return y
 }
 
-const flatten = (reducer, y, x) => {
-  if (isIterable(x)) return flattenIterable(reducer, y, x)
-  throw new TypeError('flatMap(...)(x); cannot flatten x')
-}
-
-const flattenToArray = x => flatten(
+const flattenToArray = x => flattenIterable(
   (y, xii) => { y.push(xii); return y },
   [],
   x,
 )
 
-const flattenToSet = x => flatten(
+const flattenToSet = x => flattenIterable(
   (y, xii) => y.add(xii),
   new Set(),
   x,

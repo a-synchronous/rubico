@@ -1718,7 +1718,7 @@ describe('rubico', () => {
         [1, 1, 4, 8, 9, 27],
       )
     })
-    it('throws error on non iterable reducer xi', async () => {
+    it('throws TypeError on non iterable elements [1, 2, 3]', async () => {
       // TODO: better error message here
       const square = x => x ** 2
       assert.throws(
