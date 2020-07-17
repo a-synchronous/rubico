@@ -1429,11 +1429,19 @@ describe('rubico', () => {
         ase(String.fromCharCode(...(new constructor([49, 57, 50, 53]))), '1925')
       }
     })
-    it('sync transforms iterable to a number TypedArray', async () => {
+    it('throws TypeError for uncoercible items', async () => {
       for (const constructor of numberTypedArrayConstructors) {
         assert.throws(
           () => r.transform(r.map(x => x), new constructor(0))([true, false, false]),
           new TypeError('toNumberTypedArray(typedArray, y); cannot convert y to typedArray'),
+        )
+      }
+    })
+    it('throws TypeError for uncoercible items', async () => {
+      for (const constructor of bigIntTypedArrayConstructors) {
+        assert.throws(
+          () => r.transform(r.map(x => x), new constructor(0))([true, false, false]),
+          new TypeError('toBigIntTypedArray(typedArray, y); cannot convert y to typedArray'),
         )
       }
     })

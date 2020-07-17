@@ -757,8 +757,8 @@ const toNumberTypedArray = (constructor, x) => {
   if (isNumber(x)) return constructor.of(x)
   if (isString(x)) return new constructor(stringToCharCodes(x))
   throw new TypeError([
-    `toNumberTypedArray(typedArray, y)`,
-    `cannot convert y to typedArray`,
+    'toNumberTypedArray(typedArray, y)',
+    'cannot convert y to typedArray',
   ].join('; '))
 }
 
@@ -797,11 +797,9 @@ const numberTypedArrayTransform = (fn, x0) => x => {
 
 const toBigIntTypedArray = (constructor, x) => {
   if (isBigInt(x)) return constructor.of(x)
-  if (isBigIntTypedArray(x)) return new constructor(x)
-  if (isArray(x) && x.every(isBigInt)) return new constructor(x)
   throw new TypeError([
-    `toBigIntTypedArray(${constructor.name}, y)`,
-    `cannot convert y to ${constructor.name}`,
+    'toBigIntTypedArray(typedArray, y)',
+    'cannot convert y to typedArray',
   ].join('; '))
 }
 
