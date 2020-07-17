@@ -595,16 +595,16 @@ describe('rubico', () => {
       )
     })
     it('applies an async function in parallel to all elements of a string', async () => {
-      aok(r.map(asyncHey)('abcde') instanceof Promise)
+      aok(r.map(async x => x + 'hey')('abcde') instanceof Promise)
       ade(
-        await r.map(asyncHey)('abcde'),
+        await r.map(async x => x + 'hey')('abcde'),
         'aheybheycheydheyehey',
       )
     })
     it('applies a sync function to all elements of a string', async () => {
       ade(
-        r.map(hi)(['yo', 1]),
-        ['yohi', '1hi'],
+        r.map(x => x + 'hi')('abcde'),
+        'ahibhichidhiehi',
       )
     })
     it('applies an async function in parallel to all elements of a number typed array', async () => {

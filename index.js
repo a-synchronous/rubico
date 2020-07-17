@@ -31,8 +31,6 @@ const isIterable = x => isDefined(x) && isDefined(x[Symbol.iterator])
 
 const isAsyncIterable = x => isDefined(x) && isDefined(x[Symbol.asyncIterator])
 
-const isReadable = x => x && typeof x.read === 'function'
-
 const isWritable = x => x && typeof x.write === 'function'
 
 const isFunction = x => typeof x === 'function'
@@ -69,10 +67,6 @@ const isPromise = x => x && typeof x.then === 'function'
 
 const is = fn => x => x && x.constructor === fn
 
-const toLowerCase = x => x && typeof x.toLowerCase === 'function' && x.toLowerCase()
-
-const type = x => x && x.constructor && toLowerCase(x.constructor.name) || typeof x
-
 const range = (start, end) => Array.from({ length: end - start }, (x, i) => i + start)
 
 const arrayOf = (item, length) => Array.from({ length }, () => item)
@@ -103,7 +97,6 @@ const pipe = fns => {
     if (isFunction(fns[i])) continue
     throw new TypeError(`pipe(x); x[${i}] is not a function`)
   }
-  if (fns.length === 0) return x => x
   return (...args) => (isFunction(args[0])
     ? _chain(reverseArrayIter(fns), args)
     : _chain(fns[Symbol.iterator].call(fns), args)
@@ -290,7 +283,9 @@ const mapIterableToArray = (fn, x) => {
 
 const mapString = (fn, x) => {
   const y = mapIterableToArray(fn, x)
-  return isPromise(y) ? y.then(res => res.join('')) : y.join('')
+  return (isPromise(y)
+    ? y.then(res => res.join(''))
+    : y.join(''))
 }
 
 const mapTypedArray = (fn, x) => {
