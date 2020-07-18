@@ -1,3 +1,6 @@
+## v1.2.5
+ * tap no longer transduces; use map(tap) or rubico/x/forEach instead if you want to use tap in a transducer
+
 ## v1.2.2
  * rubico/x/isEmpty - check if a collection is empty
  * rubico/x/first - get first item from a collection
