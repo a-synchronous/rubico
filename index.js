@@ -189,18 +189,12 @@ const assign = fns => {
   }
 }
 
-const tapReducer = (fn, reducer) => (y, xi) => {
-  const point = fn(xi)
-  return isPromise(point) ? point.then(() => reducer(y, xi)) : reducer(y, xi)
-}
-
 // function fn => any x => any x
 const tap = fn => {
   if (!isFunction(fn)) {
     throw new TypeError('tap(x); x is not a function')
   }
   return x => {
-    if (isFunction(x)) return tapReducer(fn, x)
     const point = fn(x)
     return isPromise(point) ? point.then(() => x) : x
   }

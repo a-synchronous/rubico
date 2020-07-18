@@ -341,14 +341,6 @@ describe('rubico', () => {
       aok(r.tap(async x => x + 1)(1) instanceof Promise)
       ase(await r.tap(async x => x + 1)(1), 1)
     })
-    it('acts as a tap transducer - taps into a sync reducer pipeline', async () => {
-      let strNums = ''
-      const tappedSum = r.tap(x => { strNums += `${x}` })((y, xi) => y + xi)
-      aok(typeof tappedSum, 'function')
-      ase(tappedSum.length, 2)
-      ase([1, 2, 3, 4, 5].reduce(tappedSum, 10), 25)
-      ase(strNums, '12345')
-    })
     it('throws a TypeError if passed a non function', async () => {
       assert.throws(
         () => r.tap('hey'),
@@ -1383,13 +1375,13 @@ describe('rubico', () => {
     const bigNumbers = [1n, 2n, 3n, 4n, 5n]
     it('sync transforms iterable to null', async () => {
       let y = ''
-      ase(r.transform(r.tap(x => { y += x }), null)([1, 2, 3, 4, 5]), null)
+      ase(r.transform(r.map(r.tap(x => { y += x })), null)([1, 2, 3, 4, 5]), null)
       ase(y, '12345')
     })
     it('async transforms iterable to null', async () => {
       let y = ''
-      aok(r.transform(r.tap(async () => {}), null)([1, 2, 3, 4, 5]) instanceof Promise)
-      ase(await r.transform(r.tap(async x => { y += x }), null)([1, 2, 3, 4, 5]), null)
+      aok(r.transform(r.map(r.tap(async () => {})), null)([1, 2, 3, 4, 5]) instanceof Promise)
+      ase(await r.transform(r.map(r.tap(async x => { y += x })), null)([1, 2, 3, 4, 5]), null)
       ase(y, '12345')
     })
     it('sync transforms iterable to array', async () => {
