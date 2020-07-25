@@ -71,8 +71,13 @@ const range = (start, end) => Array.from({ length: end - start }, (x, i) => i + 
 
 const arrayOf = (item, length) => Array.from({ length }, () => item)
 
-// (f function, p any|Promise<any>) => any|Promise<any>
-const possiblePromiseThen = (p, f) => isPromise(p) ? p.then(f) : f(p)
+function PossiblePromise(p) {
+  this.value = p
+}
+
+PossiblePromise.prototype.then = function(f) {
+  return isPromise(this.value) ? this.value.then(f) : f(this.value)
+}
 
 const optionalThunk = (f, x) => isFunction(f) ? f(x) : f
 
@@ -80,7 +85,7 @@ const _chain = (fnsIter, args) => {
   const { value: f0 } = fnsIter.next()
   let y = f0(...args)
   for (const fn of fnsIter) {
-    y = isPromise(y) ? y.then(fn) : fn(y) // Don't use possiblePromiseThen here because perf
+    y = isPromise(y) ? y.then(fn) : fn(y) // Don't use PossiblePromise.then here because perf
   }
   return y
 }
@@ -153,10 +158,10 @@ const fork = fns => {
   throw new TypeError('fork(x); x invalid')
 }
 
+// TODO: iterative implementation
 const arrayForkSeries = (fns, x, i, y) => {
   if (i === fns.length) return y
-  return possiblePromiseThen(
-    fns[i](x),
+  return new PossiblePromise(fns[i](x)).then(
     yi => arrayForkSeries(fns, x, i + 1, y.concat(yi)),
   )
 }
@@ -185,9 +190,8 @@ const assign = fns => {
     if (!is(Object)(x)) {
       throw new TypeError('assign(...)(x); x is not an object')
     }
-    return possiblePromiseThen(
-      objectFork(fns, x),
-      y => Object.assign({}, x, y),
+    return new PossiblePromise(objectFork(fns, x)).then(
+      y => Object.assign({}, x, y)
     )
   }
 }
@@ -224,12 +228,12 @@ const tryCatch = (fn, onError) => {
   }
 }
 
+// TODO: reimplement to iterative
 const arraySwitchCase = (fns, x, i) => {
   if (i === fns.length - 1) return fns[i](x)
-  const ok = fns[i](x)
-  return isPromise(ok)
-    ? ok.then(res => res ? fns[i + 1](x) : arraySwitchCase(fns, x, i + 2))
-    : ok ? fns[i + 1](x) : arraySwitchCase(fns, x, i + 2)
+  return new PossiblePromise(fns[i](x)).then(
+    ok => ok ? fns[i + 1](x) : arraySwitchCase(fns, x, i + 2),
+  )
 }
 
 const switchCase = fns => {
@@ -1082,7 +1086,7 @@ const not = fn => {
   if (!isFunction(fn)) {
     throw new TypeError('not(x); x is not a function')
   }
-  return x => possiblePromiseThen(fn(x), y => !y)
+  return x => new PossiblePromise(fn(x)).then(y => !y)
 }
 
 const compare = (predicate, f, g) => x => {
