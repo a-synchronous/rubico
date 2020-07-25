@@ -162,7 +162,7 @@ const fork = fns => {
 const arrayForkSeries = (fns, x, i, y) => {
   if (i === fns.length) return y
   return new PossiblePromise(fns[i](x)).then(
-    yi => arrayForkSeries(fns, x, i + 1, y.concat(yi)),
+    res => arrayForkSeries(fns, x, i + 1, y.concat(res)),
   )
 }
 
@@ -191,7 +191,7 @@ const assign = fns => {
       throw new TypeError('assign(...)(x); x is not an object')
     }
     return new PossiblePromise(objectFork(fns, x)).then(
-      y => Object.assign({}, x, y)
+      res => Object.assign({}, x, res)
     )
   }
 }
@@ -698,9 +698,9 @@ const reduce = (fn, init) => {
   }
   return x => {
     const x0 = optionalThunk(init, x)
-    if (isIterable(x)) return (isPromise(x0)
-      ? x0.then(res => reduceIterable(fn, res, x))
-      : reduceIterable(fn, x0, x))
+    if (isIterable(x)) return new PossiblePromise(x0).then(
+      res => reduceIterable(fn, res, x)
+    )
     if (isAsyncIterable(x)) {
       const state = { cancel: () => {} }
       const cancelToken = new Promise((_, reject) => { state.cancel = reject })
