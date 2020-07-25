@@ -705,17 +705,16 @@ const reduce = (fn, init) => {
       const state = { cancel: () => {} }
       const cancelToken = new Promise((_, reject) => { state.cancel = reject })
       const p = Promise.race([
-        (isPromise(x0)
-          ? x0.then(res => reduceAsyncIterable(fn, res, x))
-          : reduceAsyncIterable(fn, x0, x)),
+        new PossiblePromise(x0).then(
+          res => reduceAsyncIterable(fn, res, x),
+        ),
         cancelToken,
       ])
       p.cancel = () => { state.cancel(new Error('cancelled')) }
       return p
     }
-    if (is(Object)(x)) return (isPromise(x0)
-      ? x0.then(res => reduceObject(fn, res, x))
-      : reduceObject(fn, x0, x)
+    if (is(Object)(x)) return new PossiblePromise(x0).then(
+      res => reduceObject(fn, res, x)
     )
     throw new TypeError('reduce(...)(x); x invalid')
   }
