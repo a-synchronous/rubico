@@ -185,10 +185,10 @@ const assign = fns => {
     if (!is(Object)(x)) {
       throw new TypeError('assign(...)(x); x is not an object')
     }
-    const assignments = objectFork(fns, x)
-    return (isPromise(assignments)
-      ? assignments.then(res => Object.assign({}, x, res))
-      : Object.assign({}, x, assignments))
+    return possiblePromiseThen(
+      objectFork(fns, x),
+      y => Object.assign({}, x, y),
+    )
   }
 }
 
