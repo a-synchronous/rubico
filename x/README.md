@@ -261,6 +261,21 @@ pipe([
 ])('hello')
 ```
 
+### timeInLoop
+times a function's synchronous completion with a loop
+```javascript
+time = timeInLoop(numLoops, f)
+```
+`numLoops` is a number and specifies the number of loops to call `f`
+
+`f` is a function. While looping, `f` is called with no arguments as `f()`
+
+`time` is the amount of time in milliseconds elapsed between the first and last call of `f`
+
+```javascript
+timeInLoop(1e6, () => 'yo') // 3
+```
+
 ### tracef
 logs transformed data to console, returning original data
 ```javascript
