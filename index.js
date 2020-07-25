@@ -284,12 +284,9 @@ const mapIterableToArray = (fn, x) => {
   return isAsync ? Promise.all(primer) : primer
 }
 
-const mapString = (fn, x) => {
-  const y = mapIterableToArray(fn, x)
-  return (isPromise(y)
-    ? y.then(res => res.join(''))
-    : y.join(''))
-}
+const mapString = (fn, x) => (
+  new PossiblePromise(mapIterableToArray(fn, x))
+    .then(res => res.join('')))
 
 const mapTypedArray = (fn, x) => {
   const y = mapIterableToArray(fn, x)
