@@ -156,10 +156,10 @@ const fork = fns => {
 
 const arrayForkSeries = (fns, x, i, y) => {
   if (i === fns.length) return y
-  const point = fns[i](x)
-  return (isPromise(point)
-    ? point.then(res => arrayForkSeries(fns, x, i + 1, y.concat(res)))
-    : arrayForkSeries(fns, x, i + 1, y.concat(point)))
+  return possiblePromiseThen(
+    fns[i](x),
+    yi => arrayForkSeries(fns, x, i + 1, y.concat(yi)),
+  )
 }
 
 fork.series = fns => {
