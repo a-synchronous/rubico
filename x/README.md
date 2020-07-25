@@ -328,7 +328,6 @@ x/
 ```
 
 Requirements for modules in `rubico/x/`
- * must use rubico
  * must work in node environment
  * must include a documentation entry following this format
 
