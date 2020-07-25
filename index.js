@@ -196,15 +196,12 @@ const assign = fns => {
   }
 }
 
-// function fn => any x => any x
-const tap = fn => {
-  if (!isFunction(fn)) {
-    throw new TypeError('tap(x); x is not a function')
+// function f => any x => any x
+const tap = f => {
+  if (!isFunction(f)) {
+    throw new TypeError('tap(f); f is not a function')
   }
-  return x => {
-    const point = fn(x)
-    return isPromise(point) ? point.then(() => x) : x
-  }
+  return x => new PossiblePromise(f(x)).then(() => x)
 }
 
 /* TODO: https://github.com/a-synchronous/rubico/issues/100

@@ -344,7 +344,7 @@ describe('rubico', () => {
     it('throws a TypeError if passed a non function', async () => {
       assert.throws(
         () => r.tap('hey'),
-        new TypeError('tap(x); x is not a function'),
+        new TypeError('tap(f); f is not a function'),
       )
     })
   })
