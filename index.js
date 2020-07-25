@@ -67,13 +67,12 @@ const isPromise = x => x && typeof x.then === 'function'
 
 const is = fn => x => x && x.constructor === fn
 
-// TODO: refactor all Promise handling to this
-// (handler function, p any|Promise<any>) => any|Promise<any>
-const possiblePromiseThen = (p, handler) => isPromise(p) ? p.then(handler) : handler(p)
-
 const range = (start, end) => Array.from({ length: end - start }, (x, i) => i + start)
 
 const arrayOf = (item, length) => Array.from({ length }, () => item)
+
+// (f function, p any|Promise<any>) => any|Promise<any>
+const possiblePromiseThen = (p, f) => isPromise(p) ? p.then(f) : f(p)
 
 const optionalThunk = (f, x) => isFunction(f) ? f(x) : f
 
