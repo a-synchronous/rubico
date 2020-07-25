@@ -35,6 +35,7 @@
     "nyc": "^15.1.0"
   },
   "scripts": {
+    "benchmarks": "mocha benchmarks/",
     "test": "mocha test.js x",
     "lint": "eslint index.js x"
   }

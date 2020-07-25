@@ -1,12 +1,10 @@
 const assert = require('assert')
-const { reduce } = require('.')
+const { reduce } = require('..')
 
-describe('reduce(...)(AsyncIterable)', () => {
-  it('no memory leaks on cancel', async () => {
-    const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-    const add = (a, b) => a + b
-
+describe('reduce', () => {
+  it('reduce(...)(AsyncIterable); no memory leaks on cancel', async () => {
     const timeoutIDs = new Map()
 
     const asyncGenerator = async function*(i) {
@@ -19,8 +17,8 @@ describe('reduce(...)(AsyncIterable)', () => {
     }
 
     let i = 0, maxHeapUsed = 0
-    while (i < 1e5) {
-      const p = reduce(add, 0)(asyncGenerator(i))
+    while (i < 1e4) {
+      const p = reduce((a, b) => a + b, 0)(asyncGenerator(i))
       await sleep(1)
       p.cancel()
       try {
@@ -34,7 +32,8 @@ describe('reduce(...)(AsyncIterable)', () => {
       console.log(`${i},${(heapUsed / 1024 / 1024).toFixed(2)}`)
       i += 1
       maxHeapUsed = Math.max(maxHeapUsed, heapUsed)
-      assert.ok((maxHeapUsed / 1024 / 1024) < 30)
+      assert.ok((maxHeapUsed / 1024 / 1024) < 100)
     }
+    console.log('maxHeapUsed (MiB)', maxHeapUsed / 1024 / 1024)
   }).timeout(5 * 60 * 1000)
 })
