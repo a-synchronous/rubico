@@ -80,7 +80,7 @@ const _chain = (fnsIter, args) => {
   const { value: f0 } = fnsIter.next()
   let y = f0(...args)
   for (const fn of fnsIter) {
-    y = isPromise(y) ? y.then(fn) : fn(y)
+    y = isPromise(y) ? y.then(fn) : fn(y) // Don't use possiblePromiseThen here because perf
   }
   return y
 }
