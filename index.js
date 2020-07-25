@@ -67,6 +67,10 @@ const isPromise = x => x && typeof x.then === 'function'
 
 const is = fn => x => x && x.constructor === fn
 
+// TODO: refactor all Promise handling to this
+// (handler function, p any|Promise<any>) => any|Promise<any>
+const possiblePromiseThen = (p, handler) => isPromise(p) ? p.then(handler) : handler(p)
+
 const range = (start, end) => Array.from({ length: end - start }, (x, i) => i + start)
 
 const arrayOf = (item, length) => Array.from({ length }, () => item)
@@ -1079,10 +1083,7 @@ const not = fn => {
   if (!isFunction(fn)) {
     throw new TypeError('not(x); x is not a function')
   }
-  return x => {
-    const point = fn(x)
-    return isPromise(point) ? point.then(res => !res) : !point
-  }
+  return x => possiblePromiseThen(fn(x), y => !y)
 }
 
 const compare = (predicate, f, g) => x => {
