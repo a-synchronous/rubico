@@ -1,6 +1,6 @@
 /*
  * @synopsis
- * (desc string, loopCount number, fn function) => time number
+ * (loopCount number, fn function) => time number
  *
  * @playground
  * timeInLoop(1e6, () => 'yo') // 3
