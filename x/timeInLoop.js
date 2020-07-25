@@ -14,3 +14,5 @@ const timeInLoop = (loopCount, fn) => {
 }
 
 module.exports = timeInLoop
+
+// thanks: https://gist.github.com/funfunction/91b5876a5f562e1e352aed0fcabc3858
