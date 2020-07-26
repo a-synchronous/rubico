@@ -103,6 +103,12 @@ PossiblePromise.then = (p, f) => isPromise(p) ? p.then(f) : f(p)
 
 /*
  * @synopsis
+ * any|Promise<any> = PossiblePromise.catch(p any|Promise<any>, f function)
+ */
+PossiblePromise.catch = (p, f) => isPromise(p) ? p.catch(f) : p
+
+/*
+ * @synopsis
  * possiblePromise PossiblePromise<[any]> = PossiblePromise.all(ps [any|Promise<any>])
  */
 PossiblePromise.all = ps => (ps.some(isPromise)
@@ -255,8 +261,8 @@ const tap = f => {
 tap.if = fn => {}
 */
 
-const tryCatch = (fn, onError) => {
-  if (!isFunction(fn)) {
+const tryCatch = (f, onError) => {
+  if (!isFunction(f)) {
     throw new TypeError('tryCatch(x, y); x is not a function')
   }
   if (!isFunction(onError)) {
@@ -264,8 +270,7 @@ const tryCatch = (fn, onError) => {
   }
   return x => {
     try {
-      const point = fn(x)
-      return isPromise(point) ? point.catch(e => onError(e, x)) : point
+      return PossiblePromise.catch(f(x), e => onError(e, x))
     } catch (e) {
       return onError(e, x)
     }
