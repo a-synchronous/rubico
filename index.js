@@ -623,13 +623,10 @@ const createFilterIndex = (fn, x) => {
   return isAsync ? Promise.all(filterIndex) : filterIndex
 }
 
-const filterArray = (fn, x) => {
-  const index = createFilterIndex(fn, x)
-  return (isPromise(index)
-    ? index.then(res => x.filter((_, i) => res[i]))
-    : x.filter((_, i) => index[i])
-  )
-}
+const filterArray = (f, x) => PossiblePromise.then(
+  createFilterIndex(f, x),
+  res => x.filter((_, i) => res[i]),
+)
 
 const filterStringFromIndex = (index, x) => {
   let y = ''
