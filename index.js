@@ -145,13 +145,21 @@ const iteratorPipe = (iter, args) => {
   return output
 }
 
+/*
+ * @synopsis
+ * reversed Iterator<any> = reverseArrayIter(arr Array<any>)
+ */
 const reverseArrayIter = arr => (function*() {
   for (let i = arr.length - 1; i >= 0; i--) yield arr[i]
 })()
 
+/*
+ * @synopsis
+ * piped function = pipe(fns Array<function>)
+ */
 const pipe = fns => {
   if (!isArray(fns)) {
-    throw new TypeError('pipe(x); x is not an array of functions')
+    throw new TypeError('pipe(fns); fns is not an array of functions')
   }
   if (fns.length < 1) {
     throw new RangeError('pipe(x); x is not an array of at least one function')
