@@ -71,23 +71,66 @@ const range = (start, end) => Array.from({ length: end - start }, (x, i) => i + 
 
 const arrayOf = (item, length) => Array.from({ length }, () => item)
 
-function PossiblePromise(p) {
+/*
+ * @synopsis
+ * possiblePromise PossiblePromise<any> = new PossiblePromise(p any|Promise<any>)
+ */
+const PossiblePromise = function(p) {
   this.value = p
 }
 
+/*
+ * @synopsis
+ * possiblePromise PossiblePromise<any> = new PossiblePromise(p any|Promise<any>).map(f function)
+PossiblePromise.prototype.map = function(f) {
+  return new PossiblePromise(f(this.value))
+}
+ */
+
+/*
+ * @synopsis
+ * any|Promise<any> = new PossiblePromise(p any|Promise<any>).then(f function)
+ */
 PossiblePromise.prototype.then = function(f) {
   return isPromise(this.value) ? this.value.then(f) : f(this.value)
 }
 
+/*
+ * @synopsis
+ * any|Promise<any> = PossiblePromise.then(p any|Promise<any>, f function)
+ */
 PossiblePromise.then = (p, f) => isPromise(p) ? p.then(f) : f(p)
 
-const optionalThunk = (f, x) => isFunction(f) ? f(x) : f
+/*
+ * @synopsis
+ * possiblePromise PossiblePromise<[any]> = PossiblePromise.all(ps [any|Promise<any>])
+ */
+PossiblePromise.all = ps => (ps.some(isPromise)
+  ? Promise.all(ps)
+  : new PossiblePromise(ps))
+
+/*
+ * @synopsis
+ * thunk Thunk<()=>any|function> = new Thunk(x any|function)
+ */
+const Thunk = function(x) {
+  this.value = x
+  return isFunction(x) ? x : () => x
+}
+
+/*
+ * @synopsis
+ * thunk Thunk<()=>any|function> = new Thunk(x any|function).map(f function)
+Thunk.prototype.map = function(f) {
+  return new Thunk(f(this.value))
+}
+ */
 
 const _chain = (fnsIter, args) => {
   const { value: f0 } = fnsIter.next()
   let y = f0(...args)
   for (const fn of fnsIter) {
-    y = isPromise(y) ? y.then(fn) : fn(y) // Don't use PossiblePromise.then here because perf
+    y = PossiblePromise.then(y, fn)
   }
   return y
 }
@@ -695,7 +738,7 @@ const reduce = (fn, init) => {
     throw new TypeError('reduce(x, y); x is not a function')
   }
   return x => {
-    const x0 = optionalThunk(init, x)
+    const x0 = new Thunk(init)(x)
     if (isIterable(x)) return PossiblePromise.then(
       x0,
       res => reduceIterable(fn, res, x)
@@ -851,12 +894,10 @@ const transform = (fn, init) => {
   if (!isFunction(fn)) {
     throw new TypeError('transform(x, y); y is not a function')
   }
-  return x => {
-    const x0 = optionalThunk(init, x)
-    return (isPromise(x0)
-      ? x0.then(res => _transformBranch(fn, res, x))
-      : _transformBranch(fn, x0, x))
-  }
+  return x => PossiblePromise.then(
+    new Thunk(init)(x),
+    res => _transformBranch(fn, res, x),
+  )
 }
 
 const flattenIterable = (reducer, x0, x) => {
@@ -919,10 +960,10 @@ const isDelimitedBy = (delim, x) => (x
 
 const arrayGet = (path, x, defaultValue) => {
   let y = x
-  if (!isDefined(y)) return optionalThunk(defaultValue, x)
+  if (!isDefined(y)) return new Thunk(defaultValue)(x)
   for (let i = 0; i < path.length; i++) {
     y = y[path[i]]
-    if (!isDefined(y)) return optionalThunk(defaultValue, x)
+    if (!isDefined(y)) return new Thunk(defaultValue)(x)
   }
   return y
 }
@@ -1089,13 +1130,10 @@ const not = fn => {
   return x => new PossiblePromise(fn(x)).then(res => !res)
 }
 
-const compare = (predicate, f, g) => x => {
-  const fx = isFunction(f) ? f(x) : f
-  const gx = isFunction(g) ? g(x) : g
-  return (isPromise(fx) || isPromise(gx)
-    ? Promise.all([fx, gx]).then(res => predicate(...res))
-    : predicate(fx, gx))
-}
+const compare = (predicate, f, g) => x => PossiblePromise.all([
+  new Thunk(f)(x),
+  new Thunk(g)(x),
+]).then(res => predicate(...res))
 
 const eq = function(f, g) {
   if (arguments.length !== 2) {
