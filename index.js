@@ -634,13 +634,10 @@ const filterStringFromIndex = (index, x) => {
   return y
 }
 
-const filterString = (fn, x) => {
-  const index = createFilterIndex(fn, x)
-  return (isPromise(index)
-    ? index.then(res => filterStringFromIndex(res, x))
-    : filterStringFromIndex(index, x)
-  )
-}
+const filterString = (f, x) => PossiblePromise.then(
+  createFilterIndex(f, x),
+  res => filterStringFromIndex(res, x),
+)
 
 const filterSet = (fn, x) => {
   const y = new Set(), promises = []
