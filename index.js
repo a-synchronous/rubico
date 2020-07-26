@@ -430,7 +430,7 @@ const mapMap = (fn, x) => {
 
 /*
  * @synopsis
- * y object<any> = mapObject(f function, x object<any>)
+ * y Object<any> = mapObject(f function, x Object<any>)
  */
 const mapObject = (fn, x) => {
   const y = {}, promises = []
@@ -457,7 +457,7 @@ const mapReducer = (f, reducer) => (y, xi) => (
  * Mappable = AsyncIterable|Array|String|Set|Map|TypedArray|Iterable|Object|function
  *
  * @synopsis
- * y Mappable = map(f function)(Mappable)
+ * y Mappable = map(f function)(x Mappable)
  */
 const map = f => {
   if (!isFunction(f)) {
