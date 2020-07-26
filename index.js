@@ -315,11 +315,22 @@ const mapIterable = (fn, x) => (function*() {
   for (const xi of x) yield fn(xi)
 })()
 
-// x.map: https://v8.dev/blog/elements-kinds#avoid-polymorphism
-const mapArray = (fn, x) => {
+/*
+ * @synopsis
+ * y [any]|Promise<[any]> = mapArray(f function, x [any])
+ *
+ * @note
+ * x.map
+ * https://v8.dev/blog/elements-kinds#avoid-polymorphism
+ *
+ * @note
+ * Alternative implementation
+ * const mapArray = (f, x) => PossiblePromise.all(x.map(f)).then(res => res)
+ */
+const mapArray = (f, x) => {
   let isAsync = false
   const y = x.map(xi => {
-    const point = fn(xi)
+    const point = f(xi)
     if (isPromise(point)) isAsync = true
     return point
   })
