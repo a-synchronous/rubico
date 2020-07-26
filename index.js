@@ -478,12 +478,19 @@ const map = f => {
   }
 }
 
-const mapSeriesArray = (fn, x, i, y) => {
+/*
+ * @synopsis
+ * y Array<any> = mapSeriesArray(f function, x Array<any>, i number, y Array<any>)
+ *
+ * @note
+ * TODO: iterative implementation
+ */
+const mapSeriesArray = (f, x, i, y) => {
   if (i === x.length) return y
-  const point = fn(x[i])
-  return (isPromise(point)
-    ? point.then(res => mapSeriesArray(fn, x, i + 1, y.concat(res)))
-    : mapSeriesArray(fn, x, i + 1, y.concat(point)))
+  return PossiblePromise.then(
+    f(x[i]),
+    res => mapSeriesArray(f, x, i + 1, y.concat(res)),
+  )
 }
 
 map.series = fn => {
