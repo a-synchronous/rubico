@@ -79,6 +79,8 @@ PossiblePromise.prototype.then = function(f) {
   return isPromise(this.value) ? this.value.then(f) : f(this.value)
 }
 
+PossiblePromise.then = (p, f) => isPromise(p) ? p.then(f) : f(p)
+
 const optionalThunk = (f, x) => isFunction(f) ? f(x) : f
 
 const _chain = (fnsIter, args) => {
@@ -161,7 +163,8 @@ const fork = fns => {
 // TODO: iterative implementation
 const arrayForkSeries = (fns, x, i, y) => {
   if (i === fns.length) return y
-  return new PossiblePromise(fns[i](x)).then(
+  return PossiblePromise.then(
+    fns[i](x),
     res => arrayForkSeries(fns, x, i + 1, y.concat(res)),
   )
 }
@@ -190,8 +193,9 @@ const assign = fns => {
     if (!is(Object)(x)) {
       throw new TypeError('assign(...)(x); x is not an object')
     }
-    return new PossiblePromise(objectFork(fns, x)).then(
-      res => Object.assign({}, x, res)
+    return PossiblePromise.then(
+      objectFork(fns, x),
+      res => Object.assign({}, x, res),
     )
   }
 }
@@ -201,7 +205,7 @@ const tap = f => {
   if (!isFunction(f)) {
     throw new TypeError('tap(f); f is not a function')
   }
-  return x => new PossiblePromise(f(x)).then(() => x)
+  return x => PossiblePromise.then(f(x), () => x)
 }
 
 /* TODO: https://github.com/a-synchronous/rubico/issues/100
@@ -228,7 +232,8 @@ const tryCatch = (fn, onError) => {
 // TODO: reimplement to iterative
 const arraySwitchCase = (fns, x, i) => {
   if (i === fns.length - 1) return fns[i](x)
-  return new PossiblePromise(fns[i](x)).then(
+  return PossiblePromise.then(
+    fns[i](x),
     ok => ok ? fns[i + 1](x) : arraySwitchCase(fns, x, i + 2),
   )
 }
@@ -284,16 +289,15 @@ const mapIterableToArray = (fn, x) => {
   return isAsync ? Promise.all(primer) : primer
 }
 
-const mapString = (fn, x) => (
-  new PossiblePromise(mapIterableToArray(fn, x))
-    .then(res => res.join('')))
+const mapString = (f, x) => PossiblePromise.then(
+  mapIterableToArray(f, x),
+  res => res.join(''),
+)
 
-const mapTypedArray = (fn, x) => {
-  const y = mapIterableToArray(fn, x)
-  return (isPromise(y)
-    ? y.then(res => new x.constructor(res))
-    : new x.constructor(y))
-}
+const mapTypedArray = (f, x) => PossiblePromise.then(
+  mapIterableToArray(f, x),
+  res => new x.constructor(res),
+)
 
 const mapSet = (fn, x) => {
   const y = new Set(), promises = []
@@ -692,14 +696,16 @@ const reduce = (fn, init) => {
   }
   return x => {
     const x0 = optionalThunk(init, x)
-    if (isIterable(x)) return new PossiblePromise(x0).then(
+    if (isIterable(x)) return PossiblePromise.then(
+      x0,
       res => reduceIterable(fn, res, x)
     )
     if (isAsyncIterable(x)) {
       const state = { cancel: () => {} }
       const cancelToken = new Promise((_, reject) => { state.cancel = reject })
       const p = Promise.race([
-        new PossiblePromise(x0).then(
+        PossiblePromise.then(
+          x0,
           res => reduceAsyncIterable(fn, res, x),
         ),
         cancelToken,
@@ -707,7 +713,8 @@ const reduce = (fn, init) => {
       p.cancel = () => { state.cancel(new Error('cancelled')) }
       return p
     }
-    if (is(Object)(x)) return new PossiblePromise(x0).then(
+    if (is(Object)(x)) return PossiblePromise.then(
+      x0,
       res => reduceObject(fn, res, x)
     )
     throw new TypeError('reduce(...)(x); x invalid')
@@ -1079,7 +1086,7 @@ const not = fn => {
   if (!isFunction(fn)) {
     throw new TypeError('not(x); x is not a function')
   }
-  return x => new PossiblePromise(fn(x)).then(y => !y)
+  return x => new PossiblePromise(fn(x)).then(res => !res)
 }
 
 const compare = (predicate, f, g) => x => {
