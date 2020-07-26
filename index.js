@@ -578,10 +578,10 @@ const mapIterableWithIndexToArray = (fn, x) => {
   return isAsync ? Promise.all(primer) : primer
 }
 
-const mapStringWithIndex = (fn, x) => {
-  const y = mapIterableWithIndexToArray(fn, x)
-  return isPromise(y) ? y.then(res => res.join('')) : y.join('')
-}
+const mapStringWithIndex = (f, x) => PossiblePromise.then(
+  mapIterableWithIndexToArray(f, x),
+  res => res.join(''),
+)
 
 map.withIndex = fn => {
   if (!isFunction(fn)) {
