@@ -337,40 +337,60 @@ const mapArray = (f, x) => {
   return isAsync ? Promise.all(y) : y
 }
 
+/*
+ * @synopsis
+ * y [any]|Promise<[any]> = mapIterableToArray(f function, x Iterable<any>)
+ */
 const mapIterableToArray = (fn, x) => {
   let isAsync = false
-  const primer = []
+  const y = []
   for (const xi of x) {
     const point = fn(xi)
     if (isPromise(point)) isAsync = true
-    primer.push(point)
+    y.push(point)
   }
-  return isAsync ? Promise.all(primer) : primer
+  return isAsync ? Promise.all(y) : y
 }
 
+/*
+ * @synopsis
+ * y string = mapString(f function, x string)
+ */
 const mapString = (f, x) => PossiblePromise.then(
   mapIterableToArray(f, x),
   res => res.join(''),
 )
 
+/*
+ * @synopsis
+ * y TypedArray<any> = mapTypedArray(f function, x TypedArray<any>)
+ */
 const mapTypedArray = (f, x) => PossiblePromise.then(
   mapIterableToArray(f, x),
   res => new x.constructor(res),
 )
 
-const mapSet = (fn, x) => {
+/*
+ * @synopsis
+ * y Set<any> = mapSet(f function, x Set<any>)
+ */
+const mapSet = (f, x) => {
   const y = new Set(), promises = []
   for (const xi of x) {
-    const point = fn(xi)
-    if (isPromise(point)) {
-      promises.push(point.then(res => { y.add(res) }))
+    const yi = f(xi)
+    if (isPromise(yi)) {
+      promises.push(yi.then(res => { y.add(res) }))
     } else {
-      y.add(point)
+      y.add(yi)
     }
   }
   return promises.length > 0 ? Promise.all(promises).then(() => y) : y
 }
 
+/*
+ * @synopsis
+ * y Map<any=>any> = mapMap(f function, x Map<any=>any>)
+ */
 const mapMap = (fn, x) => {
   const y = new Map(), promises = []
   for (const entry of x) {
@@ -384,6 +404,10 @@ const mapMap = (fn, x) => {
   return promises.length > 0 ? Promise.all(promises).then(() => y) : y
 }
 
+/*
+ * @synopsis
+ * y object<any> = mapObject(f function, x object<any>)
+ */
 const mapObject = (fn, x) => {
   const y = {}, promises = []
   for (const k in x) {
@@ -397,28 +421,35 @@ const mapObject = (fn, x) => {
   return promises.length > 0 ? Promise.all(promises).then(() => y) : y
 }
 
-const mapReducer = (fn, reducer) => (y, xi) => {
-  const point = fn(xi)
-  return (isPromise(point)
-    ? point.then(res => reducer(y, res))
-    : reducer(y, point))
-}
+/*
+ * @synopsis
+ * mappedReducer function = mapReducer(f function, reducer function)
+ */
+const mapReducer = (f, reducer) => (y, xi) => (
+  PossiblePromise.then(f(xi), res => reducer(y, res)))
 
-const map = fn => {
-  if (!isFunction(fn)) {
-    throw new TypeError('map(x); x is not a function')
+/*
+ * @def
+ * Mappable = AsyncIterable|Array|String|Set|Map|TypedArray|Iterable|Object|function
+ *
+ * @synopsis
+ * y Mappable = map(f function)(Mappable)
+ */
+const map = f => {
+  if (!isFunction(f)) {
+    throw new TypeError('map(f); f is not a function')
   }
   return x => {
-    if (isAsyncIterable(x)) return mapAsyncIterable(fn, x)
-    if (isArray(x)) return mapArray(fn, x)
-    if (isString(x)) return mapString(fn, x)
-    if (is(Set)(x)) return mapSet(fn, x)
-    if (is(Map)(x)) return mapMap(fn, x)
-    if (isNumberTypedArray(x)) return mapTypedArray(fn, x)
-    if (isBigIntTypedArray(x)) return mapTypedArray(fn, x)
-    if (isIterable(x)) return mapIterable(fn, x) // for generators or custom iterators
-    if (is(Object)(x)) return mapObject(fn, x)
-    if (isFunction(x)) return mapReducer(fn, x)
+    if (isAsyncIterable(x)) return mapAsyncIterable(f, x)
+    if (isArray(x)) return mapArray(f, x)
+    if (isString(x)) return mapString(f, x)
+    if (is(Set)(x)) return mapSet(f, x)
+    if (is(Map)(x)) return mapMap(f, x)
+    if (isNumberTypedArray(x)) return mapTypedArray(f, x)
+    if (isBigIntTypedArray(x)) return mapTypedArray(f, x)
+    if (isIterable(x)) return mapIterable(f, x) // for generators or custom iterators
+    if (is(Object)(x)) return mapObject(f, x)
+    if (isFunction(x)) return mapReducer(f, x)
     throw new TypeError('map(...)(x); x invalid')
   }
 }

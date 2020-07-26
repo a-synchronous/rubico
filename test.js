@@ -714,7 +714,7 @@ describe('rubico', () => {
     it('throws a TypeError on map(nonFunction)', async () => {
       assert.throws(
         () => r.map({}),
-        new TypeError('map(x); x is not a function'),
+        new TypeError('map(f); f is not a function'),
       )
     })
     it('throws a TypeError on map(...)(null)', async () => {
