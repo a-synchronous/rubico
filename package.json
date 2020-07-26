@@ -26,7 +26,8 @@
     "deno",
     "javascript",
     "tacit",
-    "pointfree"
+    "pointfree",
+    "monad"
   ],
   "devDependencies": {
     "codecov": "^3.7.1",
