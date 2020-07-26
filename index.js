@@ -132,13 +132,17 @@ Thunk.prototype.map = function(f) {
 }
  */
 
-const _chain = (fnsIter, args) => {
-  const { value: f0 } = fnsIter.next()
-  let y = f0(...args)
-  for (const fn of fnsIter) {
-    y = PossiblePromise.then(y, fn)
+/*
+ * @synopsis
+ * output any = iteratorPipe(iter Iterator<function>, args [any])
+ */
+const iteratorPipe = (iter, args) => {
+  const { value: f0 } = iter.next()
+  let output = f0(...args)
+  for (const fn of iter) {
+    output = PossiblePromise.then(output, fn)
   }
-  return y
+  return output
 }
 
 const reverseArrayIter = arr => (function*() {
@@ -157,8 +161,8 @@ const pipe = fns => {
     throw new TypeError(`pipe(x); x[${i}] is not a function`)
   }
   return (...args) => (isFunction(args[0])
-    ? _chain(reverseArrayIter(fns), args)
-    : _chain(fns[Symbol.iterator].call(fns), args)
+    ? iteratorPipe(reverseArrayIter(fns), args)
+    : iteratorPipe(fns[Symbol.iterator].call(fns), args)
   )
 }
 
