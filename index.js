@@ -162,11 +162,11 @@ const pipe = fns => {
     throw new TypeError('pipe(fns); fns is not an array of functions')
   }
   if (fns.length < 1) {
-    throw new RangeError('pipe(x); x is not an array of at least one function')
+    throw new RangeError('pipe(fns); fns is not an array of at least one function')
   }
   for (let i = 0; i < fns.length; i++) {
     if (isFunction(fns[i])) continue
-    throw new TypeError(`pipe(x); x[${i}] is not a function`)
+    throw new TypeError(`pipe(fns); fns[${i}] is not a function`)
   }
   return (...args) => (isFunction(args[0])
     ? iteratorPipe(reverseArrayIter(fns), args)
@@ -174,6 +174,10 @@ const pipe = fns => {
   )
 }
 
+/*
+ * @synopsis
+ * y Array<any> = arrayFork(fns Array<function>, x any)
+ */
 const arrayFork = (fns, x) => {
   let isAsync = false
   const y = fns.map(fn => {
@@ -184,6 +188,10 @@ const arrayFork = (fns, x) => {
   return isAsync ? Promise.all(y) : y
 }
 
+/*
+ * @synopsis
+ * y Object<any> = objectFork(fns Object<function>, x any)
+ */
 const objectFork = (fns, x) => {
   const y = {}, promises = []
   for (const k in fns) {
@@ -197,6 +205,10 @@ const objectFork = (fns, x) => {
   return promises.length > 0 ? Promise.all(promises).then(() => y) : y
 }
 
+/*
+ * @synopsis
+ * forked function = fork(fns Object<function>|Array<function>)
+ */
 const fork = fns => {
   if (isArray(fns)) {
     if (fns.length < 1) {
