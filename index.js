@@ -712,22 +712,28 @@ const createFilterWithIndexIndex = (fn, x) => {
   return isAsync ? Promise.all(filterIndex) : filterIndex
 }
 
-const filterArrayWithIndex = (fn, x) => {
-  const index = createFilterWithIndexIndex(fn, x)
-  return (isPromise(index)
-    ? index.then(res => x.filter((_, i) => res[i]))
-    : x.filter((_, i) => index[i])
-  )
-}
+/*
+ * @synopsis
+ * filtered Array<any> = filterArrayWithIndex(predicate function, x Array<any>)
+ */
+const filterArrayWithIndex = (predicate, x) => PossiblePromise.then(
+  createFilterWithIndexIndex(predicate, x),
+  res => x.filter((_, i) => res[i]),
+)
 
-const filterStringWithIndex = (fn, x) => {
-  const index = createFilterWithIndexIndex(fn, x)
-  return (isPromise(index)
-    ? index.then(res => filterStringFromIndex(res, x))
-    : filterStringFromIndex(index, x)
-  )
-}
+/*
+ * @synopsis
+ * filtered string = filterArrayWithIndex(predicate function, x string)
+ */
+const filterStringWithIndex = (predicate, x) => PossiblePromise.then(
+  createFilterWithIndexIndex(predicate, x),
+  res => filterStringFromIndex(res, x),
+)
 
+/*
+ * @synopsis
+ * filtered Array<any>|string = filter(predicate function)(x Array<any>|string)
+ */
 filter.withIndex = fn => {
   if (!isFunction(fn)) {
     throw new TypeError('filter.withIndex(f); f is not a function')
@@ -808,7 +814,7 @@ const reduce = (fn, init) => {
     const x0 = new Thunk(init)(x)
     if (isIterable(x)) return PossiblePromise.then(
       x0,
-      res => reduceIterable(fn, res, x)
+      res => reduceIterable(fn, res, x),
     )
     if (isAsyncIterable(x)) {
       const state = { cancel: () => {} }
@@ -825,7 +831,7 @@ const reduce = (fn, init) => {
     }
     if (is(Object)(x)) return PossiblePromise.then(
       x0,
-      res => reduceObject(fn, res, x)
+      res => reduceObject(fn, res, x),
     )
     throw new TypeError('reduce(...)(x); x invalid')
   }
