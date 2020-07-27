@@ -677,15 +677,9 @@ const filterObject = (fn, x) => {
   return promises.length > 0 ? Promise.all(promises).then(() => y) : y
 }
 
-const filterReducer = (fn, reducer) => (y, xi) => {
-  const ok = fn(xi)
-  if (isPromise(ok)) {
-    return Promise.all([ok, y]).then(
-      res => res[0] ? reducer(res[1], xi) : res[1]
-    )
-  }
-  return ok ? reducer(y, xi) : y
-}
+const filterReducer = (f, reducer) => (y, xi) => (
+  PossiblePromise.all([f(xi), y]).then(([bool, resY]) => (
+    bool ? reducer(resY, xi) : resY)))
 
 const filter = fn => {
   if (!isFunction(fn)) {
