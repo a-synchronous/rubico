@@ -661,13 +661,10 @@ const filterMap = (fn, x) => {
   return promises.length > 0 ? Promise.all(promises).then(() => y) : y
 }
 
-const filterTypedArray = (fn, x) => {
-  const y = filterArray(fn, x)
-  return (isPromise(y)
-    ? y.then(res => new x.constructor(res))
-    : new x.constructor(y)
-  )
-}
+const filterTypedArray = (f, x) => PossiblePromise.then(
+  filterArray(f, x),
+  res => new x.constructor(res),
+)
 
 const filterObject = (fn, x) => {
   const y = {}, promises = []
