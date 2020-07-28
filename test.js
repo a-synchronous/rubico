@@ -518,25 +518,25 @@ describe('rubico', () => {
     it('throws a TypeError if passed a non array', async () => {
       assert.throws(
         () => r.switchCase('hey'),
-        new TypeError('switchCase(x); x is not an array of functions'),
+        new TypeError('switchCase(fns); fns is not an array of functions'),
       )
     })
     it('throws a RangeError if passed less than three functions', async () => {
       assert.throws(
         () => r.switchCase([() => false, () => 'hey']),
-        new RangeError('switchCase(x); x is not an array of at least three functions'),
+        new RangeError('switchCase(fns); fns is not an array of at least three functions'),
       )
     })
     it('throws a RangeError if passed an even number of functions', async () => {
       assert.throws(
         () => r.switchCase([() => false, () => 'hey', () => true, () => 'ho']),
-        new RangeError('switchCase(x); x is not an array of an odd number of functions'),
+        new RangeError('switchCase(fns); fns is not an array of an odd number of functions'),
       )
     })
     it('throws a TypeError if any item is not a function', async () => {
       assert.throws(
         () => r.switchCase([() => false, 'hey', () => true, () => 'ho', () => 'hi']),
-        new TypeError('switchCase(x); x[1] is not a function'),
+        new TypeError('switchCase(fns); fns[1] is not a function'),
       )
     })
   })

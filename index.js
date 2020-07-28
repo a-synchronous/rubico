@@ -319,7 +319,13 @@ const tryCatch = (f, onError) => {
   }
 }
 
-// TODO: reimplement to iterative
+/*
+ * @synopsis
+ * arraySwitchCase(fns Array<function>, x any, i number) -> any|Promise<any>
+ *
+ * @note
+ * TODO: reimplement to iterative
+ */
 const arraySwitchCase = (fns, x, i) => {
   if (i === fns.length - 1) return fns[i](x)
   return PossiblePromise.then(
@@ -328,23 +334,29 @@ const arraySwitchCase = (fns, x, i) => {
   )
 }
 
+/*
+ * @synopsis
+ * switchCase(fns Array<function>)(x any) -> any|Promise<any>
+ */
 const switchCase = fns => {
   if (!isArray(fns)) {
-    throw new TypeError('switchCase(x); x is not an array of functions')
+    throw new TypeError('switchCase(fns); fns is not an array of functions')
   }
   if (fns.length < 3) {
-    throw new RangeError(
-      'switchCase(x); x is not an array of at least three functions',
-    )
+    throw new RangeError([
+      'switchCase(fns)',
+      'fns is not an array of at least three functions',
+    ].join('; '))
   }
   if (fns.length % 2 === 0) {
-    throw new RangeError(
-      'switchCase(x); x is not an array of an odd number of functions',
-    )
+    throw new RangeError([
+      'switchCase(fns)',
+      'fns is not an array of an odd number of functions',
+    ].join('; '))
   }
   for (let i = 0; i < fns.length; i++) {
     if (isFunction(fns[i])) continue
-    throw new TypeError(`switchCase(x); x[${i}] is not a function`)
+    throw new TypeError(`switchCase(fns); fns[${i}] is not a function`)
   }
   return x => arraySwitchCase(fns, x, 0)
 }
