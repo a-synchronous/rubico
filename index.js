@@ -361,10 +361,18 @@ const switchCase = fns => {
   return x => arraySwitchCase(fns, x, 0)
 }
 
+/*
+ * @synopsis
+ * mapAsyncIterable(f function, x AsyncIterable<any>) -> AsyncIterable<any>
+ */
 const mapAsyncIterable = (fn, x) => (async function*() {
   for await (const xi of x) yield fn(xi)
 })()
 
+/*
+ * @synopsis
+ * mapIterable(f function, x Iterable<any>) -> Iterable<any>
+ */
 const mapIterable = (fn, x) => (function*() {
   for (const xi of x) yield fn(xi)
 })()
@@ -377,7 +385,6 @@ const mapIterable = (fn, x) => (function*() {
  * x.map
  * https://v8.dev/blog/elements-kinds#avoid-polymorphism
  *
- * @note
  * Alternative implementation
  * const mapArray = (f, x) => PossiblePromise.all(x.map(f)).then(res => res)
  */
