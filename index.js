@@ -114,14 +114,9 @@ PossiblePromise.all = ps => (ps.some(isPromise)
 
 /*
  * @synopsis
- * new FunctionOrGetter(x any|any=>any) -> ()=>any|any=>any
- *
- * @note
- * TODO: better name
+ * toFunction(x any|function) -> ()=>any|function
  */
-const FunctionOrGetter = function(x) {
-  return isFunction(x) ? x : () => x
-}
+const toFunction = x => isFunction(x) ? x : () => x
 
 /*
  * @synopsis
@@ -838,7 +833,7 @@ const reduce = (fn, init) => {
     throw new TypeError('reduce(x, y); x is not a function')
   }
   return x => {
-    const x0 = new FunctionOrGetter(init)(x)
+    const x0 = toFunction(init)(x)
     if (isIterable(x)) return PossiblePromise.then(
       x0,
       res => reduceIterable(fn, res, x),
@@ -995,7 +990,7 @@ const transform = (fn, init) => {
     throw new TypeError('transform(x, y); y is not a function')
   }
   return x => PossiblePromise.then(
-    new FunctionOrGetter(init)(x),
+    toFunction(init)(x),
     res => _transformBranch(fn, res, x),
   )
 }
@@ -1060,10 +1055,10 @@ const isDelimitedBy = (delim, x) => (x
 
 const arrayGet = (path, x, defaultValue) => {
   let y = x
-  if (!isDefined(y)) return new FunctionOrGetter(defaultValue)(x)
+  if (!isDefined(y)) return toFunction(defaultValue)(x)
   for (let i = 0; i < path.length; i++) {
     y = y[path[i]]
-    if (!isDefined(y)) return new FunctionOrGetter(defaultValue)(x)
+    if (!isDefined(y)) return toFunction(defaultValue)(x)
   }
   return y
 }
@@ -1231,8 +1226,8 @@ const not = fn => {
 }
 
 const compare = (predicate, f, g) => x => PossiblePromise.all([
-  new FunctionOrGetter(f)(x),
-  new FunctionOrGetter(g)(x),
+  toFunction(f)(x),
+  toFunction(g)(x),
 ]).then(res => predicate(...res))
 
 const eq = function(f, g) {
