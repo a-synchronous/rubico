@@ -547,16 +547,22 @@ map.series = f => {
   }
 }
 
-// https://stackoverflow.com/questions/62037349/rubicos-map-pool-array-implementation
-// https://stackoverflow.com/questions/39195441/limited-parallelism-with-async-await-in-typescript-es7
-const mapPoolConstructor = construct => async (size, fn, x) => {
+/*
+ * @synopsis
+ * mapPoolArray(size number, f function, x Array<any>) -> Promise<Array<any>>
+ *
+ * @note
+ * https://stackoverflow.com/questions/62037349/rubicos-map-pool-array-implementation
+ * https://stackoverflow.com/questions/39195441/limited-parallelism-with-async-await-in-typescript-es7
+ */
+const mapPoolArray = async (size, f, x) => {
   const y = []
   const promises = new Set()
   for (const xi of x) {
     if (promises.size >= size) {
       await Promise.race(promises)
     }
-    const yi = fn(xi)
+    const yi = f(xi)
     if (isPromise(yi)) {
       const p = yi.then(res => {
         promises.delete(p)
@@ -568,15 +574,30 @@ const mapPoolConstructor = construct => async (size, fn, x) => {
       y.push(yi)
     }
   }
-  return construct(await Promise.all(y))
+  return Promise.all(y)
 }
 
-const mapPoolArray = mapPoolConstructor(y => y)
+/*
+ * @synopsis
+ * mapPoolSet(size number, f function, x Set<any>) -> Promise<Set<any>>
+ */
+const mapPoolSet = (size, f, x) => (
+  mapPoolArray(size, f, x).then(res => new Set(res)))
 
-const mapPoolSet = mapPoolConstructor(y => new Set(y))
+/*
+ * @synopsis
+ * mapPoolMap(size number, f function, x Map<any=>any>) -> Promise<Map<any=>any>>
+ */
+const mapPoolMap = (size, f, x) => (
+  mapPoolArray(size, f, x).then(res => new Map(res))
+)
 
-const mapPoolMap = mapPoolConstructor(y => new Map(y))
-
+/*
+ * @synopsis
+ * <T any>Array<T>|Set<T>|Map<T> -> MapPoolable<T>
+ *
+ * <T MapPoolable>map.pool(size number, f function)(x T<any>) -> Promise<T<any>>
+ */
 map.pool = (size, fn) => {
   if (!isNumber(size)) {
     throw new TypeError('map.pool(size, f); size is not a number')
