@@ -664,7 +664,9 @@ const mapStringWithIndex = (f, x) => PossiblePromise.then(
 
 /*
  * @synopsis
- * <T Array<any>|string>map.withIndex(f any=>any)(x T) -> T|Promise<T>
+ * Array<any>|string -> T
+ *
+ * map.withIndex(f any=>any)(x T) -> T|Promise<T>
  */
 map.withIndex = fn => {
   if (!isFunction(fn)) {
