@@ -260,6 +260,10 @@ fork.series = fns => {
   throw new TypeError('fork.series(x); x invalid')
 }
 
+/*
+ * @synopsis
+ * assign(fns Array<function>)(x any) -> Object<any>|Promise<Object<any>>
+ */
 const assign = fns => {
   if (!is(Object)(fns)) {
     throw new TypeError('assign(x); x is not an object of functions')
