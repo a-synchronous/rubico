@@ -220,7 +220,18 @@ const fork = fns => {
   throw new TypeError('fork(x); x invalid')
 }
 
-// TODO: iterative implementation
+/*
+ * @synopsis
+ * arrayForkSeries(
+ *   fns Array<functions>,
+ *   x any,
+ *   i number,
+ *   y Array<any>,
+ * ) -> Array<any>|Promise<Array<any>>
+ *
+ * @note
+ * TODO: iterative implementation
+ */
 const arrayForkSeries = (fns, x, i, y) => {
   if (i === fns.length) return y
   return PossiblePromise.then(
@@ -229,6 +240,10 @@ const arrayForkSeries = (fns, x, i, y) => {
   )
 }
 
+/*
+ * @synopsis
+ * fork.series(fns Array<function>)(x any) -> Array<any>|Promise<Array<any>>
+ */
 fork.series = fns => {
   if (isArray(fns)) {
     if (fns.length < 1) {
@@ -442,11 +457,10 @@ const mapReducer = (f, reducer) => (y, xi) => (
   PossiblePromise.then(f(xi), res => reducer(y, res)))
 
 /*
- * @def
- * (AsyncIterable<T>|Array<T>|string|Set<T>|Map<T>
- *   |TypedArray<T>|Iterable<T>|Object<T>|(any, T)=>any) -> Mappable<T>
- *
  * @synopsis
+ * <T any>AsyncIterable<T>|Array<T>|string|Set<T>|Map<T>
+ *   |TypedArray<T>|Iterable<T>|Object<T>|(any, T)=>any -> Mappable<T>
+ *
  * <T Mappable>map(f function)(x T<any>) -> T<any>
  */
 const map = f => {
@@ -818,10 +832,9 @@ const reduceObject = (fn, x0, x) => reduceIterable(
 )
 
 /*
- * @def
+ * @synopsis
  * <T any>(Iterable<T>|AsyncIterable<T>|Object<T>) -> Reducible<T>
  *
- * @synopsis
  * reduce(f function, init any|any=>any)(x Reducible<any>) -> any|Promise<any>
  *
  * @note
