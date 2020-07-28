@@ -616,6 +616,13 @@ map.pool = (size, fn) => {
   }
 }
 
+/*
+ * @synopsis
+ * <A any, B any>mapArrayWithIndex(
+ *   f (xi A, i number, x Array<A>)=>B,
+ *   x Array<A>,
+ * ) -> Array<B>|Promise<Array<B>>
+ */
 const mapArrayWithIndex = (fn, x) => {
   let isAsync = false
   const y = x.map((xi, i) => {
@@ -626,6 +633,13 @@ const mapArrayWithIndex = (fn, x) => {
   return isAsync ? Promise.all(y) : y
 }
 
+/*
+ * @synopsis
+ * mapIterableWithIndexToArray(
+ *   f (xi any, i number, x Iterable<any>)=>any,
+ *   x Iterable<any>,
+ * ) -> Array<any>|Promise<Array<any>>
+ */
 const mapIterableWithIndexToArray = (fn, x) => {
   let isAsync = false
   const primer = []
@@ -639,11 +653,19 @@ const mapIterableWithIndexToArray = (fn, x) => {
   return isAsync ? Promise.all(primer) : primer
 }
 
+/*
+ * @synopsis
+ * mapStringWithIndex(f any=>any, x string) -> string|Promise<string>
+ */
 const mapStringWithIndex = (f, x) => PossiblePromise.then(
   mapIterableWithIndexToArray(f, x),
   res => res.join(''),
 )
 
+/*
+ * @synopsis
+ * <T Array<any>|string>map.withIndex(f any=>any)(x T) -> T|Promise<T>
+ */
 map.withIndex = fn => {
   if (!isFunction(fn)) {
     throw new TypeError('map.withIndex(x); x is not a function')
