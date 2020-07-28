@@ -290,10 +290,19 @@ const tap = f => {
   return x => PossiblePromise.then(f(x), () => x)
 }
 
-/* TODO: https://github.com/a-synchronous/rubico/issues/100
-tap.if = fn => {}
-*/
+/*
+ * @synopsis
+ * tap.if(cond function, f function)(x any) -> any|Promise<any>
+ *
+ * @note
+ * TODO: https://github.com/a-synchronous/rubico/issues/100
+ */
+tap.if = (cond, f) => {}
 
+/*
+ * @synopsis
+ * tryCatch(f function, onError function)(x any) -> any|Promise<any>
+ */
 const tryCatch = (f, onError) => {
   if (!isFunction(f)) {
     throw new TypeError('tryCatch(x, y); x is not a function')
