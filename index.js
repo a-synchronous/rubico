@@ -279,7 +279,10 @@ const assign = fns => {
   }
 }
 
-// function f => any x => any x
+/*
+ * @synopsis
+ * tap(f function)(x any) -> any|Promise<any>
+ */
 const tap = f => {
   if (!isFunction(f)) {
     throw new TypeError('tap(f); f is not a function')
