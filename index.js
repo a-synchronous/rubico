@@ -679,19 +679,28 @@ map.withIndex = fn => {
   }
 }
 
-const filterAsyncIterable = (fn, x) => (async function*() {
-  for await (const xi of x) { if (await fn(xi)) yield xi }
+/*
+ * @synopsis
+ * filterAsyncIterable(predicate function, x AsyncIterable)
+ *   -> AsyncIterable<any>
+ */
+const filterAsyncIterable = (predicate, x) => (async function*() {
+  for await (const xi of x) { if (await predicate(xi)) yield xi }
 })()
 
-const filterIterable = (fn, x) => (function*() {
+/*
+ * @synopsis
+ * filterIterable(predicate function, x Iterable<any>) -> Iterable<any>
+ */
+const filterIterable = (predicate, x) => (function*() {
   for (const xi of x) {
-    const ok = fn(xi)
+    const ok = predicate(xi)
     if (isPromise(ok)) {
       throw new TypeError([
-        'filter(f)(x); xi is an element of x; ',
-        'if x if the resulting iterator of a sync generator, ',
+        'filter(f)(x); xi is an element of x;',
+        'if x if the resulting iterator of a sync generator,',
         'f(xi) cannot return a Promise',
-      ].join(''))
+      ].join(' '))
     }
     if (ok) yield xi
   }
