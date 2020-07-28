@@ -73,7 +73,7 @@ const arrayOf = (item, length) => Array.from({ length }, () => item)
 
 /*
  * @synopsis
- * possiblePromise PossiblePromise<any> = new PossiblePromise(p any|Promise<any>)
+ * new PossiblePromise(p any|Promise<any>) -> any|Promise<any>
  */
 const PossiblePromise = function(p) {
   this.value = p
@@ -81,15 +81,7 @@ const PossiblePromise = function(p) {
 
 /*
  * @synopsis
- * possiblePromise PossiblePromise<any> = new PossiblePromise(p any|Promise<any>).map(f function)
-PossiblePromise.prototype.map = function(f) {
-  return new PossiblePromise(f(this.value))
-}
- */
-
-/*
- * @synopsis
- * any|Promise<any> = new PossiblePromise(p any|Promise<any>).then(f function)
+ * new PossiblePromise(p any|Promise<any>).then(f function) -> any|Promise<any>
  */
 PossiblePromise.prototype.then = function(f) {
   return isPromise(this.value) ? this.value.then(f) : f(this.value)
@@ -97,19 +89,24 @@ PossiblePromise.prototype.then = function(f) {
 
 /*
  * @synopsis
- * any|Promise<any> = PossiblePromise.then(p any|Promise<any>, f function)
+ * PossiblePromise.then(p any|Promise<any>, f function) -> any|Promise<any>
  */
 PossiblePromise.then = (p, f) => isPromise(p) ? p.then(f) : f(p)
 
 /*
  * @synopsis
- * any|Promise<any> = PossiblePromise.catch(p any|Promise<any>, f function)
+ * PossiblePromise.catch(
+ *   p any|Promise<any>,
+ *   f Error=>any|Promise<any>,
+ * ) -> any|Promise<any>
  */
 PossiblePromise.catch = (p, f) => isPromise(p) ? p.catch(f) : p
 
 /*
  * @synopsis
- * possiblePromise PossiblePromise<Array<any>> = PossiblePromise.all(ps Array<any>|Promise<Array<any>>)
+ * PossiblePromise.all(
+ *   ps Array<any>|Promise<Array<any>>,
+ * ) -> Array<any>|Promise<Array<any>>
  */
 PossiblePromise.all = ps => (ps.some(isPromise)
   ? Promise.all(ps)
@@ -117,24 +114,18 @@ PossiblePromise.all = ps => (ps.some(isPromise)
 
 /*
  * @synopsis
- * thunk Thunk<()=>any|function> = new Thunk(x any|function)
+ * new FunctionOrGetter(x any|any=>any) -> ()=>any|any=>any
+ *
+ * @note
+ * TODO: better name
  */
-const Thunk = function(x) {
-  this.value = x
+const FunctionOrGetter = function(x) {
   return isFunction(x) ? x : () => x
 }
 
 /*
  * @synopsis
- * thunk Thunk<()=>any|function> = new Thunk(x any|function).map(f function)
-Thunk.prototype.map = function(f) {
-  return new Thunk(f(this.value))
-}
- */
-
-/*
- * @synopsis
- * output any = iteratorPipe(iter Iterator<function>, args [any])
+ * iteratorPipe(iter Iterator<function>, args Array<any>) -> any|Promise<any>
  */
 const iteratorPipe = (iter, args) => {
   const { value: f0 } = iter.next()
@@ -147,7 +138,7 @@ const iteratorPipe = (iter, args) => {
 
 /*
  * @synopsis
- * reversed Iterator<any> = reverseArrayIter(arr Array<any>)
+ * reverseArrayIter(arr Array<any>) -> Iterator<any>
  */
 const reverseArrayIter = arr => (function*() {
   for (let i = arr.length - 1; i >= 0; i--) yield arr[i]
@@ -155,7 +146,7 @@ const reverseArrayIter = arr => (function*() {
 
 /*
  * @synopsis
- * piped function = pipe(fns Array<function>)
+ * pipe(fns Array<function>)(...args ...any) -> any|Promise<any>
  */
 const pipe = fns => {
   if (!isArray(fns)) {
@@ -176,7 +167,7 @@ const pipe = fns => {
 
 /*
  * @synopsis
- * y Array<any> = arrayFork(fns Array<function>, x any)
+ * arrayFork(fns Array<function>, x any) -> Array<any>|Promise<Array<any>>
  */
 const arrayFork = (fns, x) => {
   let isAsync = false
@@ -190,7 +181,7 @@ const arrayFork = (fns, x) => {
 
 /*
  * @synopsis
- * y Object<any> = objectFork(fns Object<function>, x any)
+ * objectFork(fns Object<function>, x any) -> Object<any>|Promise<Object<any>>
  */
 const objectFork = (fns, x) => {
   const y = {}, promises = []
@@ -207,7 +198,8 @@ const objectFork = (fns, x) => {
 
 /*
  * @synopsis
- * forked function = fork(fns Object<function>|Array<function>)
+ * fork(fns Object<function>|Array<function>)(x any)
+ *   -> Object<any>|Array<any>|Promise<Object<any>>|Promise<Array<any>>
  */
 const fork = fns => {
   if (isArray(fns)) {
@@ -341,7 +333,7 @@ const mapIterable = (fn, x) => (function*() {
 
 /*
  * @synopsis
- * y [any]|Promise<[any]> = mapArray(f function, x [any])
+ * mapArray(f function, x Array<any>) -> Array<any>|Promise<Array<any>>
  *
  * @note
  * x.map
@@ -363,7 +355,8 @@ const mapArray = (f, x) => {
 
 /*
  * @synopsis
- * y [any]|Promise<[any]> = mapIterableToArray(f function, x Iterable<any>)
+ * mapIterableToArray(f function, x Iterable<any>)
+ *   -> Array<any>|Promise<Array<any>>
  */
 const mapIterableToArray = (fn, x) => {
   let isAsync = false
@@ -378,7 +371,7 @@ const mapIterableToArray = (fn, x) => {
 
 /*
  * @synopsis
- * y string = mapString(f function, x string)
+ * mapString(f function, x string) -> string
  */
 const mapString = (f, x) => PossiblePromise.then(
   mapIterableToArray(f, x),
@@ -387,7 +380,7 @@ const mapString = (f, x) => PossiblePromise.then(
 
 /*
  * @synopsis
- * y TypedArray<any> = mapTypedArray(f function, x TypedArray<any>)
+ * mapTypedArray(f function, x TypedArray<any>) -> TypedArray<any>
  */
 const mapTypedArray = (f, x) => PossiblePromise.then(
   mapIterableToArray(f, x),
@@ -396,7 +389,7 @@ const mapTypedArray = (f, x) => PossiblePromise.then(
 
 /*
  * @synopsis
- * y Set<any> = mapSet(f function, x Set<any>)
+ * mapSet(f function, x Set<any>) -> Set<any>
  */
 const mapSet = (f, x) => {
   const y = new Set(), promises = []
@@ -413,7 +406,7 @@ const mapSet = (f, x) => {
 
 /*
  * @synopsis
- * y Map<any=>any> = mapMap(f function, x Map<any=>any>)
+ * mapMap(f function, x Map<any=>any>) -> Map<any=>any>
  */
 const mapMap = (fn, x) => {
   const y = new Map(), promises = []
@@ -430,7 +423,7 @@ const mapMap = (fn, x) => {
 
 /*
  * @synopsis
- * y Object<any> = mapObject(f function, x Object<any>)
+ * mapObject(f function, x Object<any>) -> Object<any>
  */
 const mapObject = (fn, x) => {
   const y = {}, promises = []
@@ -447,17 +440,19 @@ const mapObject = (fn, x) => {
 
 /*
  * @synopsis
- * mappedReducer function = mapReducer(f function, reducer function)
+ * mapReducer(f function, reducer function)
+ *   -> anotherReducer (y any, xi any)=>any|Promise<any>
  */
 const mapReducer = (f, reducer) => (y, xi) => (
   PossiblePromise.then(f(xi), res => reducer(y, res)))
 
 /*
  * @def
- * Mappable = AsyncIterable|Array|String|Set|Map|TypedArray|Iterable|Object|function
+ * (AsyncIterable<T>|Array<T>|string|Set<T>|Map<T>
+ *   |TypedArray<T>|Iterable<T>|Object<T>|(any, T)=>any) -> Mappable<T>
  *
  * @synopsis
- * y Mappable = map(f function)(x Mappable)
+ * <T Mappable>map(f function)(x T<any>) -> T<any>
  */
 const map = f => {
   if (!isFunction(f)) {
@@ -480,7 +475,8 @@ const map = f => {
 
 /*
  * @synopsis
- * y Array<any> = mapSeriesArray(f function, x Array<any>, i number, y Array<any>)
+ * mapSeriesArray(f function, x Array<any>, i number, y Array<any>)
+ *   -> Array<any>|Promise<Array<any>>
  *
  * @note
  * TODO: iterative implementation
@@ -495,7 +491,7 @@ const mapSeriesArray = (f, x, i, y) => {
 
 /*
  * @synopsis
- * y Array<any> = map.series(f function)(x Array<any>)
+ * map.series(f function)(x Array<any>) -> Array<any>|Promise<Array<any>>
  */
 map.series = f => {
   if (!isFunction(f)) {
@@ -714,7 +710,7 @@ const createFilterWithIndexIndex = (fn, x) => {
 
 /*
  * @synopsis
- * filtered Array<any> = filterArrayWithIndex(predicate function, x Array<any>)
+ * filterArrayWithIndex(predicate function, x Array<any>) -> Array<any>|Promise<Array<any>>
  */
 const filterArrayWithIndex = (predicate, x) => PossiblePromise.then(
   createFilterWithIndexIndex(predicate, x),
@@ -723,7 +719,7 @@ const filterArrayWithIndex = (predicate, x) => PossiblePromise.then(
 
 /*
  * @synopsis
- * filtered string = filterArrayWithIndex(predicate function, x string)
+ * filterArrayWithIndex(predicate function, x string) -> string|Promise<string>
  */
 const filterStringWithIndex = (predicate, x) => PossiblePromise.then(
   createFilterWithIndexIndex(predicate, x),
@@ -732,7 +728,8 @@ const filterStringWithIndex = (predicate, x) => PossiblePromise.then(
 
 /*
  * @synopsis
- * filtered Array<any>|string = filter(predicate function)(x Array<any>|string)
+ * filter(predicate function)(x Array<any>|string)
+ *   -> Array<any>|Promise<Array<any>>|string|Promise<string>
  */
 filter.withIndex = fn => {
   if (!isFunction(fn)) {
@@ -753,15 +750,27 @@ filter.withIndex = fn => {
   }
 }
 
-const asyncReduceIterator = async (fn, y0, iter) => {
-  let y = y0
+/*
+ * @synopsis
+ * asyncReduceIterator(f function, x0 any, iter Iterable<any>) -> Promise<any>
+ */
+const asyncReduceIterator = async (f, x0, iter) => {
+  let y = x0
   for (const xi of iter) {
-    y = await fn(y, xi)
+    y = await f(y, xi)
   }
   return y
 }
 
-// https://stackoverflow.com/questions/62112863/what-are-the-performance-implications-if-any-of-chaining-too-many-thens-on
+/*
+ * @synopsis
+ * reduceIterable(f function, possiblyX0 any, x Iterable<any>)
+ *   -> any|Promise<any>
+ *
+ * @note
+ * There's an issue chaining too many synchronous .thens
+ * https://stackoverflow.com/questions/62112863/what-are-the-performance-implications-if-any-of-chaining-too-many-thens-on
+ */
 const reduceIterable = (fn, possiblyX0, x) => {
   const iter = x[Symbol.iterator]()
   const y0 = isUndefined(possiblyX0) ? iter.next().value : possiblyX0
@@ -783,6 +792,11 @@ const reduceIterable = (fn, possiblyX0, x) => {
   return y
 }
 
+/*
+ * @synopsis
+ * reduceAsyncIterable(f function, possiblyX0 any, x AsyncIterable<any>)
+ *   -> Promise<any>
+ */
 const reduceAsyncIterable = async (fn, possiblyY0, x) => {
   const iter = x[Symbol.asyncIterator]()
   const y0 = isUndefined(possiblyY0) ? (await iter.next()).value : possiblyY0
@@ -798,20 +812,33 @@ const reduceAsyncIterable = async (fn, possiblyY0, x) => {
   return y
 }
 
+/*
+ * @synopsis
+ * reduceObject(f function, x0 any, x Object<any>) -> any|Promise<any>
+ */
 const reduceObject = (fn, x0, x) => reduceIterable(
   fn,
   x0,
   (function* () { for (const k in x) yield x[k] })(),
 )
 
-// https://stackoverflow.com/questions/30233302/promise-is-it-possible-to-force-cancel-a-promise/30235261#30235261
-// https://stackoverflow.com/questions/62336381/is-this-promise-cancellation-implementation-for-reducing-an-async-iterable-on-th
+/*
+ * @def
+ * <T any>(Iterable<T>|AsyncIterable<T>|Object<T>) -> Reducible<T>
+ *
+ * @synopsis
+ * reduce(f function, init any|any=>any)(x Reducible<any>) -> any|Promise<any>
+ *
+ * @note
+ * https://stackoverflow.com/questions/30233302/promise-is-it-possible-to-force-cancel-a-promise/30235261#30235261
+ * https://stackoverflow.com/questions/62336381/is-this-promise-cancellation-implementation-for-reducing-an-async-iterable-on-th
+ */
 const reduce = (fn, init) => {
   if (!isFunction(fn)) {
     throw new TypeError('reduce(x, y); x is not a function')
   }
   return x => {
-    const x0 = new Thunk(init)(x)
+    const x0 = new FunctionOrGetter(init)(x)
     if (isIterable(x)) return PossiblePromise.then(
       x0,
       res => reduceIterable(fn, res, x),
@@ -968,7 +995,7 @@ const transform = (fn, init) => {
     throw new TypeError('transform(x, y); y is not a function')
   }
   return x => PossiblePromise.then(
-    new Thunk(init)(x),
+    new FunctionOrGetter(init)(x),
     res => _transformBranch(fn, res, x),
   )
 }
@@ -1033,10 +1060,10 @@ const isDelimitedBy = (delim, x) => (x
 
 const arrayGet = (path, x, defaultValue) => {
   let y = x
-  if (!isDefined(y)) return new Thunk(defaultValue)(x)
+  if (!isDefined(y)) return new FunctionOrGetter(defaultValue)(x)
   for (let i = 0; i < path.length; i++) {
     y = y[path[i]]
-    if (!isDefined(y)) return new Thunk(defaultValue)(x)
+    if (!isDefined(y)) return new FunctionOrGetter(defaultValue)(x)
   }
   return y
 }
@@ -1204,8 +1231,8 @@ const not = fn => {
 }
 
 const compare = (predicate, f, g) => x => PossiblePromise.all([
-  new Thunk(f)(x),
-  new Thunk(g)(x),
+  new FunctionOrGetter(f)(x),
+  new FunctionOrGetter(g)(x),
 ]).then(res => predicate(...res))
 
 const eq = function(f, g) {
