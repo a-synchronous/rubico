@@ -1017,31 +1017,55 @@ const reduce = (fn, init) => {
   }
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const nullTransform = (fn, x0) => reduce(
   fn(() => x0),
   x0,
 )
 
+/*
+ * @synopsis
+ * TODO
+ */
 const arrayTransform = (fn, x0) => x => reduce(
   fn((y, xi) => { y.push(xi); return y }),
   x0,
 )(x)
 
+/*
+ * @synopsis
+ * TODO
+ */
 const stringTransform = (fn, x0) => reduce(
   fn((y, xi) => `${y}${xi}`),
   x0,
 )
 
+/*
+ * @synopsis
+ * TODO
+ */
 const setTransform = (fn, x0) => reduce(
   fn((y, xi) => y.add(xi)),
   x0,
 )
 
+/*
+ * @synopsis
+ * TODO
+ */
 const mapTransform = (fn, x0) => reduce(
   fn((y, xi) => y.set(xi[0], xi[1])),
   x0,
 )
 
+/*
+ * @synopsis
+ * TODO
+ */
 const stringToCharCodes = x => {
   const y = []
   for (let i = 0; i < x.length; i++) {
@@ -1050,6 +1074,10 @@ const stringToCharCodes = x => {
   return y
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const toNumberTypedArray = (constructor, x) => {
   if (isNumber(x)) return constructor.of(x)
   if (isString(x)) return new constructor(stringToCharCodes(x))
@@ -1059,6 +1087,10 @@ const toNumberTypedArray = (constructor, x) => {
   ].join('; '))
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const firstPowerOf2After = x => {
   let y = 2
   while (y < x + 1) {
@@ -1067,6 +1099,10 @@ const firstPowerOf2After = x => {
   return y
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const typedArrayConcat = (y, chunk, offset) => {
   const nextLength = offset + chunk.length
   const buf = nextLength > y.length ? (() => {
@@ -1078,6 +1114,10 @@ const typedArrayConcat = (y, chunk, offset) => {
   return buf
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const numberTypedArrayTransform = (fn, x0) => x => {
   const point = reduce(
     fn(({ y, offset }, xi) => {
@@ -1092,6 +1132,10 @@ const numberTypedArrayTransform = (fn, x0) => x => {
   ) : point.y.slice(0, point.offset)
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const toBigIntTypedArray = (constructor, x) => {
   if (isBigInt(x)) return constructor.of(x)
   throw new TypeError([
@@ -1100,6 +1144,10 @@ const toBigIntTypedArray = (constructor, x) => {
   ].join('; '))
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const bigIntTypedArrayTransform = (fn, x0) => x => {
   const point = reduce(
     fn(({ y, offset }, xi) => {
@@ -1114,11 +1162,19 @@ const bigIntTypedArrayTransform = (fn, x0) => x => {
   ) : point.y.slice(0, point.offset)
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const writableTransform = (fn, x0) => reduce(
   fn((y, xi) => { y.write(xi); return y }),
   x0,
 )
 
+/*
+ * @synopsis
+ * TODO
+ */
 const objectTransform = (fn, x0) => reduce(
   fn((y, xi) => {
     if (isArray(xi)) { y[xi[0]] = xi[1]; return y }
@@ -1130,6 +1186,10 @@ const objectTransform = (fn, x0) => reduce(
   x0,
 )
 
+/*
+ * @synopsis
+ * TODO
+ */
 const _transformBranch = (fn, x0, x) => {
   if (isNull(x0)) return nullTransform(fn, x0)(x)
   if (isArray(x0)) return arrayTransform(fn, x0)(x)
@@ -1143,6 +1203,10 @@ const _transformBranch = (fn, x0, x) => {
   throw new TypeError('transform(x, y); x invalid')
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const transform = (fn, init) => {
   if (!isFunction(fn)) {
     throw new TypeError('transform(x, y); y is not a function')
@@ -1153,6 +1217,10 @@ const transform = (fn, init) => {
   )
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const flattenIterable = (reducer, x0, x) => {
   let y = x0
   for (const xi of x) {
@@ -1167,33 +1235,57 @@ const flattenIterable = (reducer, x0, x) => {
   return y
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const flattenToArray = x => flattenIterable(
   (y, xii) => { y.push(xii); return y },
   [],
   x,
 )
 
+/*
+ * @synopsis
+ * TODO
+ */
 const flattenToSet = x => flattenIterable(
   (y, xii) => y.add(xii),
   new Set(),
   x,
 )
 
+/*
+ * @synopsis
+ * TODO
+ */
 const flatMapArray = (fn, x) => {
   const y = mapArray(fn, x)
   return isPromise(y) ? y.then(flattenToArray) : flattenToArray(y)
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const flatMapSet = (fn, x) => {
   const y = mapSet(fn, x)
   return isPromise(y) ? y.then(flattenToSet) : flattenToSet(y)
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const flatMapReducer = (fn, reducer) => (y, xi) => {
   const yi = fn(xi)
   return isPromise(yi) ? yi.then(reduce(reducer, y)) : reduce(reducer, y)(yi)
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const flatMap = fn => {
   if (!isFunction(fn)) {
     throw new TypeError('flatMap(x); x is not a function')
@@ -1206,11 +1298,19 @@ const flatMap = fn => {
   }
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const isDelimitedBy = (delim, x) => (x
   && x[0] !== delim
   && x[x.length - 1] !== delim
   && x.slice(1, x.length - 1).includes(delim))
 
+/*
+ * @synopsis
+ * TODO
+ */
 const arrayGet = (path, x, defaultValue) => {
   let y = x
   if (!isDefined(y)) return toFunction(defaultValue)(x)
@@ -1221,6 +1321,10 @@ const arrayGet = (path, x, defaultValue) => {
   return y
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const get = (path, defaultValue) => {
   if (isArray(path)) return x => arrayGet(path, x, defaultValue)
   if (isNumber(path)) return x => arrayGet([path], x, defaultValue)
@@ -1230,6 +1334,10 @@ const get = (path, defaultValue) => {
   throw new TypeError('get(x, y); x invalid')
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const pickObject = (props, x) => {
   const y = {}
   for (let i = 0; i < props.length; i++) {
@@ -1238,6 +1346,10 @@ const pickObject = (props, x) => {
   return y
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const pick = props => {
   if (isArray(props)) return x => {
     if (is(Object)(x)) return pickObject(props, x)
@@ -1246,12 +1358,20 @@ const pick = props => {
   throw new TypeError('pick(x); x is not an array')
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const omitObject = (props, x) => {
   const y = Object.assign({}, x)
   for (let i = 0; i < props.length; i++) delete y[props[i]]
   return y
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const omit = props => {
   if (isArray(props)) return x => {
     if (is(Object)(x)) return omitObject(props, x)
@@ -1260,6 +1380,10 @@ const omit = props => {
   throw new TypeError('omit(x); x is not an array')
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const anyIterable = (fn, x) => {
   const promises = []
   for (const xi of x) {
@@ -1274,11 +1398,19 @@ const anyIterable = (fn, x) => {
     : false)
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const anyObject = (fn, x) => anyIterable(
   fn,
   (function* () { for (const k in x) yield x[k] })(),
 )
 
+/*
+ * @synopsis
+ * TODO
+ */
 const any = fn => {
   if (!isFunction(fn)) {
     throw new TypeError('any(x); x is not a function')
@@ -1290,6 +1422,10 @@ const any = fn => {
   }
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const allIterable = (fn, x) => {
   const promises = []
   for (const xi of x) {
@@ -1304,11 +1440,19 @@ const allIterable = (fn, x) => {
     : true)
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const allObject = (fn, x) => allIterable(
   fn,
   (function* () { for (const k in x) yield x[k] })(),
 )
 
+/*
+ * @synopsis
+ * TODO
+ */
 const all = fn => {
   if (!isFunction(fn)) {
     throw new TypeError('all(x); x is not a function')
@@ -1320,6 +1464,10 @@ const all = fn => {
   }
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const arrayAnd = (fns, x) => {
   const promises = []
   for (let i = 0; i < fns.length; i++) {
@@ -1334,6 +1482,10 @@ const arrayAnd = (fns, x) => {
     : true)
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const and = fns => {
   if (!isArray(fns)) {
     throw new TypeError('and(x); x is not an array of functions')
@@ -1348,6 +1500,10 @@ const and = fns => {
   return x => arrayAnd(fns, x)
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const arrayOr = (fns, x) => {
   const promises = []
   for (let i = 0; i < fns.length; i++) {
@@ -1362,6 +1518,10 @@ const arrayOr = (fns, x) => {
     : false)
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const or = fns => {
   if (!isArray(fns)) {
     throw new TypeError('or(x); x is not an array of functions')
@@ -1376,6 +1536,10 @@ const or = fns => {
   return x => arrayOr(fns, x)
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const not = fn => {
   if (!isFunction(fn)) {
     throw new TypeError('not(x); x is not a function')
@@ -1383,11 +1547,19 @@ const not = fn => {
   return x => new PossiblePromise(fn(x)).then(res => !res)
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const compare = (predicate, f, g) => x => PossiblePromise.all([
   toFunction(f)(x),
   toFunction(g)(x),
 ]).then(res => predicate(...res))
 
+/*
+ * @synopsis
+ * TODO
+ */
 const eq = function(f, g) {
   if (arguments.length !== 2) {
     throw new RangeError('eq(...arguments); exactly two arguments required')
@@ -1395,6 +1567,10 @@ const eq = function(f, g) {
   return compare((a, b) => a === b, f, g)
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const gt = function(f, g) {
   if (arguments.length !== 2) {
     throw new RangeError('gt(...arguments); exactly two arguments required')
@@ -1402,6 +1578,10 @@ const gt = function(f, g) {
   return compare((a, b) => a > b, f, g)
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const lt = function(f, g) {
   if (arguments.length !== 2) {
     throw new RangeError('lt(...arguments); exactly two arguments required')
@@ -1409,6 +1589,10 @@ const lt = function(f, g) {
   return compare((a, b) => a < b, f, g)
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const gte = function(f, g) {
   if (arguments.length !== 2) {
     throw new RangeError('gte(...arguments); exactly two arguments required')
@@ -1416,6 +1600,10 @@ const gte = function(f, g) {
   return compare((a, b) => a >= b, f, g)
 }
 
+/*
+ * @synopsis
+ * TODO
+ */
 const lte = function(f, g) {
   if (arguments.length !== 2) {
     throw new RangeError('lte(...arguments); exactly two arguments required')
