@@ -3,6 +3,8 @@ const { reduce } = require('..')
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
+const iterations = 1e4
+
 describe('reduce', () => {
   it('reduce(...)(AsyncIterable); no memory leaks on cancel', async () => {
     const timeoutIDs = new Map()
@@ -17,7 +19,7 @@ describe('reduce', () => {
     }
 
     let i = 0, maxHeapUsed = 0
-    while (i < 1e4) {
+    while (i < iterations) {
       const p = reduce((a, b) => a + b, 0)(asyncGenerator(i))
       await sleep(1)
       p.cancel()
