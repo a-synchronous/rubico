@@ -843,11 +843,18 @@ const filter = predicate => {
   }
 }
 
-const createFilterWithIndexIndex = (fn, x) => {
+/*
+ * @synopsis
+ * createFilterWithIndexIndex(
+ *   predicate (xi any, i number, x Iterable<any>)=>any,
+ *   x Iterable<any>,
+ * ) -> Array<any>|Promise<Array<any>>
+ */
+const createFilterWithIndexIndex = (predicate, x) => {
   let isAsync = false, i = 0
   const filterIndex = []
   for (const xi of x) {
-    const ok = fn(xi, i, x)
+    const ok = predicate(xi, i, x)
     if (isPromise(ok)) isAsync = true
     filterIndex.push(ok)
     i += 1
@@ -875,7 +882,7 @@ const filterStringWithIndex = (predicate, x) => PossiblePromise.then(
 
 /*
  * @synopsis
- * filter(predicate function)(x Array<any>|string)
+ * filter.withIndex(predicate function)(x Array<any>|string)
  *   -> Array<any>|Promise<Array<any>>|string|Promise<string>
  */
 filter.withIndex = fn => {
