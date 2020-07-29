@@ -1,3 +1,11 @@
+## v1.3.0
+ * large rubico core refactor (~75% done) to PossiblePromise
+ * large rubico core documentation initiative (~75% done)
+ * rubico/x/index.js for comfier times with rubico/x
+ * benchmark groundwork (and, or, and switchCase)
+ * rubico/x/timeInLoop - measures time a function takes in a loop
+ * flatMap includes unflattenable elements instead of throwing
+
 ## v1.2.5
  * tap no longer transduces; use map(tap) or rubico/x/forEach instead if you want to use tap in a transducer
 
