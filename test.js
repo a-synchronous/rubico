@@ -1971,19 +1971,19 @@ describe('rubico', () => {
     it('throws a TypeError if passed a non array', async () => {
       assert.throws(
         () => r.or('hey'),
-        new TypeError('or(x); x is not an array of functions'),
+        new TypeError('or(fns); fns is not an array of functions'),
       )
     })
     it('throws a RangeError if passed less than one function', async () => {
       assert.throws(
         () => r.or([]),
-        new RangeError('or(x); x is not an array of at least one function'),
+        new RangeError('or(fns); fns is not an array of at least one function'),
       )
     })
     it('throws a TypeError if any item is not a function', async () => {
       assert.throws(
         () => r.or([() => false, 'hey', () => 'hi']),
-        new TypeError('or(x); x[1] is not a function'),
+        new TypeError('or(fns); fns[1] is not a function'),
       )
     })
   })

@@ -1539,14 +1539,14 @@ const arrayOr = (fns, x) => {
  */
 const or = fns => {
   if (!isArray(fns)) {
-    throw new TypeError('or(x); x is not an array of functions')
+    throw new TypeError('or(fns); fns is not an array of functions')
   }
   if (fns.length < 1) {
-    throw new RangeError('or(x); x is not an array of at least one function')
+    throw new RangeError('or(fns); fns is not an array of at least one function')
   }
   for (let i = 0; i < fns.length; i++) {
     if (isFunction(fns[i])) continue
-    throw new TypeError(`or(x); x[${i}] is not a function`)
+    throw new TypeError(`or(fns); fns[${i}] is not a function`)
   }
   return x => arrayOr(fns, x)
 }
