@@ -1117,6 +1117,9 @@ const typedArrayConcat = (y, chunk, offset) => {
 /*
  * @synopsis
  * TODO
+ *
+ * @note
+ * TODO: refactor to PossiblePromise.then
  */
 const numberTypedArrayTransform = (fn, x0) => x => {
   const point = reduce(
@@ -1147,6 +1150,9 @@ const toBigIntTypedArray = (constructor, x) => {
 /*
  * @synopsis
  * TODO
+ *
+ * @note
+ * TODO: refactor to PossiblePromise.then
  */
 const bigIntTypedArrayTransform = (fn, x0) => x => {
   const point = reduce(
@@ -1258,6 +1264,9 @@ const flattenToSet = x => flattenIterable(
 /*
  * @synopsis
  * TODO
+ *
+ * @note
+ * TODO: refactor to PossiblePromise.then
  */
 const flatMapArray = (fn, x) => {
   const y = mapArray(fn, x)
@@ -1267,6 +1276,9 @@ const flatMapArray = (fn, x) => {
 /*
  * @synopsis
  * TODO
+ *
+ * @note
+ * TODO: refactor to PossiblePromise.then
  */
 const flatMapSet = (fn, x) => {
   const y = mapSet(fn, x)
@@ -1276,6 +1288,9 @@ const flatMapSet = (fn, x) => {
 /*
  * @synopsis
  * TODO
+ *
+ * @note
+ * TODO: refactor to PossiblePromise.then
  */
 const flatMapReducer = (fn, reducer) => (y, xi) => {
   const yi = fn(xi)
