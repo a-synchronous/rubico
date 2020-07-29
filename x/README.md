@@ -71,6 +71,19 @@ get the first element from a collection
 y = first(x)
 ```
 
+### flatten
+Create a new collection with all sub-collections concatenated
+```javascript
+y = flatten(x)
+```
+`x` is an Array or Set of anything or Iterables of anything
+
+`y` is the concatenation of all sub-collections of `x`
+
+```javascript
+flatten([[1], [2], [3]]), // > [1, 2, 3]
+```
+
 `x` is a String or Array
 
 `y` is the last item of `x`
