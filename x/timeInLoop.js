@@ -1,16 +1,17 @@
 /*
  * @synopsis
- * (loopCount number, fn function) => time number
+ * (desc string, loopCount number, fn function) => ()
  *
  * @playground
  * timeInLoop(1e6, () => 'yo') // 3
  */
-const timeInLoop = (loopCount, fn) => {
-  const startTime = Date.now()
+const timeInLoop = (desc, loopCount, fn) => {
+  const d = `${desc}: ${loopCount.toExponential()}`
+  console.time(d)
   for (let i = 0; i < loopCount; i++) {
     fn()
   }
-  return Date.now() - startTime
+  console.timeEnd(d)
 }
 
 module.exports = timeInLoop
