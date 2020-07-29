@@ -1624,9 +1624,9 @@ describe('rubico', () => {
         ),
         [1, 1, 2, 4, 3, 9, 4, 16, 5, 25],
       )
-      assert.throws(
-        () => r.flatMap(x => x)([1, 2, 3, 4, 5]),
-        new TypeError('flatMap(...)(x); cannot flatten element of x'),
+      ade(
+        r.flatMap(x => x)([1, 2, [3, 4], 5]),
+        [1, 2, 3, 4, 5],
       )
     })
     it('maps then flattens an array of objects', async () => {

@@ -1235,7 +1235,7 @@ const flattenIterable = (reducer, x0, x) => {
     } else if (is(Object)(xi)) {
       for (const k in xi) y = reducer(y, xi[k])
     } else {
-      throw new TypeError('flatMap(...)(x); cannot flatten element of x')
+      y = reducer(y, xi)
     }
   }
   return y
