@@ -681,7 +681,7 @@ map.withIndex = fn => {
 
 /*
  * @synopsis
- * filterAsyncIterable(predicate function, x AsyncIterable)
+ * filterAsyncIterable(predicate any=>any, x AsyncIterable)
  *   -> AsyncIterable<any>
  */
 const filterAsyncIterable = (predicate, x) => (async function*() {
@@ -690,7 +690,7 @@ const filterAsyncIterable = (predicate, x) => (async function*() {
 
 /*
  * @synopsis
- * filterIterable(predicate function, x Iterable<any>) -> Iterable<any>
+ * filterIterable(predicate any=>any, x Iterable<any>) -> Iterable<any>
  */
 const filterIterable = (predicate, x) => (function*() {
   for (const xi of x) {
@@ -706,37 +706,59 @@ const filterIterable = (predicate, x) => (function*() {
   }
 })()
 
-const createFilterIndex = (fn, x) => {
+/*
+ * @synopsis
+ * createFilterIndex(predicate any=>any, x Iterable<any>)
+ *   -> filterIndex Array<any>|Promise<Array<any>>
+ */
+const createFilterIndex = (predicate, x) => {
   let isAsync = false
   const filterIndex = []
   for (const xi of x) {
-    const ok = fn(xi)
+    const ok = predicate(xi)
     if (isPromise(ok)) isAsync = true
     filterIndex.push(ok)
   }
   return isAsync ? Promise.all(filterIndex) : filterIndex
 }
 
-const filterArray = (f, x) => PossiblePromise.then(
-  createFilterIndex(f, x),
+/*
+ * @synopsis
+ * filterArray(predicate any=>any, x Array<any>)
+ *   -> Array<any>|Promise<Array<any>>
+ */
+const filterArray = (predicate, x) => PossiblePromise.then(
+  createFilterIndex(predicate, x),
   res => x.filter((_, i) => res[i]),
 )
 
+/*
+ * @synopsis
+ * filterStringFromIndex(index Array<any>, x string) -> string
+ */
 const filterStringFromIndex = (index, x) => {
   let y = ''
   for (let i = 0; i < x.length; i++) { if (index[i]) y += x[i] }
   return y
 }
 
-const filterString = (f, x) => PossiblePromise.then(
-  createFilterIndex(f, x),
+/*
+ * @synopsis
+ * filterString(predicate any=>any, x string) -> string|Promise<string>
+ */
+const filterString = (predicate, x) => PossiblePromise.then(
+  createFilterIndex(predicate, x),
   res => filterStringFromIndex(res, x),
 )
 
-const filterSet = (fn, x) => {
+/*
+ * @synopsis
+ * filterSet(predicate any=>any, x Set<any>) -> Set<any>|Promise<Set<any>>
+ */
+const filterSet = (predicate, x) => {
   const y = new Set(), promises = []
   for (const xi of x) {
-    const ok = fn(xi)
+    const ok = predicate(xi)
     if (isPromise(ok)) {
       promises.push(ok.then(res => res && y.add(xi)))
     } else if (ok) { y.add(xi) }
@@ -744,10 +766,15 @@ const filterSet = (fn, x) => {
   return promises.length > 0 ? Promise.all(promises).then(() => y) : y
 }
 
-const filterMap = (fn, x) => {
+/*
+ * @synopsis
+ * filterMap(predicate any=>any, x Map<any=>any>)
+ *   -> Map<any=>any>|Promise<Map<any=>any>>
+ */
+const filterMap = (predicate, x) => {
   const y = new Map(), promises = []
   for (const xi of x) {
-    const ok = fn(xi)
+    const ok = predicate(xi)
     if (isPromise(ok)) {
       promises.push(ok.then(res => res && y.set(...xi)))
     } else if (ok) { y.set(...xi) }
@@ -755,15 +782,23 @@ const filterMap = (fn, x) => {
   return promises.length > 0 ? Promise.all(promises).then(() => y) : y
 }
 
-const filterTypedArray = (f, x) => PossiblePromise.then(
-  filterArray(f, x),
+/*
+ * @synopsis
+ * filterTypedArray(predicate any=>any, x TypedArray<any>) -> TypedArray<any>
+ */
+const filterTypedArray = (predicate, x) => PossiblePromise.then(
+  filterArray(predicate, x),
   res => new x.constructor(res),
 )
 
-const filterObject = (fn, x) => {
+/*
+ * @synopsis
+ * filterObject(predicate any=>any, x Object<any>) -> Object<any>
+ */
+const filterObject = (predicate, x) => {
   const y = {}, promises = []
   for (const k in x) {
-    const ok = fn(x[k])
+    const ok = predicate(x[k])
     if (isPromise(ok)) {
       promises.push(ok.then(res => { if (res) { y[k] = x[k] } }))
     } else if (ok) { y[k] = x[k] }
@@ -771,25 +806,39 @@ const filterObject = (fn, x) => {
   return promises.length > 0 ? Promise.all(promises).then(() => y) : y
 }
 
-const filterReducer = (f, reducer) => (y, xi) => (
-  PossiblePromise.all([f(xi), y]).then(([bool, resY]) => (
+/*
+ * @synopsis
+ * filterReducer(
+ *   predicate any=>any,
+ *   reducer (any, any)=>any,
+ * ) -> (y any, xi any)=>any|Promise<any>
+ */
+const filterReducer = (predicate, reducer) => (y, xi) => (
+  PossiblePromise.all([predicate(xi), y]).then(([bool, resY]) => (
     bool ? reducer(resY, xi) : resY)))
 
-const filter = fn => {
-  if (!isFunction(fn)) {
-    throw new TypeError('filter(x); x is not a function')
+/*
+ * @synopsis
+ * <T any>AsyncIterable<T>|Array<T>|string|Set<T>|Map<T>
+ *   |TypedArray<T>|Iterable<T>|Object<T>|(any, T)=>any -> Filterable<T>
+ *
+ * filter(predicate any=>any)(x Filterable<any>) -> Filterable<any>
+ */
+const filter = predicate => {
+  if (!isFunction(predicate)) {
+    throw new TypeError('filter(predicate); predicate is not a function')
   }
   return x => {
-    if (isAsyncIterable(x)) return filterAsyncIterable(fn, x)
-    if (isArray(x)) return filterArray(fn, x)
-    if (isString(x)) return filterString(fn, x)
-    if (is(Set)(x)) return filterSet(fn, x)
-    if (is(Map)(x)) return filterMap(fn, x)
-    if (isNumberTypedArray(x)) return filterTypedArray(fn, x)
-    if (isBigIntTypedArray(x)) return filterTypedArray(fn, x)
-    if (isIterable(x)) return filterIterable(fn, x) // for generators or custom iterators
-    if (is(Object)(x)) return filterObject(fn, x)
-    if (isFunction(x)) return filterReducer(fn, x)
+    if (isAsyncIterable(x)) return filterAsyncIterable(predicate, x)
+    if (isArray(x)) return filterArray(predicate, x)
+    if (isString(x)) return filterString(predicate, x)
+    if (is(Set)(x)) return filterSet(predicate, x)
+    if (is(Map)(x)) return filterMap(predicate, x)
+    if (isNumberTypedArray(x)) return filterTypedArray(predicate, x)
+    if (isBigIntTypedArray(x)) return filterTypedArray(predicate, x)
+    if (isIterable(x)) return filterIterable(predicate, x) // for generators or custom iterators
+    if (is(Object)(x)) return filterObject(predicate, x)
+    if (isFunction(x)) return filterReducer(predicate, x)
     throw new TypeError('filter(...)(x); x invalid')
   }
 }

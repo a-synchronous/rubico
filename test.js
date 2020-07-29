@@ -1084,7 +1084,7 @@ describe('rubico', () => {
     it('throws a TypeError on filter({})', async () => {
       assert.throws(
         () => r.filter({}),
-        new TypeError('filter(x); x is not a function'),
+        new TypeError('filter(predicate); predicate is not a function'),
       )
     })
     it('throws a TypeError on filter(...)(string)', async () => {
