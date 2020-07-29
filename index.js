@@ -73,7 +73,7 @@ const arrayOf = (item, length) => Array.from({ length }, () => item)
 
 /*
  * @synopsis
- * new PossiblePromise(p any) -> PossiblePromise<any>
+ * new PossiblePromise(p any|Promise<any>) -> PossiblePromise<any>
  */
 const PossiblePromise = function(p) {
   this.value = p
