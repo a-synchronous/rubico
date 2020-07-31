@@ -140,7 +140,9 @@ const iteratorPipe = (iter, args) => {
 
 /*
  * @synopsis
- * reverseArrayIter(arr Array<any>) -> Iterator<any>
+ * reverseArrayIter(arr Array) -> Iterator
+ *
+ * @TODO: refactor for proper generator syntax
  */
 const reverseArrayIter = arr => (function*() {
   for (let i = arr.length - 1; i >= 0; i--) yield arr[i]
@@ -385,6 +387,8 @@ const switchCase = fns => {
 /*
  * @synopsis
  * mapAsyncIterable(f function, x AsyncIterable<any>) -> AsyncIterable<any>
+ *
+ * @TODO: refactor for proper generator syntax
  */
 const mapAsyncIterable = (fn, x) => (async function*() {
   for await (const xi of x) yield fn(xi)
@@ -393,6 +397,8 @@ const mapAsyncIterable = (fn, x) => (async function*() {
 /*
  * @synopsis
  * mapIterable(f function, x Iterable<any>) -> Iterable<any>
+ *
+ * @TODO: refactor for proper generator syntax
  */
 const mapIterable = (fn, x) => (function*() {
   for (const xi of x) yield fn(xi)
@@ -712,6 +718,8 @@ map.withIndex = fn => {
  * @synopsis
  * filterAsyncIterable(predicate any=>any, x AsyncIterable)
  *   -> AsyncIterable<any>
+ *
+ * @TODO: refactor for proper generator syntax
  */
 const filterAsyncIterable = (predicate, x) => (async function*() {
   for await (const xi of x) { if (await predicate(xi)) yield xi }
@@ -720,6 +728,8 @@ const filterAsyncIterable = (predicate, x) => (async function*() {
 /*
  * @synopsis
  * filterIterable(predicate any=>any, x Iterable<any>) -> Iterable<any>
+ *
+ * @TODO: refactor for proper generator syntax
  */
 const filterIterable = (predicate, x) => (function*() {
   for (const xi of x) {
