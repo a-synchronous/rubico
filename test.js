@@ -318,6 +318,13 @@ describe('rubico', () => {
         })({ a: 'a' }),
         { a: 'a', b: 'ayo', c: 'ayaya' },
       )
+      ade(
+        await r.assign({
+          b: async x => x.a + 'yo',
+          c: async x => x.a + 'yaya',
+        })(Promise.resolve({ a: 'a' })),
+        { a: 'a', b: 'ayo', c: 'ayaya' },
+      )
     })
     it('throws TypeError on assign(nonObject)', async () => {
       assert.throws(

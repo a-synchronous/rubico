@@ -268,7 +268,7 @@ const assign = funcs => {
   if (!is(Object)(funcs)) {
     throw new TypeError('assign(funcs); funcs is not an object of functions')
   }
-  return x => {
+  return x => PossiblePromise.then(x, x => {
     if (!is(Object)(x)) {
       throw new TypeError('assign(...)(x); x is not an object')
     }
@@ -276,7 +276,7 @@ const assign = funcs => {
       objectFork(funcs, x),
       res => Object.assign({}, x, res),
     )
-  }
+  })
 }
 
 /*
