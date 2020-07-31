@@ -108,8 +108,8 @@ PossiblePromise.catch = (p, f) => isPromise(p) ? p.catch(f) : p
 /*
  * @synopsis
  * PossiblePromise.all(
- *   ps Array<any>|Promise<Array<any>>,
- * ) -> PossiblePromise<Array<any>>|Promise<Array<any>>
+ *   ps Array^Promise<Array>,
+ * ) -> PossiblePromise<Array>^Promise<Array>
  */
 PossiblePromise.all = ps => (ps.some(isPromise)
   ? Promise.all(ps)
@@ -117,7 +117,8 @@ PossiblePromise.all = ps => (ps.some(isPromise)
 
 /*
  * @synopsis
- * PossiblePromise.args(f function)(...args ...any) -> Promise^any
+ * PossiblePromise.args(f function)(args ...any)
+ *   -> Promise^any
  */
 PossiblePromise.args = f => (...args) => (
   PossiblePromise.all(args).then(resolved => f(...resolved)))
