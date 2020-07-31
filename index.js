@@ -114,6 +114,13 @@ PossiblePromise.all = ps => (ps.some(isPromise)
 
 /*
  * @synopsis
+ * PossiblePromise.args(f function)(...args ...any) -> any|Promise<any>
+ */
+PossiblePromise.args = f => (...args) => (
+  PossiblePromise.all(args).then(resolved => f(...resolved)))
+
+/*
+ * @synopsis
  * toFunction(x any|function) -> ()=>any|function
  */
 const toFunction = x => isFunction(x) ? x : () => x
@@ -268,7 +275,7 @@ const assign = funcs => {
   if (!is(Object)(funcs)) {
     throw new TypeError('assign(funcs); funcs is not an object of functions')
   }
-  return x => PossiblePromise.then(x, x => {
+  return PossiblePromise.args(x => {
     if (!is(Object)(x)) {
       throw new TypeError('assign(...)(x); x is not an object')
     }
