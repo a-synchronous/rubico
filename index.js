@@ -127,7 +127,7 @@ const toFunction = x => isFunction(x) ? x : () => x
 
 /*
  * @synopsis
- * iteratorPipe(iter Iterator<function>, args Array<any>) -> Promise^any
+ * iteratorPipe(iter Iterator<function>, args Array) -> Promise^any
  */
 const iteratorPipe = (iter, args) => {
   const { value: f0 } = iter.next()
