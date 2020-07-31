@@ -73,8 +73,7 @@ const arrayOf = (item, length) => Array.from({ length }, () => item)
 
 /*
  * @synopsis
- * new PossiblePromise(p Promise^any)
- *   -> PossiblePromise
+ * new PossiblePromise(p Promise^any) -> PossiblePromise
  */
 const PossiblePromise = function(p) {
   this.value = p
@@ -82,8 +81,7 @@ const PossiblePromise = function(p) {
 
 /*
  * @synopsis
- * new PossiblePromise(p Promise^any).then(f function)
- *   -> Promise^any
+ * new PossiblePromise(p Promise^any).then(f function) -> Promise^any
  */
 PossiblePromise.prototype.then = function(f) {
   return isPromise(this.value) ? this.value.then(f) : f(this.value)
@@ -91,8 +89,7 @@ PossiblePromise.prototype.then = function(f) {
 
 /*
  * @synopsis
- * PossiblePromise.then(p Promise^any, f function)
- *   -> Promise^any
+ * PossiblePromise.then(p Promise^any, f function) -> Promise^any
  */
 PossiblePromise.then = (p, f) => isPromise(p) ? p.then(f) : f(p)
 
@@ -117,8 +114,7 @@ PossiblePromise.all = ps => (ps.some(isPromise)
 
 /*
  * @synopsis
- * PossiblePromise.args(f function)(args ...any)
- *   -> Promise^any
+ * PossiblePromise.args(f function)(args ...any) -> Promise^any
  */
 PossiblePromise.args = f => (...args) => (
   PossiblePromise.all(args).then(resolved => f(...resolved)))
