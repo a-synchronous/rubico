@@ -207,7 +207,9 @@ const objectFork = (fns, x) => {
  *   funcs Object<function>,
  * )(x any|Promise<any>) -> y Object<any>|Promise<Object<any>>
  *
- * fork(funcs Array<function>)(x any) -> y Array<any>|Promise<Array<any>>
+ * fork(
+ *   funcs Array<function>,
+ * )(x any|Promise<any>) -> y Array<any>|Promise<Array<any>>
  */
 const fork = fns => {
   if (isArray(fns)) {
@@ -228,7 +230,7 @@ const fork = fns => {
       if (isFunction(fns[k])) continue
       throw new TypeError(`fork(x); x['${k}'] is not a function`)
     }
-    return x => objectFork(fns, x)
+    return PossiblePromise.args(x => objectFork(fns, x))
   }
   throw new TypeError('fork(x); x invalid')
 }

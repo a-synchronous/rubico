@@ -191,6 +191,10 @@ describe('rubico', () => {
         await r.fork({ a: asyncHey, b: asyncHey, c: asyncHey })('yo'),
         { a: 'yohey', b: 'yohey', c: 'yohey' },
       )
+      ade(
+        await r.fork({ a: asyncHey, b: asyncHey, c: asyncHey })(Promise.resolve('yo')),
+        { a: 'yohey', b: 'yohey', c: 'yohey' },
+      )
     })
     it('any functions async => Promise', async () => {
       aok(r.fork([asyncHey, asyncHey, hi])('yo') instanceof Promise)
