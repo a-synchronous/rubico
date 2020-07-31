@@ -198,6 +198,10 @@ describe('rubico', () => {
         await r.fork([asyncHey, asyncHey, hi])('yo'),
         ['yohey', 'yohey', 'yohi'],
       )
+      ade(
+        await r.fork([asyncHey, asyncHey, hi])(Promise.resolve('yo')),
+        ['yohey', 'yohey', 'yohi'],
+      )
     })
     it('throws TypeError for fork([])', async () => {
       assert.throws(
