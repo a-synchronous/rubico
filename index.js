@@ -150,8 +150,7 @@ const reverseArrayIter = arr => (function*() {
  * @synopsis
  * pipe(fns Array<function>)(...args ...any) -> any|Promise<any>
  *
- * @TODO
- * refactor to PossiblePromise.args
+ * @TODO: refactor to PossiblePromise.args
  */
 const pipe = fns => {
   if (!isArray(fns)) {
@@ -244,8 +243,7 @@ const fork = fns => {
  *   y Array<any>,
  * ) -> Array<any>|Promise<Array<any>>
  *
- * @note
- * TODO: iterative implementation
+ * @TODO: iterative implementation
  */
 const arrayForkSeries = (fns, x, i, y) => {
   if (i === fns.length) return y
@@ -258,6 +256,8 @@ const arrayForkSeries = (fns, x, i, y) => {
 /*
  * @synopsis
  * fork.series(fns Array<function>)(x any) -> Array<any>|Promise<Array<any>>
+ *
+ * @TODO: refactor to PossiblePromise.args
  */
 fork.series = fns => {
   if (isArray(fns)) {
@@ -297,6 +297,8 @@ const assign = funcs => {
 /*
  * @synopsis
  * tap(f function)(x any) -> any|Promise<any>
+ *
+ * @TODO: refactor to PossiblePromise.args
  */
 const tap = f => {
   if (!isFunction(f)) {
@@ -309,14 +311,15 @@ const tap = f => {
  * @synopsis
  * tap.if(cond function, f function)(x any) -> any|Promise<any>
  *
- * @note
- * TODO: https://github.com/a-synchronous/rubico/issues/100
+ * @TODO: https://github.com/a-synchronous/rubico/issues/100
  */
 tap.if = (cond, f) => {}
 
 /*
  * @synopsis
  * tryCatch(f function, onError function)(x any) -> any|Promise<any>
+ *
+ * @TODO: refactor to PossiblePromise.args
  */
 const tryCatch = (f, onError) => {
   if (!isFunction(f)) {
@@ -338,8 +341,7 @@ const tryCatch = (f, onError) => {
  * @synopsis
  * arraySwitchCase(fns Array<function>, x any, i number) -> any|Promise<any>
  *
- * @note
- * TODO: reimplement to iterative
+ * @TODO: reimplement to iterative
  */
 const arraySwitchCase = (fns, x, i) => {
   if (i === fns.length - 1) return fns[i](x)
@@ -352,6 +354,8 @@ const arraySwitchCase = (fns, x, i) => {
 /*
  * @synopsis
  * switchCase(fns Array<function>)(x any) -> any|Promise<any>
+ *
+ * @TODO: refactor to PossiblePromise.args
  */
 const switchCase = fns => {
   if (!isArray(fns)) {
@@ -512,6 +516,8 @@ const mapReducer = (f, reducer) => (y, xi) => (
  *   |TypedArray<T>|Iterable<T>|Object<T>|(any, T)=>any -> Mappable<T>
  *
  * <T Mappable>map(f function)(x T<any>) -> T<any>
+ *
+ * @TODO: refactor to PossiblePromise.args
  */
 const map = f => {
   if (!isFunction(f)) {
@@ -551,6 +557,8 @@ const mapSeriesArray = (f, x, i, y) => {
 /*
  * @synopsis
  * map.series(f function)(x Array<any>) -> Array<any>|Promise<Array<any>>
+ *
+ * @TODO: refactor to PossiblePromise.args
  */
 map.series = f => {
   if (!isFunction(f)) {
@@ -612,6 +620,8 @@ const mapPoolMap = (size, f, x) => (
  * <T any>Array<T>|Set<T>|Map<T> -> MapPoolable<T>
  *
  * <T MapPoolable>map.pool(size number, f function)(x T<any>) -> Promise<T<any>>
+ *
+ * @TODO: refactor to PossiblePromise.args
  */
 map.pool = (size, fn) => {
   if (!isNumber(size)) {
@@ -682,6 +692,8 @@ const mapStringWithIndex = (f, x) => PossiblePromise.then(
  * Array<any>|string -> T
  *
  * map.withIndex(f any=>any)(x T) -> T|Promise<T>
+ *
+ * @TODO: refactor to PossiblePromise.args
  */
 map.withIndex = fn => {
   if (!isFunction(fn)) {
@@ -838,6 +850,8 @@ const filterReducer = (predicate, reducer) => (y, xi) => (
  *   |TypedArray<T>|Iterable<T>|Object<T>|(any, T)=>any -> Filterable<T>
  *
  * filter(predicate any=>any)(x Filterable<any>) -> Filterable<any>
+ *
+ * @TODO: refactor to PossiblePromise.args
  */
 const filter = predicate => {
   if (!isFunction(predicate)) {
@@ -899,6 +913,8 @@ const filterStringWithIndex = (predicate, x) => PossiblePromise.then(
  * @synopsis
  * filter.withIndex(predicate function)(x Array<any>|string)
  *   -> Array<any>|Promise<Array<any>>|string|Promise<string>
+ *
+ * @TODO: refactor to PossiblePromise.args
  */
 filter.withIndex = fn => {
   if (!isFunction(fn)) {
@@ -1000,6 +1016,8 @@ const reduceObject = (fn, x0, x) => reduceIterable(
  * @note
  * https://stackoverflow.com/questions/30233302/promise-is-it-possible-to-force-cancel-a-promise/30235261#30235261
  * https://stackoverflow.com/questions/62336381/is-this-promise-cancellation-implementation-for-reducing-an-async-iterable-on-th
+ *
+ * @TODO: refactor to PossiblePromise.args
  */
 const reduce = (fn, init) => {
   if (!isFunction(fn)) {
@@ -1227,6 +1245,8 @@ const _transformBranch = (fn, x0, x) => {
 /*
  * @synopsis
  * TODO
+ *
+ * @TODO: refactor to PossiblePromise.args
  */
 const transform = (fn, init) => {
   if (!isFunction(fn)) {
@@ -1315,6 +1335,8 @@ const flatMapReducer = (fn, reducer) => (y, xi) => {
 /*
  * @synopsis
  * TODO
+ *
+ * @TODO: refactor to PossiblePromise.args
  */
 const flatMap = fn => {
   if (!isFunction(fn)) {
@@ -1354,6 +1376,8 @@ const arrayGet = (path, x, defaultValue) => {
 /*
  * @synopsis
  * TODO
+ *
+ * @TODO: refactor to PossiblePromise.args
  */
 const get = (path, defaultValue) => {
   if (isArray(path)) return x => arrayGet(path, x, defaultValue)
@@ -1379,6 +1403,8 @@ const pickObject = (props, x) => {
 /*
  * @synopsis
  * TODO
+ *
+ * @TODO: refactor to PossiblePromise.args
  */
 const pick = props => {
   if (isArray(props)) return x => {
@@ -1401,6 +1427,8 @@ const omitObject = (props, x) => {
 /*
  * @synopsis
  * TODO
+ *
+ * @TODO: refactor to PossiblePromise.args
  */
 const omit = props => {
   if (isArray(props)) return x => {
@@ -1440,6 +1468,8 @@ const anyObject = (fn, x) => anyIterable(
 /*
  * @synopsis
  * TODO
+ *
+ * @TODO: refactor to PossiblePromise.args
  */
 const any = fn => {
   if (!isFunction(fn)) {
@@ -1482,6 +1512,8 @@ const allObject = (fn, x) => allIterable(
 /*
  * @synopsis
  * TODO
+ *
+ * @TODO: refactor to PossiblePromise.args
  */
 const all = fn => {
   if (!isFunction(fn)) {
@@ -1515,6 +1547,8 @@ const arrayAnd = (fns, x) => {
 /*
  * @synopsis
  * TODO
+ *
+ * @TODO: refactor to PossiblePromise.args
  */
 const and = fns => {
   if (!isArray(fns)) {
@@ -1551,6 +1585,8 @@ const arrayOr = (fns, x) => {
 /*
  * @synopsis
  * TODO
+ *
+ * @TODO: refactor to PossiblePromise.args
  */
 const or = fns => {
   if (!isArray(fns)) {
@@ -1569,6 +1605,8 @@ const or = fns => {
 /*
  * @synopsis
  * TODO
+ *
+ * @TODO: refactor to PossiblePromise.args
  */
 const not = fn => {
   if (!isFunction(fn)) {
@@ -1589,6 +1627,8 @@ const compare = (predicate, f, g) => x => PossiblePromise.all([
 /*
  * @synopsis
  * TODO
+ *
+ * @TODO: refactor to PossiblePromise.args
  */
 const eq = function(f, g) {
   if (arguments.length !== 2) {
@@ -1600,6 +1640,8 @@ const eq = function(f, g) {
 /*
  * @synopsis
  * TODO
+ *
+ * @TODO: refactor to PossiblePromise.args
  */
 const gt = function(f, g) {
   if (arguments.length !== 2) {
@@ -1611,6 +1653,8 @@ const gt = function(f, g) {
 /*
  * @synopsis
  * TODO
+ *
+ * @TODO: refactor to PossiblePromise.args
  */
 const lt = function(f, g) {
   if (arguments.length !== 2) {
@@ -1622,6 +1666,8 @@ const lt = function(f, g) {
 /*
  * @synopsis
  * TODO
+ *
+ * @TODO: refactor to PossiblePromise.args
  */
 const gte = function(f, g) {
   if (arguments.length !== 2) {
@@ -1633,6 +1679,8 @@ const gte = function(f, g) {
 /*
  * @synopsis
  * TODO
+ *
+ * @TODO: refactor to PossiblePromise.args
  */
 const lte = function(f, g) {
   if (arguments.length !== 2) {
