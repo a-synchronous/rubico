@@ -125,7 +125,7 @@ PossiblePromise.args = f => (...args) => (
 
 /*
  * @synopsis
- * toFunction(x any|function) -> ()=>any|function
+ * toFunction(x function^T) -> (()=>T)^function
  */
 const toFunction = x => isFunction(x) ? x : () => x
 
