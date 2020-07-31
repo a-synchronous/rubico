@@ -322,7 +322,7 @@ describe('rubico', () => {
     it('throws TypeError on assign(nonObject)', async () => {
       assert.throws(
         () => r.assign(new Set(['hey'])),
-        new TypeError('assign(x); x is not an object of functions'),
+        new TypeError('assign(funcs); funcs is not an object of functions'),
       )
     })
     it('throws TypeError on assign(...)(nonObject)', async () => {

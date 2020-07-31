@@ -262,18 +262,18 @@ fork.series = fns => {
 
 /*
  * @synopsis
- * assign(fns Array<function>)(x any) -> Object<any>|Promise<Object<any>>
+ * assign(funcs Object<function>)(x any) -> Object<any>|Promise<Object<any>>
  */
-const assign = fns => {
-  if (!is(Object)(fns)) {
-    throw new TypeError('assign(x); x is not an object of functions')
+const assign = funcs => {
+  if (!is(Object)(funcs)) {
+    throw new TypeError('assign(funcs); funcs is not an object of functions')
   }
   return x => {
     if (!is(Object)(x)) {
       throw new TypeError('assign(...)(x); x is not an object')
     }
     return PossiblePromise.then(
-      objectFork(fns, x),
+      objectFork(funcs, x),
       res => Object.assign({}, x, res),
     )
   }
