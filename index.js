@@ -149,6 +149,9 @@ const reverseArrayIter = arr => (function*() {
 /*
  * @synopsis
  * pipe(fns Array<function>)(...args ...any) -> any|Promise<any>
+ *
+ * @TODO
+ * refactor to PossiblePromise.args
  */
 const pipe = fns => {
   if (!isArray(fns)) {
@@ -200,7 +203,10 @@ const objectFork = (fns, x) => {
 
 /*
  * @synopsis
- * fork(funcs Object<function>)(x any) -> y Object<any>|Promise<Object<any>>
+ * fork(
+ *   funcs Object<function>,
+ * )(x any|Promise<any>) -> y Object<any>|Promise<Object<any>>
+ *
  * fork(funcs Array<function>)(x any) -> y Array<any>|Promise<Array<any>>
  */
 const fork = fns => {
@@ -212,7 +218,7 @@ const fork = fns => {
       if (isFunction(fns[i])) continue
       throw new TypeError(`fork(x); x[${i}] is not a function`)
     }
-    return x => arrayFork(fns, x)
+    return PossiblePromise.args(x => arrayFork(fns, x))
   }
   if (is(Object)(fns)) {
     if (Object.keys(fns).length < 1) {
