@@ -193,8 +193,8 @@ const objectFork = (fns, x) => {
 
 /*
  * @synopsis
- * fork(fns Object<function>|Array<function>)(x any)
- *   -> Object<any>|Array<any>|Promise<Object<any>>|Promise<Array<any>>
+ * fork(funcs Object<function>)(x any) -> y Object<any>|Promise<Object<any>>
+ * fork(funcs Array<function>)(x any) -> y Array<any>|Promise<Array<any>>
  */
 const fork = fns => {
   if (isArray(fns)) {
