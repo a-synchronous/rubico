@@ -255,7 +255,9 @@ const arrayForkSeries = (fns, x, i, y) => {
 
 /*
  * @synopsis
- * fork.series(fns Array<function>)(x any) -> Array<any>|Promise<Array<any>>
+ * fork.series(
+ *   funcs Array<function>,
+ * )(x any) -> y Array|Promise<Array>
  *
  * @TODO: refactor to PossiblePromise.args
  */
