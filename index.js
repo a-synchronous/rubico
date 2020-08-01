@@ -73,7 +73,7 @@ const arrayOf = (item, length) => Array.from({ length }, () => item)
 
 /*
  * @synopsis
- * new PossiblePromise(p Promise^any) -> PossiblePromise
+ * new PossiblePromise(p Promise|any) -> PossiblePromise
  */
 const PossiblePromise = function(p) {
   this.value = p
@@ -81,7 +81,7 @@ const PossiblePromise = function(p) {
 
 /*
  * @synopsis
- * new PossiblePromise(p Promise^any).then(f function) -> Promise^any
+ * new PossiblePromise(p Promise|any).then(f function) -> Promise|any
  */
 PossiblePromise.prototype.then = function(f) {
   return isPromise(this.value) ? this.value.then(f) : f(this.value)
@@ -89,24 +89,24 @@ PossiblePromise.prototype.then = function(f) {
 
 /*
  * @synopsis
- * PossiblePromise.then(p Promise^any, f function) -> Promise^any
+ * PossiblePromise.then(p Promise|any, f function) -> Promise|any
  */
 PossiblePromise.then = (p, f) => isPromise(p) ? p.then(f) : f(p)
 
 /*
  * @synopsis
  * PossiblePromise.catch(
- *   p Promise^any,
- *   f Error=>Promise^any,
- * ) -> Promise^any
+ *   p Promise|any,
+ *   f Error=>Promise|any,
+ * ) -> Promise|any
  */
 PossiblePromise.catch = (p, f) => isPromise(p) ? p.catch(f) : p
 
 /*
  * @synopsis
  * PossiblePromise.all(
- *   ps Array^Promise<Array>,
- * ) -> PossiblePromise<Array>^Promise<Array>
+ *   ps Promise<Array>|Array,
+ * ) -> Promise<Array>|PossiblePromise<Array>
  */
 PossiblePromise.all = ps => (ps.some(isPromise)
   ? Promise.all(ps)
@@ -114,20 +114,20 @@ PossiblePromise.all = ps => (ps.some(isPromise)
 
 /*
  * @synopsis
- * PossiblePromise.args(f function)(args ...any) -> Promise^any
+ * PossiblePromise.args(f function)(args ...any) -> Promise|any
  */
 PossiblePromise.args = f => (...args) => (
   PossiblePromise.all(args).then(resolved => f(...resolved)))
 
 /*
  * @synopsis
- * toFunction(x function^T) -> (()=>T)^function
+ * <T any>toFunction(x function|T) -> function|()=>T
  */
 const toFunction = x => isFunction(x) ? x : () => x
 
 /*
  * @synopsis
- * iteratorPipe(iter Iterator<function>, args Array) -> Promise^any
+ * iteratorPipe(iter Iterator<function>, args Array) -> Promise|any
  */
 const iteratorPipe = (iter, args) => {
   const { value: f0 } = iter.next()
@@ -152,7 +152,7 @@ const reverseArrayIter = arr => (function*() {
  * @synopsis
  * pipe(
  *   funcs Array<function>,
- * )(args ...any) -> y Promise^any
+ * )(args ...any) -> y Promise|any
  *
  * pipe(
  *   funcs Array<function>,
@@ -217,11 +217,11 @@ const objectFork = (fns, x) => {
  * @synopsis
  * fork(
  *   funcs Object<function>,
- * )(x Promise^any) -> y Object<any>|Promise<Object<any>>
+ * )(x Promise|any) -> y Object<any>|Promise<Object<any>>
  *
  * fork(
  *   funcs Array<function>,
- * )(x Promise^any) -> y Array<any>|Promise<Array<any>>
+ * )(x Promise|any) -> y Array<any>|Promise<Array<any>>
  */
 const fork = fns => {
   if (isArray(fns)) {
@@ -311,7 +311,7 @@ const assign = funcs => {
 
 /*
  * @synopsis
- * tap(f function)(x any) -> Promise^any
+ * tap(f function)(x any) -> Promise|any
  *
  * @TODO: refactor to PossiblePromise.args
  */
@@ -324,7 +324,7 @@ const tap = f => {
 
 /*
  * @synopsis
- * tap.if(cond function, f function)(x any) -> Promise^any
+ * tap.if(cond function, f function)(x any) -> Promise|any
  *
  * @TODO: https://github.com/a-synchronous/rubico/issues/100
  */
@@ -332,7 +332,7 @@ tap.if = (cond, f) => {}
 
 /*
  * @synopsis
- * tryCatch(f function, onError function)(x any) -> Promise^any
+ * tryCatch(f function, onError function)(x any) -> Promise|any
  *
  * @TODO: refactor to PossiblePromise.args
  */
@@ -354,7 +354,7 @@ const tryCatch = (f, onError) => {
 
 /*
  * @synopsis
- * arraySwitchCase(fns Array<function>, x any, i number) -> Promise^any
+ * arraySwitchCase(fns Array<function>, x any, i number) -> Promise|any
  *
  * @TODO: reimplement to iterative
  */
@@ -368,7 +368,7 @@ const arraySwitchCase = (fns, x, i) => {
 
 /*
  * @synopsis
- * switchCase(fns Array<function>)(x any) -> Promise^any
+ * switchCase(fns Array<function>)(x any) -> Promise|any
  *
  * @TODO: refactor to PossiblePromise.args
  */
@@ -524,7 +524,7 @@ const mapObject = (fn, x) => {
 /*
  * @synopsis
  * mapReducer(f function, reducer function)
- *   -> anotherReducer (y any, xi any)=>Promise^any
+ *   -> anotherReducer (y any, xi any)=>Promise|any
  */
 const mapReducer = (f, reducer) => (y, xi) => (
   PossiblePromise.then(f(xi), res => reducer(y, res)))
@@ -861,7 +861,7 @@ const filterObject = (predicate, x) => {
  * filterReducer(
  *   predicate any=>any,
  *   reducer (any, any)=>any,
- * ) -> (y any, xi any)=>Promise^any
+ * ) -> (y any, xi any)=>Promise|any
  */
 const filterReducer = (predicate, reducer) => (y, xi) => (
   PossiblePromise.all([predicate(xi), y]).then(([bool, resY]) => (
@@ -973,7 +973,7 @@ const asyncReduceIterator = async (f, x0, iter) => {
 /*
  * @synopsis
  * reduceIterable(f function, possiblyX0 any, x Iterable<any>)
- *   -> Promise^any
+ *   -> Promise|any
  *
  * @note
  * There's an issue chaining too many synchronous .thens
@@ -1022,7 +1022,7 @@ const reduceAsyncIterable = async (fn, possiblyY0, x) => {
 
 /*
  * @synopsis
- * reduceObject(f function, x0 any, x Object<any>) -> Promise^any
+ * reduceObject(f function, x0 any, x Object<any>) -> Promise|any
  */
 const reduceObject = (fn, x0, x) => reduceIterable(
   fn,
@@ -1034,7 +1034,7 @@ const reduceObject = (fn, x0, x) => reduceIterable(
  * @synopsis
  * <T any>(Iterable<T>|AsyncIterable<T>|Object<T>) -> Reducible<T>
  *
- * reduce(f function, init any|any=>any)(x Reducible<any>) -> Promise^any
+ * reduce(f function, init any|any=>any)(x Reducible<any>) -> Promise|any
  *
  * @note
  * https://stackoverflow.com/questions/30233302/promise-is-it-possible-to-force-cancel-a-promise/30235261#30235261
