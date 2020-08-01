@@ -150,7 +150,18 @@ const reverseArrayIter = arr => (function*() {
 
 /*
  * @synopsis
- * pipe(fns Array<function>)(...args ...any) -> Promise^any
+ * pipe(
+ *   funcs Array<function>,
+ * )(args ...any) -> y Promise^any
+ *
+ * pipe(
+ *   funcs Array<function>,
+ * )(reducer function) -> composedReducer function
+ *
+ * @behavior
+ * `pipe` is a higher order function that takes an Array of functions `funcs` and returns an anonymous function. The anonymous function accepts any number of arguments `args` and supplies them to the first function of `funcs`. The result of that is supplied as a single argument to the next function, and so on until all functions of `funcs` have been called. The return value of the anonymous function for a given input is the return value of the final function of the array of functions `funcs`.
+ *
+ * On `reducer` function, `funcs` Array is iterated from right to left, see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md)
  *
  * @TODO: refactor to PossiblePromise.args
  */
