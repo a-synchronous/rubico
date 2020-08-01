@@ -159,9 +159,9 @@ const reverseArrayIter = arr => (function*() {
  * )(reducer function) -> composedReducer function
  *
  * @behavior
- * `pipe` is a higher order function that takes an Array of functions `funcs` and returns an anonymous function. The anonymous function accepts any number of arguments `args` and supplies them to the first function of `funcs`. The result of that is supplied as a single argument to the next function, and so on until all functions of `funcs` have been called. The return value of the anonymous function for a given input is the return value of the final function of the array of functions `funcs`.
+ * `pipe` is a higher order function that takes an Array of functions `funcs` and returns an anonymous inner function. The anonymous inner function accepts any number of arguments `args` and supplies them to the first function of `funcs`. The result of that call is supplied as a single argument to the next function, and so on until all functions of `funcs` have been called. The return value of the anonymous inner function for a given input is the return value of the final function of the array of functions `funcs`.
  *
- * On `reducer` function, `funcs` Array is iterated from right to left, see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md)
+ * When the anonymous inner function is passed a `reducer` function, the returned result is another reducer function `composedReducer` that would perform the pipeline operation described by `funcs` on every element of a given collection when used with [reduce](https://doc.rubico.land/#reduce) or the `.reduce` method of an Array. If you'd like some more information on this behavior, please see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md)
  *
  * @TODO: refactor to PossiblePromise.args
  */
