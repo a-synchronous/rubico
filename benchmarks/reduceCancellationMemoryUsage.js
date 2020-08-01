@@ -36,3 +36,5 @@ void (async () => {
 
   console.log('maxHeapUsed (MiB)', maxHeapUsed / 1024 / 1024)
 })()
+
+// https://stackoverflow.com/questions/62336381/is-this-promise-cancellation-implementation-for-reducing-an-async-iterable-on-th
