@@ -152,8 +152,7 @@ const reverseArrayIter = arr => (function*() {
 })()
 
 /*
- * @name
- * pipe
+ * @name: pipe
  *
  * @synopsis
  * pipe(
@@ -165,14 +164,35 @@ const reverseArrayIter = arr => (function*() {
  * )(reducer function) -> composedReducer function
  *
  * @description
- * `pipe` is a function composition function that takes an Array of functions `funcs` and returns an anonymous inner function `pipe(funcs)`. `pipe(funcs)` accepts any number of arguments `args` and supplies them to the first function of `funcs`. The result of that call is supplied as a single argument to the next function, and so on until all functions of `funcs` have been called. The return value of `pipe(funcs)` for a given input is the return value of the final function of the array of functions `funcs` in a chain.
+ * `pipe` is a function composition and serial execution function that takes an Array of functions `funcs` and returns an anonymous inner function `pipe(funcs)`. `pipe(funcs)` accepts any number of arguments `args` and supplies them to the first function of `funcs`. The result of that call is supplied as a single argument to the next function, and so on until all functions of `funcs` have been called. The return value of `pipe(funcs)` for a given input is the return value of the final function of the array of functions `funcs` in a chain.
  *
  * When `pipe(funcs)` is passed a `reducer` function, the returned result is another reducer function `composedReducer` that would perform the pipeline operation described by `funcs` on every element of a given collection when used with [reduce](https://doc.rubico.land/#reduce) or the `.reduce` method of an Array. For more information on this behavior, please see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md)
  *
- * @catchphrase
- * define flow: chain functions together
+ * `pipe(funcs)` returns a Promise when any function of `funcs` is asynchronous.
  *
- * @concurrency: series
+ * @catchphrase: define flow: chain functions together
+ *
+ * @execution: series
+ *
+ * @example
+ * const addA = x => x + 'A'
+ * const asyncAddB = async x => x + 'B'
+ * const addC = x => x + 'C'
+ *
+ * const addAC = pipe([
+ *   addA, // '' => 'A'
+ *   addC, // 'A' => 'AC'
+ * ])
+ *
+ * console.log(addAC(''))
+ *
+ * const asyncAddABC = pipe([
+ *   addA, // '' => 'A'
+ *   asyncAddB, // 'A' => Promise { 'AB' }
+ *   addC, // Promise { 'AB' } => Promise { 'ABC' }
+ * ])
+ *
+ * asyncAddABC('').then(console.log)
  *
  * @TODO: refactor to PossiblePromise.args
  */
@@ -225,6 +245,8 @@ const objectFork = (fns, x) => {
 }
 
 /*
+ * @name: fork
+ *
  * @synopsis
  * <T any>fork(
  *   funcs Object<T=>any>,
@@ -235,7 +257,31 @@ const objectFork = (fns, x) => {
  * )(x Promise<T>|T) -> y Promise<Array>|Array
  *
  * @description
- * `fork` is a function composition and concurrent execution function.
+ * `fork` is a function composition and concurrent execution function that takes either an Array or Object of functions `funcs` and returns an anonymous function `fork(funcs)` that executes all functions of `funcs` concurrently. `fork(funcs)`, when passed input `x`, returns an output `y` that mirrors the shape of `funcs`.
+ *
+ * `fork(funcs)` returns a Promise when any function of `funcs` is asynchronous.
+ *
+ * @catchphrase: duplicate and diverge flow
+ *
+ * @execution: concurrent
+ *
+ * @example
+ * const greet = whom => greeting => greeting + ' ' + whom
+ *
+ * const greetAll = fork([
+ *   greet('world'), // 'hello' => 'hello world'
+ *   greet('mom'), // 'hello' => 'hello mom'
+ * ])
+ *
+ * console.log(greetAll('hello'))
+ *
+ * const asyncGreetAll = fork({
+ *   toWorld: greet('world'), // 'hello => 'hello world'
+ *   toMom: greet('mom'), // 'hello => 'hello mom'
+ *   toAsync: async x => greet('async')(x), // 'hello => Promise { 'hello async' }
+ * })
+ *
+ * asyncGreetAll('hello').then(console.log)
  */
 const fork = fns => {
   if (isArray(fns)) {
