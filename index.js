@@ -127,7 +127,10 @@ const toFunction = x => isFunction(x) ? x : () => x
 
 /*
  * @synopsis
- * iteratorPipe(iter Iterator<function>, args Array) -> Promise|any
+ * iteratorPipe(
+ *   iter Iterator<function>,
+ *   args Array,
+ * ) -> Promise|any
  */
 const iteratorPipe = (iter, args) => {
   const { value: f0 } = iter.next()
@@ -1035,7 +1038,7 @@ const reduceObject = (fn, x0, x) => reduceIterable(
 
 /*
  * @synopsis
- * <T any>(Iterable<T>|AsyncIterable<T>|Object<T>) -> Reducible<T>
+ * Iterable|AsyncIterable|Object -> Reducible
  *
  * <T any>reduce(
  *   f (aggregate any, xi T)=>any,
