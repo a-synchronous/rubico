@@ -1,3 +1,6 @@
+## v1.3.2
+ * rubico/x/defaultsDeep - enforce Array or Object inputs
+
 ## v1.3.0
  * large rubico core refactor (~75% done) to PossiblePromise
  * large rubico core documentation initiative (~75% done)
