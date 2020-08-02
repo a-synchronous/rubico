@@ -190,7 +190,7 @@ const pipe = fns => {
 
 /*
  * @synopsis
- * arrayFork(fns Array<function>, x any) -> Array<any>|Promise<Array<any>>
+ * arrayFork(fns Array<function>, x any) -> Promise<Array>|Array
  */
 const arrayFork = (fns, x) => {
   let isAsync = false
@@ -204,7 +204,7 @@ const arrayFork = (fns, x) => {
 
 /*
  * @synopsis
- * objectFork(fns Object<function>, x any) -> Object<any>|Promise<Object<any>>
+ * objectFork(fns Object<function>, x any) -> Object|Promise<Object>
  */
 const objectFork = (fns, x) => {
   const y = {}, promises = []
