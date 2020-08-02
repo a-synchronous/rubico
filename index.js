@@ -1034,7 +1034,10 @@ const reduceObject = (fn, x0, x) => reduceIterable(
  * @synopsis
  * <T any>(Iterable<T>|AsyncIterable<T>|Object<T>) -> Reducible<T>
  *
- * reduce(f function, init any|any=>any)(x Reducible<any>) -> Promise|any
+ * <T any>reduce(
+ *   f (aggregate any, xi T)=>any,
+ *   init ((x Reducible<T>)=>any)|any,
+ * )(x Reducible<T>) -> reduced any
  *
  * @note
  * https://stackoverflow.com/questions/30233302/promise-is-it-possible-to-force-cancel-a-promise/30235261#30235261
