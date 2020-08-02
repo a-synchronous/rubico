@@ -165,7 +165,7 @@ const reverseArrayIter = arr => (function*() {
  * define flow: chain functions together
  *
  * @description
- * `pipe` is a higher order function that takes an Array of functions `funcs` and returns an anonymous inner function `pipe(funcs)`. `pipe(funcs)` accepts any number of arguments `args` and supplies them to the first function of `funcs`. The result of that call is supplied as a single argument to the next function, and so on until all functions of `funcs` have been called. The return value of the anonymous inner function for a given input is the return value of the final function of the array of functions `funcs`.
+ * `pipe` is a higher order function that takes an Array of functions `funcs` and returns an anonymous inner function `pipe(funcs)`. `pipe(funcs)` accepts any number of arguments `args` and supplies them to the first function of `funcs`. The result of that call is supplied as a single argument to the next function, and so on until all functions of `funcs` have been called. The return value of `pipe(funcs)` for a given input is the return value of the final function of the array of functions `funcs` in a chain.
  *
  * When `pipe(funcs)` is passed a `reducer` function, the returned result is another reducer function `composedReducer` that would perform the pipeline operation described by `funcs` on every element of a given collection when used with [reduce](https://doc.rubico.land/#reduce) or the `.reduce` method of an Array. For more information on this behavior, please see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md)
  *
@@ -228,6 +228,9 @@ const objectFork = (fns, x) => {
  * <T any>fork(
  *   funcs Array<T=>any>,
  * )(x Promise<T>|T) -> y Promise<Array>|Array
+ *
+ * @description
+ * `fork`
  */
 const fork = fns => {
   if (isArray(fns)) {
