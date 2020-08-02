@@ -38,6 +38,18 @@ describe('defaultsDeep', () => {
       ],
     )
   })
+  it('accepts functions as defaults', async () => {
+    assert.strictEqual(
+      defaultsDeep({ a: () => 'hey' })({}).a(),
+      'hey',
+    )
+  })
+  it('accepts functions on inputs', async () => {
+    assert.strictEqual(
+      defaultsDeep({ b: 'yo' })({ a: () => 'hey' }).a(),
+      'hey',
+    )
+  })
   it('accepts custom checking function', async () => {
     assert.deepEqual(
       defaultsDeep({ a: 1, b: { c: 2, d: 3 } })({ a: 0, b: { c: 0, d: 1 } }),
@@ -49,10 +61,16 @@ describe('defaultsDeep', () => {
       { a: 1, b: { c: 2, d: 1 } },
     )
   })
-  it('throws TypeError on defaultCollection not Array or Object', async () => {
+  it('throws TypeError on defaultsDeep(defaultCollection); defaultCollection is not an Array or Object', async () => {
     assert.throws(
       () => defaultsDeep(0),
       new TypeError('defaultsDeep(defaultCollection); defaultCollection is not an Array or Object'),
+    )
+  })
+  it('throws TypeError on defaultsDeep(...)(x); x invalid', async () => {
+    assert.throws(
+      () => defaultsDeep({})(),
+      new TypeError('defaultsDeep(...)(x); x invalid'),
     )
   })
 })
