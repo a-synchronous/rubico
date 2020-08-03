@@ -257,7 +257,7 @@ const objectFork = (fns, x) => {
  * )(x Promise<T>|T) -> y Promise<Array>|Array
  *
  * @description
- * `fork` is a function composition and concurrent execution function that takes either an Array or Object of functions `funcs` and returns an anonymous function `fork(funcs)` that executes all functions of `funcs` concurrently. `fork(funcs)`, when passed input `x`, returns an output `y` that mirrors the shape of `funcs`.
+ * `fork` is a function composition and concurrent execution function that takes either an Array or Object of functions `funcs` and returns an anonymous function `fork(funcs)` that executes all functions of `funcs` concurrently. `fork(funcs)`, when passed input `x`, returns an output `y` that mirrors the shape of `funcs`. `y`'s values are the results of the concurrent executions of functions of `funcs` with input `x`.
  *
  * `fork(funcs)` returns a Promise when any function of `funcs` is asynchronous.
  *
