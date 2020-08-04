@@ -1,6 +1,7 @@
 const timeInLoop = require('./timeInLoop')
 const find = require('./find')
 const R = require('ramda')
+const _ = require('lodash')
 
 const gt0 = x => x > 0
 
@@ -26,6 +27,11 @@ timeInLoop('gt0_findHappyPath', 1e6, () => {
 // 101.791ms
 timeInLoop('gt0_findRamdaHappyPath', 1e6, () => {
   R.find(gt0, array)
+})
+
+// 323.905ms
+timeInLoop('gt0_findLodashHappyPath', 1e6, () => {
+  _.find(gt0, array)
 })
 
 // 145.28ms
