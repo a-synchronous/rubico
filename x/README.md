@@ -150,13 +150,14 @@ Checks if a collection is empty
 ```javascript
 y = isEmpty(x)
 ```
-`x` is an Object, Array, Set, or Map
+`x` is an Object, Array, String, Set, or Map
 
 `y` is a boolean value, true if `x` is empty
 
 ```javascript
 isEmpty({}) // true
 isEmpty([1, 2, 3]) // false
+isEmpty('hey') // false
 isEmpty(0) // TypeError
 ```
 
