@@ -3,7 +3,10 @@ const isString = require('./isString')
 const is = require('./is')
 
 const isEmpty = switchCase([
-  is(Array), eq(0, get('length')),
+  or([
+    is(Array),
+    isString,
+  ]), eq(0, get('length')),
   or([
     is(Set),
     is(Map),
