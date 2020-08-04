@@ -1,4 +1,4 @@
-/* rubico v1.3.3
+/* rubico v1.5.0
  * https://github.com/a-synchronous/rubico/monad/possible-promise
  * (c) 2019-2020 Richard Tong
  * rubico may be freely distributed under the MIT license.
