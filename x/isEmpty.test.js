@@ -18,7 +18,7 @@ describe('isEmpty', () => {
     assert.strictEqual(isEmpty({}), true)
     assert.strictEqual(isEmpty({ a: 1, b: 2, c: 3 }), false)
   })
-  it('checks if an String is empty', async () => {
+  it('checks if a String is empty', async () => {
     assert.strictEqual(isEmpty("hey"), false)
     assert.strictEqual(isEmpty(""), true)
   })
