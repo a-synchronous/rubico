@@ -1,5 +1,6 @@
 ## v1.5.0
  * PossiblePromise - Possibly a promise
+ * rubico/x/find PossiblePromise revamp
 
 ## v1.3.2
  * rubico/x/defaultsDeep - enforce Array or Object inputs
