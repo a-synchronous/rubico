@@ -19,8 +19,8 @@ describe('isEmpty', () => {
     assert.strictEqual(isEmpty({ a: 1, b: 2, c: 3 }), false)
   })
   it('checks if a String is empty', async () => {
-    assert.strictEqual(isEmpty("hey"), false)
-    assert.strictEqual(isEmpty(""), true)
+    assert.strictEqual(isEmpty('hey'), false)
+    assert.strictEqual(isEmpty(''), true)
   })
   it('throws TypeError on isEmpty(nonStringPrimitive)', async () => {
     assert.throws(
