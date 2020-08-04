@@ -31,7 +31,7 @@ const findIterator = (f, iter) => {
   return undefined
 }
 
-const ObjectValuesIterator = function*(x) {
+const objectValuesIterator = function*(x) {
   for (const k in x) {
     yield x[k]
   }
@@ -52,7 +52,7 @@ const find = f => {
   }
   return PossiblePromise.args(x => {
     if (isIterable(x)) return findIterator(f, x[Symbol.iterator]())
-    if (isObject(x)) return findIterator(f, ObjectValuesIterator(x))
+    if (isObject(x)) return findIterator(f, objectValuesIterator(x))
     throw new TypeError('find(...)(x); x invalid')
   })
 }
