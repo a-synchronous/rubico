@@ -27,17 +27,52 @@ describe('find', () => {
       find(x => x === 1)([1, 2, 3]),
       1,
     )
+    assert.strictEqual(
+      find(x => x === 'a')('abc'),
+      'a',
+    )
   })
+
+  it('returns undefined for no items passing', async () => {
+    assert.strictEqual(
+      find(x => x > 3)([1, 2, 3]),
+      undefined,
+    )
+    assert.strictEqual(
+      await find(async x => x > 3)([1, 2, 3]),
+      undefined,
+    )
+  })
+
+  it('returns undefined for empty array', async () => {
+    assert.strictEqual(
+      find(x => x > 3)([]),
+      undefined,
+    )
+  })
+
   it('works with async functions', async () => {
     assert.strictEqual(
       await find(async x => x > 2)([1, 2, 3]),
       3,
     )
+    assert.strictEqual(
+      await find(async x => x > 0)([1, 2, 3]),
+      1,
+    )
   })
+
   it('throws TypeError for find(nonFunction)', async () => {
     assert.throws(
       () => find('hey'),
       new TypeError('find(f); f is not a function'),
+    )
+  })
+
+  it('find(...)(invalid); throw TypeError', async () => {
+    assert.throws(
+      () => find(() => true)(1),
+      new TypeError('find(...)(x); x invalid'),
     )
   })
 })
