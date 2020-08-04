@@ -37,7 +37,7 @@
   },
   "scripts": {
     "benchmarks": "mocha benchmarks/",
-    "test": "mocha test.js x",
-    "lint": "eslint index.js x"
+    "test": "mocha test.js x/*.test.js monad/*.test.js",
+    "lint": "eslint index.js x monad"
   }
 }
