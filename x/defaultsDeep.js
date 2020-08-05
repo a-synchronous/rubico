@@ -1,43 +1,72 @@
-const { pipe, switchCase, reduce, or, get } = require('..')
+const { or } = require('..')
+const PossiblePromise = require('../monad/possible-promise')
+const isObject = require('./isObject')
 const is = require('./is')
 
 const isDefined = x => typeof x !== 'undefined' && x !== null
 
-const entries = function*(x) {
-  for (const k in x) {
-    yield [k, x[k]]
+/*
+ * @synopsis
+ * new Indexable(x Array|Object) -> Indexable
+ *
+ * @TODO migrate to rubico/monad/indexable.js
+ */
+const Indexable = function(x) {
+  /* if (!isIndexable(x)) {
+    throw new TypeError('Indexable(x); x is not an Array or Object')
   }
+  this.value = x */
 }
-
-const isArrayOrObject = or([is(Array), is(Object)])
 
 /*
  * @synopsis
- * defaultsDeepArrayOrObject(
+ * Indexable.isIndexable(x any) -> boolean
+ */
+Indexable.isIndexable = x => isObject(x) || Array.isArray(x)
+
+/*
+ * @synopsis
+ * <T any>objectEntries(x Object<T>) -> Iterator<[key string, T]>
+ */
+const objectEntries = function*(x) {
+  for (const k in x) yield [k, x[k]]
+}
+
+/*
+ * @synopsis
+ * <T any>new Indexable(x Array<T>).entries() -> Iterator<[i number, T]>
+ *
+ * <T any>new Indexable(x Object<T>).entries() -> Iterator<[key string, T]>
+Indexable.prototype.entries = function() {
+  return isObject(this.value) ? objectEntries(this.value) : this.value.entries()
+} */
+
+Indexable.entries = x => isObject(x) ? objectEntries(x) : x.entries()
+
+/*
+ * @synopsis
+ * Indexable.copy(x Array|Object) -> shallowlyCopied Array|Object
+ */
+Indexable.copy = x => Array.isArray(x) ? x.slice(0) : Object.assign({}, x)
+
+/*
+ * @synopsis
+ * defaultsDeepIndexable(
  *   defaultCollection Array|Object,
  *   checkingFunc any=>boolean,
  *   x Array|Object,
- * ) -> deeplyDefaulted Array|Object
+ * ) -> y Array|Object
  */
-const defaultsDeepArrayOrObject = (
-  defaultCollection, checkingFunc, x,
-) => reduce(
-  (y, [k, defaultValue]) => switchCase([
-    isArrayOrObject, xk => {
-      y[k] = defaultsDeepArrayOrObject(defaultValue, checkingFunc, xk)
-      return y
-    },
-    checkingFunc, xk => {
-      y[k] = xk
-      return y
-    },
-    () => {
-      y[k] = defaultValue
-      return y
-    },
-  ])(get(k)(x)),
-  () => new x.constructor(x),
-)(entries(defaultCollection))
+const defaultsDeepIndexable = (defaultCollection, checkingFunc, x) => {
+  const y = Indexable.copy(defaultCollection)
+  for (const [index, value] of Indexable.entries(x)) {
+    const xin = x[index], defaultValue = defaultCollection[index]
+    y[index] = (Indexable.isIndexable(value)
+      ? defaultsDeepIndexable(defaultValue, checkingFunc, value)
+      : checkingFunc(value) ? value : defaultValue)
+  }
+  return y
+}
 
 /*
  * @synopsis
@@ -47,18 +76,18 @@ const defaultsDeepArrayOrObject = (
  * )(x Array|Object) -> deeplyDefaulted Array|Object
  */
 const defaultsDeep = (defaultCollection, checkingFunc = isDefined) => {
-  if (!isArrayOrObject(defaultCollection)) {
+  if (!Indexable.isIndexable(defaultCollection)) {
     throw new TypeError([
       'defaultsDeep(defaultCollection)',
       'defaultCollection is not an Array or Object',
     ].join('; '))
   }
-  return x => {
-    if (isArrayOrObject(x)) {
-      return defaultsDeepArrayOrObject(defaultCollection, checkingFunc, x)
+  return PossiblePromise.args(x => {
+    if (Indexable.isIndexable(x)) {
+      return defaultsDeepIndexable(defaultCollection, checkingFunc, x)
     }
     throw new TypeError('defaultsDeep(...)(x); x invalid')
-  }
+  })
 }
 
 module.exports = defaultsDeep
