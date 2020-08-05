@@ -10,13 +10,14 @@ const isDefined = x => typeof x !== 'undefined' && x !== null
  * new Indexable(x Array|Object) -> Indexable
  *
  * @TODO migrate to rubico/monad/indexable.js
- */
 const Indexable = function(x) {
-  /* if (!isIndexable(x)) {
+  if (!isIndexable(x)) {
     throw new TypeError('Indexable(x); x is not an Array or Object')
   }
-  this.value = x */
-}
+  this.value = x
+} */
+
+const Indexable = {}
 
 /*
  * @synopsis
@@ -69,11 +70,17 @@ const defaultsDeepIndexable = (defaultCollection, checkingFunc, x) => {
 }
 
 /*
+ * @name
+ * defaultsDeep
+ *
  * @synopsis
  * defaultsDeep(
  *   defaultCollection Array|Object,
- *   checkingFunc any=>boolean = isDefined,
+ *   checkingFunc Optional<any=>boolean>,
  * )(x Array|Object) -> deeplyDefaulted Array|Object
+ *
+ * @catchphrase
+ * Deeply supply default values to an Object or Array
  */
 const defaultsDeep = (defaultCollection, checkingFunc = isDefined) => {
   if (!Indexable.isIndexable(defaultCollection)) {
