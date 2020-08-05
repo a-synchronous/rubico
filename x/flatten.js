@@ -1,5 +1,4 @@
 const PossiblePromise = require('../monad/possible-promise')
-const isObject = require('./isObject')
 
 const Instance = {}
 
