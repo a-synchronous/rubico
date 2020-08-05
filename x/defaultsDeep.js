@@ -77,7 +77,7 @@ const defaultsDeepIndexable = (defaultCollection, checkingFunc, x) => {
  * defaultsDeep(
  *   defaultCollection Array|Object,
  *   checkingFunc Optional<any=>boolean>,
- * )(x Array|Object) -> deeplyDefaulted Array|Object
+ * )(x Promise<Array|Object>|Array|Object) -> deeplyDefaulted Array|Object
  *
  * @catchphrase
  * Deeply supply default values to an Object or Array
