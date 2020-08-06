@@ -1,7 +1,5 @@
-const { or } = require('..')
 const PossiblePromise = require('../monad/possible-promise')
-const isObject = require('./isObject')
-const is = require('./is')
+const Instance = require('../monad/instance')
 
 const isDefined = x => typeof x !== 'undefined' && x !== null
 
@@ -23,7 +21,8 @@ const Indexable = {}
  * @synopsis
  * Indexable.isIndexable(x any) -> boolean
  */
-Indexable.isIndexable = x => isObject(x) || Array.isArray(x)
+Indexable.isIndexable = x => (Instance.isInstance(x)
+  && (Instance.isObject(x) || Instance.isArray(x)))
 
 /*
  * @synopsis
@@ -42,7 +41,7 @@ Indexable.prototype.entries = function() {
   return isObject(this.value) ? objectEntries(this.value) : this.value.entries()
 } */
 
-Indexable.entries = x => isObject(x) ? objectEntries(x) : x.entries()
+Indexable.entries = x => Instance.isObject(x) ? objectEntries(x) : x.entries()
 
 /*
  * @synopsis
@@ -52,18 +51,27 @@ Indexable.copy = x => Array.isArray(x) ? x.slice(0) : Object.assign({}, x)
 
 /*
  * @synopsis
- * defaultsDeepIndexable(
+ * Indexable.copyDeep(x Array|Object) -> deeplyCopied Array|Object
+ *
+ * @TODO support types beyond Primitives, Arrays, and Objects
+ */
+Indexable.copyDeep = x => JSON.parse(JSON.stringify(x))
+
+/*
+ * @synopsis
+ * indexableDefaultsDeep(
  *   defaultCollection Array|Object,
  *   checkingFunc any=>boolean,
  *   x Array|Object,
  * ) -> y Array|Object
  */
-const defaultsDeepIndexable = (defaultCollection, checkingFunc, x) => {
+const indexableDefaultsDeep = (defaultCollection, checkingFunc, x) => {
+  if (!Indexable.isIndexable(defaultCollection)) return Indexable.copyDeep(x)
   const y = Indexable.copy(defaultCollection)
   for (const [index, value] of Indexable.entries(x)) {
     const xin = x[index], defaultValue = defaultCollection[index]
     y[index] = (Indexable.isIndexable(value)
-      ? defaultsDeepIndexable(defaultValue, checkingFunc, value)
+      ? indexableDefaultsDeep(defaultValue, checkingFunc, value)
       : checkingFunc(value) ? value : defaultValue)
   }
   return y
@@ -91,7 +99,7 @@ const defaultsDeep = (defaultCollection, checkingFunc = isDefined) => {
   }
   return PossiblePromise.args(x => {
     if (Indexable.isIndexable(x)) {
-      return defaultsDeepIndexable(defaultCollection, checkingFunc, x)
+      return indexableDefaultsDeep(defaultCollection, checkingFunc, x)
     }
     throw new TypeError('defaultsDeep(...)(x); x invalid')
   })

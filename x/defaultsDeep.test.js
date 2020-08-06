@@ -38,6 +38,12 @@ describe('defaultsDeep', () => {
       ],
     )
   })
+  it('case when defaultCollection is not indexable', async () => {
+    assert.deepEqual(
+      defaultsDeep({ a: 1 })({ b: { c: ['hey'] } }),
+      { a: 1, b: { c: ['hey'] } },
+    )
+  })
   it('accepts functions as defaults', async () => {
     assert.strictEqual(
       defaultsDeep({ a: () => 'hey' })({}).a(),
