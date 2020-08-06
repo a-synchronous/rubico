@@ -4,6 +4,7 @@
  * monad/Flattenable - Flattening things
  * x/find PossiblePromise revamp
  * x/defaultsDeep PossiblePromise revamp
+ * improve PossiblePromise.args stack trace
 
 ## v1.3.2
  * x/defaultsDeep - enforce Array or Object inputs
