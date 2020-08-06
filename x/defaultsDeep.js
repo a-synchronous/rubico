@@ -1,7 +1,5 @@
-const PossiblePromise = require('../monad/possible-promise')
-const Instance = require('../monad/instance')
-
-const isDefined = x => typeof x !== 'undefined' && x !== null
+const PossiblePromise = require('../monad/PossiblePromise')
+const Instance = require('../monad/Instance')
 
 /*
  * @synopsis
@@ -90,7 +88,7 @@ const indexableDefaultsDeep = (defaultCollection, checkingFunc, x) => {
  * @catchphrase
  * Deeply supply default values to an Object or Array
  */
-const defaultsDeep = (defaultCollection, checkingFunc = isDefined) => {
+const defaultsDeep = (defaultCollection, checkingFunc = Instance.isInstance) => {
   if (!Indexable.isIndexable(defaultCollection)) {
     throw new TypeError([
       'defaultsDeep(defaultCollection)',

@@ -6,7 +6,7 @@
 
 'use strict'
 
-const Instance = require('./instance')
+const Instance = require('./Instance')
 
 const objectValuesIterator = function*(x) {
   for (const k in x) {

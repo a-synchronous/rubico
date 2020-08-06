@@ -1,6 +1,5 @@
-const PossiblePromise = require('../monad/possible-promise')
-const Instance = require('../monad/instance')
-const Flattenable = require('../monad/flattenable')
+const PossiblePromise = require('../monad/PossiblePromise')
+const Flattenable = require('../monad/Flattenable')
 
 /*
  * @synopsis

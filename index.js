@@ -116,8 +116,9 @@ PossiblePromise.all = ps => (ps.some(isPromise)
  * @synopsis
  * PossiblePromise.args(f function)(args ...any) -> Promise|any
  */
-PossiblePromise.args = f => (...args) => (
-  PossiblePromise.all(args).then(resolved => f(...resolved)))
+PossiblePromise.args = f => (...args) => (args.some(isPromise)
+  ? Promise.all(args).then(res => f(...res))
+  : f(...args))
 
 /*
  * @synopsis

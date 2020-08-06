@@ -1,5 +1,5 @@
 const assert = require('assert')
-const Flattenable = require('./flattenable')
+const Flattenable = require('./Flattenable')
 
 describe('Flattenable', () => {
   describe('new Flattenable(x Array|Set) -> Flattenable', () => {

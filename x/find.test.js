@@ -51,6 +51,13 @@ describe('find', () => {
     )
   })
 
+  it('returns undefined for f ()=>{}', async () => {
+    assert.strictEqual(
+      find(() => {})([1, 2, 3]),
+      undefined,
+    )
+  })
+
   it('works with async functions', async () => {
     assert.strictEqual(
       await find(async x => x > 2)([1, 2, 3]),
@@ -66,6 +73,20 @@ describe('find', () => {
     assert.throws(
       () => find('hey'),
       new TypeError('find(f); f is not a function'),
+    )
+  })
+
+  it('find(...)(null); throw TypeError', async () => {
+    assert.throws(
+      () => find(() => true)(null),
+      new TypeError('find(...)(x); x cannot be null'),
+    )
+  })
+
+  it('find(...)(undefined); throw TypeError', async () => {
+    assert.throws(
+      () => find(() => true)(undefined),
+      new TypeError('find(...)(x); x cannot be undefined'),
     )
   })
 

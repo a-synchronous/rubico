@@ -1,4 +1,4 @@
-const PossiblePromise = require('./possible-promise')
+const PossiblePromise = require('./PossiblePromise')
 const assert = require('assert')
 
 describe('PossiblePromise', () => {

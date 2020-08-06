@@ -83,8 +83,8 @@ PossiblePromise.all = ps => (ps.some(isPromise)
  * @catchphrase
  * Resolves any Promises supplied as arguments to a function
  */
-PossiblePromise.args = f => (...args) => (
-  PossiblePromise.all(args).then(resolved => f(...resolved)))
-
+PossiblePromise.args = f => (...args) => (args.some(isPromise)
+  ? Promise.all(args).then(res => f(...res))
+  : f(...args))
 
 module.exports = PossiblePromise
