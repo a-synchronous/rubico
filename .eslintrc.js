@@ -241,7 +241,7 @@ module.exports = {
             'error',
             'always'
         ],
-        'object-shorthand': 'error',
+        'object-shorthand': 'off',
         'one-var': 'off',
         'one-var-declaration-per-line': 'off',
         'operator-assignment': 'off',
@@ -287,7 +287,7 @@ module.exports = {
         'sort-imports': 'error',
         'sort-keys': 'off',
         'sort-vars': 'off',
-        'space-before-blocks': 'error',
+        'space-before-blocks': 'off',
         'space-before-function-paren': 'off',
         'space-in-parens': [
             'error',
