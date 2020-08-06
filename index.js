@@ -773,6 +773,7 @@ const mapStringWithIndex = (f, x) => PossiblePromise.then(
  * map.withIndex(f any=>any)(x T) -> T|Promise<T>
  *
  * @TODO: refactor to PossiblePromise.args
+ * @TODO: x can be an Object
  */
 map.withIndex = fn => {
   if (!isFunction(fn)) {

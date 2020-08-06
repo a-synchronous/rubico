@@ -32,12 +32,14 @@
   "devDependencies": {
     "codecov": "^3.7.1",
     "eslint": "^7.3.1",
+    "lodash": "^4.17.19",
     "mocha": "^7.2.0",
-    "nyc": "^15.1.0"
+    "nyc": "^15.1.0",
+    "ramda": "^0.27.1"
   },
   "scripts": {
     "benchmarks": "mocha benchmarks/",
-    "test": "mocha test.js x",
-    "lint": "eslint index.js x"
+    "test": "mocha test.js x/*.test.js monad/*.test.js",
+    "lint": "eslint index.js x monad"
   }
 }

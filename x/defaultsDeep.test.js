@@ -61,6 +61,14 @@ describe('defaultsDeep', () => {
       { a: 1, b: { c: 2, d: 1 } },
     )
   })
+  it('does not mutate input parameter', async () => {
+    const x = { a: 1 }
+    assert.deepEqual(
+      defaultsDeep({ b: 'yo' })(x),
+      { a: 1, b: 'yo' },
+    )
+    assert.deepEqual(x, { a: 1 })
+  })
   it('throws TypeError on defaultsDeep(defaultCollection); defaultCollection is not an Array or Object', async () => {
     assert.throws(
       () => defaultsDeep(0),
