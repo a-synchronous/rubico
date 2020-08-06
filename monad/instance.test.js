@@ -255,13 +255,13 @@ describe('Instance', () => {
     it('x null; TypeError', async () => {
       assert.throws(
         () => Instance.isIterable(null),
-        new TypeError('object null is not iterable (cannot read property Symbol(Symbol.iterator))'),
+        { name: 'TypeError' },
       )
     })
     it('x undefined; TypeError', async () => {
       assert.throws(
         () => Instance.isIterable(undefined),
-        new TypeError('undefined is not iterable (cannot read property Symbol(Symbol.iterator))'),
+        { name: 'TypeError' },
       )
     })
   })
