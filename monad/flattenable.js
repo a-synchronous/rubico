@@ -21,7 +21,7 @@ const objectValuesIterator = function*(x) {
  * new Flattenable(x Array|Set) -> Flattenable
  *
  * @catchphrase
- * Flattens an Array or Set
+ * Flattening things
  */
 const Flattenable = function(x) {
   if (!Flattenable.isFlattenable(x)) {
