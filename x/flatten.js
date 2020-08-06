@@ -1,38 +1,5 @@
 const PossiblePromise = require('../monad/possible-promise')
-
-const Instance = {}
-
-/*
- * @synopsis
- * Instance.isInstance(x any) -> boolean
- */
-Instance.isInstance = x => x !== undefined && x !== null
-
-/*
- * @synopsis
- * Instance.isArray(x Instance) -> boolean
- */
-Instance.isArray = x => x.constructor === Array
-
-/*
- * @synopsis
- * Instance.isObject(x Instance) -> boolean
- */
-Instance.isObject = x => x.constructor === Object
-
-/*
- * @synopsis
- * Instance.isSet(x Instance) -> boolean
- */
-Instance.isSet = x => x.constructor === Set
-
-/*
- * @synopsis
- * Instance.isIterable(x Instance) -> boolean
- */
-Instance.isIterable = x => Boolean(x[Symbol.iterator])
-
-const { isInstance, isArray, isSet } = Instance
+const Instance = require('../monad/instance')
 
 const objectValuesIterator = function*(x) {
   for (const k in x) {
