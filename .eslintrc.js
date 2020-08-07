@@ -71,7 +71,7 @@ module.exports = {
             }
         ],
         'eol-last': 'error',
-        'eqeqeq': 'error',
+        'eqeqeq': 'off',
         'func-call-spacing': 'error',
         'func-name-matching': 'error',
         'func-names': 'off',
@@ -147,7 +147,7 @@ module.exports = {
         'no-duplicate-imports': 'error',
         'no-else-return': 'error',
         'no-empty-function': 'off',
-        'no-eq-null': 'error',
+        'no-eq-null': 'off',
         'no-eval': 'error',
         'no-extend-native': 'error',
         'no-extra-bind': 'error',
