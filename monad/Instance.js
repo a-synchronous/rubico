@@ -16,6 +16,9 @@
  * Performant type checking
  */
 const Instance = function(x) {
+  if (x == null) {
+    throw new TypeError(`cannot convert ${x} to Instance`)
+  }
   this.value = x
 }
 
@@ -29,16 +32,6 @@ const Instance = function(x) {
  * `false` <- only for `undefined` and `null`
  */
 Instance.isInstance = x => x != null
-
-/*
- * @name Instance.prototype.isInstance
- *
- * @synopsis
- * new Instance(x any).isInstance() -> boolean
- */
-Instance.prototype.isInstance = function() {
-  return this.value != null
-}
 
 /*
  * @name Instance.is

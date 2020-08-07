@@ -7,13 +7,17 @@ describe('Instance', () => {
       assert.strictEqual(new Instance(1).constructor.name, 'Instance')
       assert(new Instance(1).value === 1)
     })
-    it('x null; Instance<null>', async () => {
-      assert.strictEqual(new Instance(null).constructor.name, 'Instance')
-      assert(new Instance(null).value === null)
+    it('x null; TypeError', async () => {
+      assert.throws(
+        () => new Instance(null),
+        new TypeError('cannot convert null to Instance')
+      )
     })
     it('x undefined; Instance<undefined>', async () => {
-      assert.strictEqual(new Instance(undefined).constructor.name, 'Instance')
-      assert(new Instance(undefined).value === undefined)
+      assert.throws(
+        () => new Instance(undefined),
+        new TypeError('cannot convert undefined to Instance')
+      )
     })
   })
 
@@ -26,18 +30,6 @@ describe('Instance', () => {
     })
     it('x undefined; false', async () => {
       assert.strictEqual(Instance.isInstance(undefined), false)
-    })
-  })
-
-  describe('Instance.prototype.isInstance(x any) -> boolean', () => {
-    it('x 1; true', async () => {
-      assert.strictEqual(new Instance(1).isInstance(), true)
-    })
-    it('x null; false', async () => {
-      assert.strictEqual(new Instance(null).isInstance(), false)
-    })
-    it('x undefined; false', async () => {
-      assert.strictEqual(new Instance(undefined).isInstance(), false)
     })
   })
 
