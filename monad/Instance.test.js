@@ -29,6 +29,18 @@ describe('Instance', () => {
     })
   })
 
+  describe('Instance.prototype.isInstance(x any) -> boolean', () => {
+    it('x 1; true', async () => {
+      assert.strictEqual(new Instance(1).isInstance(), true)
+    })
+    it('x null; false', async () => {
+      assert.strictEqual(new Instance(null).isInstance(), false)
+    })
+    it('x undefined; false', async () => {
+      assert.strictEqual(new Instance(undefined).isInstance(), false)
+    })
+  })
+
   describe('Instance.is(x any, constructor function) -> boolean', () => {
     it('x 1, constructor Number; true', async () => {
       assert.strictEqual(Instance.is(1, Number), true)
