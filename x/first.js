@@ -1,5 +1,5 @@
-const PossiblePromise = require('../monad/possible-promise')
-const isString = require('./isString')
+const PossiblePromise = require('../monad/PossiblePromise')
+const Instance = require('../monad/Instance')
 
 /*
  * @synopsis
@@ -13,7 +13,8 @@ const Orderable = function(x) {
  * @synopsis
  * Orderable.isOrderable(x string|Array) -> boolean
  */
-Orderable.isOrderable = x => Array.isArray(x) || isString(x)
+Orderable.isOrderable = x => (Instance.isInstance(x)
+  && (Instance.isArray(x) || Instance.isString(x)))
 
 /*
  * @synopsis

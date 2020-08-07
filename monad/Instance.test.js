@@ -1,5 +1,5 @@
 const assert = require('assert')
-const Instance = require('./instance')
+const Instance = require('./Instance')
 
 describe('Instance', () => {
   describe('new Instance(x !null&!undefined) -> Instance', () => {

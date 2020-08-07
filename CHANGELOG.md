@@ -1,6 +1,9 @@
 ## v1.5.0
  * monad/PossiblePromise - Possibly a promise
+ * monad/Instance - Performant type checking
+ * monad/Flattenable - Flattening things
  * x/find PossiblePromise revamp
+ * x/defaultsDeep PossiblePromise revamp
 
 ## v1.3.2
  * x/defaultsDeep - enforce Array or Object inputs
