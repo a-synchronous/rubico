@@ -31,6 +31,8 @@ const Instance = function(x) {
 Instance.isInstance = x => x != null
 
 /*
+ * @name Instance.prototype.isInstance
+ *
  * @synopsis
  * new Instance(x any).isInstance() -> boolean
  */
@@ -39,12 +41,16 @@ Instance.prototype.isInstance = function() {
 }
 
 /*
+ * @name Instance.is
+ *
  * @synopsis
  * Instance.is(x any, constructor function) -> boolean
  */
 Instance.is = (x, constructor) => x != null && x.constructor == constructor
 
 /*
+ * @name Instance.prototype.is
+ *
  * @synopsis
  * new Instance(x any).is(constructor function) -> boolean
  */
@@ -54,6 +60,8 @@ Instance.prototype.is = function(constructor) {
 }
 
 /*
+ * @name Instance.isString
+ *
  * @synopsis
  * Instance.isString(x any) -> boolean
  */
@@ -61,6 +69,8 @@ Instance.isString = x => (
   typeof x == 'string' || (x != null && x.constructor == String))
 
 /*
+ * @name Instance.prototype.isString
+ *
  * @synopsis
  * new Instance(x any).isString() -> boolean
  */
@@ -70,6 +80,8 @@ Instance.prototype.isString = function() {
 }
 
 /*
+ * @name Instance.isNumber
+ *
  * @synopsis
  * Instance.isNumber(x any) -> boolean
  */
@@ -77,6 +89,8 @@ Instance.isNumber = x => (
   typeof x === 'number' || (x != null && x.constructor == Number))
 
 /*
+ * @name Instance.prototype.isNumber
+ *
  * @synopsis
  * new Instance(x any).isNumber() -> boolean
  */
@@ -86,12 +100,16 @@ Instance.prototype.isNumber = function() {
 }
 
 /*
+ * @name Instance.isArray
+ *
  * @synopsis
  * Instance.isArray(x any) -> boolean
  */
 Instance.isArray = Array.isArray
 
 /*
+ * @name Instance.prototype.isArray
+ *
  * @synopsis
  * new Instance(x any).isArray() -> boolean
  */
@@ -100,12 +118,16 @@ Instance.prototype.isArray = function() {
 }
 
 /*
+ * @name Instance.isObject
+ *
  * @synopsis
  * Instance.isObject(x any) -> boolean
  */
 Instance.isObject = x => x != null && x.constructor == Object
 
 /*
+ * @name Instance.prototype.isObject
+ *
  * @synopsis
  * new Instance(x any).isObject() -> boolean
  */
@@ -115,12 +137,16 @@ Instance.prototype.isObject = function() {
 }
 
 /*
+ * @name Instance.isSet
+ *
  * @synopsis
  * Instance.isSet(x any) -> boolean
  */
 Instance.isSet = x => x != null && x.constructor == Set
 
 /*
+ * @name Instance.prototype.isSet
+ *
  * @synopsis
  * new Instance(x any).isSet() -> boolean
  */
@@ -130,12 +156,16 @@ Instance.prototype.isSet = function() {
 }
 
 /*
+ * @name Instance.isMap
+ *
  * @synopsis
  * Instance.isMap(x any) -> boolean
  */
 Instance.isMap = x => x != null && x.constructor == Map
 
 /*
+ * @name Instance.prototype.isMap
+ *
  * @synopsis
  * new Instance(x any).isMap() -> boolean
  */
@@ -147,12 +177,16 @@ Instance.prototype.isMap = function() {
 const symbolIterator = Symbol.iterator
 
 /*
+ * @name Instance.isIterable
+ *
  * @synopsis
  * Instance.isIterable(x any) -> boolean
  */
 Instance.isIterable = x => x != null && Boolean(x[symbolIterator])
 
 /*
+ * @name Instance.prototype.isIterable
+ *
  * @synopsis
  * new Instance(x any).isIterable() -> boolean
  */
@@ -164,12 +198,16 @@ Instance.prototype.isIterable = function() {
 const symbolAsyncIterator = Symbol.asyncIterator
 
 /*
+ * @name Instance.isAsyncIterable
+ *
  * @synopsis
  * Instance.isAsyncIterable(x any) -> boolean
  */
 Instance.isAsyncIterable = x => x != null && Boolean(x[symbolAsyncIterator])
 
 /*
+ * @name Instance.prototype.isAsyncIterable
+ *
  * @synopsis
  * new Instance(x any).isAsyncIterable() -> boolean
  */
@@ -179,12 +217,16 @@ Instance.prototype.isAsyncIterable = function() {
 }
 
 /*
+ * @name Instance.isFunction
+ *
  * @synopsis
  * Instance.isFunction(x any) -> boolean
  */
 Instance.isFunction = x => typeof x == 'function'
 
 /*
+ * @name Instance.prototype.isFunction
+ *
  * @synopsis
  * new Instance(x any).isFunction() -> boolean
  */
@@ -193,12 +235,16 @@ Instance.prototype.isFunction = function() {
 }
 
 /*
+ * @name Instance.isReadable
+ *
  * @synopsis
  * Instance.isReadable(x any) -> boolean
  */
 Instance.isReadable = x => x != null && typeof x.read == 'function'
 
 /*
+ * @name Instance.prototype.isReadable
+ *
  * @synopsis
  * new Instance(x any).isReadable() -> boolean
  */
@@ -208,12 +254,16 @@ Instance.prototype.isReadable = function() {
 }
 
 /*
+ * @name Instance.isWritable
+ *
  * @synopsis
  * Instance.isWritable(x any) -> boolean
  */
 Instance.isWritable = x => x != null && typeof x.write == 'function'
 
 /*
+ * @name Instance.prototype.isWritable
+ *
  * @synopsis
  * new Instance(x any).isWritable() -> boolean
  */
@@ -223,12 +273,16 @@ Instance.prototype.isWritable = function() {
 }
 
 /*
+ * @name Instance.isPromise
+ *
  * @synopsis
  * Instance.isPromise(x any) -> boolean
  */
 Instance.isPromise = x => x != null && typeof x.then == 'function'
 
 /*
+ * @name Instance.prototype.isPromise
+ *
  * @synopsis
  * new Instance(x any).isPromise() -> boolean
  */
@@ -237,28 +291,9 @@ Instance.prototype.isPromise = function() {
   return x != null && typeof x.then == 'function'
 }
 
-const typedArrayConstructorNames = new Set([
-  'Uint8ClampedArray',
-  'Uint8Array', 'Int8Array',
-  'Uint16Array', 'Int16Array',
-  'Uint32Array', 'Int32Array',
-  'Float32Array', 'Float64Array',
-  'BigUint64Array', 'BigInt64Array',
-])
-
-const numberTypedArrayConstructorNames = new Set([
-  'Uint8ClampedArray',
-  'Uint8Array', 'Int8Array',
-  'Uint16Array', 'Int16Array',
-  'Uint32Array', 'Int32Array',
-  'Float32Array', 'Float64Array',
-])
-
-const bigIntTypedArrayConstructorNames = new Set([
-  'BigUint64Array', 'BigInt64Array',
-])
-
 /*
+ * @name Instance.isTypedArray
+ *
  * @synopsis
  * Instance.isTypedArray(x any) -> boolean
  */
@@ -269,6 +304,8 @@ Instance.isTypedArray = ArrayBuffer.isView
 // Instance.isTypedArrayCandidate1 = ArrayBuffer.isView
 
 /*
+ * @name Instance.prototype.isTypedArray
+ *
  * @synopsis
  * new Instance(x any).isTypedArray() -> boolean
  */
