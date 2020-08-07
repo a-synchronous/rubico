@@ -2,22 +2,18 @@ const assert = require('assert')
 const Instance = require('./Instance')
 
 describe('Instance', () => {
-  describe('new Instance(x !null&!undefined) -> Instance', () => {
+  describe('new Instance(x any) -> Instance', () => {
     it('x 1; Instance<1>', async () => {
       assert.strictEqual(new Instance(1).constructor.name, 'Instance')
       assert(new Instance(1).value === 1)
     })
-    it('x null; TypeError', async () => {
-      assert.throws(
-        () => new Instance(null),
-        new TypeError('cannot convert null to Instance'),
-      )
+    it('x null; Instance<null>', async () => {
+      assert.strictEqual(new Instance(null).constructor.name, 'Instance')
+      assert(new Instance(null).value === null)
     })
-    it('x undefined; TypeError', async () => {
-      assert.throws(
-        () => new Instance(undefined),
-        new TypeError('cannot convert undefined to Instance'),
-      )
+    it('x undefined; Instance<undefined>', async () => {
+      assert.strictEqual(new Instance(undefined).constructor.name, 'Instance')
+      assert(new Instance(undefined).value === undefined)
     })
   })
 
@@ -33,28 +29,22 @@ describe('Instance', () => {
     })
   })
 
-  describe('Instance.is(x !null&!undefined, constructor function) -> boolean', () => {
+  describe('Instance.is(x any, constructor function) -> boolean', () => {
     it('x 1, constructor Number; true', async () => {
       assert.strictEqual(Instance.is(1, Number), true)
     })
     it('x 1, constructor String; false', async () => {
       assert.strictEqual(Instance.is(1, String), false)
     })
-    it('x null; TypeError', async () => {
-      assert.throws(
-        () => Instance.is(null, Object),
-        new TypeError('Cannot read property \'constructor\' of null'),
-      )
+    it('x null; false', async () => {
+      assert.strictEqual(Instance.is(null, Object), false)
     })
-    it('x undefined; TypeError', async () => {
-      assert.throws(
-        () => Instance.is(undefined, Object),
-        new TypeError('Cannot read property \'constructor\' of undefined'),
-      )
+    it('x undefined; false', async () => {
+      assert.strictEqual(Instance.is(undefined, Object), false)
     })
   })
 
-  describe('new Instance(x !null&!undefined).is(constructor function) -> boolean', () => {
+  describe('new Instance(x any).is(constructor function) -> boolean', () => {
     it('x 1, constructor Number; true', async () => {
       assert.strictEqual(new Instance(1).is(Number), true)
     })
@@ -63,28 +53,22 @@ describe('Instance', () => {
     })
   })
 
-  describe('Instance.isString(x !null&!undefined) -> boolean', () => {
+  describe('Instance.isString(x any) -> boolean', () => {
     it('x \'hey\'; true', async () => {
       assert.strictEqual(Instance.isString('hey'), true)
     })
     it('x 3; false', async () => {
       assert.strictEqual(Instance.isString(3), false)
     })
-    it('x null; TypeError', async () => {
-      assert.throws(
-        () => Instance.isString(null),
-        new TypeError('Cannot read property \'constructor\' of null'),
-      )
+    it('x null; false', async () => {
+      assert.strictEqual(Instance.isString(null), false)
     })
-    it('x undefined; TypeError', async () => {
-      assert.throws(
-        () => Instance.isString(undefined),
-        new TypeError('Cannot read property \'constructor\' of undefined'),
-      )
+    it('x undefined; false', async () => {
+      assert.strictEqual(Instance.isString(undefined), false)
     })
   })
 
-  describe('new Instance(x !null&!undefined).isString() -> boolean', () => {
+  describe('new Instance(x any).isString() -> boolean', () => {
     it('x \'hey\'; true', async () => {
       assert.strictEqual(new Instance('hey').isString(), true)
     })
@@ -93,28 +77,22 @@ describe('Instance', () => {
     })
   })
 
-  describe('Instance.isNumber(x !null&!undefined) -> boolean', () => {
+  describe('Instance.isNumber(x any) -> boolean', () => {
     it('x 3; true', async () => {
       assert.strictEqual(Instance.isNumber(3), true)
     })
     it('x true; false', async () => {
       assert.strictEqual(Instance.isNumber(true), false)
     })
-    it('x null; TypeError', async () => {
-      assert.throws(
-        () => Instance.isNumber(null),
-        new TypeError('Cannot read property \'constructor\' of null'),
-      )
+    it('x null; false', async () => {
+      assert.strictEqual(Instance.isNumber(null), false)
     })
-    it('x undefined; TypeError', async () => {
-      assert.throws(
-        () => Instance.isNumber(undefined),
-        new TypeError('Cannot read property \'constructor\' of undefined'),
-      )
+    it('x undefined; false', async () => {
+      assert.strictEqual(Instance.isNumber(undefined), false)
     })
   })
 
-  describe('new Instance(x !null&!undefined).isNumber() -> boolean', () => {
+  describe('new Instance(x any).isNumber() -> boolean', () => {
     it('x 3; true', async () => {
       assert.strictEqual(new Instance(3).isNumber(), true)
     })
@@ -123,28 +101,22 @@ describe('Instance', () => {
     })
   })
 
-  describe('Instance.isArray(x !null&!undefined) -> boolean', () => {
+  describe('Instance.isArray(x any) -> boolean', () => {
     it('x [1, 2, 3]; true', async () => {
       assert.strictEqual(Instance.isArray([1, 2, 3]), true)
     })
     it('x 1; false', async () => {
       assert.strictEqual(Instance.isArray(1), false)
     })
-    it('x null; TypeError', async () => {
-      assert.throws(
-        () => Instance.isArray(null),
-        new TypeError('Cannot read property \'constructor\' of null'),
-      )
+    it('x null; false', async () => {
+      assert.strictEqual(Instance.isArray(null), false)
     })
-    it('x undefined; TypeError', async () => {
-      assert.throws(
-        () => Instance.isArray(undefined),
-        new TypeError('Cannot read property \'constructor\' of undefined'),
-      )
+    it('x undefined; false', async () => {
+      assert.strictEqual(Instance.isArray(undefined), false)
     })
   })
 
-  describe('new Instance(x !null&!undefined).isArray() -> boolean', () => {
+  describe('new Instance(x any).isArray() -> boolean', () => {
     it('x [1, 2, 3]; true', async () => {
       assert.strictEqual(new Instance([1, 2, 3]).isArray(), true)
     })
@@ -153,28 +125,22 @@ describe('Instance', () => {
     })
   })
 
-  describe('Instance.isObject(x !null&!undefined) -> boolean', () => {
+  describe('Instance.isObject(x any) -> boolean', () => {
     it('x { a: 1, b: 2, c: 3 }; true', async () => {
       assert.strictEqual(Instance.isObject({ a: 1, b: 2, c: 3 }), true)
     })
     it('x []; false', async () => {
       assert.strictEqual(Instance.isObject([]), false)
     })
-    it('x null; TypeError', async () => {
-      assert.throws(
-        () => Instance.isObject(null),
-        new TypeError('Cannot read property \'constructor\' of null'),
-      )
+    it('x null; false', async () => {
+      assert.strictEqual(Instance.isObject(null), false)
     })
-    it('x undefined; TypeError', async () => {
-      assert.throws(
-        () => Instance.isObject(undefined),
-        new TypeError('Cannot read property \'constructor\' of undefined'),
-      )
+    it('x undefined; false', async () => {
+      assert.strictEqual(Instance.isObject(undefined), false)
     })
   })
 
-  describe('new Instance(x !null&!undefined).isObject() -> boolean', () => {
+  describe('new Instance(x any).isObject() -> boolean', () => {
     it('x { a: 1, b: 2, c: 3 }; true', async () => {
       assert.strictEqual(new Instance({ a: 1, b: 2, c: 3 }).isObject(), true)
     })
@@ -183,28 +149,22 @@ describe('Instance', () => {
     })
   })
 
-  describe('Instance.isSet(x !null&!undefined) -> boolean', () => {
+  describe('Instance.isSet(x any) -> boolean', () => {
     it('x Set<[1, 2, 3]>; true', async () => {
       assert.strictEqual(Instance.isSet(new Set([1, 2, 3])), true)
     })
     it('x [1, 2, 3]; false', async () => {
       assert.strictEqual(Instance.isSet([1, 2, 3]), false)
     })
-    it('x null; TypeError', async () => {
-      assert.throws(
-        () => Instance.isSet(null),
-        new TypeError('Cannot read property \'constructor\' of null'),
-      )
+    it('x null; false', async () => {
+      assert.strictEqual(Instance.isSet(null), false)
     })
-    it('x undefined; TypeError', async () => {
-      assert.throws(
-        () => Instance.isSet(undefined),
-        new TypeError('Cannot read property \'constructor\' of undefined'),
-      )
+    it('x undefined; false', async () => {
+      assert.strictEqual(Instance.isSet(undefined), false)
     })
   })
 
-  describe('new Instance(x !null&!undefined).isSet() -> boolean', () => {
+  describe('new Instance(x any).isSet() -> boolean', () => {
     it('x Set<[1, 2, 3]>; true', async () => {
       assert.strictEqual(new Instance(new Set([1, 2, 3])).isSet(), true)
     })
@@ -213,7 +173,7 @@ describe('Instance', () => {
     })
   })
 
-  describe('Instance.isMap(x !null&!undefined) -> boolean', () => {
+  describe('Instance.isMap(x any) -> boolean', () => {
     it('x Map<[[1, true], [2, false], [3, true]]>; true', async () => {
       const m = new Map([[1, true], [2, false], [3, true]])
       assert.strictEqual(Instance.isMap(m), true)
@@ -221,21 +181,15 @@ describe('Instance', () => {
     it('x { a: 1, b: 2, c: 3 }; false', async () => {
       assert.strictEqual(Instance.isMap({ a: 1, b: 2, c: 3 }), false)
     })
-    it('x null; TypeError', async () => {
-      assert.throws(
-        () => Instance.isMap(null),
-        new TypeError('Cannot read property \'constructor\' of null'),
-      )
+    it('x null; false', async () => {
+      assert.strictEqual(Instance.isMap(null), false)
     })
-    it('x undefined; TypeError', async () => {
-      assert.throws(
-        () => Instance.isMap(undefined),
-        new TypeError('Cannot read property \'constructor\' of undefined'),
-      )
+    it('x undefined; false', async () => {
+      assert.strictEqual(Instance.isMap(undefined), false)
     })
   })
 
-  describe('new Instance(x !null&!undefined).isMap() -> boolean', () => {
+  describe('new Instance(x any).isMap() -> boolean', () => {
     it('x Map<[[1, true], [2, false], [3, true]]>; true', async () => {
       const m = new Map([[1, true], [2, false], [3, true]])
       assert.strictEqual(new Instance(m).isMap(), true)
@@ -245,28 +199,22 @@ describe('Instance', () => {
     })
   })
 
-  describe('Instance.isIterable(x !null&!undefined) -> boolean', () => {
+  describe('Instance.isIterable(x any) -> boolean', () => {
     it('x [1, 2, 3]; true', async () => {
       assert.strictEqual(Instance.isIterable([1, 2, 3]), true)
     })
     it('x { a: 1, b: 2, c: 3 }; false', async () => {
       assert.strictEqual(Instance.isIterable({ a: 1, b: 2, c: 3 }), false)
     })
-    it('x null; TypeError', async () => {
-      assert.throws(
-        () => Instance.isIterable(null),
-        { name: 'TypeError' },
-      )
+    it('x null; false', async () => {
+      assert.strictEqual(Instance.isIterable(null), false)
     })
-    it('x undefined; TypeError', async () => {
-      assert.throws(
-        () => Instance.isIterable(undefined),
-        { name: 'TypeError' },
-      )
+    it('x undefined; false', async () => {
+      assert.strictEqual(Instance.isIterable(undefined), false)
     })
   })
 
-  describe('new Instance(x !null&!undefined).isIterable() -> boolean', () => {
+  describe('new Instance(x any).isIterable() -> boolean', () => {
     it('x [1, 2, 3]; true', async () => {
       assert.strictEqual(new Instance([1, 2, 3]).isIterable(), true)
     })
@@ -275,7 +223,7 @@ describe('Instance', () => {
     })
   })
 
-  describe('Instance.isAsyncIterable(x !null&!undefined) -> boolean', () => {
+  describe('Instance.isAsyncIterable(x any) -> boolean', () => {
     const createAsyncIterable123 = async function*() {
       yield 1; yield 2; yield 3
     }
@@ -285,21 +233,15 @@ describe('Instance', () => {
     it('x [1, 2, 3]; false', async () => {
       assert.strictEqual(Instance.isAsyncIterable([1, 2, 3]), false)
     })
-    it('x null; TypeError', async () => {
-      assert.throws(
-        () => Instance.isAsyncIterable(null),
-        new TypeError('Cannot read property \'Symbol(Symbol.asyncIterator)\' of null'),
-      )
+    it('x null; false', async () => {
+      assert.strictEqual(Instance.isAsyncIterable(null), false)
     })
-    it('x undefined; TypeError', async () => {
-      assert.throws(
-        () => Instance.isAsyncIterable(undefined),
-        new TypeError('Cannot read property \'Symbol(Symbol.asyncIterator)\' of undefined'),
-      )
+    it('x undefined; false', async () => {
+      assert.strictEqual(Instance.isAsyncIterable(undefined), false)
     })
   })
 
-  describe('new Instance(x !null&!undefined).isAsyncIterable() -> boolean', () => {
+  describe('new Instance(x any).isAsyncIterable() -> boolean', () => {
     const createAsyncIterable123 = async function*() {
       yield 1; yield 2; yield 3
     }
@@ -311,7 +253,7 @@ describe('Instance', () => {
     })
   })
 
-  describe('Instance.isFunction(x !null&!undefined) -> boolean', () => {
+  describe('Instance.isFunction(x any) -> boolean', () => {
     it('x function; true', async () => {
       assert.strictEqual(Instance.isFunction(function(){}), true)
     })
@@ -333,21 +275,15 @@ describe('Instance', () => {
     it('x 1; false', async () => {
       assert.strictEqual(Instance.isFunction(1), false)
     })
-    it('x null; TypeError', async () => {
-      assert.throws(
-        () => Instance.isFunction(null),
-        new TypeError('cannot convert null to Instance'),
-      )
+    it('x null; false', async () => {
+      assert.strictEqual(Instance.isFunction(null), false)
     })
-    it('x undefined; TypeError', async () => {
-      assert.throws(
-        () => Instance.isFunction(undefined),
-        new TypeError('cannot convert undefined to Instance'),
-      )
+    it('x undefined; false', async () => {
+      assert.strictEqual(Instance.isFunction(undefined), false)
     })
   })
 
-  describe('new Instance(x !null&!undefined).isFunction() -> boolean', () => {
+  describe('new Instance(x any).isFunction() -> boolean', () => {
     it('x function; true', async () => {
       assert.strictEqual(new Instance(function(){}).isFunction(), true)
     })
@@ -371,28 +307,22 @@ describe('Instance', () => {
     })
   })
 
-  describe('Instance.isReadable(x !null&!undefined) -> boolean', () => {
+  describe('Instance.isReadable(x any) -> boolean', () => {
     it('x { read: function }; true', async () => {
       assert.strictEqual(Instance.isReadable({ read: function(){} }), true)
     })
     it('x function; false', async () => {
       assert.strictEqual(Instance.isReadable(function(){}), false)
     })
-    it('x null; TypeError', async () => {
-      assert.throws(
-        () => Instance.isReadable(null),
-        new TypeError('Cannot read property \'read\' of null'),
-      )
+    it('x null; false', async () => {
+      assert.strictEqual(Instance.isReadable(null), false)
     })
-    it('x undefined; TypeError', async () => {
-      assert.throws(
-        () => Instance.isReadable(undefined),
-        new TypeError('Cannot read property \'read\' of undefined'),
-      )
+    it('x undefined; false', async () => {
+      assert.strictEqual(Instance.isReadable(undefined), false)
     })
   })
 
-  describe('new Instance(x !null&!undefined).isReadable() -> boolean', () => {
+  describe('new Instance(x any).isReadable() -> boolean', () => {
     it('x { read: function }; true', async () => {
       assert.strictEqual(new Instance({ read: function(){} }).isReadable(), true)
     })
@@ -401,28 +331,22 @@ describe('Instance', () => {
     })
   })
 
-  describe('Instance.isWritable(x !null&!undefined) -> boolean', () => {
+  describe('Instance.isWritable(x any) -> boolean', () => {
     it('x { write: function }; true', async () => {
       assert.strictEqual(Instance.isWritable({ write: function(){} }), true)
     })
     it('x function; false', async () => {
       assert.strictEqual(Instance.isWritable(function(){}), false)
     })
-    it('x null; TypeError', async () => {
-      assert.throws(
-        () => Instance.isWritable(null),
-        new TypeError('Cannot read property \'write\' of null'),
-      )
+    it('x null; false', async () => {
+      assert.strictEqual(Instance.isWritable(null), false)
     })
-    it('x undefined; TypeError', async () => {
-      assert.throws(
-        () => Instance.isWritable(undefined),
-        new TypeError('Cannot read property \'write\' of undefined'),
-      )
+    it('x undefined; false', async () => {
+      assert.strictEqual(Instance.isWritable(undefined), false)
     })
   })
 
-  describe('new Instance(x !null&!undefined).isWritable() -> boolean', () => {
+  describe('new Instance(x any).isWritable() -> boolean', () => {
     it('x { write: function }; true', async () => {
       assert.strictEqual(new Instance({ write: function(){} }).isWritable(), true)
     })
@@ -431,7 +355,7 @@ describe('Instance', () => {
     })
   })
 
-  describe('Instance.isPromise(x !null&!undefined) -> boolean', () => {
+  describe('Instance.isPromise(x any) -> boolean', () => {
     it('x { then: function }; true', async () => {
       assert.strictEqual(Instance.isPromise({ then: function(){} }), true)
     })
@@ -441,21 +365,15 @@ describe('Instance', () => {
     it('x function; false', async () => {
       assert.strictEqual(Instance.isPromise(function(){}), false)
     })
-    it('x null; TypeError', async () => {
-      assert.throws(
-        () => Instance.isPromise(null),
-        new TypeError('Cannot read property \'then\' of null'),
-      )
+    it('x null; false', async () => {
+      assert.strictEqual(Instance.isPromise(null), false)
     })
-    it('x undefined; TypeError', async () => {
-      assert.throws(
-        () => Instance.isPromise(undefined),
-        new TypeError('Cannot read property \'then\' of undefined'),
-      )
+    it('x undefined; false', async () => {
+      assert.strictEqual(Instance.isPromise(undefined), false)
     })
   })
 
-  describe('new Instance(x !null&!undefined).isPromise() -> boolean', () => {
+  describe('new Instance(x any).isPromise() -> boolean', () => {
     it('x { then: function }; true', async () => {
       assert.strictEqual(new Instance({ then: function(){} }).isPromise(), true)
     })
@@ -467,105 +385,52 @@ describe('Instance', () => {
     })
   })
 
-  describe('Instance.isTypedArray(x !null&!undefined) -> boolean', () => {
-    it('x Uint8Array<[1, 2, 3]>; true', async () => {
+  describe('Instance.isTypedArray(x any) -> boolean', () => {
+    it('x TypedArray<[1, 2, 3]>; true', async () => {
       assert.strictEqual(Instance.isTypedArray(new Uint8Array([1, 2, 3])), true)
+      assert.strictEqual(Instance.isTypedArray(new Int8Array([1, 2, 3])), true)
+      assert.strictEqual(Instance.isTypedArray(new Uint16Array([1, 2, 3])), true)
+      assert.strictEqual(Instance.isTypedArray(new Int16Array([1, 2, 3])), true)
+      assert.strictEqual(Instance.isTypedArray(new Uint32Array([1, 2, 3])), true)
+      assert.strictEqual(Instance.isTypedArray(new Int32Array([1, 2, 3])), true)
+      assert.strictEqual(Instance.isTypedArray(new Float32Array([1, 2, 3])), true)
+      assert.strictEqual(Instance.isTypedArray(new Float64Array([1, 2, 3])), true)
+      assert.strictEqual(Instance.isTypedArray(new BigUint64Array([1n, 2n, 3n])), true)
+      assert.strictEqual(Instance.isTypedArray(new BigInt64Array([1n, 2n, 3n])), true)
     })
     it('x [1, 2, 3]; false', async () => {
       assert.strictEqual(Instance.isTypedArray([1, 2, 3]), false)
     })
-    it('x null; TypeError', async () => {
-      assert.throws(
-        () => Instance.isTypedArray(null),
-        new TypeError('Cannot read property \'constructor\' of null'),
-      )
+    it('x ArrayBuffer; false', async () => {
+      assert.strictEqual(Instance.isTypedArray(new ArrayBuffer()), false)
     })
-    it('x undefined; TypeError', async () => {
-      assert.throws(
-        () => Instance.isTypedArray(undefined),
-        new TypeError('Cannot read property \'constructor\' of undefined'),
-      )
+    it('x null; false', async () => {
+      assert.strictEqual(Instance.isTypedArray(null), false)
+    })
+    it('x undefined; false', async () => {
+      assert.strictEqual(Instance.isTypedArray(undefined), false)
     })
   })
 
-  describe('new Instance(x !null&!undefined).isTypedArray() -> boolean', () => {
+  describe('new Instance(x any).isTypedArray() -> boolean', () => {
     it('x Uint8Array<[1, 2, 3]>; true', async () => {
       assert.strictEqual(new Instance(new Uint8Array([1, 2, 3])).isTypedArray(), true)
+      assert.strictEqual(new Instance(new Uint8Array([1, 2, 3])).isTypedArray(), true)
+      assert.strictEqual(new Instance(new Int8Array([1, 2, 3])).isTypedArray(), true)
+      assert.strictEqual(new Instance(new Uint16Array([1, 2, 3])).isTypedArray(), true)
+      assert.strictEqual(new Instance(new Int16Array([1, 2, 3])).isTypedArray(), true)
+      assert.strictEqual(new Instance(new Uint32Array([1, 2, 3])).isTypedArray(), true)
+      assert.strictEqual(new Instance(new Int32Array([1, 2, 3])).isTypedArray(), true)
+      assert.strictEqual(new Instance(new Float32Array([1, 2, 3])).isTypedArray(), true)
+      assert.strictEqual(new Instance(new Float64Array([1, 2, 3])).isTypedArray(), true)
+      assert.strictEqual(new Instance(new BigUint64Array([1n, 2n, 3n])).isTypedArray(), true)
+      assert.strictEqual(new Instance(new BigInt64Array([1n, 2n, 3n])).isTypedArray(), true)
     })
     it('x [1, 2, 3]; false', async () => {
       assert.strictEqual(new Instance([1, 2, 3]).isTypedArray(), false)
     })
-  })
-
-  describe('Instance.isNumberTypedArray(x !null&!undefined) -> boolean', () => {
-    it('x Uint8Array<[1, 2, 3]>; true', async () => {
-      assert.strictEqual(Instance.isNumberTypedArray(new Uint8Array([1, 2, 3])), true)
-    })
-    it('x [1, 2, 3]; false', async () => {
-      assert.strictEqual(Instance.isNumberTypedArray([1, 2, 3]), false)
-    })
-    it('x BigUint64Array<[1n, 2n, 3n]>; false', async () => {
-      assert.strictEqual(Instance.isNumberTypedArray(new BigUint64Array([1n, 2n, 3n])), false)
-    })
-    it('x null; TypeError', async () => {
-      assert.throws(
-        () => Instance.isNumberTypedArray(null),
-        new TypeError('Cannot read property \'constructor\' of null'),
-      )
-    })
-    it('x undefined; TypeError', async () => {
-      assert.throws(
-        () => Instance.isNumberTypedArray(undefined),
-        new TypeError('Cannot read property \'constructor\' of undefined'),
-      )
-    })
-  })
-
-  describe('new Instance(x !null&!undefined).isNumberTypedArray() -> boolean', () => {
-    it('x Uint8Array<[1, 2, 3]>; true', async () => {
-      assert.strictEqual(new Instance(new Uint8Array([1, 2, 3])).isNumberTypedArray(), true)
-    })
-    it('x [1, 2, 3]; false', async () => {
-      assert.strictEqual(new Instance([1, 2, 3]).isNumberTypedArray(), false)
-    })
-    it('x BigUint64Array<[1n, 2n, 3n]>; false', async () => {
-      assert.strictEqual(new Instance(new BigUint64Array([1n, 2n, 3n])).isNumberTypedArray(), false)
-    })
-  })
-
-  describe('Instance.isBigIntTypedArray(x !null&!undefined) -> boolean', () => {
-    it('x BigUint64Array<[1, 2, 3]>; true', async () => {
-      assert.strictEqual(Instance.isBigIntTypedArray(new BigUint64Array([1n, 2n, 3n])), true)
-    })
-    it('x [1, 2, 3]; false', async () => {
-      assert.strictEqual(Instance.isBigIntTypedArray([1, 2, 3]), false)
-    })
-    it('x Uint8Array<[1, 2, 3]>; false', async () => {
-      assert.strictEqual(Instance.isBigIntTypedArray(new Uint8Array([1, 2, 3])), false)
-    })
-    it('x null; TypeError', async () => {
-      assert.throws(
-        () => Instance.isBigIntTypedArray(null),
-        new TypeError('Cannot read property \'constructor\' of null'),
-      )
-    })
-    it('x undefined; TypeError', async () => {
-      assert.throws(
-        () => Instance.isBigIntTypedArray(undefined),
-        new TypeError('Cannot read property \'constructor\' of undefined'),
-      )
-    })
-  })
-
-  describe('new Instance(x !null&!undefined).isBigIntTypedArray() -> boolean', () => {
-    it('x BigUint64Array<[1, 2, 3]>; true', async () => {
-      assert.strictEqual(new Instance(new BigUint64Array([1n, 2n, 3n])).isBigIntTypedArray(), true)
-    })
-    it('x [1, 2, 3]; false', async () => {
-      assert.strictEqual(new Instance([1, 2, 3]).isBigIntTypedArray(), false)
-    })
-    it('x Uint8Array<[1, 2, 3]>; false', async () => {
-      assert.strictEqual(new Instance(new Uint8Array([1, 2, 3])).isBigIntTypedArray(), false)
+    it('x ArrayBuffer; false', () => {
+      assert.strictEqual(new Instance(new ArrayBuffer()).isTypedArray(), false)
     })
   })
 })
