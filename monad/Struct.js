@@ -2,13 +2,13 @@ const Instance = require('./Instance')
 
 const { isArray, isObject, isSet, isMap } = Instance
 
-/*
+/**
  * @synopsis
  * isStruct(x any) -> boolean
  */
 const isStruct = x => isArray(x) || isObject(x) || isSet(x) || isMap(x)
 
-/*
+/**
  * @name Struct
  *
  * @synopsis
@@ -24,13 +24,13 @@ const Struct = function(x) {
   this.value = x
 }
 
-/*
+/**
  * @synopsis
  * Struct.isStruct(x any) -> boolean
  */
 Struct.isStruct = isStruct
 
-/*
+/**
  * @synopsis
  * <T>objectEntriesGenerator(x Object<T>) -> Iterator<[key string, T]>
  */
@@ -40,7 +40,7 @@ const objectEntriesGenerator = function*(x) {
   }
 }
 
-/*
+/**
  * @name Struct.entries
  *
  * @synopsis
@@ -57,7 +57,7 @@ const objectEntriesGenerator = function*(x) {
  */
 Struct.entries = x => isObject(x) ? objectEntriesGenerator(x) : x.entries()
 
-/*
+/**
  * @synopsis
  * <T>objectValuesGenerator(x Object<T>) -> Iterator<T>
  */
@@ -67,7 +67,7 @@ const objectValuesGenerator = function*(x) {
   }
 }
 
-/*
+/**
  * @name Struct.values
  *
  * @synopsis
@@ -80,7 +80,7 @@ const objectValuesGenerator = function*(x) {
  */
 Struct.values = x => isObject(x) ? objectValuesGenerator(x) : x.values()
 
-/*
+/**
  * @name Struct.get
  *
  * @synopsis
@@ -100,5 +100,11 @@ Struct.get = (x, index) => {
   if (typeof x.has == 'function') return x.has(index) ? index : undefined
   return x[index]
 }
+
+/*
+Struct.get.ternary = (x, index) => (typeof x.get == 'function'
+  ? x.get(index) : typeof x.has == 'function'
+  ? x.has(index) ? index : undefined : x[index])
+*/
 
 module.exports = Struct
