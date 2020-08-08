@@ -80,4 +80,25 @@ const objectValuesGenerator = function*(x) {
  */
 Struct.values = x => isObject(x) ? objectValuesGenerator(x) : x.values()
 
+/*
+ * @name Struct.get
+ *
+ * @synopsis
+ * <T any>Struct.get(x Array<T>, index number) -> T|undefined
+ *
+ * <T any>Struct.get(x Object<T>, index string) -> T|undefined
+ *
+ * <T any>Struct.get(x Set<T>, index T) -> T|undefined
+ *
+ * <A any, B any>Struct.get(x Map<A, B>, index A) -> B|undefined
+ *
+ * @catchphrase
+ * Get an item by index
+ */
+Struct.get = (x, index) => {
+  if (typeof x.get == 'function') return x.get(index)
+  if (typeof x.has == 'function') return x.has(index) ? index : undefined
+  return x[index]
+}
+
 module.exports = Struct

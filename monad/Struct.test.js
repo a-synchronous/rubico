@@ -101,4 +101,25 @@ describe('Struct', () => {
       assert.deepEqual([...Struct.values(new Map([[1, 'a'], [2, 'b'], [3, 'c']]))], ['a', 'b', 'c'])
     })
   })
+
+  it('<T any>Struct.get(x Array<T>, index number) -> T|undefined', async () => {
+    assert.equal(Struct.get([1, 2, 3], 0), 1)
+    assert.strictEqual(Struct.get([1, 2, 3], 4), undefined)
+  })
+
+  it('<T any>Struct.get(x Object<T>, index string) -> T|undefined', async () => {
+    assert.equal(Struct.get({ a: 1, b: 2, c: 3 }, 'a'), 1)
+    assert.strictEqual(Struct.get({ a: 1, b: 2, c: 3 }, 'e'), undefined)
+  })
+
+  it('<T any>Struct.get(x Set<T>, index T) -> T|undefined', async () => {
+    assert.equal(Struct.get(new Set([1, 2, 3]), 1), 1)
+    assert.strictEqual(Struct.get(new Set([1, 2, 3]), 5), undefined)
+  })
+
+  it('<A any, B any>Struct.get(x Map<A, B>, index A) -> B|undefined', async () => {
+    const m = new Map([[1, 'a'], [2, 'b'], [3, 'c']])
+    assert.equal(Struct.get(m, 1), 'a')
+    assert.strictEqual(Struct.get(m, 5), undefined)
+  })
 })
