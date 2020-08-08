@@ -37,7 +37,7 @@ module.exports = {
         ],
         'brace-style': 'off',
         'callback-return': 'error',
-        'camelcase': 'error',
+        'camelcase': 'off',
         'capitalized-comments': 'off',
         'class-methods-use-this': 'error',
         'comma-dangle': 'off',
