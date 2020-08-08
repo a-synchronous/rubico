@@ -1,20 +1,26 @@
-const { pipe, switchCase, or, eq, get } = require('..')
-const isString = require('./isString')
-const is = require('./is')
+const Instance = require('../monad/Instance')
+const Struct = require('../monad/Struct')
+const PossiblePromise = require('../monad/PossiblePromise')
 
-const isEmpty = switchCase([
-  or([
-    is(Array),
-    isString,
-  ]), eq(0, get('length')),
-  or([
-    is(Set),
-    is(Map),
-  ]), eq(0, get('size')),
-  is(Object), eq(0, pipe([Object.keys, get('length')])),
-  () => {
-    throw new TypeError('isEmpty(x); x invalid')
-  },
-])
+const { isString } = Instance
+
+const { isStruct, size: structSize } = Struct
+
+const possiblePromiseArgs = PossiblePromise.args
+
+/**
+ * @name isEmpty
+ *
+ * @synopsis
+ * isEmpty(x string|Array|Object|Set|Map) -> boolean
+ *
+ * @catchphrase
+ * Check if a struct or string is empty
+ */
+const isEmpty = possiblePromiseArgs(x => {
+  if (isString(x)) return x.length == 0
+  if (isStruct(x)) return structSize(x) == 0
+  throw new TypeError('isEmpty(x); x invalid')
+})
 
 module.exports = isEmpty
