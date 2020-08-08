@@ -1,5 +1,7 @@
-const { eq } = require('..')
+const PossiblePromise = require('../monad/PossiblePromise')
 
-const isEqual = (a, b) => eq(a, b)()
+const possiblePromiseArgs = PossiblePromise.args
+
+const isEqual = possiblePromiseArgs((a, b) => a === b)
 
 module.exports = isEqual
