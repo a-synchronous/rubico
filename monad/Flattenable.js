@@ -74,11 +74,13 @@ const genericFlatten = (method, y, x) => {
 
 /*
  * @synopsis
- * Array|Set -> Flattenable
+ * <T any>Flattenable.flatten(
+ *   x Array<Iterable<T>|Object<T>|T>,
+ * ) -> Array<T>
  *
  * <T any>Flattenable.flatten(
- *   x Flattenable<Iterable<T>|Object<T>|T>,
- * ) -> Array<T>
+ *   x Set<Iterable<T>|Object<T>|T>,
+ * ) -> Set<T>
  */
 // Flattenable.flatten = x => isArray(x) ? arrayFlatten(x) : setFlatten(x)
 Flattenable.flatten = x => (isArray(x)
@@ -87,11 +89,13 @@ Flattenable.flatten = x => (isArray(x)
 
 /*
  * @synopsis
- * Array|Set -> Flattenable
- *
- * <T any>new Flattenable(
- *   x Flattenable<Iterable<T>|Object<T>|T>,
+ * <T any>Flattenable(
+ *   x Array<Iterable<T>|Object<T>|T>,
  * ).flatten() -> Array<T>
+ *
+ * <T any>Flattenable()(
+ *   x Set<Iterable<T>|Object<T>|T>,
+ * ).flatten() -> Set<T>
  */
 Flattenable.prototype.flatten = function() {
   const x = this.value
