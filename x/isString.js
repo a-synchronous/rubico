@@ -1,5 +1,5 @@
-const is = require('./is')
+const Instance = require('../monad/Instance')
 
-const isString = x => typeof x === 'string' || is(String)(x)
+const { isString } = Instance
 
 module.exports = isString
