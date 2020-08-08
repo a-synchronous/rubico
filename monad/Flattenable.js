@@ -81,9 +81,9 @@ const genericFlatten = (method, y, x) => {
  * ) -> Array<T>
  */
 // Flattenable.flatten = x => isArray(x) ? arrayFlatten(x) : setFlatten(x)
-Flattenable.flatten = x => isArray(x)
+Flattenable.flatten = x => (isArray(x)
   ? genericFlatten('push', [], x)
-  : genericFlatten('add', new Set(), x)
+  : genericFlatten('add', new Set(), x))
 
 /*
  * @synopsis
@@ -94,9 +94,9 @@ Flattenable.flatten = x => isArray(x)
  * ).flatten() -> Array<T>
  */
 Flattenable.prototype.flatten = function() {
-  return isArray(this.value)
+  return (isArray(this.value)
     ? genericFlatten('push', [], this.value)
-    : genericFlatten('add', new Set(), this.value)
+    : genericFlatten('add', new Set(), this.value))
 }
 
 module.exports = Flattenable
