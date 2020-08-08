@@ -1,6 +1,13 @@
 const PossiblePromise = require('../monad/PossiblePromise')
 const Flattenable = require('../monad/Flattenable')
 
+const possiblePromiseArgs = PossiblePromise.args
+
+const {
+  isFlattenable,
+  flatten: flattenableFlatten,
+} = Flattenable
+
 /*
  * @synopsis
  * <T any>flatten(
@@ -11,8 +18,8 @@ const Flattenable = require('../monad/Flattenable')
  *   x Set<Iterable<T>|Object<T>|T>,
  * ) -> Set<T>
  */
-const flatten = PossiblePromise.args(x => {
-  if (Flattenable.isFlattenable(x)) return Flattenable.flatten(x)
+const flatten = possiblePromiseArgs(x => {
+  if (isFlattenable(x)) return flattenableFlatten(x)
   throw new TypeError('flatten(x); x invalid')
 })
 
