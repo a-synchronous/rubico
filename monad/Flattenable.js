@@ -94,9 +94,10 @@ Flattenable.flatten = x => (isArray(x)
  * ).flatten() -> Array<T>
  */
 Flattenable.prototype.flatten = function() {
-  return (isArray(this.value)
-    ? genericFlatten('push', [], this.value)
-    : genericFlatten('add', new Set(), this.value))
+  const x = this.value
+  return (isArray(x)
+    ? genericFlatten('push', [], x)
+    : genericFlatten('add', new Set(), x))
 }
 
 module.exports = Flattenable
