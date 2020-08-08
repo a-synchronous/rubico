@@ -311,7 +311,7 @@ module.exports = {
             'error',
             'never'
         ],
-        'valid-jsdoc': 'error',
+        'valid-jsdoc': 'off',
         'vars-on-top': 'error',
         'wrap-iife': [
             'error',
