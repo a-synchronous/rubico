@@ -18,19 +18,19 @@ describe('Struct', () => {
     it('x string; TypeError', async () => {
       assert.throws(
         () => new Struct('hey'),
-        new TypeError(`cannot convert hey to Struct`)
+        new TypeError('cannot convert hey to Struct')
       )
     })
     it('x null; TypeError', async () => {
       assert.throws(
         () => new Struct(null),
-        new TypeError(`cannot convert null to Struct`)
+        new TypeError('cannot convert null to Struct')
       )
     })
     it('x undefined; TypeError', async () => {
       assert.throws(
         () => new Struct(undefined),
-        new TypeError(`cannot convert undefined to Struct`)
+        new TypeError('cannot convert undefined to Struct')
       )
     })
   })
