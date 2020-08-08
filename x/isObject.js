@@ -1,5 +1,5 @@
-const is = require('./is')
+const Instance = require('../monad/Instance')
 
-const isObject = is(Object)
+const { isObject } = Instance
 
 module.exports = isObject
