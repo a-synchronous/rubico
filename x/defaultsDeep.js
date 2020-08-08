@@ -50,9 +50,9 @@ const objectAssign = Object.assign
  */
 Indexable.copy = x => isArray(x) ? x.slice(0) : objectAssign({}, x)
 
-const JSONParse = JSON.parse
+const jsonParse = JSON.parse
 
-const JSONStringify = JSON.stringify
+const jsonStringify = JSON.stringify
 
 /*
  * @synopsis
@@ -60,7 +60,7 @@ const JSONStringify = JSON.stringify
  *
  * @TODO support types beyond Primitives, Arrays, and Objects
  */
-Indexable.copyDeep = x => JSONParse(JSONStringify(x))
+Indexable.copyDeep = x => jsonParse(jsonStringify(x))
 
 const isIndexable = Indexable.isIndexable
 
