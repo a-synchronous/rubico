@@ -1,5 +1,7 @@
-const { eq, get } = require('..')
+const Instance = require('../monad/Instance')
 
-const is = constructor => x => eq(() => constructor, get('constructor'))(x)
+const instanceIs = Instance.is
+
+const is = constructor => x => instanceIs(x, constructor)
 
 module.exports = is
