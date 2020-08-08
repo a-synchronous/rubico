@@ -122,4 +122,31 @@ describe('Struct', () => {
     assert.equal(Struct.get(m, 1), 'a')
     assert.strictEqual(Struct.get(m, 5), undefined)
   })
+
+  describe('Struct.size(x Array|Object|Set|Map) -> y number', () => {
+    it('x [1, 2, 3]; y 3', async () => {
+      assert.strictEqual(Struct.size([1, 2, 3]), 3)
+    })
+    it('x []; y 0', async () => {
+      assert.strictEqual(Struct.size([]), 0)
+    })
+    it('x { a: 1, b: 2, c: 3 }; y 3', async () => {
+      assert.strictEqual(Struct.size({ a: 1, b: 2, c: 3 }), 3)
+    })
+    it('x {}; y 0', async () => {
+      assert.strictEqual(Struct.size({}), 0)
+    })
+    it('x Set<[1, 2, 3]>; y 3', async () => {
+      assert.strictEqual(Struct.size(new Set([1, 2, 3])), 3)
+    })
+    it('x Set<[]>; y 0', async () => {
+      assert.strictEqual(Struct.size(new Set()), 0)
+    })
+    it('x Map<[[\'a\', 1], [\'b\', 2], [\'c\', 3]]>; y 3', async () => {
+      assert.strictEqual(Struct.size(new Map([['a', 1], ['b', 2], ['c', 3]])), 3)
+    })
+    it('x Map<[]>; y 0', async () => {
+      assert.strictEqual(Struct.size(new Map()), 0)
+    })
+  })
 })

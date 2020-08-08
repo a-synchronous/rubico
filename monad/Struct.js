@@ -1,3 +1,11 @@
+/* rubico v1.5.0
+ * https://github.com/a-synchronous/rubico
+ * (c) 2019-2020 Richard Tong
+ * rubico may be freely distributed under the MIT license.
+ */
+
+'use strict'
+
 const Instance = require('./Instance')
 
 const { isArray, isObject, isSet, isMap } = Instance
@@ -105,6 +113,34 @@ Struct.get = (x, index) => {
 Struct.get.ternary = (x, index) => (typeof x.get == 'function'
   ? x.get(index) : typeof x.has == 'function'
   ? x.has(index) ? index : undefined : x[index])
+*/
+
+/**
+ * @synopsis
+ * objectKeysCount(obj object) -> ct number
+ */
+const objectKeysCount = obj => {
+  let ct = 0
+  for (const _ in obj) ct += 1
+  return ct
+}
+
+/**
+ * @name Struct.size
+ *
+ * @synopsis
+ * Struct.size(x Array|Object|Set|Map) -> number
+ */
+Struct.size = x => {
+  if (isObject(x)) return objectKeysCount(x)
+  return 'size' in x ? x.size : x.length
+}
+
+/*
+Struct.size.objectKeys = x => {
+  if (isObject(x)) return Object.keys(x).length
+  return 'size' in x ? x.size : x.length
+}
 */
 
 module.exports = Struct
