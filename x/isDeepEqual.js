@@ -1,40 +1,42 @@
-const { pipe, tap, map, or, all, eq, get, transform, switchCase } = require('..')
-const is = require('./is')
+const PossiblePromise = require('../monad/PossiblePromise')
+const Instance = require('../monad/Instance')
+const Struct = require('../monad/Struct')
 
-const identity = x => x
+const possiblePromiseArgs = PossiblePromise.args
 
-const isTraversable = (a, b) => or([
-  ([a, b]) => is(Object)(a) && is(Object)(b),
-  ([a, b]) => is(Array)(a) && is(Array)(b),
-  ([a, b]) => is(Set)(a) && is(Set)(b),
-  ([a, b]) => is(Map)(a) && is(Map)(b),
-])([a, b])
+const {
+  isStruct,
+  entries: structEntries,
+  get: structGet,
+} = Struct
 
-const entries = x => {
-  if (is(Object)(x)) return (function*(obj) {
-    for (const k in obj) yield [k, x[k]]
-  })(x)
-  return x.entries()
+/*
+ * @synopsis
+ * isSameStruct(a any, b any) -> boolean
+ */
+const isSameStruct = (a, b) => (isStruct(a) && isStruct(b)
+  && a.constructor == b.constructor)
+
+/*
+ * @name isDeepEqual
+ *
+ * @synopsis
+ * isDeepEqual(structA any, structB any) -> boolean
+ *
+ * @catchphrase
+ * Checks if two values are deeply equal
+ */
+const isDeepEqual = (structA, structB) => {
+  if (isSameStruct(structA, structB)) {
+    for (const [index, value] of structEntries(structB)) {
+      if (!isDeepEqual(structGet(structA, index), value)) return false
+    }
+    for (const [index, value] of structEntries(structA)) {
+      if (!isDeepEqual(structGet(structB, index), value)) return false
+    }
+    return true
+  }
+  return structA === structB
 }
-
-const findValueByKey = (key, collection) => switchCase([
-  is(Set), col => col.has(key) ? key : null,
-  is(Map), col => col.get(key),
-  col => get(key)(col),
-])(collection)
-
-const isDeepEqual = (collection, x) => isTraversable(collection, x) ? pipe([
-  transform(
-    map(([k, v]) => isDeepEqual(findValueByKey(k, collection), v)),
-    () => [],
-  ),
-  all(eq(true, identity)),
-])(entries(x)) && pipe([
-  transform(
-    map(([k, v]) => isDeepEqual(findValueByKey(k, x), v)),
-    () => [],
-  ),
-  all(eq(true, identity)),
-])(entries(collection)) : collection === x
 
 module.exports = isDeepEqual
