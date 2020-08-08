@@ -17,6 +17,12 @@ const objectValuesIterator = function*(x) {
 }
 
 /*
+ * @synopsis
+ * isFlattenable(x any) -> boolean
+ */
+const isFlattenable = x => isArray(x) || isSet(x)
+
+/*
  * @name Flattenable
  *
  * @synopsis
@@ -26,7 +32,7 @@ const objectValuesIterator = function*(x) {
  * Flattening things
  */
 const Flattenable = function(x) {
-  if (!Flattenable.isFlattenable(x)) {
+  if (!isFlattenable(x)) {
     throw new TypeError(`cannot convert ${x} to Flattenable`)
   }
   this.value = x
@@ -36,7 +42,7 @@ const Flattenable = function(x) {
  * @synopsis
  * Flattenable.isFlattenable(x any) -> boolean
  */
-Flattenable.isFlattenable = x => isArray(x) || isSet(x)
+Flattenable.isFlattenable = isFlattenable
 
 /*
  * @synopsis
