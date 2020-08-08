@@ -1,6 +1,8 @@
 const PossiblePromise = require('../monad/PossiblePromise')
 const Instance = require('../monad/Instance')
 
+const possiblePromiseArgs = PossiblePromise.args
+
 const { isFunction, isPromise, isIterable, isObject } = Instance
 
 const asyncFindIterator = async (f, iter) => {
@@ -26,6 +28,8 @@ const objectValuesIterator = function*(x) {
   }
 }
 
+const symbolIterator = Symbol.iterator
+
 /*
  * @name find
  *
@@ -39,8 +43,8 @@ const find = f => {
   if (!isFunction(f)) {
     throw new TypeError('find(f); f is not a function')
   }
-  return PossiblePromise.args(x => {
-    if (isIterable(x)) return findIterator(f, x[Symbol.iterator]())
+  return possiblePromiseArgs(x => {
+    if (isIterable(x)) return findIterator(f, x[symbolIterator]())
     if (isObject(x)) return findIterator(f, objectValuesIterator(x))
     throw new TypeError('find(...)(x); x invalid')
   })
