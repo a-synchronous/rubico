@@ -7,6 +7,7 @@
  * x/defaultsDeep performance revamp + benchmarks
  * x/flatten performance revamp + benchmarks
  * x/isDeepEqual performance revamp + benchmarks
+ * x/isEmpty performance revamp + benchmarks
  * improve PossiblePromise.args stack trace
 
 ## v1.3.2
