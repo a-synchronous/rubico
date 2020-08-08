@@ -79,14 +79,14 @@ describe('find', () => {
   it('find(...)(null); throw TypeError', async () => {
     assert.throws(
       () => find(() => true)(null),
-      new TypeError('find(...)(x); x cannot be null'),
+      new TypeError('find(...)(x); x invalid'),
     )
   })
 
   it('find(...)(undefined); throw TypeError', async () => {
     assert.throws(
       () => find(() => true)(undefined),
-      new TypeError('find(...)(x); x cannot be undefined'),
+      new TypeError('find(...)(x); x invalid'),
     )
   })
 
