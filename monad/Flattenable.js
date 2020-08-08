@@ -8,6 +8,8 @@
 
 const Instance = require('./Instance')
 
+const { isArray, isObject, isSet, isIterable } = Instance
+
 const objectValuesIterator = function*(x) {
   for (const k in x) {
     yield x[k]
@@ -34,8 +36,7 @@ const Flattenable = function(x) {
  * @synopsis
  * Flattenable.isFlattenable(x any) -> boolean
  */
-Flattenable.isFlattenable = x => (Instance.isInstance(x)
-  && (Instance.isArray(x) || Instance.isSet(x)))
+Flattenable.isFlattenable = x => isArray(x) || isSet(x)
 
 /*
  * @synopsis
@@ -54,11 +55,9 @@ Flattenable.isFlattenable = x => (Instance.isInstance(x)
 const genericFlatten = (method, y, x) => {
   const add = y[method].bind(y)
   for (const xi of x) {
-    if (!Instance.isInstance(xi)) {
-      add(xi)
-    } else if (Instance.isIterable(xi)) {
+    if (isIterable(xi)) {
       for (const v of xi) add(v)
-    } else if (Instance.isObject(xi)) {
+    } else if (isObject(xi)) {
       for (const v of objectValuesIterator(xi)) add(v)
     } else {
       add(xi)
@@ -76,9 +75,9 @@ const genericFlatten = (method, y, x) => {
  * ) -> Array<T>
  */
 // Flattenable.flatten = x => isArray(x) ? arrayFlatten(x) : setFlatten(x)
-Flattenable.flatten = x => (Instance.isArray(x)
+Flattenable.flatten = x => isArray(x)
   ? genericFlatten('push', [], x)
-  : genericFlatten('add', new Set(), x))
+  : genericFlatten('add', new Set(), x)
 
 /*
  * @synopsis
@@ -89,9 +88,9 @@ Flattenable.flatten = x => (Instance.isArray(x)
  * ).flatten() -> Array<T>
  */
 Flattenable.prototype.flatten = function() {
-  return (Instance.isArray(this.value)
+  return isArray(this.value)
     ? genericFlatten('push', [], this.value)
-    : genericFlatten('add', new Set(), this.value))
+    : genericFlatten('add', new Set(), this.value)
 }
 
 module.exports = Flattenable
