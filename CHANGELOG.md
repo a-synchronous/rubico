@@ -1,9 +1,11 @@
 ## v1.5.0
  * monad/PossiblePromise - Possibly a promise
- * monad/Instance - Performant type checking
+ * monad/Instance - Type checking
  * monad/Flattenable - Flattening things
- * x/find PossiblePromise revamp
- * x/defaultsDeep PossiblePromise revamp
+ * monad/Struct - Finite data structure
+ * x/find performance revamp + benchmarks
+ * x/defaultsDeep performance revamp + benchmarks
+ * x/flatten performance revamp + benchmarks
  * improve PossiblePromise.args stack trace
 
 ## v1.3.2

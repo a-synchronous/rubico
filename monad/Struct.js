@@ -23,7 +23,7 @@ const isStruct = x => isArray(x) || isObject(x) || isSet(x) || isMap(x)
  * new Struct(x Array|Object|Set|Map) -> Struct
  *
  * @catchphrase
- * Generalized data structure
+ * Finite data structure
  */
 const Struct = function(x) {
   if (!isStruct(x)) {

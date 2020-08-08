@@ -13,7 +13,7 @@
  * new Instance(x any) -> Instance
  *
  * @catchphrase
- * Performant type checking
+ * Type checking
  */
 const Instance = function(x) {
   if (x == null) {
