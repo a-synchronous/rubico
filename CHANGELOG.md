@@ -9,7 +9,9 @@
  * x/isDeepEqual performance revamp + benchmarks
  * x/isEmpty performance revamp + benchmarks
  * x/isEqual performance revamp + benchmarks
+ * x/isObject performance revamp + benchmarks
  * improve PossiblePromise.args stack trace
+ * fine tune PossiblePromise performance
 
 ## v1.3.2
  * x/defaultsDeep - enforce Array or Object inputs
