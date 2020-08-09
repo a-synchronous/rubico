@@ -10,6 +10,7 @@
  * x/isEmpty performance revamp + benchmarks
  * x/isEqual performance revamp + benchmarks
  * x/isObject performance revamp + benchmarks
+ * x/isString performance revamp + benchmarks
  * improve PossiblePromise.args stack trace
  * fine tune PossiblePromise performance
 
