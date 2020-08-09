@@ -18,6 +18,7 @@ const timeInLoop = require('../x/timeInLoop')
  * @benchmarks
  * arr.slice(0): 1e+6: 16.683ms
  * arr.slice(): 1e+6: 16.358ms
+ * arr.concat(): 1e+6: 176.57ms
  * Array.from(arr): 1e+6: 27.923ms
  * arrayFromForLoopPush(arr): 1e+6: 84.221ms
  * [...arr]: 1e+6: 23.789ms
@@ -34,6 +35,8 @@ const arrayFromForLoopPush = x => {
 // timeInLoop('arr.slice(0)', 1e6, () => arr.slice(0))
 
 // timeInLoop('arr.slice()', 1e6, () => arr.slice())
+
+// timeInLoop('arr.concat()', 1e6, () => arr.concat())
 
 // timeInLoop('Array.from(arr)', 1e6, () => Array.from(arr))
 
