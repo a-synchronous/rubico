@@ -21,19 +21,23 @@
  * avoid variadic functions; use lists
  */
 
-const isDefined = x => x !== undefined && x !== null
+const isDefined = x => x != null
 
-const isUndefined = x => x === undefined
+const isUndefined = x => typeof x == 'undefined'
 
 const isNull = x => x === null
 
-const isIterable = x => isDefined(x) && isDefined(x[Symbol.iterator])
+const symbolIterator = Symbol.iterator
 
-const isAsyncIterable = x => isDefined(x) && isDefined(x[Symbol.asyncIterator])
+const isIterable = x => x != null && Boolean(x[symbolIterator])
 
-const isWritable = x => x && typeof x.write === 'function'
+const symbolAsyncIterator = Symbol.asyncIterator
 
-const isFunction = x => typeof x === 'function'
+const isAsyncIterable = x => x != null && Boolean(x[symbolAsyncIterator])
+
+const isWritable = x => x != null && typeof x.write == 'function'
+
+const isFunction = x => typeof x == 'function'
 
 const isArray = Array.isArray
 
