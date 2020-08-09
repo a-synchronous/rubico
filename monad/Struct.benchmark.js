@@ -23,6 +23,51 @@ const _ = require('lodash')
 }
 
 /**
+ * @name Struct.set
+ *
+ * @benchmark
+ * arr[5] = 6: 1e+7: 12.785ms
+ * structSet(arr, 6, 5): 1e+7: 13.989ms
+ *
+ * obj['f'] = 6: 1e+7: 12.857ms
+ * structSet(obj, 6, 'f'): 1e+7: 14.154ms
+ *
+ * set.add(6): 1e+7: 95.934ms
+ * structSet(set, 6): 1e+7: 97.659ms
+ *
+ * map.set('f', 6): 1e+7: 138.455ms
+ * structSet(map, 6, 'f'): 1e+7: 139.162ms
+ */
+
+{
+  const arr = [1, 2, 3, 4, 5]
+
+  const obj = { a: 1, b: 2, c: 3, d: 4, e: 5 }
+
+  const set = new Set([1, 2, 3, 4, 5])
+
+  const map = new Map([['a', 1], ['b', 2], ['c', 3], ['d', 4], ['e', 5]])
+
+  const structSet = Struct.set
+
+  // timeInLoop('arr[5] = 6', 1e7, () => { arr[5] = 6 })
+
+  // timeInLoop('structSet(arr, 6, 5)', 1e7, () => structSet(arr, 6, 5))
+
+  // timeInLoop('obj[\'f\'] = 6', 1e7, () => { obj['f'] = 6 })
+
+  // timeInLoop('structSet(obj, 6, \'f\')', 1e7, () => structSet(obj, 6, 'f'))
+
+  // timeInLoop('set.add(6)', 1e7, () => set.add(6))
+
+  // timeInLoop('structSet(set, 6)', 1e7, () => structSet(set, 6))
+
+  // timeInLoop('map.set(\'f\', 6)', 1e7, () => map.set('f', 6))
+
+  timeInLoop('structSet(map, 6, \'f\')', 1e7, () => structSet(map, 6, 'f'))
+}
+
+/**
  * @name Struct.size
  *
  * @benchmark

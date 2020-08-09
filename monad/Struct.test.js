@@ -123,6 +123,26 @@ describe('Struct', () => {
     assert.strictEqual(Struct.get(m, 5), undefined)
   })
 
+  it('Struct.set(x Array, value any, index number) -> mutated Array', async () => {
+    const arr = [1, 2]
+    assert.deepEqual(Struct.set(arr, 3, 2), [1, 2, 3])
+  })
+
+  it('Struct.set(x Object, value any, index string) -> mutated Object', async () => {
+    const obj = { a: 1, b: 2 }
+    assert.deepEqual(Struct.set(obj, 3, 'c'), { a: 1, b: 2, c: 3 })
+  })
+
+  it('Struct.set(x Set, value any) -> mutated Set', async () => {
+    const set = new Set([1, 2])
+    assert.deepEqual(Struct.set(set, 3), new Set([1, 2, 3]))
+  })
+
+  it('Struct.set(x Map, value any, index any) -> mutated Map', async () => {
+    const map = new Map([['a', 1], ['b', 2]])
+    assert.deepEqual(Struct.set(map, 3, 'c'), new Map([['a', 1], ['b', 2], ['c', 3]]))
+  })
+
   describe('Struct.size(x Array|Object|Set|Map) -> y number', () => {
     it('x [1, 2, 3]; y 3', async () => {
       assert.strictEqual(Struct.size([1, 2, 3]), 3)
@@ -176,5 +196,42 @@ describe('Struct', () => {
     const copied = Struct.copy(map)
     assert(copied !== map)
     assert.deepEqual(map, copied)
+  })
+
+  it('Struct.copyDeep(x Array) -> deeplyCopied Array', async () => {
+    const arr = [1, [2], [[3], 'hey', new Uint8Array([1, 2, 3])]]
+    const copied = Struct.copyDeep(arr)
+    assert(copied !== arr)
+    assert.deepEqual(arr, copied)
+  })
+
+  it('Struct.copyDeep(x Object) -> deeplyCopied Object', async () => {
+    const obj = { a: 1, b: [2], c: [[3]], d: new Set([NaN, 'hey', { a: null }]) }
+    const copied = Struct.copy(obj)
+    assert(copied !== obj)
+    assert.deepEqual(obj, copied)
+  })
+
+  it('Struct.copyDeep(x Set) -> deeplyCopied Set', async () => {
+    const set = new Set([1, [2], [[[[3]]]], {}, [], undefined])
+    const copied = Struct.copy(set)
+    assert(copied !== set)
+    assert.deepEqual(set, copied)
+  })
+
+  it('Struct.copyDeep(x Map) -> deeplyCopied Map', async () => {
+    const map = new Map([
+      ['a', 1], ['b', 2], ['c', 3],
+      [Symbol.for('ayo'), {}], ['hey', {
+        a: [1, [2], [[3]]],
+        b: new Set([undefined, null, {}, [], new RegExp()]),
+        c: { d: { e: new BigInt64Array([1n, 2n, 3n]) } },
+      }],
+    ])
+    const copied = Struct.copy(map)
+    assert(copied !== map)
+    assert.deepEqual(map, copied)
+    assert.strictEqual(map.get('hey').c.d.e, copied.get('hey').c.d.e)
+    // anything not a struct is a reference. This is good for performance but could be dangerous
   })
 })

@@ -33,8 +33,13 @@ const Struct = function(x) {
 }
 
 /**
+ * @name Struct.isStruct
+ *
  * @synopsis
  * Struct.isStruct(x any) -> boolean
+ *
+ * @catchphrase
+ * Tell if struct
  */
 Struct.isStruct = isStruct
 
@@ -116,6 +121,28 @@ Struct.get.ternary = (x, index) => (typeof x.get == 'function'
 */
 
 /**
+ * @name Struct.set
+ *
+ * @synopsis
+ * Struct.set(x Array, value any, index number) -> mutated Array
+ *
+ * Struct.set(x Object, value any, index string) -> mutated Object
+ *
+ * Struct.set(x Set, value any) -> mutated Set
+ *
+ * Struct.set(x Map, value any, index any) -> mutated Map
+ *
+ * @catchphrase
+ * Set a value
+ */
+Struct.set = (x, value, index) => {
+  if (typeof x.set == 'function') return x.set(index, value)
+  if (typeof x.add == 'function') return x.add(value)
+  x[index] = value
+  return x
+}
+
+/**
  * @synopsis
  * objectKeysCount(obj object) -> ct number
  */
@@ -130,6 +157,9 @@ const objectKeysCount = obj => {
  *
  * @synopsis
  * Struct.size(x Array|Object|Set|Map) -> number
+ *
+ * @catchphrase
+ * Count values
  */
 Struct.size = x => {
   if (isObject(x)) return objectKeysCount(x)
@@ -144,8 +174,6 @@ Struct.size.objectKeys = x => {
 */
 
 /**
- * @name copySet
- *
  * @synopsis
  * copySet(x Set) -> y Set
  */
@@ -157,8 +185,6 @@ const copySet = x => {
 
 
 /**
- * @name copySet
- *
  * @synopsis
  * copyMap(x Map) -> y Map
  */
@@ -179,11 +205,45 @@ const copyMap = x => {
  * Struct.copy(x Set) -> copied Set
  *
  * Struct.copy(x Map) -> copied Map
+ *
+ * @catchphrase
+ * Shallow copy a struct
  */
 Struct.copy = x => {
   if (isArray(x)) return x.slice()
   if (isObject(x)) return { ...x }
   return isSet(x) ? copySet(x) : copyMap(x)
 }
+
+const { entries: structEntries, set: structSet } = Struct
+
+/**
+ * @name Struct.copyDeep
+ *
+ * @synopsis
+ * Struct.copyDeep(x Array) -> deeplyCopied Array
+ *
+ * Struct.copyDeep(x Object) -> deeplyCopied Object
+ *
+ * Struct.copyDeep(x Set) -> deeplyCopied Set
+ *
+ * Struct.copyDeep(x Map) -> deeplyCopied Map
+ *
+ * @catchphrase
+ * Deep copy a struct
+ */
+const structCopyDeep = x => {
+  const y = new x.constructor()
+  for (const [index, value] of structEntries(x)) {
+    structSet(
+      y,
+      isStruct(value) ? structCopyDeep(value) : value,
+      index,
+    )
+  }
+  return y
+}
+
+Struct.copyDeep = structCopyDeep
 
 module.exports = Struct

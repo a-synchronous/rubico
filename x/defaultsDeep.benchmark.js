@@ -6,8 +6,8 @@ const _ = require('lodash')
  * @name defaultsDeep
  *
  * @benchmark
- * _.defaultsDeep: 1e+5: 91.868ms
- * defaultsDeep: 1e+5: 58.133ms
+ * _.defaultsDeep: 1e+5: 94.124ms
+ * defaultsDeep: 1e+5: 50.766ms
  */
 
 const defaultCollection = { b: 2, c: [3], d: [[{ e: 5 }]] }
