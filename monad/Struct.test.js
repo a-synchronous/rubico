@@ -149,4 +149,32 @@ describe('Struct', () => {
       assert.strictEqual(Struct.size(new Map()), 0)
     })
   })
+
+  it('Struct.copy(x Array) -> copied Array', async () => {
+    const arr = [1, 2, 3]
+    const copied = Struct.copy(arr)
+    assert(copied !== arr)
+    assert.deepEqual(arr, copied)
+  })
+
+  it('Struct.copy(x Object) -> copied Object', async () => {
+    const obj = { a: 1, b: 2, c: 3 }
+    const copied = Struct.copy(obj)
+    assert(copied !== obj)
+    assert.deepEqual(obj, copied)
+  })
+
+  it('Struct.copy(x Set) -> copied Set', async () => {
+    const set = new Set([1, 2, 3])
+    const copied = Struct.copy(set)
+    assert(copied !== set)
+    assert.deepEqual(set, copied)
+  })
+
+  it('Struct.copy(x Map) -> copied Map', async () => {
+    const map = new Map([['a', 1], ['b', 2], ['c', 3]])
+    const copied = Struct.copy(map)
+    assert(copied !== map)
+    assert.deepEqual(map, copied)
+  })
 })

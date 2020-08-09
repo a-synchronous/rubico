@@ -143,4 +143,47 @@ Struct.size.objectKeys = x => {
 }
 */
 
+/**
+ * @name copySet
+ *
+ * @synopsis
+ * copySet(x Set) -> y Set
+ */
+const copySet = x => {
+  const y = new Set()
+  for (const item of x) y.add(item)
+  return y
+}
+
+
+/**
+ * @name copySet
+ *
+ * @synopsis
+ * copyMap(x Map) -> y Map
+ */
+const copyMap = x => {
+  const y = new Map()
+  for (const entry of x) y.set(...entry)
+  return y
+}
+
+/**
+ * @name Struct.copy
+ *
+ * @synopsis
+ * Struct.copy(x Array) -> copied Array
+ *
+ * Struct.copy(x Object) -> copied Object
+ *
+ * Struct.copy(x Set) -> copied Set
+ *
+ * Struct.copy(x Map) -> copied Map
+ */
+Struct.copy = x => {
+  if (isArray(x)) return x.slice()
+  if (isObject(x)) return { ...x }
+  return isSet(x) ? copySet(x) : copyMap(x)
+}
+
 module.exports = Struct
