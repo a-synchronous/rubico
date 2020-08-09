@@ -17,9 +17,10 @@ const possiblePromiseArgs = PossiblePromise.args
  * @catchphrase
  * Get the last item from a string or Array
  */
-const last = possiblePromiseArgs(x => {
-  if (x != null && x.length != 0) return x[x.length - 1]
-  throw new TypeError('last(x); x is not an Array or String')
-})
+const last = x => {
+  if (x == null) return undefined
+  const length = x.length
+  return length ? x[length - 1] : undefined
+}
 
 module.exports = last
