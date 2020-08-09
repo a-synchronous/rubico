@@ -2,17 +2,15 @@ const assert = require('assert')
 const timeInLoop = require('./timeInLoop')
 
 describe('timeInLoop', () => {
-  it('times the amount of complete synchronous function calls in a loop', async () => {
-    assert.strictEqual(
-      typeof timeInLoop('hey', 1e6, () => 'yo'),
-      'undefined',
-    )
+  it('timeInLoop(desc string, loopCount number, fn function) -> y undefined', async () => {
+    const y = timeInLoop('hey', 1e5, () => 'hey')
+    assert.strictEqual(y, undefined)
   })
 
-  it('0 for 0', async () => {
-    assert.strictEqual(
-      typeof timeInLoop('yo', 0, () => 'yo'),
-      'undefined',
-    )
+  it('timeInLoop.async(desc string, loopCount number, fn function) -> y undefined', async () => {
+    const p = timeInLoop.async('asyncHey', 1e5, async () => 'asyncHey')
+    assert(p instanceof Promise)
+    const y = await p
+    assert.strictEqual(y, undefined)
   })
 })
