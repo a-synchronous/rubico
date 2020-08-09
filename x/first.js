@@ -3,8 +3,6 @@ const Instance = require('../monad/Instance')
 
 const { isArray, isString } = Instance
 
-const isOrderable = x => isArray(x) || isString(x)
-
 const possiblePromiseArgs = PossiblePromise.args
 
 /*
@@ -20,7 +18,7 @@ const possiblePromiseArgs = PossiblePromise.args
  * Get the first item from an orderable collection
  */
 const first = possiblePromiseArgs(x => {
-  if (isOrderable(x)) return x[0]
+  if (x != null && x.length != 0) return x[0]
   throw new TypeError('first(x); x is not an Array or String')
 })
 
