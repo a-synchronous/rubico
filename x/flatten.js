@@ -1,7 +1,4 @@
-const PossiblePromise = require('../monad/PossiblePromise')
 const Flattenable = require('../monad/Flattenable')
-
-const possiblePromiseArgs = PossiblePromise.args
 
 const {
   isFlattenable,
@@ -18,9 +15,9 @@ const {
  *   x Set<Iterable<T>|Object<T>|T>,
  * ) -> Set<T>
  */
-const flatten = possiblePromiseArgs(x => {
+const flatten = x => {
   if (isFlattenable(x)) return flattenableFlatten(x)
   throw new TypeError('flatten(x); x invalid')
-})
+}
 
 module.exports = flatten

@@ -7,10 +7,10 @@ const _ = require('lodash')
  * @name flatten
  *
  * @benchmark
- * [...].flat(1): 1e+5: 118.159ms
- * flatten: 1e+5: 29.453ms
- * R.unnest: 1e+5: 150.123ms
- * _.flatten: 1e+5: 28.312ms
+ * [...].flat(1): 1e+5: 117.717ms
+ * flatten: 1e+5: 26.157ms
+ * R.unnest: 1e+5: 146.941ms
+ * _.flatten: 1e+5: 27.375ms
  */
 
 const nested = [[1], 2, [[3]]]
@@ -21,4 +21,4 @@ const nested = [[1], 2, [[3]]]
 
 // timeInLoop('R.unnest', 1e5, () => { R.unnest(nested) })
 
-timeInLoop('_.flatten', 1e5, () => { _.flatten(nested) })
+// timeInLoop('_.flatten', 1e5, () => { _.flatten(nested) })
