@@ -20,12 +20,6 @@ describe('flatten', () => {
       [undefined, undefined, undefined],
     )
   })
-  it('accepts promise arguments', async () => {
-    assert.deepEqual(
-      await flatten(Promise.resolve([[1], new Set([2]), 3, 4, { a: 5 }])),
-      [1, 2, 3, 4, 5],
-    )
-  })
   it('flatten(invalid); TypeError', async () => {
     assert.throws(
       () => flatten({ a: 1 }),
