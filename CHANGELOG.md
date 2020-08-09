@@ -3,6 +3,7 @@
  * monad/Instance - Type checking
  * monad/Flattenable - Flattening things
  * monad/Struct - Finite data structure
+ * x/timeInLoop.async - Like timeInLoop, but await all calls
  * x/find performance revamp + benchmarks
  * x/defaultsDeep performance revamp + benchmarks
  * x/flatten performance revamp + benchmarks
