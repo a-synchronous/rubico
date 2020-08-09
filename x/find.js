@@ -1,7 +1,4 @@
-const PossiblePromise = require('../monad/PossiblePromise')
 const Instance = require('../monad/Instance')
-
-const possiblePromiseArgs = PossiblePromise.args
 
 const { isFunction, isPromise, isIterable, isObject } = Instance
 
@@ -43,11 +40,11 @@ const find = f => {
   if (!isFunction(f)) {
     throw new TypeError('find(f); f is not a function')
   }
-  return possiblePromiseArgs(x => {
+  return x => {
     if (isIterable(x)) return findIterator(f, x[symbolIterator]())
     if (isObject(x)) return findIterator(f, objectValuesIterator(x))
     throw new TypeError('find(...)(x); x invalid')
-  })
+  }
 }
 
 module.exports = find
