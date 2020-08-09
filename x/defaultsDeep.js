@@ -1,4 +1,3 @@
-const PossiblePromise = require('../monad/PossiblePromise')
 const Instance = require('../monad/Instance')
 
 const { isInstance, isArray, isObject } = Instance
@@ -90,8 +89,6 @@ const indexableDefaultsDeep = (defaultCollection, checkingFunc, x) => {
   return y
 }
 
-const possiblePromiseArgs = PossiblePromise.args
-
 /*
  * @name
  * defaultsDeep
@@ -112,12 +109,12 @@ const defaultsDeep = (defaultCollection, checkingFunc = Instance.isInstance) => 
       'defaultCollection is not an Array or Object',
     ].join('; '))
   }
-  return possiblePromiseArgs(x => {
+  return x => {
     if (isIndexable(x)) {
       return indexableDefaultsDeep(defaultCollection, checkingFunc, x)
     }
     throw new TypeError('defaultsDeep(...)(x); x invalid')
-  })
+  }
 }
 
 module.exports = defaultsDeep

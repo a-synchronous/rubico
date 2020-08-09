@@ -6,9 +6,8 @@ const _ = require('lodash')
  * @name defaultsDeep
  *
  * @benchmark
- * _.defaultsDeep_happyPath: 1e+5: 94.109ms
- * rubico/x/defaultsDeep_fullInit: 1e+5: 71.265ms
- * rubico/x/defaultsDeep_happyPath: 1e+5: 59.862ms
+ * _.defaultsDeep: 1e+5: 91.868ms
+ * defaultsDeep: 1e+5: 58.133ms
  */
 
 const defaultCollection = { b: 2, c: [3], d: [[{ e: 5 }]] }
@@ -17,10 +16,8 @@ const value = { a: 1 }
 
 const _defaultsDeep = _.defaultsDeep
 
-// timeInLoop('_.defaultsDeep_happyPath', 1e5, () => _defaultsDeep(defaultCollection, value))
+// timeInLoop('_.defaultsDeep', 1e5, () => _defaultsDeep(defaultCollection, value))
 
-// timeInLoop('rubico/x/defaultsDeep_fullInit', 1e5, () => defaultsDeep(defaultCollection)(value))
+const defaultsDeepRubico = defaultsDeep(defaultCollection)
 
-const defaultsDeepHappyPath = defaultsDeep(defaultCollection)
-
-// timeInLoop('rubico/x/defaultsDeep_happyPath', 1e5, () => defaultsDeepHappyPath(value))
+// timeInLoop('defaultsDeep', 1e5, () => defaultsDeepRubico(value))
