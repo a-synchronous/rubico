@@ -17,6 +17,6 @@ const possiblePromiseArgs = PossiblePromise.args
  * @catchphrase
  * Get the first item from an orderable collection
  */
-const first = x => x != null ? x[0] : undefined
+const first = x => x == null ? undefined : x[0]
 
 module.exports = first
