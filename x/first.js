@@ -17,9 +17,6 @@ const possiblePromiseArgs = PossiblePromise.args
  * @catchphrase
  * Get the first item from an orderable collection
  */
-const first = x => {
-  if (x != null && x.length != 0) return x[0]
-  throw new TypeError('first(x); x is not an Array or String')
-}
+const first = x => x != null ? x[0] : undefined
 
 module.exports = first

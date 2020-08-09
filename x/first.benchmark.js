@@ -9,9 +9,9 @@ const arr = [1, 2, 3]
  * @name first
  *
  * @benchmark
- * first(arr): 1e+6: 6.464ms
- * _.head(arr): 1e+6: 5.446ms
- * R.first(arr): 1e+6: 200.226ms
+ * first(arr): 1e+6: 4.033ms
+ * _.head(arr): 1e+6: 5.335ms
+ * R.first(arr): 1e+6: 203.192ms
  */
 
 // timeInLoop('first(arr)', 1e6, () => first(arr))
@@ -22,4 +22,4 @@ const _head = _.head
 
 const RFirst = R.head
 
-timeInLoop('R.first(arr)', 1e6, () => RFirst(arr))
+// timeInLoop('R.first(arr)', 1e6, () => RFirst(arr))
