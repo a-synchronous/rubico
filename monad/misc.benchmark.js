@@ -115,3 +115,22 @@ const mapFromForLoopDestructuring = x => {
 // timeInLoop('mapFromForLoopSpreadOperator(map)', 1e5, () => mapFromForLoopSpreadOperator(map))
 
 // timeInLoop('mapFromForLoopDestructuring(map)', 1e5, () => mapFromForLoopDestructuring(map))
+
+/*
+ * @name conditionalPropertyAccess
+ *
+ * @benchmarks
+ * obj.a.b.c: 1e+7: 12.715ms
+ * obj.a && obj.a.b && obj.a.b.c: 1e+7: 13.014ms
+ * obj.a?.b?.c: 1e+7: 12.885ms
+ */
+
+{
+  const obj = { a: { b: { c: 3 } } }
+
+  // timeInLoop('obj.a.b.c', 1e7, () => { obj.a.b.c })
+
+  // timeInLoop('obj.a && obj.a.b && obj.a.b.c', 1e7, () => { obj.a && obj.a.b && obj.a.b.c })
+
+  // timeInLoop('obj.a?.b?.c', 1e7, () => { obj.a?.b?.c })
+}
