@@ -30,6 +30,44 @@ const isFlattenable = x => isArray(x) || isSet(x)
  *
  * @catchphrase
  * Flattening things
+ *
+ * @TODO Change name to Mux or Multiplex?
+ * [object GeneratorFunction] <- tag for Generator functions
+ * [object Generator] <- tag for generators (generated iterators)
+ *
+ * new Mux(x Iterable|AsyncIterable) -> Mux
+ *
+ * <T any>Mux.zip(
+ *   x Iterable<Iterable<T>|T>,
+ * ) -> Iterator<Array<T|undefined>>
+ *
+ * <T any>Mux.zip(
+ *   x Iterable<Iterable<T>|AsyncIterable<T>|T>,
+ * ) -> AsyncIterator<Array<T|undefined>>
+ *
+ * <T any>Mux.zip(
+ *   x AsyncIterable<Iterable<T>|AsyncIterable<T>|T>,
+ * ) -> AsyncIterator<Array<T|undefined>>
+ *
+ * <T any>Mux.concat(x Iterable<Iterable<T>|T>) -> Iterator<T>
+ *
+ * <T any>Mux.concat(
+ *   x Iterable<Iterable<T>|AsyncIterable<T>|T>,
+ * ) -> AsyncIterator<T>
+ *
+ * <T any>Mux.concat(
+ *   x AsyncIterable<Iterable<T>|AsyncIterable<T>|T>,
+ * ) -> AsyncIterator<T>
+ *
+ * <T any>Mux.switch(x Iterable<Iterable<T>|T>) -> Iterator<T>
+ *
+ * <T any>Mux.switch(
+ *   x Iterable<Iterable<T>|AsyncIterable<T>|T>,
+ * ) -> AsyncIterator<T>
+ *
+ * <T any>Mux.switch(
+ *   x AsyncIterable<Iterable<T>|AsyncIterable<T>|T>,
+ * ) -> AsyncIterator<T>
  */
 const Flattenable = function(x) {
   if (!isFlattenable(x)) {
