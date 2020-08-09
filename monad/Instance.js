@@ -30,6 +30,8 @@ const Instance = function(x) {
  *
  * @catchphrase
  * `false` <- only for `undefined` and `null`
+ *
+ * @TODO Change to isDefined
  */
 Instance.isInstance = x => x != null
 
