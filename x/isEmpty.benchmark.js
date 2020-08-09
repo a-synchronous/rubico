@@ -6,13 +6,10 @@ const R = require('ramda')
 /**
  * @name isEmpty
  *
- * @synopsis
- * isEmpty(value any) -> boolean
- *
  * @benchmark
- * _.isEmpty([]): 1e+6: 70.592ms
- * isEmpty([]): 1e+6: 21.695ms
- * R.isEmpty([]): 1e+6: 3.343s
+ * _.isEmpty([]): 1e+6: 71.697ms
+ * isEmpty([]): 1e+6: 9.229ms
+ * R.isEmpty([]): 1e+6: 3.314s
  */
 
 // timeInLoop('_.isEmpty([])', 1e6, () => _.isEmpty([]))
