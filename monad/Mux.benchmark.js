@@ -6,8 +6,8 @@ const _ = require('lodash')
  * @name Mux.flatten
  *
  * @benchmark
- * Mux.flatten(nested): 1e+5: 26.514ms
- * _.flatten(nested): 1e+5: 27.618ms
+ * Mux.flatten(nested): 1e+5: 25.588ms
+ * _.flatten(nested): 1e+5: 28.935ms
  */
 
 const muxConcat = Mux.concat

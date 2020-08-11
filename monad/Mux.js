@@ -8,7 +8,7 @@
 
 const Instance = require('./Instance')
 
-const { isArray, isObject, isSet, isIterable, isAsyncIterable } = Instance
+const { isArray, isObject, isSet, isIterable, isAsyncIterable, isFunction } = Instance
 
 const objectProto = Object.prototype
 
@@ -99,6 +99,14 @@ const Mux = function(x) {
 Mux.isSequence = isSequence
 
 /**
+ * @name iteratorOf
+ *
+ * @synopsis
+ * <T any>iteratorOf(x T) -> Iterator<T>
+ */
+const iteratorOf = x => [x][symbolIterator]()
+
+/**
  * @name getSyncIterator
  *
  * @synopsis
@@ -106,7 +114,8 @@ Mux.isSequence = isSequence
  *
  * getSyncIterator(x SyncSequence) -> Iterator
  */
-const getSyncIterator = x => x[symbolIterator] ? x[symbolIterator]() : x()
+const getSyncIterator = x => (x[symbolIterator] ? x[symbolIterator]()
+  : isFunction(x) ? x() : iteratorOf(x))
 
 /**
  * @name getIterator
@@ -120,7 +129,8 @@ const getSyncIterator = x => x[symbolIterator] ? x[symbolIterator]() : x()
 const getIterator = x => {
   if (x[symbolIterator]) return x[symbolIterator]()
   if (x[symbolAsyncIterator]) return x[symbolAsyncIterator]()
-  return x()
+  if (isFunction(x)) return x()
+  return iteratorOf(x)
 }
 
 /**
@@ -151,14 +161,6 @@ const muxIsSync = x => {
   }
   return true
 }
-
-/**
- * @name iteratorOf
- *
- * @synopsis
- * <T any>iteratorOf(x T) -> Iterator<T>
- */
-const iteratorOf = function*(x) { yield x }
 
 /**
  * @name muxZipSync

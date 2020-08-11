@@ -484,11 +484,10 @@ describe('Mux', () => {
       assert.strictEqual(s, 'hey')
     })
 
-    it('x 1; TypeError', async () => {
-      assert.throws(
-        () => Mux.flatten(1),
-        new TypeError('x is not a function')
-      )
+    it('x 1; Iterator<1>', async () => {
+      const iter = Mux.flatten(1)
+      const flattened = [...iter]
+      assert.deepEqual(flattened, [1])
     })
 
     it('x undefined; TypeError', async () => {
