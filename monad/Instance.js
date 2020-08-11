@@ -6,6 +6,15 @@
 
 'use strict'
 
+const symbolIterator = Symbol.iterator
+
+const isIterable = x => x != null && Boolean(x[symbolIterator])
+
+const iteratorOf = function*(x) {
+  if (isIterable(x)) yield* x[symbolIterator]()
+  else yield x
+}
+
 /*
  * @name Instance
  *
@@ -20,6 +29,25 @@ const Instance = function(x) {
     throw new TypeError(`cannot convert ${x} to Instance`)
   }
   this.value = x
+}
+
+/**
+ * @name Instance.prototype.flatMap
+ *
+ * @synopsis
+ * <A any, B any>new Instance(x A).flatMap(f A=>B) -> B
+ *
+ * @catchphrase
+ * For associativity
+ *
+ * @example
+ * const inst = new Instance(3)
+ * console.log(
+ *   inst.flatMap(number => new Instance(number ** 2))
+ * ) // Instance { 9 }
+ */
+Instance.prototype.flatMap = function(f) {
+  return f(this.value)
 }
 
 /*
@@ -168,8 +196,6 @@ Instance.prototype.isMap = function() {
   const x = this.value
   return x != null && x.constructor == Map
 }
-
-const symbolIterator = Symbol.iterator
 
 /*
  * @name Instance.isIterable
