@@ -44,13 +44,6 @@ const isSequence = x => x != null && (Boolean(x[symbolIterator])
 
 /**
  * @synopsis
- * isSyncSequence(x any) -> boolean
- */
-const isSyncSequence = x => x != null && (Boolean(x[symbolIterator])
-  || objectToString(x) == generatorFunctionTag)
-
-/**
- * @synopsis
  * isAsyncSequence(x any) -> boolean
  */
 const isAsyncSequence = x => x != null && (Boolean(x[symbolAsyncIterator])
@@ -64,7 +57,7 @@ const isAsyncSequence = x => x != null && (Boolean(x[symbolAsyncIterator])
  * AsyncIterable|AsyncGeneratorFunction -> AsyncSequence
  * SyncSequence|AsyncSequence -> Sequence
  *
- * <T any>new Mux(Sequence<Sequence<T>|T>) -> Mux
+ * <T any>new Mux(Sequence<Sequence<T>|T>|T) -> Mux
  *
  * @catchphrase
  * Multiplex
@@ -112,7 +105,7 @@ const iteratorOf = x => [x][symbolIterator]()
  * @synopsis
  * Iterable|GeneratorFunction -> SyncSequence
  *
- * getSyncIterator(x SyncSequence) -> Iterator
+ * <T any>getSyncIterator(x SyncSequence<T>|T) -> Iterator<T>
  */
 const getSyncIterator = x => (x[symbolIterator] ? x[symbolIterator]()
   : isFunction(x) ? x() : iteratorOf(x))
@@ -124,7 +117,7 @@ const getSyncIterator = x => (x[symbolIterator] ? x[symbolIterator]()
  * Iterable|GeneratorFunction
  *   |AsyncIterable|AsyncGeneratorFunction -> Sequence
  *
- * getIterator(x Sequence) -> Iterator|AsyncIterator
+ * <T any>getIterator(x Sequence<T>|T) -> Iterator<T>|AsyncIterator<T>
  */
 const getIterator = x => {
   if (x[symbolIterator]) return x[symbolIterator]()
@@ -168,9 +161,9 @@ const muxIsSync = x => {
  * @synopsis
  * Iterable|GeneratorFunction -> SyncSequence
  *
- * <T any>SyncSequence<SyncSequence<T>|T> -> SyncMux<T>
- *
- * <T any>muxZipSync(x SyncMux<T>) -> Iterator<Array<T|undefined>>
+ * <T any>muxZipSync(
+ *   x SyncSequence<SyncSequence<T>|T>|T,
+ * ) -> Iterator<Array<T|undefined>>
  */
 const muxZipSync = function*(x) {
   const iterators = []
@@ -201,7 +194,7 @@ const promiseAll = Promise.all.bind(Promise)
  *   |AsyncIterable|AsyncGeneratorFunction -> Sequence
  *
  * <T any>muxZipAsync(
- *   x Sequence<Sequence<T>|T>,
+ *   x Sequence<Sequence<T>|T>|T,
  * ) -> AsyncIterator<Array<T|undefined>>
  */
 const muxZipAsync = async function*(x) {
@@ -233,11 +226,11 @@ const muxZipAsync = async function*(x) {
  * SyncSequence|AsyncSequence -> Sequence
  *
  * <T any>Mux.zip(
- *   x SyncSequence<SyncSequence<T>|T>,
+ *   x SyncSequence<SyncSequence<T>|T>|T,
  * ) -> Iterator<Array<T|undefined>>
  *
  * <T any>Mux.zip(
- *   x Sequence<Sequence<T>|T>,
+ *   x Sequence<Sequence<T>|T>|T,
  * ) -> AsyncIterator<Array<T|undefined>>
  *
  * @catchphrase
@@ -264,7 +257,7 @@ Mux.zip = x => muxIsSync(x) ? muxZipSync(x) : muxZipAsync(x)
  * Iterable|GeneratorFunction -> SyncSequence
  *
  * <T any>muxConcatSync(
- *   x SyncSequence<SyncSequence<T>|T>,
+ *   x SyncSequence<SyncSequence<T>|T>|T,
  * ) -> Iterator<T>
  */
 const muxConcatSync = function*(x) {
@@ -282,7 +275,7 @@ const muxConcatSync = function*(x) {
  * SyncSequence|AsyncSequence -> Sequence
  *
  * <T any>muxConcatAsync(
- *   x Sequence<Sequence<T>|T>,
+ *   x Sequence<Sequence<T>|T>|T,
  * ) -> AsyncIterator<T>
  */
 const muxConcatAsync = async function*(x) {
@@ -300,11 +293,11 @@ const muxConcatAsync = async function*(x) {
  * SyncSequence|AsyncSequence -> Sequence
  *
  * <T any>Mux.concat(
- *   x SyncSequence<SyncSequence<T>|T>,
+ *   x SyncSequence<SyncSequence<T>|T>|T,
  * ) -> Iterator<T>
  *
  * <T any>Mux.concat(
- *   x Sequence<Sequence<T>|T>,
+ *   x Sequence<Sequence<T>|T>|T,
  * ) -> AsyncIterator<T>
  *
  * @catchphrase
@@ -331,7 +324,7 @@ Mux.concat = x => muxIsSync(x) ? muxConcatSync(x) : muxConcatAsync(x)
  *
  * @synopsis
  * <T any>muxSwitchSync(
- *   x SyncSequence<SyncSequence<T>|T>,
+ *   x SyncSequence<SyncSequence<T>|T>|T,
  * ) -> Iterator<T>
  */
 const muxSwitchSync = function*(x) {
@@ -360,7 +353,7 @@ const muxSwitchSync = function*(x) {
  * SyncSequence|AsyncSequence -> Sequence
  *
  * <T any>muxSwitchAsync(
- *   x Sequence<Sequence<T>|T>,
+ *   x Sequence<Sequence<T>|T>|T,
  * ) -> AsyncIterator<T>
  */
 const muxSwitchAsync = async function*(x) {
@@ -389,11 +382,11 @@ const muxSwitchAsync = async function*(x) {
  * SyncSequence|AsyncSequence -> Sequence
  *
  * <T any>Mux.switch(
- *   x SyncSequence<SyncSequence<T>|T>,
+ *   x SyncSequence<SyncSequence<T>|T>|T,
  * ) -> Iterator<T>
  *
  * <T any>Mux.switch(
- *   x Sequence<Sequence<T>|T>,
+ *   x Sequence<Sequence<T>|T>|T,
  * ) -> AsyncIterator<T>
  *
  * @catchphrase
@@ -418,18 +411,18 @@ Mux.switch = x => muxIsSync(x) ? muxSwitchSync(x) : muxSwitchAsync(x)
  * @name muxRaceAsync
  *
  * @synopsis
- * <T any>muxRaceAsync(x Sequence<Sequence<T>|T>) -> AsyncIterator<T>
+ * <T any>muxRaceAsync(x Sequence<Sequence<T>|T>|T) -> AsyncIterator<T>
  */
 const muxRaceAsync = async function*(x) {
   const promises = new Set()
   for await (const xi of getIterator(x)) {
-    if (isSyncSequence(xi)) yield* getIterator(xi)
-    else if (isAsyncSequence(xi)) {
+    if (isAsyncSequence(xi)) {
       const iter = getIterator(xi)
       const p = iter.next().then(res => [p, iter, res])
       promises.add(p)
+    } else {
+      yield* getIterator(xi)
     }
-    else yield xi
   }
   while (promises.size > 0) {
     const [prevP, iter, { value, done }] = await promiseRace(promises)
@@ -450,11 +443,11 @@ const muxRaceAsync = async function*(x) {
  * SyncSequence|AsyncSequence -> Sequence
  *
  * <T any>Mux.race(
- *   x SyncSequence<SyncSequence<T>|T>,
+ *   x SyncSequence<SyncSequence<T>|T>T,
  * ) -> Iterator<T>
  *
  * <T any>Mux.race(
- *   x Sequence<Sequence<T>|T>,
+ *   x Sequence<Sequence<T>|T>T,
  * ) -> AsyncIterator<T>
  *
  * @catchphrase

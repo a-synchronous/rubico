@@ -67,7 +67,12 @@ describe('Mux', () => {
     })
   })
 
-  describe('<T any>Mux.zip(x Sequence<Sequence<T>|T>) -> y Iterator<Array<T|undefined>>', () => {
+  describe('<T any>Mux.zip(x Sequence<Sequence<T>|T>T) -> y Iterator<Array<T|undefined>>', () => {
+    it('Mux.zip(1)', async () => {
+      const iter = Mux.zip(1)
+      const arr = [...iter]
+      assert.deepEqual(arr, [[1]])
+    })
     it('Mux.zip(<T any>x Array<Array<T>>) -> y Iterator<Array<T>>', async () => {
       const iter = Mux.zip([
         [1, 2, 3],
@@ -199,7 +204,7 @@ describe('Mux', () => {
   })
 
   describe('Mux.concat', () => {
-    describe('<T any>Mux.concat(x SyncSequence<SyncSequence<T>|T>) -> Iterator<T>', () => {
+    describe('<T any>Mux.concat(x SyncSequence<SyncSequence<T>|T>|T) -> Iterator<T>', () => {
       it('<T any>x Array<Array<T>|T>', async () => {
         const iter = Mux.concat([[1, 2, 3], [1, 2, 3], [1, 2, 3], 5, 6])
         const flattened = [...iter]
@@ -245,7 +250,7 @@ describe('Mux', () => {
       })
     })
 
-    describe('<T any>Mux.concat(x Sequence<Sequence<T>|T>) -> AsyncIterator<T>', () => {
+    describe('<T any>Mux.concat(x Sequence<Sequence<T>|T>|T) -> AsyncIterator<T>', () => {
       it('<T any>x AsyncGeneratorFunction<Array<T>|T>', async () => {
         const asyncGenerate123456WithArrays = async function*() { yield [1]; yield 2; yield [3]; yield 4; yield [5]; yield 6 }
         const iter = Mux.concat(asyncGenerate123456WithArrays)
@@ -288,7 +293,7 @@ describe('Mux', () => {
   })
 
   describe('Mux.switch', () => {
-    describe('<T any>Mux.switch(x SyncSequence<SyncSequence<T>|T>) -> Iterator<T>', () => {
+    describe('<T any>Mux.switch(x SyncSequence<SyncSequence<T>|T>|T) -> Iterator<T>', () => {
       it('<T any>x Array<Array<T>|T>', async () => {
         const iter = Mux.switch([[1, 2, 3], [1, 2, 3], [1, 2, 3], 5, 6])
         const flattened = [...iter]
@@ -334,7 +339,7 @@ describe('Mux', () => {
       })
     })
 
-    describe('<T any>Mux.switch(x Sequence<Sequence<T>|T>) -> AsyncIterator<T>', () => {
+    describe('<T any>Mux.switch(x Sequence<Sequence<T>|T>|T) -> AsyncIterator<T>', () => {
       it('<T any>x AsyncGeneratorFunction<Array<T>|T>', async () => {
         const asyncGenerate123456WithArrays = async function*() { yield [1, 10]; yield 2; yield [3, 30]; yield 4; yield [5, 50]; yield 6 }
         const iter = Mux.switch(asyncGenerate123456WithArrays)
@@ -377,7 +382,7 @@ describe('Mux', () => {
   })
 
   describe('Mux.race', () => {
-    describe('<T any>Mux.race(x SyncSequence<SyncSequence<T>|T>) -> Iterator<T>', () => {
+    describe('<T any>Mux.race(x SyncSequence<SyncSequence<T>|T>|T) -> Iterator<T>', () => {
       it('<T any>x Array<Array<T>|T>', async () => {
         const iter = Mux.race([[1, 2, 3], [1, 2, 3], [1, 2, 3], 5, 6])
         const flattened = [...iter]
@@ -425,7 +430,7 @@ describe('Mux', () => {
 
     const delay = ms => new Promise(resolve => { setTimeout(resolve, ms) })
 
-    describe('<T any>Mux.race(x Sequence<Sequence<T>|T>) -> AsyncIterator<T>', () => {
+    describe('<T any>Mux.race(x Sequence<Sequence<T>|T>|T) -> AsyncIterator<T>', () => {
       it('x Array<AsyncGeneratorFunction>', async () => {
         const f = async function*() { await delay(5); yield 10; yield 20 }
         const g = async function*() { yield 1; yield 2; yield 3; await delay(10); yield 30 }
