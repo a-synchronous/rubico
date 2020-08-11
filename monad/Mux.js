@@ -494,10 +494,11 @@ const arrayPushArray = (x, array) => {
  * arrayPushIterable(x Array, array Array) -> undefined
  */
 const arrayPushIterable = (x, iterable) => {
-  let i = -1, offset = x.length
+  const offset = x.length
+  let i = 0
   for (const value of iterable) {
     x[offset + i] = value
-    ++i
+    i += 1
   }
 }
 
