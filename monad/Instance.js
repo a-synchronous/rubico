@@ -8,13 +8,6 @@
 
 const symbolIterator = Symbol.iterator
 
-const isIterable = x => x != null && Boolean(x[symbolIterator])
-
-const iteratorOf = function*(x) {
-  if (isIterable(x)) yield* x[symbolIterator]()
-  else yield x
-}
-
 /*
  * @name Instance
  *

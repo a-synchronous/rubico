@@ -21,6 +21,15 @@ describe('Instance', () => {
     })
   })
 
+  describe('<A any, B any>new Instance(x A).flatMap(f A=>B) -> B', () => {
+    it('x 1; f x=>x; 1', async () => {
+      assert.strictEqual(new Instance(1).flatMap(x => x), 1)
+    })
+    it('x 1; f x=>Instance(x); Instance { 1 }', async () => {
+      assert.deepEqual(new Instance(1).flatMap(x => new Instance(x)), new Instance(1))
+    })
+  })
+
   describe('Instance.isInstance(x any) -> boolean', () => {
     it('x 1; true', async () => {
       assert.strictEqual(Instance.isInstance(1), true)
