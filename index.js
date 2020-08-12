@@ -132,7 +132,9 @@ const functionIteratorPipeAsync = async (iter, arg) => {
   return result
 }
 
-/*
+/**
+ * @name functionIteratorPipe
+ *
  * @synopsis
  * functionIteratorPipe(
  *   iter Iterator<function>,
@@ -154,12 +156,16 @@ const functionIteratorPipe = (iter, args) => {
   return result
 }
 
-/*
+/**
+ * @name arrayReverseIterator
+ *
  * @synopsis
- * reverseArrayIter(arr Array) -> Iterator
+ * arrayReverseIterator(values Array) -> Iterator
  */
-const reverseArrayIter = function*(arr) {
-  for (let i = arr.length - 1; i >= 0; i--) yield arr[i]
+const arrayReverseIterator = function*(values) {
+  for (let i = values.length - 1; i >= 0; i--) {
+    yield values[i]
+  }
 }
 
 /*
@@ -183,7 +189,9 @@ const reverseArrayIter = function*(arr) {
  *
  * @catchphrase define flow: chain functions together
  *
- * @execution series
+ * @concurrent true
+ *
+ * @transducer true
  *
  * @example
  * pipe([
@@ -192,23 +200,13 @@ const reverseArrayIter = function*(arr) {
  *   str => str + 'C',
  * ])('').then(console.log) // ABC
  */
-const pipe = fns => {
-  if (!isArray(fns)) {
-    throw new TypeError('pipe(fns); fns is not an array of functions')
-  }
-  if (fns.length < 1) {
-    throw new RangeError('pipe(fns); fns is not an array of at least one function')
-  }
-  for (let i = 0; i < fns.length; i++) {
-    if (isFunction(fns[i])) continue
-    throw new TypeError(`pipe(fns); fns[${i}] is not a function`)
-  }
-  return (...args) => (isFunction(args[0])
-    ? functionIteratorPipe(reverseArrayIter(fns), args)
-    : functionIteratorPipe(fns[symbolIterator](), args))
-}
+const pipe = funcs => (...args) => (isFunction(args[0])
+  ? functionIteratorPipe(arrayReverseIterator(funcs), args)
+  : functionIteratorPipe(funcs[symbolIterator](), args))
 
-/*
+/**
+ * @name arrayFork
+ *
  * @synopsis
  * arrayFork(fns Array<function>, x any) -> Promise<Array>|Array
  */
@@ -258,8 +256,6 @@ const objectFork = (fns, x) => {
  *
  * @catchphrase duplicate and diverge flow
  *
- * @execution concurrent
- *
  * @example
  * const greet = whom => greeting => greeting + ' ' + whom
  *
@@ -277,6 +273,8 @@ const objectFork = (fns, x) => {
  * })
  *
  * asyncGreetAll('hello').then(console.log)
+ *
+ * @concurrent true
  */
 const fork = fns => {
   if (isArray(fns)) {
@@ -1402,7 +1400,7 @@ const flatMapReducer = (func, reducer) => (aggregate, value) => (
  *   )([1, 2, 3]),
  * ) // [1, 1, 4, 8, 9, 27]
  *
- * @execution concurrent
+ * @concurrent true
  */
 const flatMap = func => {
   if (!isFunction(func)) {

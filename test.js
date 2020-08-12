@@ -144,23 +144,23 @@ describe('rubico', () => {
     it('throws a TypeError if first argument not an array', async () => {
       assert.throws(
         () => {
-          pipe(() => 1, undefined, () => 2)
+          pipe(() => 1, undefined, () => 2)()
         },
-        new TypeError('pipe(fns); fns is not an array of functions'),
+        new TypeError('funcs[symbolIterator] is not a function')
       )
     })
     it('throws a RangeError if passed less than one function', async () => {
       assert.throws(
-        () => pipe([]),
-        new RangeError('pipe(fns); fns is not an array of at least one function'),
+        () => pipe([])(),
+        new TypeError('func0 is not a function'),
       )
     })
     it('throws a TypeError if any arguments are not a function', async () => {
       assert.throws(
         () => {
-          pipe([() => 1, undefined, () => 2])
+          pipe([() => 1, undefined, () => 2])()
         },
-        new TypeError('pipe(fns); fns[1] is not a function'),
+        new TypeError('func is not a function'),
       )
     })
     it('handles sync errors good', async () => {
