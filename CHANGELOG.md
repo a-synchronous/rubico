@@ -18,6 +18,7 @@
  * x/last performance revamp + benchmarks
  * improve PossiblePromise.args stack trace
  * fine tune PossiblePromise performance
+ * fine tune core performance
 
 ## v1.3.2
  * x/defaultsDeep - enforce Array or Object inputs
