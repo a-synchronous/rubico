@@ -191,19 +191,11 @@ describe('rubico', () => {
         await r.fork({ a: asyncHey, b: asyncHey, c: asyncHey })('yo'),
         { a: 'yohey', b: 'yohey', c: 'yohey' },
       )
-      ade(
-        await r.fork({ a: asyncHey, b: asyncHey, c: asyncHey })(Promise.resolve('yo')),
-        { a: 'yohey', b: 'yohey', c: 'yohey' },
-      )
     })
     it('any functions async => Promise', async () => {
       aok(r.fork([asyncHey, asyncHey, hi])('yo') instanceof Promise)
       ade(
         await r.fork([asyncHey, asyncHey, hi])('yo'),
-        ['yohey', 'yohey', 'yohi'],
-      )
-      ade(
-        await r.fork([asyncHey, asyncHey, hi])(Promise.resolve('yo')),
         ['yohey', 'yohey', 'yohi'],
       )
     })
@@ -324,13 +316,6 @@ describe('rubico', () => {
           b: async x => x.a + 'yo',
           c: async x => x.a + 'yaya',
         })({ a: 'a' }),
-        { a: 'a', b: 'ayo', c: 'ayaya' },
-      )
-      ade(
-        await r.assign({
-          b: async x => x.a + 'yo',
-          c: async x => x.a + 'yaya',
-        })(Promise.resolve({ a: 'a' })),
         { a: 'a', b: 'ayo', c: 'ayaya' },
       )
     })
@@ -2028,8 +2013,20 @@ describe('rubico', () => {
     })
     it('[async] eq(f, g)(x) === (f(x) === g(x))', async () => {
       aok(r.eq(x => `${x}`, async x => x)('hey') instanceof Promise)
-      ase(await r.eq(x => `${x}`, async x => x)('hey'), true)
-      ase(await r.eq(x => `${x}`, async x => x)(1), false)
+      ase(await r.eq(async x => `${x}`, async x => x)('hey'), true)
+      ase(await r.eq(async x => `${x}`, async x => x)(1), false)
+    })
+    it('[sync] eq(f, value)(x) === (valueA === valueB)', async () => {
+      ase(r.eq(() => 'hey', 'hey')('ayylmao'), true)
+      ase(r.eq(() => 'hey', 'ho')('ayylmao'), false)
+    })
+    it('[async] eq(f, value)(x) === (valueA === valueB)', async () => {
+      ase(await r.eq(async () => 'hey', 'hey')('ayylmao'), true)
+      ase(await r.eq('hey', async () => 'ho')('ayylmao'), false)
+    })
+    it('[sync] eq(value, g)(x) === (valueA === valueB)', async () => {
+      ase(r.eq('hey', () => 'hey')('ayylmao'), true)
+      ase(r.eq('hey', () => 'ho')('ayylmao'), false)
     })
     it('[async] eq(value, g)(x) === (value === g(x))', async () => {
       aok(r.eq('hey', async x => x)('hey') instanceof Promise)
@@ -2040,17 +2037,11 @@ describe('rubico', () => {
       ase(r.eq('hey', 'hey')('ayylmao'), true)
       ase(r.eq('hey', 'ho')('ayylmao'), false)
     })
-    it('throws RangeError on not enough arguments', async () => {
-      assert.throws(
-        () => r.eq('hey'),
-        new RangeError('eq(...arguments); exactly two arguments required'),
-      )
+    it('false for eq(string,)', async () => {
+      assert.strictEqual(r.eq('hey',)(), false)
     })
-    it('throws RangeError on too many arguments', async () => {
-      assert.throws(
-        () => r.eq('hey', () => {}, 'ho'),
-        new RangeError('eq(...arguments); exactly two arguments required'),
-      )
+    it('false for too many arguments', async () => {
+      assert.strictEqual(r.eq('hey', () => {}, 'ho')(), false)
     })
   })
 
@@ -2066,6 +2057,16 @@ describe('rubico', () => {
       ase(await r.gt(async x => x, x => x)(1), false)
       ase(await r.gt(async x => x, async x => x + 1)(1), false)
     })
+    it('[sync] gt(f, value)(x) === (valueA > valueB)', async () => {
+      ase(r.gt(() => 1, 0)('ayylmao'), true)
+      ase(r.gt(() => 1, 1)('ayylmao'), false)
+      ase(r.gt(() => 0, 1)('ayylmao'), false)
+    })
+    it('[sync] gt(value, g)(x) === (valueA > valueB)', async () => {
+      ase(r.gt(1, () => 0)('ayylmao'), true)
+      ase(r.gt(1, () => 1)('ayylmao'), false)
+      ase(r.gt(0, () => 1)('ayylmao'), false)
+    })
     it('[async] gt(value, g)(x) === (value > g(x))', async () => {
       aok(r.gt(1, async x => x)(2) instanceof Promise)
       ase(await r.gt(1, async x => x)(0), true)
@@ -2078,16 +2079,10 @@ describe('rubico', () => {
       ase(r.gt(0, 1)('ayylmao'), false)
     })
     it('throws RangeError on not enough arguments', async () => {
-      assert.throws(
-        () => r.gt('hey'),
-        new RangeError('gt(...arguments); exactly two arguments required'),
-      )
+      assert.strictEqual(r.gt('hey')(), false)
     })
     it('throws RangeError on too many arguments', async () => {
-      assert.throws(
-        () => r.gt('hey', () => {}, 'ho'),
-        new RangeError('gt(...arguments); exactly two arguments required'),
-      )
+      assert.strictEqual(r.gt('hey', () => {}, 'ho')(), false)
     })
   })
 
@@ -2103,6 +2098,16 @@ describe('rubico', () => {
       ase(await r.lt(async x => x, x => x)(1), false)
       ase(await r.lt(async x => x, async x => x + 1)(1), true)
     })
+    it('[sync] lt(f, value)(x) === (valueA < valueB)', async () => {
+      ase(r.lt(() => 1, 0)('ayylmao'), false)
+      ase(r.lt(() => 1, 1)('ayylmao'), false)
+      ase(r.lt(() => 0, 1)('ayylmao'), true)
+    })
+    it('[sync] lt(value, g)(x) === (valueA < valueB)', async () => {
+      ase(r.lt(1, () => 0)('ayylmao'), false)
+      ase(r.lt(1, () => 1)('ayylmao'), false)
+      ase(r.lt(0, () => 1)('ayylmao'), true)
+    })
     it('[async] lt(value, g)(x) === (value < g(x))', async () => {
       aok(r.lt(1, async x => x)(2) instanceof Promise)
       ase(await r.lt(1, async x => x)(0), false)
@@ -2115,16 +2120,10 @@ describe('rubico', () => {
       ase(r.lt(0, 1)('ayylmao'), true)
     })
     it('throws RangeError on not enough arguments', async () => {
-      assert.throws(
-        () => r.lt('hey'),
-        new RangeError('lt(...arguments); exactly two arguments required'),
-      )
+      assert.strictEqual(r.lt('hey')(), false)
     })
     it('throws RangeError on too many arguments', async () => {
-      assert.throws(
-        () => r.lt('hey', () => {}, 'ho'),
-        new RangeError('lt(...arguments); exactly two arguments required'),
-      )
+      assert.strictEqual(r.lt('hey', () => {}, 'ho')(), false)
     })
   })
 
@@ -2140,6 +2139,16 @@ describe('rubico', () => {
       ase(await r.gte(async x => x, x => x)(1), true)
       ase(await r.gte(async x => x, async x => x + 1)(1), false)
     })
+    it('[sync] gte(f, value)(x) === (valueA >= valueB)', async () => {
+      ase(r.gte(() => 1, 0)('ayylmao'), true)
+      ase(r.gte(() => 1, 1)('ayylmao'), true)
+      ase(r.gte(() => 0, 1)('ayylmao'), false)
+    })
+    it('[sync] gte(value, g)(x) === (valueA >= valueB)', async () => {
+      ase(r.gte(1, () => 0)('ayylmao'), true)
+      ase(r.gte(1, () => 1)('ayylmao'), true)
+      ase(r.gte(0, () => 1)('ayylmao'), false)
+    })
     it('[async] gte(value, g)(x) === (value >= g(x))', async () => {
       aok(r.gte(1, async x => x)(2) instanceof Promise)
       ase(await r.gte(1, async x => x)(0), true)
@@ -2152,16 +2161,10 @@ describe('rubico', () => {
       ase(r.gte(0, 1)('ayylmao'), false)
     })
     it('throws RangeError on not enough arguments', async () => {
-      assert.throws(
-        () => r.gte('hey'),
-        new RangeError('gte(...arguments); exactly two arguments required'),
-      )
+      assert.strictEqual(r.gte('hey')(), false)
     })
     it('throws RangeError on too many arguments', async () => {
-      assert.throws(
-        () => r.gte('hey', () => {}, 'ho'),
-        new RangeError('gte(...arguments); exactly two arguments required'),
-      )
+      assert.strictEqual(r.gte('hey', () => {}, 'ho')(), false)
     })
   })
 
@@ -2177,6 +2180,16 @@ describe('rubico', () => {
       ase(await r.lte(async x => x, x => x)(1), true)
       ase(await r.lte(async x => x, async x => x + 1)(1), true)
     })
+    it('[sync] lte(f, value)(x) === (valueA <= valueB)', async () => {
+      ase(r.lte(() => 1, 0)('ayylmao'), false)
+      ase(r.lte(() => 1, 1)('ayylmao'), true)
+      ase(r.lte(() => 0, 1)('ayylmao'), true)
+    })
+    it('[sync] lte(value, g)(x) === (valueA <= valueB)', async () => {
+      ase(r.lte(1, () => 0)('ayylmao'), false)
+      ase(r.lte(1, () => 1)('ayylmao'), true)
+      ase(r.lte(0, () => 1)('ayylmao'), true)
+    })
     it('[async] lte(value, g)(x) === (value <= g(x))', async () => {
       aok(r.lte(1, async x => x)(2) instanceof Promise)
       ase(await r.lte(1, async x => x)(0), false)
@@ -2189,16 +2202,10 @@ describe('rubico', () => {
       ase(r.lte(0, 1)('ayylmao'), true)
     })
     it('throws RangeError on not enough arguments', async () => {
-      assert.throws(
-        () => r.lte('hey'),
-        new RangeError('lte(...arguments); exactly two arguments required'),
-      )
+      assert.strictEqual(r.lte('hey')(), false)
     })
     it('throws RangeError on too many arguments', async () => {
-      assert.throws(
-        () => r.lte('hey', () => {}, 'ho'),
-        new RangeError('lte(...arguments); exactly two arguments required'),
-      )
+      assert.strictEqual(r.lte('hey', () => {}, 'ho')(), false)
     })
   })
 
