@@ -1405,7 +1405,7 @@ const get = (path, defaultValue) => {
   if (isString(path)) return (isDelimitedBy('.', path)
     ? value => arrayPathGet(path.split('.'), value, defaultValue)
     : value => arrayPathGet([path], value, defaultValue))
-  throw new TypeError(`get(value); invalid value ${value}`)
+  throw new TypeError(`get(path); invalid path ${path}`)
 }
 
 /*

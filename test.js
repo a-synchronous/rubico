@@ -1784,7 +1784,7 @@ describe('rubico', () => {
     it('throws a TypeError on invalid path', async () => {
       assert.throws(
         () => r.get({}),
-        new TypeError('get(x, y); x invalid'),
+        new TypeError('get(path); invalid path [object Object]'),
       )
     })
   })
