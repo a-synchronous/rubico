@@ -83,20 +83,16 @@ const possiblePromiseAll = ps => (ps.some(isPromise)
   ? promiseAll(ps)
   : new PossiblePromise(ps))
 
-/*
- * @synopsis
- * <T any>toFunction(x function|T) -> function|()=>T
- */
-const toFunction = x => isFunction(x) ? x : () => x
+const functionIteratorPipeAsync = async (iter, args) => {}
 
 /*
  * @synopsis
- * iteratorPipe(
+ * functionIteratorPipe(
  *   iter Iterator<function>,
  *   args Array,
  * ) -> Promise|any
  */
-const iteratorPipe = (iter, args) => {
+const functionIteratorPipe = (iter, args) => {
   const { value: f0 } = iter.next()
   let output = f0(...args)
   for (const fn of iter) {
@@ -108,12 +104,10 @@ const iteratorPipe = (iter, args) => {
 /*
  * @synopsis
  * reverseArrayIter(arr Array) -> Iterator
- *
- * @TODO: refactor for proper generator syntax
  */
-const reverseArrayIter = arr => (function*() {
+const reverseArrayIter = function*(arr) {
   for (let i = arr.length - 1; i >= 0; i--) yield arr[i]
-})()
+}
 
 /*
  * @name: pipe
@@ -143,20 +137,11 @@ const reverseArrayIter = arr => (function*() {
  * const asyncAddB = async x => x + 'B'
  * const addC = x => x + 'C'
  *
- * const addAC = pipe([
- *   addA, // '' => 'A'
- *   addC, // 'A' => 'AC'
- * ])
- *
- * console.log(addAC(''))
- *
- * const asyncAddABC = pipe([
- *   addA, // '' => 'A'
- *   asyncAddB, // 'A' => Promise { 'AB' }
- *   addC, // Promise { 'AB' } => Promise { 'ABC' }
- * ])
- *
- * asyncAddABC('').then(console.log)
+ * pipe([
+ *   addA,
+ *   asyncAddB,
+ *   addC,
+ * ])('').then(console.log) // ABC
  */
 const pipe = fns => {
   if (!isArray(fns)) {
@@ -170,8 +155,8 @@ const pipe = fns => {
     throw new TypeError(`pipe(fns); fns[${i}] is not a function`)
   }
   return (...args) => (isFunction(args[0])
-    ? iteratorPipe(reverseArrayIter(fns), args)
-    : iteratorPipe(fns[Symbol.iterator].call(fns), args)
+    ? functionIteratorPipe(reverseArrayIter(fns), args)
+    : functionIteratorPipe(fns[Symbol.iterator].call(fns), args)
   )
 }
 
@@ -1038,7 +1023,7 @@ const reduce = (fn, init) => {
     throw new TypeError('reduce(x, y); x is not a function')
   }
   return x => {
-    const x0 = toFunction(init)(x)
+    const x0 = isFunction(init) ? init(x) : init
     if (isIterable(x)) return possiblePromiseThen(
       x0,
       res => reduceIterable(fn, res, x),
@@ -1229,7 +1214,7 @@ const transform = (fn, init) => {
     throw new TypeError('transform(x, y); y is not a function')
   }
   return x => possiblePromiseThen(
-    toFunction(init)(x),
+    isFunction(init) ? init(x) : init,
     res => _transformBranch(fn, res, x),
   )
 }
@@ -1353,10 +1338,14 @@ const isDelimitedBy = (delim, x) => (x
  */
 const arrayGet = (path, x, defaultValue) => {
   let y = x
-  if (!isDefined(y)) return toFunction(defaultValue)(x)
+  if (!isDefined(y)) {
+    return isFunction(defaultValue) ? defaultValue(x) : defaultValue
+  }
   for (let i = 0; i < path.length; i++) {
     y = y[path[i]]
-    if (!isDefined(y)) return toFunction(defaultValue)(x)
+    if (!isDefined(y)) {
+      return isFunction(defaultValue) ? defaultValue(x) : defaultValue
+    }
   }
   return y
 }
