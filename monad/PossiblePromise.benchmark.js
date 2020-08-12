@@ -32,19 +32,28 @@ const square_promiseThen = () => p5.then(square)
  * @name PossiblePromise.all
  *
  * @benchmark
- * promiseAll([resolvedPromise]): 1e+5: 150.077ms
- * possiblePromiseAll([resolvedPromise]): 1e+5: 151.224ms
+ * promiseAll([resolvedPromise]): 1e+5: 148.01ms
+ * possiblePromiseAll([resolvedPromise]): 1e+5: 149.323ms
+ *
+ * sum([1, 2, 3]): 1e+6: 11.503ms
+ * possiblePromiseAll([1, 2, 3]).then([sum]): 1e+6: 24.451ms
  */
 
 const promiseAll = Promise.all.bind(Promise)
 
 const resolvedPromise = Promise.resolve()
 
-// timeInLoop('promiseAll([resolvedPromise])', 1e5, () => promiseAll([resolvedPromise]))
-
 const possiblePromiseAll = PossiblePromise.all
 
+const sum = ([a, b, c]) => a + b + c
+
+// timeInLoop('promiseAll([resolvedPromise])', 1e5, () => promiseAll([resolvedPromise]))
+
 // timeInLoop('possiblePromiseAll([resolvedPromise])', 1e5, () => possiblePromiseAll([resolvedPromise]))
+
+// timeInLoop('sum([1, 2, 3])', 1e6, () => sum([1, 2, 3]))
+
+// timeInLoop('possiblePromiseAll([1, 2, 3]).then([sum])', 1e6, () => possiblePromiseAll([1, 2, 3]).then(sum))
 
 /**
  * @name PossiblePromise.args
