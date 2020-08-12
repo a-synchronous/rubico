@@ -12,6 +12,10 @@ describe('isDeepEqual', () => {
       [1, 2, 3, 4],
     ), false)
     assert.strictEqual(isDeepEqual(
+      [1, 2, 3, 4],
+      [1, 2, 3],
+    ), false)
+    assert.strictEqual(isDeepEqual(
       { a: 1, b: 2, c: 3 },
       { a: 1, b: 2, c: 3 },
     ), true)

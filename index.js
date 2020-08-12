@@ -1,4 +1,4 @@
-/* rubico v1.3.0
+/* rubico v1.5.0
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2020 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -21,136 +21,116 @@
  * avoid variadic functions; use lists
  */
 
-const isDefined = x => x !== undefined && x !== null
+const isDefined = x => x != null
 
-const isUndefined = x => x === undefined
+const isUndefined = x => typeof x == 'undefined'
 
 const isNull = x => x === null
 
-const isIterable = x => isDefined(x) && isDefined(x[Symbol.iterator])
+const symbolIterator = Symbol.iterator
 
-const isAsyncIterable = x => isDefined(x) && isDefined(x[Symbol.asyncIterator])
+const isIterable = x => x != null && Boolean(x[symbolIterator])
 
-const isWritable = x => x && typeof x.write === 'function'
+const symbolAsyncIterator = Symbol.asyncIterator
 
-const isFunction = x => typeof x === 'function'
+const isAsyncIterable = x => x != null && Boolean(x[symbolAsyncIterator])
+
+const isWritable = x => x != null && typeof x.write == 'function'
+
+const isFunction = x => typeof x == 'function'
 
 const isArray = Array.isArray
 
-const numberTypedArrays = new Set([
-  'Uint8ClampedArray',
-  'Uint8Array', 'Int8Array',
-  'Uint16Array', 'Int16Array',
-  'Uint32Array', 'Int32Array',
-  'Float32Array', 'Float64Array',
-])
+const isObject = x => x != null && x.constructor == Object
 
-const isNumberTypedArray = x => x && x.constructor && (
-  numberTypedArrays.has(x.constructor.name)
-)
+const isSet = x => x != null && x.constructor == Set
 
-const bigIntTypedArrays = new Set([
-  'BigUint64Array', 'BigInt64Array',
-])
+const isMap = x => x != null && x.constructor == Map
 
-const isBigIntTypedArray = x => x && x.constructor && (
-  bigIntTypedArrays.has(x.constructor.name)
-)
+const isTypedArray = ArrayBuffer.isView
 
-const isNumber = x => typeof x === 'number' && !isNaN(x)
+const isNumber = x => (
+  typeof x == 'number' || (x != null && x.constructor == Number))
 
-const isBigInt = x => typeof x === 'bigint'
+const isNaN = Number.isNaN
 
-const isString = x => typeof x === 'string'
+const isBigInt = x => typeof x == 'bigint'
 
-const isPromise = x => x && typeof x.then === 'function'
+const isString = x => (
+  typeof x == 'string' || (x != null && x.constructor == String))
 
-const is = fn => x => x && x.constructor === fn
+const isPromise = x => x != null && typeof x.then == 'function'
 
 const range = (start, end) => Array.from({ length: end - start }, (x, i) => i + start)
 
 const arrayOf = (item, length) => Array.from({ length }, () => item)
 
-/*
- * @synopsis
- * new PossiblePromise(p Promise|any) -> PossiblePromise
- */
-const PossiblePromise = function(p) {
-  this.value = p
-}
+const promiseAll = Promise.all.bind(Promise)
 
-/*
- * @synopsis
- * new PossiblePromise(p Promise|any).then(f function) -> Promise|any
- */
+const PossiblePromise = function(p) { this.value = p }
+
 PossiblePromise.prototype.then = function(f) {
-  return isPromise(this.value) ? this.value.then(f) : f(this.value)
+  return f(this.value)
+  // const p = this.value
+  // return isPromise(p) ? p.then(f) : f(p)
 }
 
-/*
- * @synopsis
- * PossiblePromise.then(p Promise|any, f function) -> Promise|any
- */
-PossiblePromise.then = (p, f) => isPromise(p) ? p.then(f) : f(p)
+const possiblePromiseThen = (p, f) => isPromise(p) ? p.then(f) : f(p)
 
-/*
- * @synopsis
- * PossiblePromise.catch(
- *   p Promise|any,
- *   f Error=>Promise|any,
- * ) -> Promise|any
- */
-PossiblePromise.catch = (p, f) => isPromise(p) ? p.catch(f) : p
+const possiblePromiseCatch = (p, f) => isPromise(p) ? p.catch(f) : p
 
-/*
- * @synopsis
- * PossiblePromise.all(
- *   ps Promise<Array>|Array,
- * ) -> Promise<Array>|PossiblePromise<Array>
- */
-PossiblePromise.all = ps => (ps.some(isPromise)
-  ? Promise.all(ps)
+const possiblePromiseAll = ps => (ps.some(isPromise)
+  ? promiseAll(ps)
   : new PossiblePromise(ps))
 
-/*
+/**
+ * @name functionIteratorPipeAsync
+ *
  * @synopsis
- * PossiblePromise.args(f function)(args ...any) -> Promise|any
+ * functionIteratorPipeAsync(
+ *   iter Iterator<function>,
+ *   arg any,
+ * ) -> Promise
  */
-PossiblePromise.args = f => (...args) => (args.some(isPromise)
-  ? Promise.all(args).then(res => f(...res))
-  : f(...args))
+const functionIteratorPipeAsync = async (iter, arg) => {
+  const { value: func0, done } = iter.next()
+  if (done) return arg
+  let result = await func0(arg)
+  for (const func of iter) {
+    result = await func(result)
+  }
+  return result
+}
 
 /*
  * @synopsis
- * <T any>toFunction(x function|T) -> function|()=>T
- */
-const toFunction = x => isFunction(x) ? x : () => x
-
-/*
- * @synopsis
- * iteratorPipe(
+ * functionIteratorPipe(
  *   iter Iterator<function>,
  *   args Array,
  * ) -> Promise|any
  */
-const iteratorPipe = (iter, args) => {
-  const { value: f0 } = iter.next()
-  let output = f0(...args)
-  for (const fn of iter) {
-    output = PossiblePromise.then(output, fn)
+const functionIteratorPipe = (iter, args) => {
+  const { value: func0 } = iter.next()
+  let result = func0(...args)
+  if (isPromise(result)) {
+    return result.then(res => functionIteratorPipeAsync(iter, res))
   }
-  return output
+  for (const func of iter) {
+    result = func(result)
+    if (isPromise(result)) {
+      return result.then(res => functionIteratorPipeAsync(iter, res))
+    }
+  }
+  return result
 }
 
 /*
  * @synopsis
  * reverseArrayIter(arr Array) -> Iterator
- *
- * @TODO: refactor for proper generator syntax
  */
-const reverseArrayIter = arr => (function*() {
+const reverseArrayIter = function*(arr) {
   for (let i = arr.length - 1; i >= 0; i--) yield arr[i]
-})()
+}
 
 /*
  * @name: pipe
@@ -176,26 +156,11 @@ const reverseArrayIter = arr => (function*() {
  * @execution: series
  *
  * @example
- * const addA = x => x + 'A'
- * const asyncAddB = async x => x + 'B'
- * const addC = x => x + 'C'
- *
- * const addAC = pipe([
- *   addA, // '' => 'A'
- *   addC, // 'A' => 'AC'
- * ])
- *
- * console.log(addAC(''))
- *
- * const asyncAddABC = pipe([
- *   addA, // '' => 'A'
- *   asyncAddB, // 'A' => Promise { 'AB' }
- *   addC, // Promise { 'AB' } => Promise { 'ABC' }
- * ])
- *
- * asyncAddABC('').then(console.log)
- *
- * @TODO: refactor to PossiblePromise.args
+ * pipe([
+ *   str => str + 'A',
+ *   async str => str + 'B',
+ *   str => str + 'C',
+ * ])('').then(console.log) // ABC
  */
 const pipe = fns => {
   if (!isArray(fns)) {
@@ -209,9 +174,8 @@ const pipe = fns => {
     throw new TypeError(`pipe(fns); fns[${i}] is not a function`)
   }
   return (...args) => (isFunction(args[0])
-    ? iteratorPipe(reverseArrayIter(fns), args)
-    : iteratorPipe(fns[Symbol.iterator].call(fns), args)
-  )
+    ? functionIteratorPipe(reverseArrayIter(fns), args)
+    : functionIteratorPipe(fns[symbolIterator](), args))
 }
 
 /*
@@ -293,9 +257,9 @@ const fork = fns => {
       if (isFunction(fns[i])) continue
       throw new TypeError(`fork(x); x[${i}] is not a function`)
     }
-    return PossiblePromise.args(x => arrayFork(fns, x))
+    return x => arrayFork(fns, x)
   }
-  if (is(Object)(fns)) {
+  if (isObject(fns)) {
     if (Object.keys(fns).length < 1) {
       throw new RangeError('fork(x); x is not an object of at least one entry')
     }
@@ -303,7 +267,7 @@ const fork = fns => {
       if (isFunction(fns[k])) continue
       throw new TypeError(`fork(x); x['${k}'] is not a function`)
     }
-    return PossiblePromise.args(x => objectFork(fns, x))
+    return x => objectFork(fns, x)
   }
   throw new TypeError('fork(x); x invalid')
 }
@@ -321,7 +285,7 @@ const fork = fns => {
  */
 const arrayForkSeries = (fns, x, i, y) => {
   if (i === fns.length) return y
-  return PossiblePromise.then(
+  return possiblePromiseThen(
     fns[i](x),
     res => arrayForkSeries(fns, x, i + 1, y.concat(res)),
   )
@@ -332,8 +296,6 @@ const arrayForkSeries = (fns, x, i, y) => {
  * fork.series(
  *   funcs Array<function>,
  * )(x any) -> y Array|Promise<Array>
- *
- * @TODO: refactor to PossiblePromise.args
  */
 fork.series = fns => {
   if (isArray(fns)) {
@@ -356,31 +318,29 @@ fork.series = fns => {
  * assign(funcs Object<function>)(x any) -> Object<any>|Promise<Object<any>>
  */
 const assign = funcs => {
-  if (!is(Object)(funcs)) {
+  if (!isObject(funcs)) {
     throw new TypeError('assign(funcs); funcs is not an object of functions')
   }
-  return PossiblePromise.args(x => {
-    if (!is(Object)(x)) {
+  return x => {
+    if (!isObject(x)) {
       throw new TypeError('assign(...)(x); x is not an object')
     }
-    return PossiblePromise.then(
+    return possiblePromiseThen(
       objectFork(funcs, x),
       res => Object.assign({}, x, res),
     )
-  })
+  }
 }
 
 /*
  * @synopsis
  * tap(f function)(x any) -> Promise|any
- *
- * @TODO: refactor to PossiblePromise.args
  */
 const tap = f => {
   if (!isFunction(f)) {
     throw new TypeError('tap(f); f is not a function')
   }
-  return x => PossiblePromise.then(f(x), () => x)
+  return x => possiblePromiseThen(f(x), () => x)
 }
 
 /*
@@ -394,8 +354,6 @@ tap.if = (cond, f) => {}
 /*
  * @synopsis
  * tryCatch(f function, onError function)(x any) -> Promise|any
- *
- * @TODO: refactor to PossiblePromise.args
  */
 const tryCatch = (f, onError) => {
   if (!isFunction(f)) {
@@ -406,7 +364,7 @@ const tryCatch = (f, onError) => {
   }
   return x => {
     try {
-      return PossiblePromise.catch(f(x), e => onError(e, x))
+      return possiblePromiseCatch(f(x), e => onError(e, x))
     } catch (e) {
       return onError(e, x)
     }
@@ -421,7 +379,7 @@ const tryCatch = (f, onError) => {
  */
 const arraySwitchCase = (fns, x, i) => {
   if (i === fns.length - 1) return fns[i](x)
-  return PossiblePromise.then(
+  return possiblePromiseThen(
     fns[i](x),
     ok => ok ? fns[i + 1](x) : arraySwitchCase(fns, x, i + 2),
   )
@@ -430,8 +388,6 @@ const arraySwitchCase = (fns, x, i) => {
 /*
  * @synopsis
  * switchCase(fns Array<function>)(x any) -> Promise|any
- *
- * @TODO: refactor to PossiblePromise.args
  */
 const switchCase = fns => {
   if (!isArray(fns)) {
@@ -483,9 +439,6 @@ const mapIterable = (fn, x) => (function*() {
  * @note
  * x.map
  * https://v8.dev/blog/elements-kinds#avoid-polymorphism
- *
- * Alternative implementation
- * const mapArray = (f, x) => PossiblePromise.all(x.map(f)).then(res => res)
  */
 const mapArray = (f, x) => {
   let isAsync = false
@@ -517,7 +470,7 @@ const mapIterableToArray = (fn, x) => {
  * @synopsis
  * mapString(f function, x string) -> string
  */
-const mapString = (f, x) => PossiblePromise.then(
+const mapString = (f, x) => possiblePromiseThen(
   mapIterableToArray(f, x),
   res => res.join(''),
 )
@@ -526,7 +479,7 @@ const mapString = (f, x) => PossiblePromise.then(
  * @synopsis
  * mapTypedArray(f function, x TypedArray<any>) -> TypedArray<any>
  */
-const mapTypedArray = (f, x) => PossiblePromise.then(
+const mapTypedArray = (f, x) => possiblePromiseThen(
   mapIterableToArray(f, x),
   res => new x.constructor(res),
 )
@@ -588,7 +541,7 @@ const mapObject = (fn, x) => {
  *   -> anotherReducer (y any, xi any)=>Promise|any
  */
 const mapReducer = (f, reducer) => (y, xi) => (
-  PossiblePromise.then(f(xi), res => reducer(y, res)))
+  possiblePromiseThen(f(xi), res => reducer(y, res)))
 
 /*
  * @synopsis
@@ -596,8 +549,6 @@ const mapReducer = (f, reducer) => (y, xi) => (
  *   |TypedArray<T>|Iterable<T>|Object<T>|(any, T)=>any -> Mappable<T>
  *
  * <T Mappable>map(f function)(x T<any>) -> T<any>
- *
- * @TODO: refactor to PossiblePromise.args
  */
 const map = f => {
   if (!isFunction(f)) {
@@ -607,12 +558,11 @@ const map = f => {
     if (isAsyncIterable(x)) return mapAsyncIterable(f, x)
     if (isArray(x)) return mapArray(f, x)
     if (isString(x)) return mapString(f, x)
-    if (is(Set)(x)) return mapSet(f, x)
-    if (is(Map)(x)) return mapMap(f, x)
-    if (isNumberTypedArray(x)) return mapTypedArray(f, x)
-    if (isBigIntTypedArray(x)) return mapTypedArray(f, x)
+    if (isSet(x)) return mapSet(f, x)
+    if (isMap(x)) return mapMap(f, x)
+    if (isTypedArray(x)) return mapTypedArray(f, x)
     if (isIterable(x)) return mapIterable(f, x) // for generators or custom iterators
-    if (is(Object)(x)) return mapObject(f, x)
+    if (isObject(x)) return mapObject(f, x)
     if (isFunction(x)) return mapReducer(f, x)
     throw new TypeError('map(...)(x); x invalid')
   }
@@ -628,7 +578,7 @@ const map = f => {
  */
 const mapSeriesArray = (f, x, i, y) => {
   if (i === x.length) return y
-  return PossiblePromise.then(
+  return possiblePromiseThen(
     f(x[i]),
     res => mapSeriesArray(f, x, i + 1, y.concat(res)),
   )
@@ -637,8 +587,6 @@ const mapSeriesArray = (f, x, i, y) => {
 /*
  * @synopsis
  * map.series(f function)(x Array<any>) -> Array<any>|Promise<Array<any>>
- *
- * @TODO: refactor to PossiblePromise.args
  */
 map.series = f => {
   if (!isFunction(f)) {
@@ -700,12 +648,10 @@ const mapPoolMap = (size, f, x) => (
  * <T any>Array<T>|Set<T>|Map<T> -> MapPoolable<T>
  *
  * <T MapPoolable>map.pool(size number, f function)(x T<any>) -> Promise<T<any>>
- *
- * @TODO: refactor to PossiblePromise.args
  */
 map.pool = (size, fn) => {
-  if (!isNumber(size)) {
-    throw new TypeError('map.pool(size, f); size is not a number')
+  if (!isNumber(size) || isNaN(size)) {
+    throw new TypeError(`map.pool(size, f); invalid size ${size}`)
   }
   if (size < 1) {
     throw new RangeError('map.pool(size, f); size must be 1 or more')
@@ -715,8 +661,8 @@ map.pool = (size, fn) => {
   }
   return x => {
     if (isArray(x)) return mapPoolArray(size, fn, x)
-    if (is(Set)(x)) return mapPoolSet(size, fn, x)
-    if (is(Map)(x)) return mapPoolMap(size, fn, x)
+    if (isSet(x)) return mapPoolSet(size, fn, x)
+    if (isMap(x)) return mapPoolMap(size, fn, x)
     throw new TypeError('map.pool(...)(x); x invalid')
   }
 }
@@ -762,7 +708,7 @@ const mapIterableWithIndexToArray = (fn, x) => {
  * @synopsis
  * mapStringWithIndex(f any=>any, x string) -> string|Promise<string>
  */
-const mapStringWithIndex = (f, x) => PossiblePromise.then(
+const mapStringWithIndex = (f, x) => possiblePromiseThen(
   mapIterableWithIndexToArray(f, x),
   res => res.join(''),
 )
@@ -773,7 +719,6 @@ const mapStringWithIndex = (f, x) => PossiblePromise.then(
  *
  * map.withIndex(f any=>any)(x T) -> T|Promise<T>
  *
- * @TODO: refactor to PossiblePromise.args
  * @TODO: x can be an Object
  */
 map.withIndex = fn => {
@@ -839,7 +784,7 @@ const createFilterIndex = (predicate, x) => {
  * filterArray(predicate any=>any, x Array<any>)
  *   -> Array<any>|Promise<Array<any>>
  */
-const filterArray = (predicate, x) => PossiblePromise.then(
+const filterArray = (predicate, x) => possiblePromiseThen(
   createFilterIndex(predicate, x),
   res => x.filter((_, i) => res[i]),
 )
@@ -858,7 +803,7 @@ const filterStringFromIndex = (index, x) => {
  * @synopsis
  * filterString(predicate any=>any, x string) -> string|Promise<string>
  */
-const filterString = (predicate, x) => PossiblePromise.then(
+const filterString = (predicate, x) => possiblePromiseThen(
   createFilterIndex(predicate, x),
   res => filterStringFromIndex(res, x),
 )
@@ -898,7 +843,7 @@ const filterMap = (predicate, x) => {
  * @synopsis
  * filterTypedArray(predicate any=>any, x TypedArray<any>) -> TypedArray<any>
  */
-const filterTypedArray = (predicate, x) => PossiblePromise.then(
+const filterTypedArray = (predicate, x) => possiblePromiseThen(
   filterArray(predicate, x),
   res => new x.constructor(res),
 )
@@ -926,8 +871,7 @@ const filterObject = (predicate, x) => {
  * ) -> (y any, xi any)=>Promise|any
  */
 const filterReducer = (predicate, reducer) => (y, xi) => (
-  PossiblePromise.all([predicate(xi), y]).then(([bool, resY]) => (
-    bool ? reducer(resY, xi) : resY)))
+  possiblePromiseThen(predicate(xi), res => res ? reducer(y, xi) : y))
 
 /*
  * @synopsis
@@ -935,8 +879,6 @@ const filterReducer = (predicate, reducer) => (y, xi) => (
  *   |TypedArray<T>|Iterable<T>|Object<T>|(any, T)=>any -> Filterable<T>
  *
  * filter(predicate any=>any)(x Filterable<any>) -> Filterable<any>
- *
- * @TODO: refactor to PossiblePromise.args
  */
 const filter = predicate => {
   if (!isFunction(predicate)) {
@@ -946,12 +888,11 @@ const filter = predicate => {
     if (isAsyncIterable(x)) return filterAsyncIterable(predicate, x)
     if (isArray(x)) return filterArray(predicate, x)
     if (isString(x)) return filterString(predicate, x)
-    if (is(Set)(x)) return filterSet(predicate, x)
-    if (is(Map)(x)) return filterMap(predicate, x)
-    if (isNumberTypedArray(x)) return filterTypedArray(predicate, x)
-    if (isBigIntTypedArray(x)) return filterTypedArray(predicate, x)
+    if (isSet(x)) return filterSet(predicate, x)
+    if (isMap(x)) return filterMap(predicate, x)
+    if (isTypedArray(x)) return filterTypedArray(predicate, x)
     if (isIterable(x)) return filterIterable(predicate, x) // for generators or custom iterators
-    if (is(Object)(x)) return filterObject(predicate, x)
+    if (isObject(x)) return filterObject(predicate, x)
     if (isFunction(x)) return filterReducer(predicate, x)
     throw new TypeError('filter(...)(x); x invalid')
   }
@@ -980,7 +921,7 @@ const createFilterWithIndexIndex = (predicate, x) => {
  * @synopsis
  * filterArrayWithIndex(predicate function, x Array<any>) -> Array<any>|Promise<Array<any>>
  */
-const filterArrayWithIndex = (predicate, x) => PossiblePromise.then(
+const filterArrayWithIndex = (predicate, x) => possiblePromiseThen(
   createFilterWithIndexIndex(predicate, x),
   res => x.filter((_, i) => res[i]),
 )
@@ -989,7 +930,7 @@ const filterArrayWithIndex = (predicate, x) => PossiblePromise.then(
  * @synopsis
  * filterArrayWithIndex(predicate function, x string) -> string|Promise<string>
  */
-const filterStringWithIndex = (predicate, x) => PossiblePromise.then(
+const filterStringWithIndex = (predicate, x) => possiblePromiseThen(
   createFilterWithIndexIndex(predicate, x),
   res => filterStringFromIndex(res, x),
 )
@@ -998,24 +939,14 @@ const filterStringWithIndex = (predicate, x) => PossiblePromise.then(
  * @synopsis
  * filter.withIndex(predicate function)(x Array<any>|string)
  *   -> Array<any>|Promise<Array<any>>|string|Promise<string>
- *
- * @TODO: refactor to PossiblePromise.args
  */
 filter.withIndex = fn => {
   if (!isFunction(fn)) {
     throw new TypeError('filter.withIndex(f); f is not a function')
   }
   return x => {
-    // if (isAsyncIterable(x)) return filterAsyncIterable(fn, x)
     if (isArray(x)) return filterArrayWithIndex(fn, x)
     if (isString(x)) return filterStringWithIndex(fn, x)
-    // if (is(Set)(x)) return filterSet(fn, x)
-    // if (is(Map)(x)) return filterMap(fn, x)
-    // if (isNumberTypedArray(x)) return filterTypedArray(fn, x)
-    // if (isBigIntTypedArray(x)) return filterTypedArray(fn, x)
-    // if (isIterable(x)) return filterIterable(fn, x) // for generators or custom iterators
-    // if (is(Object)(x)) return filterObject(fn, x)
-    // if (isFunction(x)) return filterReducer(fn, x)
     throw new TypeError('filter.withIndex(...)(x); x invalid')
   }
 }
@@ -1104,16 +1035,14 @@ const reduceObject = (fn, x0, x) => reduceIterable(
  * @note
  * https://stackoverflow.com/questions/30233302/promise-is-it-possible-to-force-cancel-a-promise/30235261#30235261
  * https://stackoverflow.com/questions/62336381/is-this-promise-cancellation-implementation-for-reducing-an-async-iterable-on-th
- *
- * @TODO: refactor to PossiblePromise.args
  */
 const reduce = (fn, init) => {
   if (!isFunction(fn)) {
     throw new TypeError('reduce(x, y); x is not a function')
   }
   return x => {
-    const x0 = toFunction(init)(x)
-    if (isIterable(x)) return PossiblePromise.then(
+    const x0 = isFunction(init) ? init(x) : init
+    if (isIterable(x)) return possiblePromiseThen(
       x0,
       res => reduceIterable(fn, res, x),
     )
@@ -1121,7 +1050,7 @@ const reduce = (fn, init) => {
       const state = { cancel: () => {} }
       const cancelToken = new Promise((_, reject) => { state.cancel = reject })
       const p = Promise.race([
-        PossiblePromise.then(
+        possiblePromiseThen(
           x0,
           res => reduceAsyncIterable(fn, res, x),
         ),
@@ -1130,7 +1059,7 @@ const reduce = (fn, init) => {
       p.cancel = () => { state.cancel(new Error('cancelled')) }
       return p
     }
-    if (is(Object)(x)) return PossiblePromise.then(
+    if (isObject(x)) return possiblePromiseThen(
       x0,
       res => reduceObject(fn, res, x),
     )
@@ -1199,11 +1128,11 @@ const stringToCharCodes = x => {
  * @synopsis
  * TODO
  */
-const toNumberTypedArray = (constructor, x) => {
-  if (isNumber(x)) return constructor.of(x)
+const toTypedArray = (constructor, x) => {
+  if (isNumber(x) || isBigInt(x)) return constructor.of(x)
   if (isString(x)) return new constructor(stringToCharCodes(x))
   throw new TypeError([
-    'toNumberTypedArray(typedArray, y)',
+    'toTypedArray(typedArray, y)',
     'cannot convert y to typedArray',
   ].join('; '))
 }
@@ -1237,57 +1166,22 @@ const typedArrayConcat = (y, chunk, offset) => {
 
 /*
  * @synopsis
- * TODO
+ * Iterable|GeneratorFunction
+ *   |AsyncIterable|AsyncGeneratorFunction -> Sequence
  *
- * @note
- * TODO: refactor to PossiblePromise.then
+ * <T TypedArray>typedArrayTransform(fn function, x0 T)(x Sequence) -> T
  */
-const numberTypedArrayTransform = (fn, x0) => x => {
-  const point = reduce(
+const typedArrayTransform = (fn, x0) => x => possiblePromiseThen(
+  reduce(
     fn(({ y, offset }, xi) => {
-      const chunk = toNumberTypedArray(x0.constructor, xi)
+      const chunk = toTypedArray(x0.constructor, xi)
       const buf = typedArrayConcat(y, chunk, offset)
       return { y: buf, offset: offset + chunk.length }
     }),
     { y: x0.constructor.from(x0), offset: x0.length },
-  )(x)
-  return isPromise(point) ? point.then(
-    res => res.y.slice(0, res.offset)
-  ) : point.y.slice(0, point.offset)
-}
-
-/*
- * @synopsis
- * TODO
- */
-const toBigIntTypedArray = (constructor, x) => {
-  if (isBigInt(x)) return constructor.of(x)
-  throw new TypeError([
-    'toBigIntTypedArray(typedArray, y)',
-    'cannot convert y to typedArray',
-  ].join('; '))
-}
-
-/*
- * @synopsis
- * TODO
- *
- * @note
- * TODO: refactor to PossiblePromise.then
- */
-const bigIntTypedArrayTransform = (fn, x0) => x => {
-  const point = reduce(
-    fn(({ y, offset }, xi) => {
-      const chunk = toBigIntTypedArray(x0.constructor, xi)
-      const buf = typedArrayConcat(y, chunk, offset)
-      return { y: buf, offset: offset + chunk.length }
-    }),
-    { y: x0.constructor.from(x0), offset: x0.length },
-  )(x)
-  return isPromise(point) ? point.then(
-    res => res.y.slice(0, res.offset)
-  ) : point.y.slice(0, point.offset)
-}
+  )(x),
+  ({ y, offset }) => y.slice(0, offset),
+)
 
 /*
  * @synopsis
@@ -1307,7 +1201,7 @@ const objectTransform = (fn, x0) => reduce(
     if (isArray(xi)) { y[xi[0]] = xi[1]; return y }
     return Object.assign(y, xi)
     // TODO: implement
-    // if (is(Object)(xi)) Object.assign(y, xi)
+    // if (isObject(xi)) Object.assign(y, xi)
     // else throw new TypeError('...')
   }),
   x0,
@@ -1321,159 +1215,225 @@ const _transformBranch = (fn, x0, x) => {
   if (isNull(x0)) return nullTransform(fn, x0)(x)
   if (isArray(x0)) return arrayTransform(fn, x0)(x)
   if (isString(x0)) return stringTransform(fn, x0)(x)
-  if (is(Set)(x0)) return setTransform(fn, x0)(x)
-  if (is(Map)(x0)) return mapTransform(fn, x0)(x)
-  if (isNumberTypedArray(x0)) return numberTypedArrayTransform(fn, x0)(x)
-  if (isBigIntTypedArray(x0)) return bigIntTypedArrayTransform(fn, x0)(x)
+  if (isSet(x0)) return setTransform(fn, x0)(x)
+  if (isMap(x0)) return mapTransform(fn, x0)(x)
+  if (isTypedArray(x0)) return typedArrayTransform(fn, x0)(x)
   if (isWritable(x0)) return writableTransform(fn, x0)(x)
-  if (is(Object)(x0)) return objectTransform(fn, x0)(x)
+  if (isObject(x0)) return objectTransform(fn, x0)(x)
   throw new TypeError('transform(x, y); x invalid')
 }
 
 /*
  * @synopsis
  * TODO
- *
- * @TODO: refactor to PossiblePromise.args
  */
 const transform = (fn, init) => {
   if (!isFunction(fn)) {
     throw new TypeError('transform(x, y); y is not a function')
   }
-  return x => PossiblePromise.then(
-    toFunction(init)(x),
+  return x => possiblePromiseThen(
+    isFunction(init) ? init(x) : init,
     res => _transformBranch(fn, res, x),
   )
 }
 
-/*
+/**
+ * @name arrayPushArray
+ *
  * @synopsis
- * TODO
+ * arrayPushArray(x Array, array Array) -> undefined
  */
-const flattenIterable = (reducer, x0, x) => {
-  let y = x0
+const arrayPushArray = (x, array) => {
+  const offset = x.length, length = array.length
+  let i = -1
+  while (++i < length) {
+    x[offset + i] = array[i]
+  }
+}
+
+/**
+ * @name arrayPushIterable
+ *
+ * @synopsis
+ * arrayPushIterable(x Array, array Array) -> undefined
+ */
+const arrayPushIterable = (x, iterable) => {
+  const offset = x.length
+  let i = 0
+  for (const value of iterable) {
+    x[offset + i] = value
+    i += 1
+  }
+}
+
+/**
+ * @name arrayFlatten
+ *
+ * @synopsis
+ * <T any>arrayFlatten(Array<Array<T>|T>) -> Array<T>
+ */
+const arrayFlatten = x => {
+  const y = []
+  for (const xi of x) {
+    (isArray(xi) ? arrayPushArray(y, xi) :
+      isIterable(xi) ? arrayPushIterable(y, xi) : y.push(xi))
+  }
+  return y
+}
+
+/*
+ * @name genericFlatten
+ *
+ * @synopsis
+ * <T any>genericFlatten(
+ *   method string,
+ *   y Set<>,
+ *   x Iterable<Iterable<T>|T>,
+ * ) -> Set<T>
+ */
+const genericFlatten = (method, y, x) => {
+  const add = y[method].bind(y)
   for (const xi of x) {
     if (isIterable(xi)) {
-      for (const xii of xi) y = reducer(y, xii)
-    } else if (is(Object)(xi)) {
-      for (const k in xi) y = reducer(y, xi[k])
+      for (const v of xi) add(v)
     } else {
-      y = reducer(y, xi)
+      add(xi)
     }
   }
   return y
 }
 
-/*
+/**
+ * @name flatMapArray
+ *
  * @synopsis
- * TODO
+ * <A any, B any>flatMapArray(
+ *   func A=>Iterable<B>|B,
+ *   arr Array<A>
+ * ) -> result Array<B>
  */
-const flattenToArray = x => flattenIterable(
-  (y, xii) => { y.push(xii); return y },
-  [],
-  x,
+const flatMapArray = (func, arr) => (
+  possiblePromiseThen(mapArray(func, arr), arrayFlatten))
+
+/**
+ * @name flatMapSet
+ *
+ * @synopsis
+ * <A any, B any>flatMapSet(
+ *   func A=>Iterable<B>|B,
+ *   set Set<A>
+ * ) -> result Set<B>
+ */
+const flatMapSet = (func, set) => possiblePromiseThen(
+  mapSet(func, set),
+  res => genericFlatten('add', new Set(), res),
 )
 
-/*
- * @synopsis
- * TODO
- */
-const flattenToSet = x => flattenIterable(
-  (y, xii) => y.add(xii),
-  new Set(),
-  x,
-)
-
-/*
- * @synopsis
- * TODO
+/**
+ * @name flatMapReducer
  *
- * @note
- * TODO: refactor to PossiblePromise.then
- */
-const flatMapArray = (fn, x) => {
-  const y = mapArray(fn, x)
-  return isPromise(y) ? y.then(flattenToArray) : flattenToArray(y)
-}
-
-/*
  * @synopsis
- * TODO
- *
- * @note
- * TODO: refactor to PossiblePromise.then
+ * <A any, B any>flatMapReducer(
+ *   func A=>Iterable<B>|B,
+ *   reducer (any, any)=>any
+ * ) -> transducedReducer (aggregate any, value any)=>any
  */
-const flatMapSet = (fn, x) => {
-  const y = mapSet(fn, x)
-  return isPromise(y) ? y.then(flattenToSet) : flattenToSet(y)
-}
+const flatMapReducer = (func, reducer) => (aggregate, value) => (
+  possiblePromiseThen(func(value), reduce(reducer, aggregate)))
 
-/*
- * @synopsis
- * TODO
+/**
+ * @name flatMap
  *
- * @note
- * TODO: refactor to PossiblePromise.then
- */
-const flatMapReducer = (fn, reducer) => (y, xi) => {
-  const yi = fn(xi)
-  return isPromise(yi) ? yi.then(reduce(reducer, y)) : reduce(reducer, y)(yi)
-}
-
-/*
  * @synopsis
- * TODO
+ * flatMap(
+ *   func A=>Iterable<B>|B
+ * )(value Array<Array<A>|A>) -> result Array<B>
  *
- * @TODO: refactor to PossiblePromise.args
+ * flatMap(
+ *   func A=>Iterable<B>|B
+ * )(value Set<Set<A>|A>) -> result Set<B>
+ *
+ * flatMap(
+ *   func A=>Iterable<B>|B
+ * )(value (any, any)=>any) -> transducedReducer (any, any)=>any
  */
-const flatMap = fn => {
-  if (!isFunction(fn)) {
-    throw new TypeError('flatMap(x); x is not a function')
+const flatMap = func => {
+  if (!isFunction(func)) {
+    throw new TypeError('flatMap(func); func is not a function')
   }
-  return x => {
-    if (isArray(x)) return flatMapArray(fn, x)
-    if (is(Set)(x)) return flatMapSet(fn, x)
-    if (isFunction(x)) return flatMapReducer(fn, x)
-    throw new TypeError('flatMap(...)(x); x invalid')
+  return value => {
+    if (isArray(value)) return flatMapArray(func, value)
+    if (isSet(value)) return flatMapSet(func, value)
+    if (isFunction(value)) return flatMapReducer(func, value)
+    throw new TypeError(`flatMap(...)(value); invalid value ${value}`)
   }
 }
 
-/*
+/**
+ * @name isDelimitedBy
+ *
  * @synopsis
- * TODO
+ * isDelimitedBy(delim string, value string) -> boolean
  */
-const isDelimitedBy = (delim, x) => (x
-  && x[0] !== delim
-  && x[x.length - 1] !== delim
-  && x.slice(1, x.length - 1).includes(delim))
+const isDelimitedBy = (delim, value) => (value != null
+  && value[0] !== delim
+  && value[value.length - 1] !== delim
+  && value.slice(1, value.length - 1).includes(delim))
 
-/*
+/**
+ * @name arrayPathGet
+ *
  * @synopsis
- * TODO
+ * arrayPathGet(
+ *   path Array<string|number>,
+ *   value any,
+ *   defaultValue function|any,
+ * ) -> result any
  */
-const arrayGet = (path, x, defaultValue) => {
-  let y = x
-  if (!isDefined(y)) return toFunction(defaultValue)(x)
-  for (let i = 0; i < path.length; i++) {
-    y = y[path[i]]
-    if (!isDefined(y)) return toFunction(defaultValue)(x)
+const arrayPathGet = (path, value, defaultValue) => {
+  if (value == null) {
+    return isFunction(defaultValue) ? defaultValue(value) : defaultValue
   }
-  return y
+  const pathLength = path.length
+  let result = value, i = -1
+  while (++i < pathLength) {
+    result = result[path[i]]
+    if (result == null) {
+      return isFunction(defaultValue) ? defaultValue(value) : defaultValue
+    }
+  }
+  return result
 }
 
-/*
- * @synopsis
- * TODO
+/**
+ * @name get
  *
- * @TODO: refactor to PossiblePromise.args
+ * @synopsis
+ * get(
+ *   path Array<number|string>|number|string,
+ *   defaultValue function|any,
+ * )(value any) -> result any
+ *
+ * @catchphrase
+ * Access a property by path
+ *
+ * @description
+ * `get` takes an Array of Numbers or Strings, Number, or String `path` argument, a function or any `defaultValue` argument, and returns a getter function that, when supplied any `value`, returns a property on that `value` by `path`.
+ *
+ * @example
+ * const nestedABC = { a: { b: { c: 1 } } }
+ *
+ * console.log(
+ *   get('a.b.c')(nestedABC),
+ * ) // 1
  */
 const get = (path, defaultValue) => {
-  if (isArray(path)) return x => arrayGet(path, x, defaultValue)
-  if (isNumber(path)) return x => arrayGet([path], x, defaultValue)
+  if (isArray(path)) return value => arrayPathGet(path, value, defaultValue)
+  if (isNumber(path)) return value => arrayPathGet([path], value, defaultValue)
   if (isString(path)) return (isDelimitedBy('.', path)
-    ? x => arrayGet(path.split('.'), x, defaultValue)
-    : x => arrayGet([path], x, defaultValue))
-  throw new TypeError('get(x, y); x invalid')
+    ? value => arrayPathGet(path.split('.'), value, defaultValue)
+    : value => arrayPathGet([path], value, defaultValue))
+  throw new TypeError(`get(path); invalid path ${path}`)
 }
 
 /*
@@ -1491,12 +1451,10 @@ const pickObject = (props, x) => {
 /*
  * @synopsis
  * TODO
- *
- * @TODO: refactor to PossiblePromise.args
  */
 const pick = props => {
   if (isArray(props)) return x => {
-    if (is(Object)(x)) return pickObject(props, x)
+    if (isObject(x)) return pickObject(props, x)
     throw new TypeError('pick(...)(x); x is not an object')
   }
   throw new TypeError('pick(x); x is not an array')
@@ -1515,12 +1473,10 @@ const omitObject = (props, x) => {
 /*
  * @synopsis
  * TODO
- *
- * @TODO: refactor to PossiblePromise.args
  */
 const omit = props => {
   if (isArray(props)) return x => {
-    if (is(Object)(x)) return omitObject(props, x)
+    if (isObject(x)) return omitObject(props, x)
     throw new TypeError('omit(...)(x); x is not an object')
   }
   throw new TypeError('omit(x); x is not an array')
@@ -1556,8 +1512,6 @@ const anyObject = (fn, x) => anyIterable(
 /*
  * @synopsis
  * TODO
- *
- * @TODO: refactor to PossiblePromise.args
  */
 const any = fn => {
   if (!isFunction(fn)) {
@@ -1565,7 +1519,7 @@ const any = fn => {
   }
   return x => {
     if (isIterable(x)) return anyIterable(fn, x)
-    if (is(Object)(x)) return anyObject(fn, x)
+    if (isObject(x)) return anyObject(fn, x)
     throw new TypeError('any(...)(x); x invalid')
   }
 }
@@ -1600,8 +1554,6 @@ const allObject = (fn, x) => allIterable(
 /*
  * @synopsis
  * TODO
- *
- * @TODO: refactor to PossiblePromise.args
  */
 const all = fn => {
   if (!isFunction(fn)) {
@@ -1609,7 +1561,7 @@ const all = fn => {
   }
   return x => {
     if (isIterable(x)) return allIterable(fn, x)
-    if (is(Object)(x)) return allObject(fn, x)
+    if (isObject(x)) return allObject(fn, x)
     throw new TypeError('all(...)(x); x invalid')
   }
 }
@@ -1635,8 +1587,6 @@ const arrayAnd = (fns, x) => {
 /*
  * @synopsis
  * TODO
- *
- * @TODO: refactor to PossiblePromise.args
  */
 const and = fns => {
   if (!isArray(fns)) {
@@ -1673,8 +1623,6 @@ const arrayOr = (fns, x) => {
 /*
  * @synopsis
  * TODO
- *
- * @TODO: refactor to PossiblePromise.args
  */
 const or = fns => {
   if (!isArray(fns)) {
@@ -1693,88 +1641,77 @@ const or = fns => {
 /*
  * @synopsis
  * TODO
- *
- * @TODO: refactor to PossiblePromise.args
  */
 const not = fn => {
   if (!isFunction(fn)) {
     throw new TypeError('not(x); x is not a function')
   }
-  return x => new PossiblePromise(fn(x)).then(res => !res)
+  return x => possiblePromiseThen(fn(x), res => !res)
 }
 
 /*
  * @synopsis
  * TODO
  */
-const compare = (predicate, f, g) => x => PossiblePromise.all([
-  toFunction(f)(x),
-  toFunction(g)(x),
-]).then(res => predicate(...res))
-
-/*
- * @synopsis
- * TODO
- *
- * @TODO: refactor to PossiblePromise.args
- */
-const eq = function(f, g) {
-  if (arguments.length !== 2) {
-    throw new RangeError('eq(...arguments); exactly two arguments required')
-  }
-  return compare((a, b) => a === b, f, g)
+const eq = (f, g) => {
+  if (isFunction(f) && isFunction(g)) return x => (
+    possiblePromiseAll([f(x), g(x)]).then(([fx, gx]) => fx === gx))
+  if (isFunction(f)) return x => possiblePromiseThen(f(x), fx => fx === g)
+  if (isFunction(g)) return x => possiblePromiseThen(g(x), gx => f === gx)
+  const h = f === g
+  return () => h
 }
 
 /*
  * @synopsis
  * TODO
- *
- * @TODO: refactor to PossiblePromise.args
  */
 const gt = function(f, g) {
-  if (arguments.length !== 2) {
-    throw new RangeError('gt(...arguments); exactly two arguments required')
-  }
-  return compare((a, b) => a > b, f, g)
+  if (isFunction(f) && isFunction(g)) return x => (
+    possiblePromiseAll([f(x), g(x)]).then(([fx, gx]) => fx > gx))
+  if (isFunction(f)) return x => possiblePromiseThen(f(x), fx => fx > g)
+  if (isFunction(g)) return x => possiblePromiseThen(g(x), gx => f > gx)
+  const h = f > g
+  return () => h
 }
 
 /*
  * @synopsis
  * TODO
- *
- * @TODO: refactor to PossiblePromise.args
  */
 const lt = function(f, g) {
-  if (arguments.length !== 2) {
-    throw new RangeError('lt(...arguments); exactly two arguments required')
-  }
-  return compare((a, b) => a < b, f, g)
+  if (isFunction(f) && isFunction(g)) return x => (
+    possiblePromiseAll([f(x), g(x)]).then(([fx, gx]) => fx < gx))
+  if (isFunction(f)) return x => possiblePromiseThen(f(x), fx => fx < g)
+  if (isFunction(g)) return x => possiblePromiseThen(g(x), gx => f < gx)
+  const h = f < g
+  return () => h
 }
 
 /*
  * @synopsis
  * TODO
- *
- * @TODO: refactor to PossiblePromise.args
  */
 const gte = function(f, g) {
-  if (arguments.length !== 2) {
-    throw new RangeError('gte(...arguments); exactly two arguments required')
-  }
-  return compare((a, b) => a >= b, f, g)
+  if (isFunction(f) && isFunction(g)) return x => (
+    possiblePromiseAll([f(x), g(x)]).then(([fx, gx]) => fx >= gx))
+  if (isFunction(f)) return x => possiblePromiseThen(f(x), fx => fx >= g)
+  if (isFunction(g)) return x => possiblePromiseThen(g(x), gx => f >= gx)
+  const h = f >= g
+  return () => h
 }
 
 /*
  * @synopsis
  * TODO
- *
- * @TODO: refactor to PossiblePromise.args
  */
 const lte = function(f, g) {
-  if (arguments.length !== 2) {
-    throw new RangeError('lte(...arguments); exactly two arguments required')
-  }
-  return compare((a, b) => a <= b, f, g)
+  if (isFunction(f) && isFunction(g)) return x => (
+    possiblePromiseAll([f(x), g(x)]).then(([fx, gx]) => fx <= gx))
+  if (isFunction(f)) return x => possiblePromiseThen(f(x), fx => fx <= g)
+  if (isFunction(g)) return x => possiblePromiseThen(g(x), gx => f <= gx)
+  const h = f <= g
+  return () => h
 }
 
 exports.pipe = pipe

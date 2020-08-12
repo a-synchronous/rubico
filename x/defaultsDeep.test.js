@@ -78,7 +78,7 @@ describe('defaultsDeep', () => {
   it('throws TypeError on defaultsDeep(defaultCollection); defaultCollection is not an Array or Object', async () => {
     assert.throws(
       () => defaultsDeep(0),
-      new TypeError('defaultsDeep(defaultCollection); defaultCollection is not an Array or Object'),
+      new TypeError('defaultsDeep(defaultCollection); defaultCollection is not a Struct'),
     )
   })
   it('throws TypeError on defaultsDeep(...)(x); x invalid', async () => {

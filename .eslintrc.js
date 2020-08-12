@@ -37,7 +37,7 @@ module.exports = {
         ],
         'brace-style': 'off',
         'callback-return': 'error',
-        'camelcase': 'error',
+        'camelcase': 'off',
         'capitalized-comments': 'off',
         'class-methods-use-this': 'error',
         'comma-dangle': 'off',
@@ -71,7 +71,7 @@ module.exports = {
             }
         ],
         'eol-last': 'error',
-        'eqeqeq': 'error',
+        'eqeqeq': 'off',
         'func-call-spacing': 'error',
         'func-name-matching': 'error',
         'func-names': 'off',
@@ -147,7 +147,7 @@ module.exports = {
         'no-duplicate-imports': 'error',
         'no-else-return': 'error',
         'no-empty-function': 'off',
-        'no-eq-null': 'error',
+        'no-eq-null': 'off',
         'no-eval': 'error',
         'no-extend-native': 'error',
         'no-extra-bind': 'error',
@@ -186,7 +186,7 @@ module.exports = {
         'no-param-reassign': 'off',
         'no-path-concat': 'error',
         'no-plusplus': [
-            'error',
+            'off',
             {
                 'allowForLoopAfterthoughts': true
             }
@@ -270,7 +270,7 @@ module.exports = {
         'require-atomic-updates': 'error',
         'require-await': 'off',
         'require-jsdoc': 'error',
-        'require-unicode-regexp': 'error',
+        'require-unicode-regexp': 'off',
         'rest-spread-spacing': [
             'error',
             'never'
@@ -311,7 +311,7 @@ module.exports = {
             'error',
             'never'
         ],
-        'valid-jsdoc': 'error',
+        'valid-jsdoc': 'off',
         'vars-on-top': 'error',
         'wrap-iife': [
             'error',

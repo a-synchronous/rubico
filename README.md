@@ -83,7 +83,6 @@ import rubico from 'https://unpkg.com/rubico/es.js'
  * minimum Safari version: 11.1
 
 # Awesome Resources
-## Beginner
  * [Practical Functional Programming in JavaScript - Why it's worth it](https://dev.to/richytong/practical-functional-programming-in-javascript-why-it-s-worth-it-ep1)
  * [Practical Functional Programming in JavaScript - Data last](https://dev.to/richytong/practical-functional-programming-in-javascript-data-last-1gjo)
  * [Practical Functional Programming in JavaScript - Side Effects and Purity](https://dev.to/richytong/practical-functional-programming-in-javascript-side-effects-and-purity-revised-420h)
@@ -91,8 +90,6 @@ import rubico from 'https://unpkg.com/rubico/es.js'
  * [Practical Functional Programming in JavaScript - Techniques for Composing Data](https://dev.to/richytong/practical-functional-programming-in-javascript-techniques-for-composing-data-c39)
  * [Practical Functional Programming in JavaScript - Control Flow](https://dev.to/richytong/practical-functional-programming-in-javascript-control-flow-2fim)
  * [Practical Functional Programming in JavaScript - Error Handling](https://dev.to/richytong/practical-functional-programming-in-javascript-error-handling-8g5)
-
-## Advanced
  * [Transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md)
 
 # Contributing

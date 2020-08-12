@@ -1,58 +1,87 @@
-const PossiblePromise = require('./possible-promise')
 const timeInLoop = require('../x/timeInLoop')
+const PossiblePromise = require('./PossiblePromise')
 
-const identity = x => x
-
-// 4.25ms
-timeInLoop('call_nonPromise', 1e6, () => {
-  identity(5)
-})
-
-// 12.191ms
-timeInLoop('nonPromise_PossiblePromise.then', 1e6, () => {
-  PossiblePromise.then(5, identity)
-})
-
-// 12.483ms
-timeInLoop('nonPromise_PossiblePromise.prototype.then', 1e6, () => {
-  new PossiblePromise(5).then(identity)
-})
-
-const createPromise = () => Promise.resolve(5)
-
-const singletonPromise = Promise.resolve(5)
-
-// 306.77ms
-timeInLoop('singletonPromise.then', 1e6, () => {
-  singletonPromise.then(identity)
-})
-
-// 234.458ms
-timeInLoop('singletonPromise_PossiblePromise.then', 1e6, () => {
-  PossiblePromise.then(singletonPromise, identity)
-})
-
-// 496.38ms
-timeInLoop('singletonPromise_PossiblePromise.prototype.then', 1e6, () => {
-  new PossiblePromise(singletonPromise).then(identity)
-})
-
-// 428.502ms
-timeInLoop('newPromise.then', 1e6, () => {
-  createPromise().then(identity)
-})
-
-// 388.951ms
-timeInLoop('newPromise_PossiblePromise.then', 1e6, () => {
-  PossiblePromise.then(createPromise(), identity)
-})
-
-// 363.467ms
-timeInLoop('newPromise_PossiblePromise.prototype.then', 1e6, () => {
-  new PossiblePromise(createPromise()).then(identity)
-})
-
-/*
- * @remarks
- * PossiblePromise.prototype.then beats PossiblePromise.then when acting on distinct (new) Promises. However, the opposite is true for operations on a singleton Promise
+/**
+ * @name PossiblePromise.then
+ *
+ * @benchmark
+ * square(3): 1e+7: 13.162ms
+ * square_PossiblePromiseThen(3): 1e+7: 15.374ms
+ *
+ * square_promiseThen: 1e+5: 27.686ms
+ * square_PossiblePromiseThen(p5): 1e+5: 28.596ms
  */
+
+const square = x => x ** 2
+
+// timeInLoop('square(3)', 1e7, () => square(3))
+
+const square_PossiblePromiseThen = p => PossiblePromise.then(p, square)
+
+// timeInLoop('square_PossiblePromiseThen(3)', 1e7, () => square_PossiblePromiseThen(3))
+
+const p5 = Promise.resolve(5)
+
+const square_promiseThen = () => p5.then(square)
+
+// timeInLoop('square_promiseThen', 1e5, () => square_promiseThen(p5))
+
+// timeInLoop('square_PossiblePromiseThen(p5)', 1e5, () => square_PossiblePromiseThen(p5))
+
+/**
+ * @name PossiblePromise.all
+ *
+ * @benchmark
+ * promiseAll([resolvedPromise]): 1e+5: 148.01ms
+ * possiblePromiseAll([resolvedPromise]): 1e+5: 149.323ms
+ *
+ * sum([1, 2, 3]): 1e+6: 11.503ms
+ * possiblePromiseAll([1, 2, 3]).then([sum]): 1e+6: 24.451ms
+ */
+
+const promiseAll = Promise.all.bind(Promise)
+
+const resolvedPromise = Promise.resolve()
+
+const possiblePromiseAll = PossiblePromise.all
+
+const sum = ([a, b, c]) => a + b + c
+
+// timeInLoop('promiseAll([resolvedPromise])', 1e5, () => promiseAll([resolvedPromise]))
+
+// timeInLoop('possiblePromiseAll([resolvedPromise])', 1e5, () => possiblePromiseAll([resolvedPromise]))
+
+// timeInLoop('sum([1, 2, 3])', 1e6, () => sum([1, 2, 3]))
+
+// timeInLoop('possiblePromiseAll([1, 2, 3]).then([sum])', 1e6, () => possiblePromiseAll([1, 2, 3]).then(sum))
+
+/**
+ * @name PossiblePromise.args
+ *
+ * @benchmark
+ * add(1, 2): 1e+6: 4.012ms
+ * PossiblePromise.argsSome(add)(1, 2): 1e+6: 11.062ms
+ * PossiblePromise.argsSomeApply(add)(1, 2): 1e+6: 11.33ms
+ * PossiblePromise.argumentsLoop(add)(1, 2): 1e+6: 17.076ms
+ * PossiblePromise.argsLoop(add)(1, 2): 1e+6: 47.844ms
+ */
+
+const add = (a, b) => a + b
+
+// timeInLoop('add(1, 2)', 1e6, () => add(1, 2))
+
+// const possiblePromiseArgsSomeAdd = PossiblePromise.args(add)
+
+// timeInLoop('PossiblePromise.argsSome(add)(1, 2)', 1e6, () => possiblePromiseArgsSomeAdd(1, 2))
+
+// const possiblePromiseArgsSomeApplyAdd = PossiblePromise.argsSomeApply(add)
+
+// timeInLoop('PossiblePromise.argsSomeApply(add)(1, 2)', 1e6, () => possiblePromiseArgsSomeApplyAdd(1, 2))
+
+// const possiblePromiseArgumentsLoopAdd = PossiblePromise.argumentsLoop(add)
+
+// timeInLoop('PossiblePromise.argumentsLoop(add)(1, 2)', 1e6, () => possiblePromiseArgumentsLoopAdd(1, 2))
+
+// const possiblePromiseArgsLoopAdd = PossiblePromise.argsLoop(add)
+
+// timeInLoop('PossiblePromise.argsLoop(add)(1, 2)', 1e6, () => possiblePromiseArgsLoopAdd(1, 2))

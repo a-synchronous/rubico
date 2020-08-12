@@ -10,18 +10,10 @@ describe('first', () => {
     assert.strictEqual(first('abc'), 'a')
     assert.strictEqual(first(''), undefined)
   })
-  it('throws TypeError on first(nonArrayOrString)', async () => {
-    assert.throws(
-      () => first(undefined),
-      new TypeError('first(x); x is not an Array or String'),
-    )
-    assert.throws(
-      () => first(),
-      new TypeError('first(x); x is not an Array or String'),
-    )
-    assert.throws(
-      () => first(5),
-      new TypeError('first(x); x is not an Array or String'),
-    )
+  it('undefined for undefined', async () => {
+    assert.strictEqual(first(undefined), undefined)
+  })
+  it('undefined for 5', async () => {
+    assert.strictEqual(first(5), undefined)
   })
 })

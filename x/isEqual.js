@@ -1,5 +1,3 @@
-const { eq } = require('..')
-
-const isEqual = (a, b) => eq(a, b)()
+const isEqual = (a, b) => a === b
 
 module.exports = isEqual

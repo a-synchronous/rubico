@@ -1,9 +1,24 @@
 ## v1.5.0
  * monad/PossiblePromise - Possibly a promise
- * monad/Instance - Performant type checking
- * monad/Flattenable - Flattening things
- * x/find PossiblePromise revamp
- * x/defaultsDeep PossiblePromise revamp
+ * monad/Instance - Type checking
+ * monad/Struct - Finite data structure
+ * monad/Mux - Multiplexing for Sequences of Sequences
+ * x/size - Get the size of a collection
+ * x/isFunction - Tell if Function
+ * x/timeInLoop.async - Like timeInLoop, but await all calls
+ * x/find performance revamp + benchmarks
+ * x/defaultsDeep performance revamp + benchmarks
+ * x/flatten performance revamp + benchmarks
+ * x/isDeepEqual performance revamp + benchmarks
+ * x/isEmpty performance revamp + benchmarks
+ * x/isEqual performance revamp + benchmarks
+ * x/isObject performance revamp + benchmarks
+ * x/isString performance revamp + benchmarks
+ * x/first performance revamp + benchmarks
+ * x/last performance revamp + benchmarks
+ * improve PossiblePromise.args stack trace
+ * fine tune PossiblePromise performance
+ * fine tune core performance
 
 ## v1.3.2
  * x/defaultsDeep - enforce Array or Object inputs

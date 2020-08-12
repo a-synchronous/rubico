@@ -2,7 +2,16 @@ const assert = require('assert')
 const stream = require('stream')
 const path = require('path')
 const fs = require('fs')
-const r = require('.')
+const rubico = require('.')
+
+const {
+  pipe, fork, assign,
+  tap, tryCatch, switchCase,
+  map, filter, reduce, transform, flatMap,
+  any, all, and, or, not,
+  eq, gt, lt, gte, lte,
+  get, pick, omit,
+} = rubico
 
 const ase = assert.strictEqual
 
@@ -115,54 +124,54 @@ const bigIntTypedArrayConstructors = [
 describe('rubico', () => {
   describe('pipe', () => {
     it('chains async and regular functions together', async () => {
-      ase(await r.pipe([hi, ho, asyncHey])('yo'), 'yohihohey')
+      ase(await pipe([hi, ho, asyncHey])('yo'), 'yohihohey')
     })
     it('chains functions in reverse if passed a reducer (very contrived)', async () => {
-      ase(await r.pipe([hi, ho, asyncHey])((y, xi) => y + xi), '(y, xi) => y + xiheyhohi')
+      ase(await pipe([hi, ho, asyncHey])((y, xi) => y + xi), '(y, xi) => y + xiheyhohi')
     })
     it('does something without arguments', async () => {
-      ase(await r.pipe([hi, ho, asyncHey])(), 'undefinedhihohey')
+      ase(await pipe([hi, ho, asyncHey])(), 'undefinedhihohey')
     })
     it('chaining one fn is the same as just calling that fn', async () => {
-      ase(await r.pipe([asyncHey])('yo'), await asyncHey('yo'))
+      ase(await pipe([asyncHey])('yo'), await asyncHey('yo'))
     })
     it('returns the raw value (no promise required) if all functions are sync', async () => {
-      ase(r.pipe([hi, hi, hi])('yo'), 'yohihihi')
+      ase(pipe([hi, hi, hi])('yo'), 'yohihihi')
     })
     it('returns a promise if any fns async', async () => {
-      aok(r.pipe([hi, hi, hi, asyncHey])('yo') instanceof Promise)
+      aok(pipe([hi, hi, hi, asyncHey])('yo') instanceof Promise)
     })
     it('throws a TypeError if first argument not an array', async () => {
       assert.throws(
         () => {
-          r.pipe(() => 1, undefined, () => 2)
+          pipe(() => 1, undefined, () => 2)
         },
         new TypeError('pipe(fns); fns is not an array of functions'),
       )
     })
     it('throws a RangeError if passed less than one function', async () => {
       assert.throws(
-        () => r.pipe([]),
+        () => pipe([]),
         new RangeError('pipe(fns); fns is not an array of at least one function'),
       )
     })
     it('throws a TypeError if any arguments are not a function', async () => {
       assert.throws(
         () => {
-          r.pipe([() => 1, undefined, () => 2])
+          pipe([() => 1, undefined, () => 2])
         },
         new TypeError('pipe(fns); fns[1] is not a function'),
       )
     })
     it('handles sync errors good', async () => {
       assert.throws(
-        () => r.pipe([hi, hi, x => { throw new Error(`throwing ${x}`) }])('yo'),
+        () => pipe([hi, hi, x => { throw new Error(`throwing ${x}`) }])('yo'),
         new Error('throwing yohihi'),
       )
     })
     it('handles async errors good', async () => {
       assert.rejects(
-        () => r.pipe([hi, asyncHey, x => { throw new Error(`throwing ${x}`) }])('yo'),
+        () => pipe([hi, asyncHey, x => { throw new Error(`throwing ${x}`) }])('yo'),
         new Error('throwing yohihey'),
       )
     })
@@ -170,82 +179,74 @@ describe('rubico', () => {
 
   describe('fork', () => {
     it('maps input to array of sync functions', async () => {
-      ade(r.fork([hi, hi, hi])('yo'), ['yohi', 'yohi', 'yohi'])
+      ade(fork([hi, hi, hi])('yo'), ['yohi', 'yohi', 'yohi'])
     })
     it('maps input to object of sync functions', async () => {
       ade(
-        r.fork({ a: hi, b: hi, c: hi })('yo'),
+        fork({ a: hi, b: hi, c: hi })('yo'),
         { a: 'yohi', b: 'yohi', c: 'yohi' },
       )
     })
     it('maps input to array of async functions', async () => {
-      aok(r.fork([asyncHey, asyncHey, asyncHey])('yo') instanceof Promise)
+      aok(fork([asyncHey, asyncHey, asyncHey])('yo') instanceof Promise)
       ade(
-        await r.fork([asyncHey, asyncHey, asyncHey])('yo'),
+        await fork([asyncHey, asyncHey, asyncHey])('yo'),
         ['yohey', 'yohey', 'yohey'],
       )
     })
     it('maps input to object of async functions', async () => {
-      aok(r.fork({ a: asyncHey, b: asyncHey, c: asyncHey })('yo') instanceof Promise)
+      aok(fork({ a: asyncHey, b: asyncHey, c: asyncHey })('yo') instanceof Promise)
       ade(
-        await r.fork({ a: asyncHey, b: asyncHey, c: asyncHey })('yo'),
-        { a: 'yohey', b: 'yohey', c: 'yohey' },
-      )
-      ade(
-        await r.fork({ a: asyncHey, b: asyncHey, c: asyncHey })(Promise.resolve('yo')),
+        await fork({ a: asyncHey, b: asyncHey, c: asyncHey })('yo'),
         { a: 'yohey', b: 'yohey', c: 'yohey' },
       )
     })
     it('any functions async => Promise', async () => {
-      aok(r.fork([asyncHey, asyncHey, hi])('yo') instanceof Promise)
+      aok(fork([asyncHey, asyncHey, hi])('yo') instanceof Promise)
       ade(
-        await r.fork([asyncHey, asyncHey, hi])('yo'),
-        ['yohey', 'yohey', 'yohi'],
-      )
-      ade(
-        await r.fork([asyncHey, asyncHey, hi])(Promise.resolve('yo')),
+        await fork([asyncHey, asyncHey, hi])('yo'),
         ['yohey', 'yohey', 'yohi'],
       )
     })
     it('throws TypeError for fork([])', async () => {
       assert.throws(
-        () => r.fork([]),
+        () => fork([]),
         new RangeError('fork(x); x is not an array of at least one function'),
       )
     })
     it('throws TypeError for fork({})', async () => {
       assert.throws(
-        () => r.fork({}),
+        () => fork({}),
         new RangeError('fork(x); x is not an object of at least one entry'),
       )
     })
     it('throws TypeError for fork([nonFunction])', async () => {
       assert.throws(
-        () => r.fork(['hey']),
+        () => fork(['hey']),
         new TypeError('fork(x); x[0] is not a function'),
       )
     })
     it('throws TypeError for fork({ a: nonFunction })', async () => {
       assert.throws(
-        () => r.fork({ a: 'hey' }),
+        () => fork({ a: 'hey' }),
         new TypeError('fork(x); x[\'a\'] is not a function'),
       )
     })
     it('throws TypeError for String', async () => {
       assert.throws(
-        () => r.fork('ayelmao'),
+        () => fork('ayelmao'),
         new TypeError('fork(x); x invalid'),
       )
     })
     it('throws TypeError for Set', async () => {
       assert.throws(
-        () => r.fork(new Set([hi])),
+        () => fork(new Set([hi])),
         new TypeError('fork(x); x invalid'),
       )
     })
     it('throws TypeError for Map', async () => {
       assert.throws(
-        () => r.fork(new Map([['a', hi]])),
+        () => fork(new Map([['a', hi]])),
         new TypeError('fork(x); x invalid'),
       )
     })
@@ -255,7 +256,7 @@ describe('rubico', () => {
     it('syncly forks into array of functions', async () => {
       const arr = []
       ade(
-        r.fork.series([
+        fork.series([
           () => { arr.push(1); return 'a' },
           () => { arr.push(2); return 'b' },
           () => { arr.push(3); return 'c' },
@@ -266,7 +267,7 @@ describe('rubico', () => {
     })
     it('asyncly forks into array of functions, running each function in series', async () => {
       const arr = []
-      const staggeredPush = r.fork.series([
+      const staggeredPush = fork.series([
         () => sleep(10).then(() => { arr.push(1); return 'a' }),
         () => sleep(5).then(() => { arr.push(2); return 'b' }),
         () => { arr.push(3); return 'c' },
@@ -275,7 +276,7 @@ describe('rubico', () => {
       ade(await staggeredPush, ['a', 'b', 'c'])
       ade(arr, [1, 2, 3])
       const arr2 = []
-      const parallelPush = r.fork([
+      const parallelPush = fork([
         () => sleep(10).then(() => { arr2.push(1); return 'a' }),
         () => sleep(5).then(() => { arr2.push(2); return 'b' }),
         () => { arr2.push(3); return 'c' },
@@ -286,19 +287,19 @@ describe('rubico', () => {
     })
     it('throws TypeError for fork([])', async () => {
       assert.throws(
-        () => r.fork.series([]),
+        () => fork.series([]),
         new RangeError('fork.series(x); x is not an array of at least one function'),
       )
     })
     it('throws TypeError for fork([nonFunction])', async () => {
       assert.throws(
-        () => r.fork.series(['hey']),
+        () => fork.series(['hey']),
         new TypeError('fork.series(x); x[0] is not a function'),
       )
     })
     it('throws TypeError for non array functions', async () => {
       assert.throws(
-        () => r.fork.series({}),
+        () => fork.series({}),
         new TypeError('fork.series(x); x invalid'),
       )
     })
@@ -307,7 +308,7 @@ describe('rubico', () => {
   describe('assign', () => {
     it('maps input to object of sync functions then merges', async () => {
       ade(
-        r.assign({
+        assign({
           b: x => x.a + 'yo',
           c: x => x.a + 'yaya',
         })({ a: 'a' }),
@@ -315,34 +316,27 @@ describe('rubico', () => {
       )
     })
     it('maps input to object of async functions then merges', async () => {
-      aok(r.assign({
+      aok(assign({
         b: async x => x.a + 'yo',
         c: async x => x.a + 'yaya',
       })({ a: 'a' }) instanceof Promise)
       ade(
-        await r.assign({
+        await assign({
           b: async x => x.a + 'yo',
           c: async x => x.a + 'yaya',
         })({ a: 'a' }),
         { a: 'a', b: 'ayo', c: 'ayaya' },
       )
-      ade(
-        await r.assign({
-          b: async x => x.a + 'yo',
-          c: async x => x.a + 'yaya',
-        })(Promise.resolve({ a: 'a' })),
-        { a: 'a', b: 'ayo', c: 'ayaya' },
-      )
     })
     it('throws TypeError on assign(nonObject)', async () => {
       assert.throws(
-        () => r.assign(new Set(['hey'])),
+        () => assign(new Set(['hey'])),
         new TypeError('assign(funcs); funcs is not an object of functions'),
       )
     })
     it('throws TypeError on assign(...)(nonObject)', async () => {
       assert.throws(
-        () => r.assign({ a: hi })('hi'),
+        () => assign({ a: hi })('hi'),
         new TypeError('assign(...)(x); x is not an object'),
       )
     })
@@ -350,15 +344,15 @@ describe('rubico', () => {
 
   describe('tap', () => {
     it('[sync] calls a provided function with input, returning input', async () => {
-      ase(r.tap(x => x + 1)(1), 1)
+      ase(tap(x => x + 1)(1), 1)
     })
     it('[async] calls a provided function with input, returning input', async () => {
-      aok(r.tap(async x => x + 1)(1) instanceof Promise)
-      ase(await r.tap(async x => x + 1)(1), 1)
+      aok(tap(async x => x + 1)(1) instanceof Promise)
+      ase(await tap(async x => x + 1)(1), 1)
     })
     it('throws a TypeError if passed a non function', async () => {
       assert.throws(
-        () => r.tap('hey'),
+        () => tap('hey'),
         new TypeError('tap(f); f is not a function'),
       )
     })
@@ -369,7 +363,7 @@ describe('rubico', () => {
       const isOdd = x => x % 2 === 1
       const oddNumbers = []
       ade(
-        r.tap.if(isOdd, number => oddNumbers.push(number))([1, 2, 3, 4, 5]),
+        tap.if(isOdd, number => oddNumbers.push(number))([1, 2, 3, 4, 5]),
         [1, 2, 3, 4, 5],
       )
       ade(oddNumbers, [1, 3, 5])
@@ -385,8 +379,8 @@ describe('rubico', () => {
     it('tries a sync function and catches with a sync function', async () => {
       const errProp = (err, x) => { err.x = x; return err }
       const throwError = x => { throw new Error(x) }
-      ase(r.tryCatch(x => x + 1, errProp)(1), 2)
-      const e1 = r.tryCatch(throwError, errProp)(1)
+      ase(tryCatch(x => x + 1, errProp)(1), 2)
+      const e1 = tryCatch(throwError, errProp)(1)
       aok(e1 instanceof Error)
       ase(e1.name, 'Error')
       ase(e1.message, '1')
@@ -396,16 +390,16 @@ describe('rubico', () => {
       const errProp = (err, x) => { err.x = x; return err }
       const asyncThrowError = async x => { throw new Error(x) }
       const reject = x => Promise.reject(new Error(x))
-      aok(r.tryCatch(async x => x + 1, errProp)(1) instanceof Promise)
-      ase(await r.tryCatch(async x => x + 1, errProp)(1), 2)
-      aok(r.tryCatch(asyncThrowError, errProp)(1) instanceof Promise)
-      const e1 = await r.tryCatch(asyncThrowError, errProp)(1)
+      aok(tryCatch(async x => x + 1, errProp)(1) instanceof Promise)
+      ase(await tryCatch(async x => x + 1, errProp)(1), 2)
+      aok(tryCatch(asyncThrowError, errProp)(1) instanceof Promise)
+      const e1 = await tryCatch(asyncThrowError, errProp)(1)
       aok(e1 instanceof Error)
       ase(e1.name, 'Error')
       ase(e1.message, '1')
       ase(e1.x, 1)
-      aok(r.tryCatch(reject, errProp)(1) instanceof Promise)
-      const e2 = await r.tryCatch(reject, errProp)(1)
+      aok(tryCatch(reject, errProp)(1) instanceof Promise)
+      const e2 = await tryCatch(reject, errProp)(1)
       aok(e2 instanceof Error)
       ase(e2.name, 'Error')
       ase(e2.message, '1')
@@ -414,9 +408,9 @@ describe('rubico', () => {
     it('tries a sync function and catches with an async function', async () => {
       const asyncErrProp = async (err, x) => { err.x = x; return err }
       const throwError = x => { throw new Error(x) }
-      ase(r.tryCatch(x => x + 1, asyncErrProp)(1), 2)
-      aok(r.tryCatch(throwError, asyncErrProp)(1) instanceof Promise)
-      const e1 = await r.tryCatch(throwError, asyncErrProp)(1)
+      ase(tryCatch(x => x + 1, asyncErrProp)(1), 2)
+      aok(tryCatch(throwError, asyncErrProp)(1) instanceof Promise)
+      const e1 = await tryCatch(throwError, asyncErrProp)(1)
       aok(e1 instanceof Error)
       ase(e1.name, 'Error')
       ase(e1.message, '1')
@@ -426,16 +420,16 @@ describe('rubico', () => {
       const asyncErrProp = async (err, x) => { err.x = x; return err }
       const asyncThrowError = async x => { throw new Error(x) }
       const reject = x => Promise.reject(new Error(x))
-      aok(r.tryCatch(async x => x + 1, asyncErrProp)(1) instanceof Promise)
-      ase(await r.tryCatch(async x => x + 1, asyncErrProp)(1), 2)
-      aok(r.tryCatch(asyncThrowError, asyncErrProp)(1) instanceof Promise)
-      const e1 = await r.tryCatch(asyncThrowError, asyncErrProp)(1)
+      aok(tryCatch(async x => x + 1, asyncErrProp)(1) instanceof Promise)
+      ase(await tryCatch(async x => x + 1, asyncErrProp)(1), 2)
+      aok(tryCatch(asyncThrowError, asyncErrProp)(1) instanceof Promise)
+      const e1 = await tryCatch(asyncThrowError, asyncErrProp)(1)
       aok(e1 instanceof Error)
       ase(e1.name, 'Error')
       ase(e1.message, '1')
       ase(e1.x, 1)
-      aok(r.tryCatch(reject, asyncErrProp)(1) instanceof Promise)
-      const e2 = await r.tryCatch(reject, asyncErrProp)(1)
+      aok(tryCatch(reject, asyncErrProp)(1) instanceof Promise)
+      const e2 = await tryCatch(reject, asyncErrProp)(1)
       aok(e2 instanceof Error)
       ase(e2.name, 'Error')
       ase(e2.message, '1')
@@ -443,13 +437,13 @@ describe('rubico', () => {
     })
     it('throws a TypeError if passed a non function tryer', async () => {
       assert.throws(
-        () => r.tryCatch('hey', () => {}),
+        () => tryCatch('hey', () => {}),
         new TypeError('tryCatch(x, y); x is not a function'),
       )
     })
     it('throws a TypeError if passed a non function catcher', async () => {
       assert.throws(
-        () => r.tryCatch(() => {}, Buffer.from('abc')),
+        () => tryCatch(() => {}, Buffer.from('abc')),
         new TypeError('tryCatch(x, y); y is not a function'),
       )
     })
@@ -458,7 +452,7 @@ describe('rubico', () => {
   describe('switchCase', () => {
     it('switches on provided sync functions', async () => {
       ase(
-        r.switchCase([
+        switchCase([
           x => x === 1, () => 'hi',
           x => x === 2, () => 'ho',
           () => 'hey',
@@ -466,7 +460,7 @@ describe('rubico', () => {
         'hi',
       )
       ase(
-        r.switchCase([
+        switchCase([
           x => x === 1, () => 'hi',
           x => x === 2, () => 'ho',
           () => 'hey',
@@ -474,7 +468,7 @@ describe('rubico', () => {
         'ho',
       )
       ase(
-        r.switchCase([
+        switchCase([
           x => x === 1, () => 'hi',
           x => x === 2, () => 'ho',
           () => 'hey',
@@ -482,7 +476,7 @@ describe('rubico', () => {
         'hey',
       )
       ase(
-        r.switchCase([
+        switchCase([
           x => x === 1, async () => 'hi',
           x => x === 2, async () => 'ho',
           () => 'hey',
@@ -492,21 +486,21 @@ describe('rubico', () => {
     })
     it('switches on provided async functions', async () => {
       aok(
-        r.switchCase([
+        switchCase([
           async x => x === 1, async () => 'hi',
           async x => x === 2, async () => 'ho',
           async () => 'hey',
         ])(1) instanceof Promise,
       )
       aok(
-        r.switchCase([
+        switchCase([
           async x => x === 1, () => 'hi',
           x => x === 2, () => 'ho',
           () => 'hey',
         ])(1) instanceof Promise,
       )
       ase(
-        await r.switchCase([
+        await switchCase([
           async x => x === 1, async () => 'hi',
           async x => x === 2, async () => 'ho',
           async () => 'hey',
@@ -514,7 +508,7 @@ describe('rubico', () => {
         'hi',
       )
       ase(
-        await r.switchCase([
+        await switchCase([
           async x => x === 1, async () => 'hi',
           async x => x === 2, async () => 'ho',
           async () => 'hey',
@@ -522,7 +516,7 @@ describe('rubico', () => {
         'ho',
       )
       ase(
-        await r.switchCase([
+        await switchCase([
           async x => x === 1, async () => 'hi',
           async x => x === 2, async () => 'ho',
           async () => 'hey',
@@ -532,25 +526,25 @@ describe('rubico', () => {
     })
     it('throws a TypeError if passed a non array', async () => {
       assert.throws(
-        () => r.switchCase('hey'),
+        () => switchCase('hey'),
         new TypeError('switchCase(fns); fns is not an array of functions'),
       )
     })
     it('throws a RangeError if passed less than three functions', async () => {
       assert.throws(
-        () => r.switchCase([() => false, () => 'hey']),
+        () => switchCase([() => false, () => 'hey']),
         new RangeError('switchCase(fns); fns is not an array of at least three functions'),
       )
     })
     it('throws a RangeError if passed an even number of functions', async () => {
       assert.throws(
-        () => r.switchCase([() => false, () => 'hey', () => true, () => 'ho']),
+        () => switchCase([() => false, () => 'hey', () => true, () => 'ho']),
         new RangeError('switchCase(fns); fns is not an array of an odd number of functions'),
       )
     })
     it('throws a TypeError if any item is not a function', async () => {
       assert.throws(
-        () => r.switchCase([() => false, 'hey', () => true, () => 'ho', () => 'hi']),
+        () => switchCase([() => false, 'hey', () => true, () => 'ho', () => 'hi']),
         new TypeError('switchCase(fns); fns[1] is not a function'),
       )
     })
@@ -558,84 +552,84 @@ describe('rubico', () => {
 
   describe('map', () => {
     it('lazily applies an async function in parallel to all values of an async iterable', async () => {
-      aok(!(r.map(async x => x + 1)(makeAsyncNumbers()) instanceof Promise))
-      aok(r.map(async x => x + 1)(makeAsyncNumbers())[Symbol.asyncIterator])
+      aok(!(map(async x => x + 1)(makeAsyncNumbers()) instanceof Promise))
+      aok(map(async x => x + 1)(makeAsyncNumbers())[Symbol.asyncIterator])
       aok(asyncIteratorToArray(
-        r.map(async x => x + 1)(makeAsyncNumbers()),
+        map(async x => x + 1)(makeAsyncNumbers()),
       ) instanceof Promise)
       ade(
         await asyncIteratorToArray(
-          r.map(async x => x + 1)(makeAsyncNumbers()),
+          map(async x => x + 1)(makeAsyncNumbers()),
         ),
         [2, 3, 4, 5, 6]
       )
     })
     it('lazily applies a sync function in parallel to all values of an async iterable', async () => {
-      aok(!(r.map(x => x + 1)(makeAsyncNumbers()) instanceof Promise))
-      aok(r.map(x => x + 1)(makeAsyncNumbers())[Symbol.asyncIterator])
+      aok(!(map(x => x + 1)(makeAsyncNumbers()) instanceof Promise))
+      aok(map(x => x + 1)(makeAsyncNumbers())[Symbol.asyncIterator])
       aok(asyncIteratorToArray(
-        r.map(x => x + 1)(makeAsyncNumbers()),
+        map(x => x + 1)(makeAsyncNumbers()),
       ) instanceof Promise)
       ade(
         await asyncIteratorToArray(
-          r.map(x => x + 1)(makeAsyncNumbers()),
+          map(x => x + 1)(makeAsyncNumbers()),
         ),
         [2, 3, 4, 5, 6]
       )
     })
     it('lazily applies an async function in parallel to all values of a sync generator iterable', async () => {
-      aok(!(r.map(async x => x + 1)(makeNumbers()) instanceof Promise))
-      aok(r.map(async x => x + 1)(makeNumbers())[Symbol.iterator])
+      aok(!(map(async x => x + 1)(makeNumbers()) instanceof Promise))
+      aok(map(async x => x + 1)(makeNumbers())[Symbol.iterator])
       aok(iteratorToArray(
-        r.map(async x => x + 1)(makeNumbers()),
+        map(async x => x + 1)(makeNumbers()),
       ) instanceof Promise)
       ade(
         await iteratorToArray(
-          r.map(async x => x + 1)(makeNumbers()),
+          map(async x => x + 1)(makeNumbers()),
         ),
         [2, 3, 4, 5, 6],
       )
     })
     it('lazily applies a sync function in parallel to all values of a sync generator iterable', async () => {
-      aok(r.map(x => x + 1)(makeNumbers())[Symbol.iterator])
+      aok(map(x => x + 1)(makeNumbers())[Symbol.iterator])
       ade(
         iteratorToArray(
-          r.map(x => x + 1)(makeNumbers()),
+          map(x => x + 1)(makeNumbers()),
         ),
         [2, 3, 4, 5, 6],
       )
     })
     it('applies an async function in parallel to all elements of an array', async () => {
-      aok(r.map(asyncHey)(['yo', 1]) instanceof Promise)
+      aok(map(asyncHey)(['yo', 1]) instanceof Promise)
       ade(
-        await r.map(asyncHey)(['yo', 1]),
+        await map(asyncHey)(['yo', 1]),
         ['yohey', '1hey'],
       )
     })
     it('applies a sync function to all elements of an array', async () => {
       ade(
-        r.map(hi)(['yo', 1]),
+        map(hi)(['yo', 1]),
         ['yohi', '1hi'],
       )
     })
     it('applies an async function in parallel to all elements of a string', async () => {
-      aok(r.map(async x => x + 'hey')('abcde') instanceof Promise)
+      aok(map(async x => x + 'hey')('abcde') instanceof Promise)
       ade(
-        await r.map(async x => x + 'hey')('abcde'),
+        await map(async x => x + 'hey')('abcde'),
         'aheybheycheydheyehey',
       )
     })
     it('applies a sync function to all elements of a string', async () => {
       ade(
-        r.map(x => x + 'hi')('abcde'),
+        map(x => x + 'hi')('abcde'),
         'ahibhichidhiehi',
       )
     })
     it('applies an async function in parallel to all elements of a number typed array', async () => {
       for (const x of numberTypedArrayConstructors) {
-        aok(r.map(async x => x + 1)(new x([1, 2, 3, 4, 5])) instanceof Promise)
+        aok(map(async x => x + 1)(new x([1, 2, 3, 4, 5])) instanceof Promise)
         ade(
-          await r.map(async x => x + 1)(new x([1, 2, 3, 4, 5])),
+          await map(async x => x + 1)(new x([1, 2, 3, 4, 5])),
           new x([2, 3, 4, 5, 6]),
         )
       }
@@ -643,16 +637,16 @@ describe('rubico', () => {
     it('applies a sync function in parallel to all elements of a number typed array', async () => {
       for (const x of numberTypedArrayConstructors) {
         ade(
-          r.map(x => x + 1)(new x([1, 2, 3, 4, 5])),
+          map(x => x + 1)(new x([1, 2, 3, 4, 5])),
           new x([2, 3, 4, 5, 6]),
         )
       }
     })
     it('applies an async function in parallel to all elements of a bigint typed array', async () => {
       for (const x of bigIntTypedArrayConstructors) {
-        aok(r.map(async x => x + 1n)(new x([1n, 2n, 3n, 4n, 5n])) instanceof Promise)
+        aok(map(async x => x + 1n)(new x([1n, 2n, 3n, 4n, 5n])) instanceof Promise)
         ade(
-          await r.map(async x => x + 1n)(new x([1n, 2n, 3n, 4n, 5n])),
+          await map(async x => x + 1n)(new x([1n, 2n, 3n, 4n, 5n])),
           new x([2n, 3n, 4n, 5n, 6n]),
         )
       }
@@ -660,93 +654,93 @@ describe('rubico', () => {
     it('applies a sync function in parallel to all elements of a bigint typed array', async () => {
       for (const x of bigIntTypedArrayConstructors) {
         ade(
-          r.map(x => x + 1n)(new x([1n, 2n, 3n, 4n, 5n])),
+          map(x => x + 1n)(new x([1n, 2n, 3n, 4n, 5n])),
           new x([2n, 3n, 4n, 5n, 6n]),
         )
       }
     })
     it('applies an async function in parallel to all elements of a set', async () => {
-      aok(r.map(asyncHey)(new Set(['yo', 1])) instanceof Promise)
+      aok(map(asyncHey)(new Set(['yo', 1])) instanceof Promise)
       ade(
-        await r.map(asyncHey)(new Set(['yo', 1])),
+        await map(asyncHey)(new Set(['yo', 1])),
         new Set(['yohey', '1hey']),
       )
     })
     it('applies a sync function to all elements of a set', async () => {
       ade(
-        r.map(hi)(new Set(['yo', 1])),
+        map(hi)(new Set(['yo', 1])),
         new Set(['yohi', '1hi']),
       )
     })
     it('applies an async function in parallel to all elements of a map', async () => {
-      aok(r.map(
+      aok(map(
         async ([k, v]) => [k + k, v + v],
       )(new Map([['a', 1], ['b', 2]])) instanceof Promise)
       ade(
-        await r.map(async ([k, v]) => [k + k, v + v])(new Map([['a', 1], ['b', 2]])),
+        await map(async ([k, v]) => [k + k, v + v])(new Map([['a', 1], ['b', 2]])),
         new Map([['aa', 2], ['bb', 4]]),
       )
     })
     it('applies a sync function to all elements of a map', async () => {
       ade(
-        r.map(([k, v]) => [k + k, v + v])(new Map([['a', 1], ['b', 2]])),
+        map(([k, v]) => [k + k, v + v])(new Map([['a', 1], ['b', 2]])),
         new Map([['aa', 2], ['bb', 4]]),
       )
     })
     it('applies an async function in parallel to all values of an object', async () => {
       ade(
-        await r.map(asyncHey)({ a: 'yo', b: 1 }),
+        await map(asyncHey)({ a: 'yo', b: 1 }),
         { a: 'yohey', b: '1hey' },
       )
     })
     it('applies a sync function to all values of an object', async () => {
       ade(
-        r.map(hi)({ a: 'yo', b: 1 }),
+        map(hi)({ a: 'yo', b: 1 }),
         { a: 'yohi', b: '1hi' },
       )
     })
     it('acts as a map transducer: binary function => reducer', async () => {
-      const addHiReducer = r.map(hi)((y, xi) => y + xi)
+      const addHiReducer = map(hi)((y, xi) => y + xi)
       ase(typeof addHiReducer, 'function')
       ase(addHiReducer.length, 2)
-      const addHeyReducer = r.map(asyncHey)(
+      const addHeyReducer = map(asyncHey)(
         (y, xi) => new Promise(resolve => resolve(y + xi)),
       )
       ase(typeof addHeyReducer, 'function')
       ase(addHeyReducer.length, 2)
     })
     it('transducer handles sync transformations', async () => {
-      const addHiReducer = r.map(hi)((y, xi) => y + xi)
+      const addHiReducer = map(hi)((y, xi) => y + xi)
       ase([1, 2, 3].reduce(addHiReducer), '12hi3hi')
       ase([1, 2, 3].reduce(addHiReducer, ''), '1hi2hi3hi')
     })
     it('transducer handles async transformations', async () => {
-      const addHeyReducer = r.map(asyncHey)((y, xi) => y + xi)
+      const addHeyReducer = map(asyncHey)((y, xi) => y + xi)
       aok(asyncArrayReduce(addHeyReducer)([1, 2, 3]) instanceof Promise)
       ase(await asyncArrayReduce(addHeyReducer)([1, 2, 3]), '12hey3hey')
       ase(await asyncArrayReduce(addHeyReducer, '')([1, 2, 3]), '1hey2hey3hey')
     })
     it('throws a TypeError on map(nonFunction)', async () => {
       assert.throws(
-        () => r.map({}),
+        () => map({}),
         new TypeError('map(f); f is not a function'),
       )
     })
     it('throws a TypeError on map(...)(null)', async () => {
       assert.throws(
-        () => r.map(hi)(null),
+        () => map(hi)(null),
         new TypeError('map(...)(x); x invalid')
       )
     })
     it('handles sync errors good', async () => {
       assert.throws(
-        () => r.map(x => { throw new Error(`throwing ${x}`) })(['yo']),
+        () => map(x => { throw new Error(`throwing ${x}`) })(['yo']),
         new Error('throwing yo')
       )
     })
     it('handles async errors good', async () => {
       assert.rejects(
-        () => r.map(async x => { throw new Error(`throwing ${x}`) })(['yo']),
+        () => map(async x => { throw new Error(`throwing ${x}`) })(['yo']),
         new Error('throwing yo'),
       )
     })
@@ -756,21 +750,21 @@ describe('rubico', () => {
     it('syncly maps into array of functions', async () => {
       const arr = []
       ade(
-        r.map.series(x => { arr.push(x); return x })([1, 2, 3]),
+        map.series(x => { arr.push(x); return x })([1, 2, 3]),
         [1, 2, 3],
       )
       ade(arr, [1, 2, 3])
     })
     it('asyncly forks into array of functions, running each function in series', async () => {
       const arr = []
-      const invertedSleepPushSeries = r.map.series(
+      const invertedSleepPushSeries = map.series(
         x => sleep(15 - (x * 5)).then(() => { arr.push(x); return x })
       )([1, 2, 3])
       aok(invertedSleepPushSeries instanceof Promise)
       ade(await invertedSleepPushSeries, [1, 2, 3])
       ade(arr, [1, 2, 3])
       const arr2 = []
-      const invertedSleepPush = r.map(
+      const invertedSleepPush = map(
         x => sleep(15 - (x * 5)).then(() => { arr2.push(x); return x })
       )([1, 2, 3])
       aok(invertedSleepPush instanceof Promise)
@@ -779,13 +773,13 @@ describe('rubico', () => {
     })
     it('throws TypeError for non functions', async () => {
       assert.throws(
-        () => r.map.series('hey'),
+        () => map.series('hey'),
         new TypeError('map.series(f); f is not a function'),
       )
     })
     it('throws TypeError for non array input', async () => {
       assert.throws(
-        () => r.map.series(() => 1)('hey'),
+        () => map.series(() => 1)('hey'),
         new TypeError('map.series(...)(x); x invalid'),
       )
     })
@@ -795,43 +789,43 @@ describe('rubico', () => {
     const square = x => x ** 2
     const asyncSquare = async x => x ** 2
     it('maps with asynchronous limit for Arrays', async () => {
-      aok(r.map.pool(1, square)([1, 2, 3, 4, 5]) instanceof Promise)
-      ade(await r.map.pool(1, square)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
-      ade(await r.map.pool(9, square)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
-      ade(await r.map.pool(100, square)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
-      ade(await r.map.pool(1, asyncSquare)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
-      ade(await r.map.pool(9, asyncSquare)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
+      aok(map.pool(1, square)([1, 2, 3, 4, 5]) instanceof Promise)
+      ade(await map.pool(1, square)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
+      ade(await map.pool(9, square)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
+      ade(await map.pool(100, square)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
+      ade(await map.pool(1, asyncSquare)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
+      ade(await map.pool(9, asyncSquare)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
     })
     it('=> [] for empty array', async () => {
-      aok(r.map.pool(1, square)([]) instanceof Promise)
-      ade(await r.map.pool(1, square)([]), [])
+      aok(map.pool(1, square)([]) instanceof Promise)
+      ade(await map.pool(1, square)([]), [])
     })
     it('works for arrays of undefined values', async () => {
-      ade(await r.map.pool(1, x => x)([,,,,,]), Array(5).fill(undefined))
-      ade(await r.map.pool(1, x => x)(Array(5)), Array(5).fill(undefined))
-      ade(await r.map.pool(1, x => x)(Array(5).fill(null)), Array(5).fill(null))
+      ade(await map.pool(1, x => x)([,,,,,]), Array(5).fill(undefined))
+      ade(await map.pool(1, x => x)(Array(5)), Array(5).fill(undefined))
+      ade(await map.pool(1, x => x)(Array(5).fill(null)), Array(5).fill(null))
     })
     it('maps with asynchronous limit for Sets', async () => {
       const numbersSet = new Set([1, 2, 3, 4, 5])
       const squaresSet = new Set([1, 4, 9, 16, 25])
-      aok(r.map.pool(1, square)(numbersSet) instanceof Promise)
-      ade(await r.map.pool(1, square)(numbersSet), squaresSet)
-      ade(await r.map.pool(9, square)(numbersSet), squaresSet)
-      ade(await r.map.pool(100, square)(numbersSet), squaresSet)
-      ade(await r.map.pool(1, asyncSquare)(numbersSet), squaresSet)
-      ade(await r.map.pool(9, asyncSquare)(numbersSet), squaresSet)
+      aok(map.pool(1, square)(numbersSet) instanceof Promise)
+      ade(await map.pool(1, square)(numbersSet), squaresSet)
+      ade(await map.pool(9, square)(numbersSet), squaresSet)
+      ade(await map.pool(100, square)(numbersSet), squaresSet)
+      ade(await map.pool(1, asyncSquare)(numbersSet), squaresSet)
+      ade(await map.pool(9, asyncSquare)(numbersSet), squaresSet)
     })
     it('maps with asynchronous limit for Maps', async () => {
       const squareEntry = entry => entry.map(square)
       const asyncSquareEntry = async entry => entry.map(square)
       const numbersMap = new Map([[1, 1], [2, 2], [3, 3], [4, 4], [5, 5]])
       const squaresMap = new Map([[1, 1], [4, 4], [9, 9], [16, 16], [25, 25]])
-      aok(r.map.pool(1, squareEntry)(numbersMap) instanceof Promise)
-      ade(await r.map.pool(1, squareEntry)(numbersMap), squaresMap)
-      ade(await r.map.pool(9, squareEntry)(numbersMap), squaresMap)
-      ade(await r.map.pool(100, squareEntry)(numbersMap), squaresMap)
-      ade(await r.map.pool(1, asyncSquareEntry)(numbersMap), squaresMap)
-      ade(await r.map.pool(9, asyncSquareEntry)(numbersMap), squaresMap)
+      aok(map.pool(1, squareEntry)(numbersMap) instanceof Promise)
+      ade(await map.pool(1, squareEntry)(numbersMap), squaresMap)
+      ade(await map.pool(9, squareEntry)(numbersMap), squaresMap)
+      ade(await map.pool(100, squareEntry)(numbersMap), squaresMap)
+      ade(await map.pool(1, asyncSquareEntry)(numbersMap), squaresMap)
+      ade(await map.pool(9, asyncSquareEntry)(numbersMap), squaresMap)
     })
     it('abides by asynchronous limit for arrays and sets', async () => {
       const numbers = [1, 2, 3, 4, 5, 6]
@@ -843,54 +837,54 @@ describe('rubico', () => {
         i -=1
         return n
       })
-      ade(await r.map.pool(2, plusSleepMinus)(numbers), numbers)
+      ade(await map.pool(2, plusSleepMinus)(numbers), numbers)
       assert.strictEqual(maxi, 2)
       assert.strictEqual(i, 0)
       maxi = 0
-      ade(await r.map.pool(3, plusSleepMinus)([1, 2, 3, 4, 5, 6]), numbers)
+      ade(await map.pool(3, plusSleepMinus)([1, 2, 3, 4, 5, 6]), numbers)
       assert.strictEqual(maxi, 3)
       assert.strictEqual(i, 0)
       maxi = 0
-      const x = await r.map.pool(2, plusSleepMinus)(new Set([1, 2, 3, 4, 5, 6]))
+      const x = await map.pool(2, plusSleepMinus)(new Set([1, 2, 3, 4, 5, 6]))
       assert.strictEqual(maxi, 2)
       assert.strictEqual(i, 0)
       maxi = 0
-      await r.map.pool(3, plusSleepMinus)(new Set([1, 2, 3, 4, 5, 6]))
+      await map.pool(3, plusSleepMinus)(new Set([1, 2, 3, 4, 5, 6]))
       assert.strictEqual(maxi, 3)
     }).timeout(20000)
     it('throws TypeError on map.pool(NaN)', async () => {
       assert.throws(
-        () => r.map.pool(NaN),
-        new TypeError('map.pool(size, f); size is not a number'),
+        () => map.pool(NaN),
+        new TypeError('map.pool(size, f); invalid size NaN'),
       )
     })
     it('throws RangeError on map.pool(lessThan1)', async () => {
       assert.throws(
-        () => r.map.pool(0),
+        () => map.pool(0),
         new RangeError('map.pool(size, f); size must be 1 or more'),
       )
     })
     it('throws TypeError on map.pool(lessThan1)', async () => {
       assert.throws(
-        () => r.map.pool(1, 'hey'),
+        () => map.pool(1, 'hey'),
         new TypeError('map.pool(size, f); f is not a function'),
       )
     })
     it('throws TypeError on map.pool(lessThan1)', async () => {
       assert.throws(
-        () => r.map.pool(1, () => {})('yo'),
+        () => map.pool(1, () => {})('yo'),
         new TypeError('map.pool(...)(x); x invalid'),
       )
     })
     it('handles sync errors good', async () => {
       assert.rejects(
-        () => r.map.pool(1, x => { throw new Error(`throwing ${x}`) })(['yo']),
+        () => map.pool(1, x => { throw new Error(`throwing ${x}`) })(['yo']),
         new Error('throwing yo')
       )
     })
     it('handles async errors good', async () => {
       assert.rejects(
-        () => r.map.pool(1, async x => { throw new Error(`throwing ${x}`) })(['yo']),
+        () => map.pool(1, async x => { throw new Error(`throwing ${x}`) })(['yo']),
         new Error('throwing yo'),
       )
     })
@@ -900,42 +894,42 @@ describe('rubico', () => {
     it('[sync] applies a function to each item of array with index and reference to array', async () => {
       const numbers = [100, 100, 100, 100, 100]
       ade(
-        r.map.withIndex((xi, i, x) => xi + i - x[i])(numbers),
+        map.withIndex((xi, i, x) => xi + i - x[i])(numbers),
         [0, 1, 2, 3, 4],
       )
     })
     it('[async] applies a function to each item of array with index and reference to array', async () => {
       const numbers = [100, 100, 100, 100, 100]
-      aok(r.map.withIndex(async (xi, i, x) => xi + i - x[i])(numbers) instanceof Promise)
+      aok(map.withIndex(async (xi, i, x) => xi + i - x[i])(numbers) instanceof Promise)
       ade(
-        await r.map.withIndex(async (xi, i, x) => xi + i - x[i])(numbers),
+        await map.withIndex(async (xi, i, x) => xi + i - x[i])(numbers),
         [0, 1, 2, 3, 4],
       )
     })
     it('[sync] applies a function to each character of a string with index and value of string', async () => {
       ase(
-        r.map.withIndex((xi, i, x) => xi + i + x[i])('abc'),
+        map.withIndex((xi, i, x) => xi + i + x[i])('abc'),
         'a0ab1bc2c',
       )
     })
     it('[async] applies a function to each character of a string with index and value of string', async () => {
       aok(
-        r.map.withIndex(async (xi, i, x) => xi + i + x[i])('abc') instanceof Promise
+        map.withIndex(async (xi, i, x) => xi + i + x[i])('abc') instanceof Promise
       )
       ase(
-        await r.map.withIndex(async (xi, i, x) => xi + i + x[i])('abc'),
+        await map.withIndex(async (xi, i, x) => xi + i + x[i])('abc'),
         'a0ab1bc2c',
       )
     })
     it('throws a TypeError on map.withIndex(nonFunction)', async () => {
       assert.throws(
-        () => r.map.withIndex({}),
+        () => map.withIndex({}),
         new TypeError('map.withIndex(x); x is not a function'),
       )
     })
     it('throws a TypeError on map.withIndex(...)(null)', async () => {
       assert.throws(
-        () => r.map.withIndex(() => 'hi')(null),
+        () => map.withIndex(() => 'hi')(null),
         new TypeError('map.withIndex(...)(x); x invalid')
       )
     })
@@ -943,27 +937,27 @@ describe('rubico', () => {
 
   describe('filter', () => {
     it('lazily filters values from an async iterable based on an async predicate', async () => {
-      aok(!(r.filter(async x => x <= 3)(makeAsyncNumbers()) instanceof Promise))
-      aok(r.filter(async x => x <= 3)(makeAsyncNumbers())[Symbol.asyncIterator])
+      aok(!(filter(async x => x <= 3)(makeAsyncNumbers()) instanceof Promise))
+      aok(filter(async x => x <= 3)(makeAsyncNumbers())[Symbol.asyncIterator])
       aok(asyncIteratorToArray(
-        r.filter(async x => x <= 3)(makeAsyncNumbers()),
+        filter(async x => x <= 3)(makeAsyncNumbers()),
       ) instanceof Promise)
       ade(
         await asyncIteratorToArray(
-          r.filter(async x => x <= 3)(makeAsyncNumbers()),
+          filter(async x => x <= 3)(makeAsyncNumbers()),
         ),
         [1, 2, 3],
       )
     })
     it('lazily filters values from an async iterable based on a sync predicate', async () => {
-      aok(!(r.filter(x => x <= 3)(makeAsyncNumbers()) instanceof Promise))
-      aok(r.filter(x => x <= 3)(makeAsyncNumbers())[Symbol.asyncIterator])
+      aok(!(filter(x => x <= 3)(makeAsyncNumbers()) instanceof Promise))
+      aok(filter(x => x <= 3)(makeAsyncNumbers())[Symbol.asyncIterator])
       aok(asyncIteratorToArray(
-        r.filter(x => x <= 3)(makeAsyncNumbers()),
+        filter(x => x <= 3)(makeAsyncNumbers()),
       ) instanceof Promise)
       ade(
         await asyncIteratorToArray(
-          r.filter(x => x <= 3)(makeAsyncNumbers()),
+          filter(x => x <= 3)(makeAsyncNumbers()),
         ),
         [1, 2, 3],
       )
@@ -971,7 +965,7 @@ describe('rubico', () => {
     it('throws TypeError on filter(asyncFunction)(sync generator iterable)', async () => {
       assert.throws(
         () => iteratorToArray(
-          r.filter(async x => x <= 3)(makeNumbers()),
+          filter(async x => x <= 3)(makeNumbers()),
         ),
         new TypeError([
           'filter(f)(x); xi is an element of x; ',
@@ -981,54 +975,54 @@ describe('rubico', () => {
       )
     })
     it('lazily filters elements of a sync generator iterable based on a sync predicate', async () => {
-      aok(r.map(x => x + 1)(makeNumbers())[Symbol.iterator])
+      aok(map(x => x + 1)(makeNumbers())[Symbol.iterator])
       ade(
         iteratorToArray(
-          r.filter(x => x <= 3)(makeNumbers()),
+          filter(x => x <= 3)(makeNumbers()),
         ),
         [1, 2, 3],
       )
     })
     it('filters characters from a string based on an async predicate', async () => {
-      aok(r.filter(async x => x !== 'o')('heyoheyohey') instanceof Promise)
-      ase(await r.filter(async x => x !== 'o')('heyoheyohey'), 'heyheyhey')
+      aok(filter(async x => x !== 'o')('heyoheyohey') instanceof Promise)
+      ase(await filter(async x => x !== 'o')('heyoheyohey'), 'heyheyhey')
     })
     it('filters characters from a string based on a sync predicate', async () => {
-      ase(r.filter(x => x !== 'o')('heyoheyohey'), 'heyheyhey')
+      ase(filter(x => x !== 'o')('heyoheyohey'), 'heyheyhey')
     })
     it('filters values from a set based on an async predicate', async () => {
-      aok(r.filter(async x => x <= 3)(new Set([1, 2, 3, 4, 5])) instanceof Promise)
+      aok(filter(async x => x <= 3)(new Set([1, 2, 3, 4, 5])) instanceof Promise)
       ade(
-        await r.filter(async x => x <= 3)(new Set([1, 2, 3, 4, 5])),
+        await filter(async x => x <= 3)(new Set([1, 2, 3, 4, 5])),
         new Set([1, 2, 3]),
       )
     })
     it('filters values from a set based on a sync predicate', async () => {
       ade(
-        r.filter(x => x <= 3)(new Set([1, 2, 3, 4, 5])),
+        filter(x => x <= 3)(new Set([1, 2, 3, 4, 5])),
         new Set([1, 2, 3]),
       )
     })
     it('filters entries from a map based on an async predicate', async () => {
       const numsMap = new Map([[1, 1], [2, 2], [3, 3], [4, 4], [5, 5]])
-      aok(r.filter(async ([k, v]) => k <= 3 && v <= 3)(numsMap) instanceof Promise)
+      aok(filter(async ([k, v]) => k <= 3 && v <= 3)(numsMap) instanceof Promise)
       ade(
-        await r.filter(async ([k, v]) => k <= 3 && v <= 3)(numsMap),
+        await filter(async ([k, v]) => k <= 3 && v <= 3)(numsMap),
         new Map([[1, 1], [2, 2], [3, 3]]),
       )
     })
     it('filters entries from a map based on a sync predicate', async () => {
       const numsMap = new Map([[1, 1], [2, 2], [3, 3], [4, 4], [5, 5]])
       ade(
-        r.filter(([k, v]) => k <= 3 && v <= 3)(numsMap),
+        filter(([k, v]) => k <= 3 && v <= 3)(numsMap),
         new Map([[1, 1], [2, 2], [3, 3]]),
       )
     })
     it('filters bytes from a number typed array based on an async predicate', async () => {
       for (const constructor of numberTypedArrayConstructors) {
-        aok(r.filter(async x => x <= 3)(new constructor([1, 2, 3, 4, 5])) instanceof Promise)
+        aok(filter(async x => x <= 3)(new constructor([1, 2, 3, 4, 5])) instanceof Promise)
         ade(
-          await r.filter(async x => x <= 3)(new constructor([1, 2, 3, 4, 5])),
+          await filter(async x => x <= 3)(new constructor([1, 2, 3, 4, 5])),
           new constructor([1, 2, 3]),
         )
       }
@@ -1036,16 +1030,16 @@ describe('rubico', () => {
     it('filters bytes from a number typed array based on a sync predicate', async () => {
       for (const constructor of numberTypedArrayConstructors) {
         ade(
-          r.filter(x => x <= 3)(new constructor([1, 2, 3, 4, 5])),
+          filter(x => x <= 3)(new constructor([1, 2, 3, 4, 5])),
           new constructor([1, 2, 3]),
         )
       }
     })
     it('filters bytes from a bigint typed array based on an async predicate', async () => {
       for (const constructor of bigIntTypedArrayConstructors) {
-        aok(r.filter(async x => x <= 3n)(new constructor([1n, 2n, 3n, 4n, 5n])) instanceof Promise)
+        aok(filter(async x => x <= 3n)(new constructor([1n, 2n, 3n, 4n, 5n])) instanceof Promise)
         ade(
-          await r.filter(async x => x <= 3)(new constructor([1n, 2n, 3n, 4n, 5n])),
+          await filter(async x => x <= 3)(new constructor([1n, 2n, 3n, 4n, 5n])),
           new constructor([1n, 2n, 3n]),
         )
       }
@@ -1053,70 +1047,70 @@ describe('rubico', () => {
     it('filters bytes from a bigint typed array based on a sync predicate', async () => {
       for (const constructor of bigIntTypedArrayConstructors) {
         ade(
-          r.filter(x => x <= 3n)(new constructor([1n, 2n, 3n, 4n, 5n])),
+          filter(x => x <= 3n)(new constructor([1n, 2n, 3n, 4n, 5n])),
           new constructor([1n, 2n, 3n]),
         )
       }
     })
     it('filters elements from an array with an async predicate', async () => {
-      const evens = r.filter(asyncIsEven)([1, 2, 3, 4, 5])
+      const evens = filter(asyncIsEven)([1, 2, 3, 4, 5])
       aok(evens instanceof Promise)
       ade(await evens, [2, 4])
     })
     it('filters elements from an array with a sync predicate', async () => {
       ade(
-        r.filter(isOdd)([1, 2, 3, 4, 5]),
+        filter(isOdd)([1, 2, 3, 4, 5]),
         [1, 3, 5],
       )
     })
     it('filters entries from an object with an async predicate', async () => {
-      const evens = r.filter(asyncIsEven)({ a: 1, b: 2, c: 3, d: 4, e: 5 })
+      const evens = filter(asyncIsEven)({ a: 1, b: 2, c: 3, d: 4, e: 5 })
       aok(evens instanceof Promise)
       ade(await evens, { b: 2, d: 4 })
     })
     it('filters entries from an object with a sync predicate', async () => {
       ade(
-        r.filter(isOdd)({ a: 1, b: 2, c: 3, d: 4, e: 5 }),
+        filter(isOdd)({ a: 1, b: 2, c: 3, d: 4, e: 5 }),
         { a: 1, c: 3, e: 5 },
       )
     })
     it('acts as a filter transducer: binary function => reducer', async () => {
-      const addOddsReducer = r.filter(isOdd)((y, xi) => y + xi)
+      const addOddsReducer = filter(isOdd)((y, xi) => y + xi)
       ase(typeof addOddsReducer, 'function')
       ase(addOddsReducer.length, 2)
-      const addEvensReducer = r.filter(asyncIsEven)((y, xi) => y + xi)
+      const addEvensReducer = filter(asyncIsEven)((y, xi) => y + xi)
       ase(typeof addEvensReducer, 'function')
       ase(addEvensReducer.length, 2)
     })
     it('transducer handles async predicates', async () => {
-      const addEvensReducer = r.filter(asyncIsEven)((y, xi) => y + xi)
+      const addEvensReducer = filter(asyncIsEven)((y, xi) => y + xi)
       ase(await asyncArrayReduce(addEvensReducer, 0)([1, 2, 3, 4, 5, 6], 0), 12)
     })
     it('transducer handles sync predicates', async () => {
-      const addOddsReducer = r.filter(isOdd)((y, xi) => y + xi)
+      const addOddsReducer = filter(isOdd)((y, xi) => y + xi)
       ase([1, 2, 3, 4, 5].reduce(addOddsReducer, 0), 9)
     })
     it('throws a TypeError on filter({})', async () => {
       assert.throws(
-        () => r.filter({}),
+        () => filter({}),
         new TypeError('filter(predicate); predicate is not a function'),
       )
     })
     it('throws a TypeError on filter(...)(string)', async () => {
       assert.throws(
-        () => r.filter(hi)(null),
+        () => filter(hi)(null),
         new TypeError('filter(...)(x); x invalid')
       )
     })
     it('handles sync errors good', async () => {
       assert.throws(
-        () => r.filter(x => { throw new Error(`throwing ${x}`) })(['yo']),
+        () => filter(x => { throw new Error(`throwing ${x}`) })(['yo']),
         new Error('throwing yo')
       )
     })
     it('handles async errors good', async () => {
       assert.rejects(
-        () => r.filter(async x => { throw new Error(`throwing ${x}`) })(['yo']),
+        () => filter(async x => { throw new Error(`throwing ${x}`) })(['yo']),
         new Error('throwing yo'),
       )
     })
@@ -1124,28 +1118,28 @@ describe('rubico', () => {
 
   describe('filter.withIndex', () => {
     it('filters characters from a string based on an async predicate', async () => {
-      aok(r.filter.withIndex(async (x, i) => x !== `${i}`)('01234555') instanceof Promise)
-      ase(await r.filter.withIndex(async (x, i) => x !== `${i}`)('01234555'), '55')
+      aok(filter.withIndex(async (x, i) => x !== `${i}`)('01234555') instanceof Promise)
+      ase(await filter.withIndex(async (x, i) => x !== `${i}`)('01234555'), '55')
     })
     it('filters characters from a string based on a sync predicate', async () => {
-      ase(r.filter.withIndex((x, i) => x !== `${i}`)('01234555'), '55')
+      ase(filter.withIndex((x, i) => x !== `${i}`)('01234555'), '55')
     })
     it('filters characters from an array based on an async predicate', async () => {
-      aok(r.filter.withIndex(async (x, i) => x !== i)([0, 1, 2, 3, 4, 5, 5, 5]) instanceof Promise)
-      ade(await r.filter.withIndex(async (x, i) => x !== i)([0, 1, 2, 3, 4, 5, 5, 5]), [5, 5])
+      aok(filter.withIndex(async (x, i) => x !== i)([0, 1, 2, 3, 4, 5, 5, 5]) instanceof Promise)
+      ade(await filter.withIndex(async (x, i) => x !== i)([0, 1, 2, 3, 4, 5, 5, 5]), [5, 5])
     })
     it('filters characters from an array based on a sync predicate', async () => {
-      ade(r.filter.withIndex((x, i) => x !== i)([0, 1, 2, 3, 4, 5, 5, 5]), [5, 5])
+      ade(filter.withIndex((x, i) => x !== i)([0, 1, 2, 3, 4, 5, 5, 5]), [5, 5])
     })
     it('throws TypeError on filter.withIndex(nonFunction)', async () => {
       assert.throws(
-        () => r.filter.withIndex('yo'),
+        () => filter.withIndex('yo'),
         new TypeError('filter.withIndex(f); f is not a function'),
       )
     })
     it('throws TypeError on filter.withIndex(...)(invalid)', async () => {
       assert.throws(
-        () => r.filter.withIndex(x => x)(0),
+        () => filter.withIndex(x => x)(0),
         new TypeError('filter.withIndex(...)(x); x invalid'),
       )
     })
@@ -1177,41 +1171,41 @@ describe('rubico', () => {
     ]
     it('reduces any iterable with a sync reducer', async () => {
       for (const x of iterables) {
-        ase(r.reduce((y, xi) => y + xi)(x), 15)
-        ase(r.reduce((y, xi) => y + xi, 10)(x), 25)
+        ase(reduce((y, xi) => y + xi)(x), 15)
+        ase(reduce((y, xi) => y + xi, 10)(x), 25)
       }
     })
     it('reduces any iterable with an async reducer', async () => {
       aok(asyncMult(1, 2) instanceof Promise)
       for (const x of iterables) {
-        aok(r.reduce(asyncMult)(x) instanceof Promise)
-        ase(await r.reduce(asyncMult)(x), 120)
-        ase(await r.reduce(asyncMult, 10)(x), 1200)
+        aok(reduce(asyncMult)(x) instanceof Promise)
+        ase(await reduce(asyncMult)(x), 120)
+        ase(await reduce(asyncMult, 10)(x), 1200)
       }
     })
     it('reduces any async iterable with a sync reducer', async () => {
       for (const x of makeAsyncIterables()) {
-        ase(await r.reduce((y, xi) => Number(y) + Number(xi))(x), 15)
+        ase(await reduce((y, xi) => Number(y) + Number(xi))(x), 15)
       }
       for (const x of makeAsyncIterables()) {
-        ase(await r.reduce((y, xi) => Number(y) + Number(xi), 10)(x), 25)
+        ase(await reduce((y, xi) => Number(y) + Number(xi), 10)(x), 25)
       }
     })
     it('reduces any async iterable with an async reducer', async () => {
       aok(asyncMult(1, 2) instanceof Promise)
       for (const x of makeAsyncIterables()) {
-        aok(r.reduce(asyncMult)(x) instanceof Promise)
+        aok(reduce(asyncMult)(x) instanceof Promise)
       }
       for (const x of makeAsyncIterables()) {
-        ase(await r.reduce(asyncMult)(x), 120)
+        ase(await reduce(asyncMult)(x), 120)
       }
       for (const x of makeAsyncIterables()) {
-        ase(await r.reduce(asyncMult, 10)(x), 1200)
+        ase(await reduce(asyncMult, 10)(x), 1200)
       }
     })
     it('reduces an iterable with variadic sync/async reducer', async () => {
       ade(
-        await r.reduce(
+        await reduce(
           (a, b) => b === 1 ? a + b : Promise.resolve(a + b),
           0,
         )([1, 2, 3, 4, 5]),
@@ -1224,48 +1218,48 @@ describe('rubico', () => {
         yield 'unreachable'
       }
       const add = (a, b) => a + b
-      const p = r.reduce(add, 0)(infiniteAsyncIterable())
+      const p = reduce(add, 0)(infiniteAsyncIterable())
       aok(p instanceof Promise)
       p.cancel()
       assert.rejects(p, new Error('cancelled'))
     })
     it('initial value can be a function', async () => {
       ade(
-        r.reduce((a, b) => a + b, () => 0)([1, 2, 3, 4, 5]),
+        reduce((a, b) => a + b, () => 0)([1, 2, 3, 4, 5]),
         15,
       )
       const asyncNumbers = async function*() {
         for (let i = 1; i <= 5; i++) yield i
       }
       ade(
-        await r.reduce((a, b) => a + b, () => 0)(asyncNumbers()),
+        await reduce((a, b) => a + b, () => 0)(asyncNumbers()),
         15,
       )
       ade(
-        await r.reduce((a, b) => a + b, () => 0)({ a: 1, b: 2, c: 3, d: 4, e: 5 }),
+        await reduce((a, b) => a + b, () => 0)({ a: 1, b: 2, c: 3, d: 4, e: 5 }),
         15,
       )
     })
     it('initial value can be an async function', async () => {
       ade(
-        await r.reduce((a, b) => a + b, async () => 0)([1, 2, 3, 4, 5]),
+        await reduce((a, b) => a + b, async () => 0)([1, 2, 3, 4, 5]),
         15,
       )
       const asyncNumbers = async function*() {
         for (let i = 1; i <= 5; i++) yield i
       }
       ade(
-        await r.reduce((a, b) => a + b, async () => 0)(asyncNumbers()),
+        await reduce((a, b) => a + b, async () => 0)(asyncNumbers()),
         15,
       )
       ade(
-        await r.reduce((a, b) => a + b, async () => 0)({ a: 1, b: 2, c: 3, d: 4, e: 5 }),
+        await reduce((a, b) => a + b, async () => 0)({ a: 1, b: 2, c: 3, d: 4, e: 5 }),
         15,
       )
     })
     it('referential initial values are unsafe', async () => {
       const square = x => x ** 2
-      const unsafeSquareAll = r.reduce((a, b) => { a.push(square(b)); return a }, [])
+      const unsafeSquareAll = reduce((a, b) => { a.push(square(b)); return a }, [])
       ade(
         unsafeSquareAll([1, 2, 3]),
         [1, 4, 9],
@@ -1274,7 +1268,7 @@ describe('rubico', () => {
         unsafeSquareAll([1, 2, 3]),
         [1, 4, 9, 1, 4, 9],
       )
-      const safeSquareAll = r.reduce((a, b) => { a.push(square(b)); return a }, () => [])
+      const safeSquareAll = reduce((a, b) => { a.push(square(b)); return a }, () => [])
       ade(
         safeSquareAll([1, 2, 3]),
         [1, 4, 9],
@@ -1287,36 +1281,36 @@ describe('rubico', () => {
     it('=> [] for initial () => [] and input []', async () => {
       const square = x => x ** 2
       ade(
-        r.reduce(r.map(square)((a, b) => (a.push(b), a)), () => [])([]),
+        reduce(map(square)((a, b) => (a.push(b), a)), () => [])([]),
         [],
       )
       const emptyAsyncIterator = (async function*(){})()
       ade(
-        await r.reduce(r.map(square)((a, b) => (a.push(b), a)), () => [])(emptyAsyncIterator),
+        await reduce(map(square)((a, b) => (a.push(b), a)), () => [])(emptyAsyncIterator),
         [],
       )
     })
     it('throws a TypeError on reduce(nonFunction)', async () => {
       assert.throws(
-        () => r.reduce({}),
+        () => reduce({}),
         new TypeError('reduce(x, y); x is not a function'),
       )
     })
     it('throws a TypeError on reduce(...)(number)', async () => {
       assert.throws(
-        () => r.reduce((y, xi) => y + xi)(1),
+        () => reduce((y, xi) => y + xi)(1),
         new TypeError('reduce(...)(x); x invalid'),
       )
     })
     it('throws a TypeError on reduce(...)(emptyIterator)', async () => {
       assert.throws(
-        () => r.reduce((y, xi) => y + xi)([]),
+        () => reduce((y, xi) => y + xi)([]),
         new TypeError('reduce(...)(x); x cannot be empty'),
       )
     })
     it('throws a TypeError on reduce(...)(emptyAsyncIterator)', async () => {
       assert.rejects(
-        () => r.reduce((y, xi) => y + xi)((async function* () {})()),
+        () => reduce((y, xi) => y + xi)((async function* () {})()),
         new TypeError('reduce(...)(x); x cannot be empty'),
       )
     })
@@ -1326,46 +1320,46 @@ describe('rubico', () => {
     const concat = (y, xi) => y.concat(xi)
     const add = (y, xi) => y + xi
     it('reduce with sync transduced reducers', async () => {
-      const squareOdds = r.pipe([
-        r.filter(isOdd),
-        r.map(x => x ** 2),
+      const squareOdds = pipe([
+        filter(isOdd),
+        map(x => x ** 2),
       ])
       ade(
-        r.reduce(squareOdds(concat), [])([1, 2, 3, 4, 5]),
+        reduce(squareOdds(concat), [])([1, 2, 3, 4, 5]),
         [1, 9, 25],
       )
       ade(
-        r.reduce(squareOdds((y, xi) => y.add(xi)), new Set())([1, 2, 3, 4, 5]),
+        reduce(squareOdds((y, xi) => y.add(xi)), new Set())([1, 2, 3, 4, 5]),
         new Set([1, 9, 25]),
       )
-      const appendAlphas = r.pipe([
-        r.map(x => x + 'a'),
-        r.map(x => x + 'b'),
-        r.map(x => x + 'c'),
+      const appendAlphas = pipe([
+        map(x => x + 'a'),
+        map(x => x + 'b'),
+        map(x => x + 'c'),
       ])
       ase(
-        r.reduce(appendAlphas(add), '')('123'),
+        reduce(appendAlphas(add), '')('123'),
         '1abc2abc3abc',
       )
       ade(
-        r.reduce(appendAlphas(concat), [])('123'),
+        reduce(appendAlphas(concat), [])('123'),
         ['1abc', '2abc', '3abc'],
       )
     })
     it('reduce with an async transduced reducer', async () => {
-      const hosWithHey = r.pipe([
-        r.filter(async x => x === 'ho'),
-        r.map(x => Promise.resolve(x + 'hey')),
+      const hosWithHey = pipe([
+        filter(async x => x === 'ho'),
+        map(x => Promise.resolve(x + 'hey')),
       ])
       const hihos = { a: 'hi', b: 'ho', c: 'hi', d: 'ho', e: 'hi', f: 'ho' }
-      aok(r.reduce(hosWithHey(add), '')(hihos) instanceof Promise),
-      aok(r.reduce(hosWithHey(concat), [])(hihos) instanceof Promise),
+      aok(reduce(hosWithHey(add), '')(hihos) instanceof Promise),
+      aok(reduce(hosWithHey(concat), [])(hihos) instanceof Promise),
       ase(
-        await r.reduce(hosWithHey(add), '')(hihos),
+        await reduce(hosWithHey(add), '')(hihos),
         'hoheyhoheyhohey',
       )
       ade(
-        await r.reduce(hosWithHey(concat), [])(hihos),
+        await reduce(hosWithHey(concat), [])(hihos),
         ['hohey', 'hohey', 'hohey'],
       )
     })
@@ -1375,57 +1369,57 @@ describe('rubico', () => {
     const isBigOdd = x => (x % 2n === 1n)
     const asyncIsBigEven = async x => (x % 2n === 0n)
     const bigSquare = x => x ** 2n
-    const squareOdds = r.pipe([r.filter(isOdd), r.map(square)])
-    const squareOddsToString = r.pipe([
-      r.filter(isOdd),
-      r.map(r.pipe([square, x => `${x}`])),
+    const squareOdds = pipe([filter(isOdd), map(square)])
+    const squareOddsToString = pipe([
+      filter(isOdd),
+      map(pipe([square, x => `${x}`])),
     ])
-    const squareBigOdds = r.pipe([r.filter(isBigOdd), r.map(bigSquare)])
-    const asyncEvens = r.filter(asyncIsEven)
-    const asyncEvensToString = r.pipe([
-      r.filter(asyncIsEven),
-      r.map(x => `${x}`)
+    const squareBigOdds = pipe([filter(isBigOdd), map(bigSquare)])
+    const asyncEvens = filter(asyncIsEven)
+    const asyncEvensToString = pipe([
+      filter(asyncIsEven),
+      map(x => `${x}`)
     ])
-    const asyncBigEvens = r.filter(asyncIsBigEven)
+    const asyncBigEvens = filter(asyncIsBigEven)
     const bigNumbers = [1n, 2n, 3n, 4n, 5n]
     it('sync transforms iterable to null', async () => {
       let y = ''
-      ase(r.transform(r.map(r.tap(x => { y += x })), null)([1, 2, 3, 4, 5]), null)
+      ase(transform(map(tap(x => { y += x })), null)([1, 2, 3, 4, 5]), null)
       ase(y, '12345')
     })
     it('async transforms iterable to null', async () => {
       let y = ''
-      aok(r.transform(r.map(r.tap(async () => {})), null)([1, 2, 3, 4, 5]) instanceof Promise)
-      ase(await r.transform(r.map(r.tap(async x => { y += x })), null)([1, 2, 3, 4, 5]), null)
+      aok(transform(map(tap(async () => {})), null)([1, 2, 3, 4, 5]) instanceof Promise)
+      ase(await transform(map(tap(async x => { y += x })), null)([1, 2, 3, 4, 5]), null)
       ase(y, '12345')
     })
     it('sync transforms iterable to array', async () => {
-      ade(r.transform(squareOdds, [])([1, 2, 3, 4, 5]), [1, 9, 25])
+      ade(transform(squareOdds, [])([1, 2, 3, 4, 5]), [1, 9, 25])
     })
     it('async transforms iterable to array', async () => {
-      aok(r.transform(asyncEvens, [99])([1, 2, 3, 4, 5]) instanceof Promise)
-      ade(await r.transform(asyncEvens, [99])([1, 2, 3, 4, 5]), [99, 2, 4])
+      aok(transform(asyncEvens, [99])([1, 2, 3, 4, 5]) instanceof Promise)
+      ade(await transform(asyncEvens, [99])([1, 2, 3, 4, 5]), [99, 2, 4])
     })
     it('sync transforms iterable to string', async () => {
-      ase(r.transform(squareOdds, '')([1, 2, 3, 4, 5]), '1925')
+      ase(transform(squareOdds, '')([1, 2, 3, 4, 5]), '1925')
     })
     it('async transforms iterable to string', async () => {
-      aok(r.transform(asyncEvens, '99')([1, 2, 3, 4, 5]) instanceof Promise)
-      ase(await r.transform(asyncEvens, '99')([1, 2, 3, 4, 5]), '9924')
+      aok(transform(asyncEvens, '99')([1, 2, 3, 4, 5]) instanceof Promise)
+      ase(await transform(asyncEvens, '99')([1, 2, 3, 4, 5]), '9924')
     })
     it('sync transforms iterable to set', async () => {
-      ade(r.transform(squareOdds, new Set())([1, 2, 3, 4, 5]), new Set([1, 9, 25]))
+      ade(transform(squareOdds, new Set())([1, 2, 3, 4, 5]), new Set([1, 9, 25]))
     })
     it('async transforms iterable to set', async () => {
-      aok(r.transform(asyncEvens, new Set([99]))([1, 2, 3, 4, 5]) instanceof Promise)
+      aok(transform(asyncEvens, new Set([99]))([1, 2, 3, 4, 5]) instanceof Promise)
       ade(
-        await r.transform(asyncEvens, new Set([99, 2]))([1, 2, 3, 4, 5]),
+        await transform(asyncEvens, new Set([99, 2]))([1, 2, 3, 4, 5]),
         new Set([99, 2, 4]),
       )
     })
     it('sync transforms iterable to map', async () => {
       ade(
-        r.transform(r.map(
+        transform(map(
           x => [x, x.charCodeAt(0)],
         ), new Map())('abc'),
         new Map([['a', 97], ['b', 98], ['c', 99]]),
@@ -1433,12 +1427,12 @@ describe('rubico', () => {
     })
     it('async transforms iterable to map', async () => {
       aok(
-        r.transform(r.map(
+        transform(map(
           async x => [x, x.charCodeAt(0)],
         ), new Map())('abc') instanceof Promise
       )
       ade(
-        await r.transform(r.map(
+        await transform(map(
           async x => [x, x.charCodeAt(0)],
         ), new Map())('abc'),
         new Map([['a', 97], ['b', 98], ['c', 99]]),
@@ -1447,7 +1441,7 @@ describe('rubico', () => {
     it('strings are encoded into arrays of character codes for number TypedArrays', async () => {
       for (const constructor of numberTypedArrayConstructors) {
         ade(
-          r.transform(squareOddsToString, new constructor(0))([1, 2, 3, 4, 5]),
+          transform(squareOddsToString, new constructor(0))([1, 2, 3, 4, 5]),
           new constructor([49, 57, 50, 53]),
         )
         ase(String.fromCharCode(...(new constructor([49, 57, 50, 53]))), '1925')
@@ -1456,23 +1450,23 @@ describe('rubico', () => {
     it('throws TypeError for uncoercible items', async () => {
       for (const constructor of numberTypedArrayConstructors) {
         assert.throws(
-          () => r.transform(r.map(x => x), new constructor(0))([true, false, false]),
-          new TypeError('toNumberTypedArray(typedArray, y); cannot convert y to typedArray'),
+          () => transform(map(x => x), new constructor(0))([true, false, false]),
+          new TypeError('toTypedArray(typedArray, y); cannot convert y to typedArray'),
         )
       }
     })
     it('throws TypeError for uncoercible items', async () => {
       for (const constructor of bigIntTypedArrayConstructors) {
         assert.throws(
-          () => r.transform(r.map(x => x), new constructor(0))([true, false, false]),
-          new TypeError('toBigIntTypedArray(typedArray, y); cannot convert y to typedArray'),
+          () => transform(map(x => x), new constructor(0))([true, false, false]),
+          new TypeError('toTypedArray(typedArray, y); cannot convert y to typedArray'),
         )
       }
     })
     it('async transforms iterable to number TypedArray', async () => {
       for (const constructor of numberTypedArrayConstructors) {
         const buffer99 = new constructor([9, 9])
-        const buffer9924 = r.transform(asyncEvens, buffer99)([1, 2, 3, 4, 5])
+        const buffer9924 = transform(asyncEvens, buffer99)([1, 2, 3, 4, 5])
         aok(buffer9924 instanceof Promise)
         ade(await buffer9924, new constructor([9, 9, 2, 4]))
       }
@@ -1480,7 +1474,7 @@ describe('rubico', () => {
     it('sync transforms iterable to a bigint TypedArray', async () => {
       for (const constructor of bigIntTypedArrayConstructors) {
         ade(
-          r.transform(squareBigOdds, new constructor(0))(bigNumbers),
+          transform(squareBigOdds, new constructor(0))(bigNumbers),
           new constructor([1n, 9n, 25n]),
         )
       }
@@ -1488,14 +1482,14 @@ describe('rubico', () => {
     it('async transforms iterable to a bigint TypedArray', async () => {
       for (const constructor of bigIntTypedArrayConstructors) {
         const buffer99 = new constructor([9n, 9n])
-        const buffer9924 = r.transform(asyncBigEvens, buffer99)(bigNumbers)
+        const buffer9924 = transform(asyncBigEvens, buffer99)(bigNumbers)
         aok(buffer9924 instanceof Promise)
         ade(await buffer9924, new constructor([9n, 9n, 2n, 4n]))
       }
     })
     it('sync transforms iterable to writeable stream', async () => {
       const tmpWriter = fs.createWriteStream(path.join(__dirname, './tmp'))
-      r.transform(squareOddsToString, tmpWriter)([1, 2, 3, 4, 5])
+      transform(squareOddsToString, tmpWriter)([1, 2, 3, 4, 5])
       ase(await consumeReadStreamPush(
         fs.createReadStream(path.join(__dirname, './tmp')),
       ), '1925')
@@ -1507,7 +1501,7 @@ describe('rubico', () => {
     it('async transforms iterable to writeable stream', async () => {
       const tmpWriter = fs.createWriteStream(path.join(__dirname, './tmp'))
       tmpWriter.write('99')
-      const writeEvens = r.transform(asyncEvensToString, tmpWriter)([1, 2, 3, 4, 5])
+      const writeEvens = transform(asyncEvensToString, tmpWriter)([1, 2, 3, 4, 5])
       aok(writeEvens instanceof Promise)
       await writeEvens
       ase(await consumeReadStreamPush(
@@ -1520,50 +1514,50 @@ describe('rubico', () => {
     })
     it('sync transforms an iterable to an object', async () => {
       ade(
-        r.transform(r.map(n => [n, n]), {})([1, 2, 3, 4, 5]),
+        transform(map(n => [n, n]), {})([1, 2, 3, 4, 5]),
         { '1': 1, '2': 2, '3': 3, '4': 4, '5': 5 },
       )
       ade(
-        r.transform(r.map(n => ({ [n]: n })), {})([1, 2, 3, 4, 5]),
+        transform(map(n => ({ [n]: n })), {})([1, 2, 3, 4, 5]),
         { '1': 1, '2': 2, '3': 3, '4': 4, '5': 5 },
       )
     })
     it('async transforms an iterable to an object', async () => {
       aok(
-        r.transform(r.map(async n => [n, n]), {})([1, 2, 3, 4, 5]) instanceof Promise,
+        transform(map(async n => [n, n]), {})([1, 2, 3, 4, 5]) instanceof Promise,
       )
       aok(
-        r.transform(r.map(async n => ({ [n]: n })), {})([1, 2, 3, 4, 5]) instanceof Promise,
+        transform(map(async n => ({ [n]: n })), {})([1, 2, 3, 4, 5]) instanceof Promise,
       )
       ade(
-        await r.transform(r.map(async n => [n, n]), {})([1, 2, 3, 4, 5]),
+        await transform(map(async n => [n, n]), {})([1, 2, 3, 4, 5]),
         { '1': 1, '2': 2, '3': 3, '4': 4, '5': 5 },
       )
       ade(
-        await r.transform(r.map(async n => ({ [n]: n })), {})([1, 2, 3, 4, 5]),
+        await transform(map(async n => ({ [n]: n })), {})([1, 2, 3, 4, 5]),
         { '1': 1, '2': 2, '3': 3, '4': 4, '5': 5 },
       )
     })
     it('initial value can be a function', async () => {
       const square = x => x ** 2
       ade(
-        r.transform(r.map(square), () => [])([1, 2, 3]),
+        transform(map(square), () => [])([1, 2, 3]),
         [1, 4, 9],
       )
     })
     it('initial value can be an async function', async () => {
       const square = x => x ** 2
       aok(
-        r.transform(r.map(square), async () => [])([1, 2, 3]) instanceof Promise,
+        transform(map(square), async () => [])([1, 2, 3]) instanceof Promise,
       )
       ade(
-        await r.transform(r.map(square), async () => [])([1, 2, 3]),
+        await transform(map(square), async () => [])([1, 2, 3]),
         [1, 4, 9],
       )
     })
     it('referential initial values are unsafe', async () => {
       const square = x => x ** 2
-      const unsafeSquareAllTransform = r.transform(r.map(square), [])
+      const unsafeSquareAllTransform = transform(map(square), [])
       ade(
         unsafeSquareAllTransform([1, 2, 3]),
         [1, 4, 9],
@@ -1572,7 +1566,7 @@ describe('rubico', () => {
         unsafeSquareAllTransform([1, 2, 3]),
         [1, 4, 9, 1, 4, 9],
       )
-      const safeSquareAllTransform = r.transform(r.map(square), () => [])
+      const safeSquareAllTransform = transform(map(square), () => [])
       ade(
         safeSquareAllTransform([1, 2, 3]),
         [1, 4, 9],
@@ -1585,24 +1579,24 @@ describe('rubico', () => {
     it('=> [] for initial () => [] and input []', async () => {
       const square = x => x ** 2
       ade(
-        r.transform(r.map(square), () => [])([]),
+        transform(map(square), () => [])([]),
         [],
       )
       const emptyAsyncIterator = (async function*(){})()
       ade(
-        await r.transform(r.map(square), () => [])(emptyAsyncIterator),
+        await transform(map(square), () => [])(emptyAsyncIterator),
         [],
       )
     })
     it('throws a TypeError for transform(Object, () => {})', async () => {
       assert.throws(
-        () => r.transform(() => {}, undefined)('hey'),
+        () => transform(() => {}, undefined)('hey'),
         new TypeError('transform(x, y); x invalid'),
       )
     })
     it('throws a TypeError for non function transducer', async () => {
       assert.throws(
-        () => r.transform('yo', 'hey'),
+        () => transform('yo', 'hey'),
         new TypeError('transform(x, y); y is not a function'),
       )
     })
@@ -1611,107 +1605,92 @@ describe('rubico', () => {
   describe('flatMap', () => {
     it('maps then flattens an array, async + parallel', async () => {
       const asyncPowers = async x => [x ** 2, x ** 3]
-      aok(r.flatMap(asyncPowers)([1, 2, 3, 4, 5]) instanceof Promise)
+      aok(flatMap(asyncPowers)([1, 2, 3, 4, 5]) instanceof Promise)
       ade(
-        await r.flatMap(asyncPowers)([1, 2, 3, 4, 5]),
+        await flatMap(asyncPowers)([1, 2, 3, 4, 5]),
         [1, 1, 4, 8, 9, 27, 16, 64, 25, 125],
       )
     })
     it('maps then flattens an array, sync', async () => {
       const powers = x => [x ** 2, x ** 3]
       ade(
-        r.flatMap(powers)([1, 2, 3, 4, 5]),
+        flatMap(powers)([1, 2, 3, 4, 5]),
         [1, 1, 4, 8, 9, 27, 16, 64, 25, 125],
       )
       ade(
-        r.flatMap(powers)([1, 2, 3, 4, 5]),
+        flatMap(powers)([1, 2, 3, 4, 5]),
         [1, 1, 4, 8, 9, 27, 16, 64, 25, 125],
       )
       ade(
-        r.flatMap(x => new Set([x ** 2]))([1, 2, 3, 4, 5]),
+        flatMap(x => new Set([x ** 2]))([1, 2, 3, 4, 5]),
         [1, 4, 9, 16, 25],
       )
       ade(
-        r.flatMap(
+        flatMap(
           x => x,
         )(
-          r.flatMap(x => new Map([[x, x ** 2]]))([1, 2, 3, 4, 5]),
+          flatMap(x => new Map([[x, x ** 2]]))([1, 2, 3, 4, 5]),
         ),
         [1, 1, 2, 4, 3, 9, 4, 16, 5, 25],
       )
       ade(
-        r.flatMap(x => x)([1, 2, [3, 4], 5]),
+        flatMap(x => x)([1, 2, [3, 4], 5]),
         [1, 2, 3, 4, 5],
       )
     })
-    it('maps then flattens an array of objects', async () => {
+    it('does not flatten objects', async () => {
       const createObject = () => ({ a: 1, b: 2, c: 3 })
       ade(
-        r.flatMap(
-          x => x,
-        )(arrayOf(createObject, 3)),
-        [1, 2, 3, 1, 2, 3, 1, 2, 3],
-      )
-      ade(
-        r.flatMap(
-          r.map(x => x ** 2),
-        )(arrayOf(createObject, 3)),
-        [1, 4, 9, 1, 4, 9, 1, 4, 9],
+        flatMap(x => x)(arrayOf(createObject, 3)),
+        arrayOf(createObject, 3),
       )
     })
     it('maps then flattens a Set', async () => {
       const powers = x => [x ** 2, x ** 3]
       ade(
-        r.flatMap(
+        flatMap(
           powers,
         )(new Set([1, 2, 3])),
         new Set([1, 4, 8, 9, 27]),
       )
       ade(
-        r.flatMap(
+        flatMap(
           x => new Set(powers(x)),
         )(new Set([1, 2, 3])),
         new Set([1, 4, 8, 9, 27]),
       )
+    })
+    it('does not flatten objects', async () => {
       ade(
-        r.flatMap(
-          x => ({ square: x ** 2, cube: x ** 3 })
-        )(new Set([1, 2, 3])),
-        new Set([1, 4, 8, 9, 27]),
+        flatMap(x => ({ square: x ** 2, cube: x ** 3 }))(new Set([1, 2, 3])),
+        new Set([
+          { square: 1, cube: 1 },
+          { square: 4, cube: 8 },
+          { square: 9, cube: 27 },
+        ]),
       )
     })
     it('[async] maps then flattens a Set', async () => {
       const powers = async x => [x ** 2, x ** 3]
       aok(
-        r.flatMap(
+        flatMap(
           powers,
         )(new Set([1, 2, 3])) instanceof Promise
       )
       ade(
-        await r.flatMap(
+        await flatMap(
           powers,
         )(new Set([1, 2, 3])),
         new Set([1, 4, 8, 9, 27]),
       )
       aok(
-        r.flatMap(
+        flatMap(
           x => powers(x).then(x => new Set(x))
         )(new Set([1, 2, 3])) instanceof Promise
       )
       ade(
-        await r.flatMap(
+        await flatMap(
           x => powers(x).then(x => new Set(x))
-        )(new Set([1, 2, 3])),
-        new Set([1, 4, 8, 9, 27]),
-      )
-      aok(
-        r.flatMap(
-          async x => ({ square: x ** 2, cube: x ** 3 })
-        )(new Set([1, 2, 3])) instanceof Promise
-      )
-      ade(
-        await r.flatMap(
-          async x => ({ square: x ** 2, cube: x ** 3 })
         )(new Set([1, 2, 3])),
         new Set([1, 4, 8, 9, 27]),
       )
@@ -1719,8 +1698,8 @@ describe('rubico', () => {
     it('maps then flattens a reducer function', async () => {
       const powers = x => [x ** 2, x ** 3]
       ade(
-        r.transform(
-          r.flatMap(powers),
+        transform(
+          flatMap(powers),
           [],
         )([1, 2, 3]),
         [1, 1, 4, 8, 9, 27],
@@ -1729,14 +1708,14 @@ describe('rubico', () => {
     it('[async] maps then flattens a reducer function', async () => {
       const powers = async x => [x ** 2, x ** 3]
       aok(
-        r.transform(
-          r.flatMap(powers),
+        transform(
+          flatMap(powers),
           [],
         )([1, 2, 3]) instanceof Promise
       )
       ade(
-        await r.transform(
-          r.flatMap(powers),
+        await transform(
+          flatMap(powers),
           [],
         )([1, 2, 3]),
         [1, 1, 4, 8, 9, 27],
@@ -1746,15 +1725,15 @@ describe('rubico', () => {
       // TODO: better error message here
       const square = x => x ** 2
       assert.throws(
-        () => r.transform(
-          r.flatMap(square),
+        () => transform(
+          flatMap(square),
           [],
         )([1, 2, 3]),
         new TypeError('reduce(...)(x); x invalid'),
       )
       assert.rejects(
-        () => r.transform(
-          r.flatMap(async x => square(x)),
+        () => transform(
+          flatMap(async x => square(x)),
           [],
         )([1, 2, 3]),
         new TypeError('reduce(...)(x); x invalid'),
@@ -1762,14 +1741,14 @@ describe('rubico', () => {
     })
     it('throws a TypeError on flatMap(nonFunction)', async () => {
       assert.throws(
-        () => r.flatMap({}),
-        new TypeError('flatMap(x); x is not a function'),
+        () => flatMap({}),
+        new TypeError('flatMap(func); func is not a function'),
       )
     })
     it('throws a TypeError on flatMap(...)(null)', async () => {
       assert.throws(
-        () => r.flatMap(() => 'hi')(null),
-        new TypeError('flatMap(...)(x); x invalid')
+        () => flatMap(() => 'hi')(null),
+        new TypeError('flatMap(...)(value); invalid value null')
       )
     })
   })
@@ -1778,43 +1757,44 @@ describe('rubico', () => {
     const aaaaa = { a: { a: { a: { a: { a: 1 } } } } }
     const nested = [[[[[1]]]]]
     it('accesses a property of an object by name', async () => {
-      ase(r.get('a')({ a: 1 }), 1)
-      ase(r.get('b')({ a: 1 }), undefined)
-      ase(r.get('b', 0)({ a: 1 }), 0)
-      ase(r.get(0)([1]), 1)
-      ase(r.get(1)([1]), undefined)
-      ase(r.get(1, 0)([1]), 0)
+      ase(get('a')({ a: 1 }), 1)
+      ase(get('b')({ a: 1 }), undefined)
+      ase(get('b', 0)({ a: 1 }), 0)
+      ase(get(0)([1]), 1)
+      ase(get(1)([1]), undefined)
+      ase(get(1, 0)([1]), 0)
     })
     it('accesses a property of an object by dot notation', async () => {
-      ase(r.get('a.a.a.a.a')(aaaaa), 1)
-      ase(r.get('a.a.a.a.b')(aaaaa), undefined)
-      ase(r.get('a.a.a.a.b', 0)(aaaaa), 0)
-      ase(r.get('0.0.0.0.0')(nested), 1)
-      ase(r.get('0.0.0.0.1')(nested), undefined)
-      ase(r.get('0.0.0.0.1', 0)(nested), 0)
+      ase(get('a.a.a.a.a')(aaaaa), 1)
+      ase(get('a.a.a.a.b')(aaaaa), undefined)
+      ase(get('a.a.a.a.b', 0)(aaaaa), 0)
+      ase(get('0.0.0.0.0')(nested), 1)
+      ase(get('0.0.0.0.1')(nested), undefined)
+      ase(get('0.0.0.0.1', 0)(nested), 0)
     })
     it('accesses a property of an object by array', async () => {
-      ase(r.get(['a', 'a', 'a', 'a', 'a'])(aaaaa), 1)
-      ase(r.get(['a', 'a', 'a', 'a', 'b'])(aaaaa), undefined)
-      ase(r.get(['a', 'a', 'a', 'a', 'b'], 0)(aaaaa), 0)
-      ase(r.get([0, 0, 0, 0, 0])(nested), 1)
-      ase(r.get([0, 0, 0, 0, 1])(nested), undefined)
-      ase(r.get([0, 0, 0, 0, 1], 0)(nested), 0)
-      ase(r.get(['a', 0])({ a: [1] }), 1)
+      ase(get(['a', 'a', 'a', 'a', 'a'])(aaaaa), 1)
+      ase(get(['a', 'a', 'a', 'a', 'b'])(aaaaa), undefined)
+      ase(get(['a', 'a', 'a', 'a', 'b'], 0)(aaaaa), 0)
+      ase(get([0, 0, 0, 0, 0])(nested), 1)
+      ase(get([0, 0, 0, 0, 1])(nested), undefined)
+      ase(get([0, 0, 0, 0, 1], 0)(nested), 0)
+      ase(get(['a', 0])({ a: [1] }), 1)
     })
     it('handles null and undefined initial value with default or undefined', async () => {
-      ase(r.get('a')(null), undefined)
-      ase(r.get('a', 'yo')(null), 'yo')
-      ase(r.get('a', 'yo')(undefined), 'yo')
+      ase(get('a')(null), undefined)
+      ase(get('a', () => 'yo')(null), 'yo')
+      ase(get('a', 'yo')(null), 'yo')
+      ase(get('a', 'yo')(undefined), 'yo')
     })
     it('defaultValue can be a function', async () => {
-      ase(r.get('a', obj => obj.b)({ b: 1 }), 1)
-      ase(r.get('a', obj => obj.b)({}), undefined)
+      ase(get('a', obj => obj.b)({ b: 1 }), 1)
+      ase(get('a', obj => obj.b)({}), undefined)
     })
     it('throws a TypeError on invalid path', async () => {
       assert.throws(
-        () => r.get({}),
-        new TypeError('get(x, y); x invalid'),
+        () => get({}),
+        new TypeError('get(path); invalid path [object Object]'),
       )
     })
   })
@@ -1822,19 +1802,19 @@ describe('rubico', () => {
   describe('pick', () => {
     const abc = { a: 1, b: 2, c: 3 }
     it('picks properties off an object defined by array', async () => {
-      ade(r.pick(['a'])(abc), { a: 1 })
-      ade(r.pick(['a', 'd'])(abc), { a: 1 })
-      ade(r.pick(['d'])(abc), {})
+      ade(pick(['a'])(abc), { a: 1 })
+      ade(pick(['a', 'd'])(abc), { a: 1 })
+      ade(pick(['d'])(abc), {})
     })
     it('throws a TypeError on pick(nonArray)', async () => {
       assert.throws(
-        () => r.pick('hey'),
+        () => pick('hey'),
         new TypeError('pick(x); x is not an array'),
       )
     })
     it('throws a TypeError on pick(...)(nonObject)', async () => {
       assert.throws(
-        () => r.pick(['hey'])(['hey']),
+        () => pick(['hey'])(['hey']),
         new TypeError('pick(...)(x); x is not an object'),
       )
     })
@@ -1843,19 +1823,19 @@ describe('rubico', () => {
   describe('omit', () => {
     const abc = { a: 1, b: 2, c: 3 }
     it('omits properties from an object defined by array', async () => {
-      ade(r.omit(['a'])(abc), { b: 2, c: 3 })
-      ade(r.omit(['a', 'd'])(abc), { b: 2, c: 3 })
-      ade(r.omit(['d'])(abc), { a: 1, b: 2, c: 3 })
+      ade(omit(['a'])(abc), { b: 2, c: 3 })
+      ade(omit(['a', 'd'])(abc), { b: 2, c: 3 })
+      ade(omit(['d'])(abc), { a: 1, b: 2, c: 3 })
     })
     it('throws a TypeError on invalid props', async () => {
       assert.throws(
-        () => r.omit('hey'),
+        () => omit('hey'),
         new TypeError('omit(x); x is not an array'),
       )
     })
     it('throws a TypeError on invalid input', async () => {
       assert.throws(
-        () => r.omit(['hey'])(['hey']),
+        () => omit(['hey'])(['hey']),
         new TypeError('omit(...)(x); x is not an object'),
       )
     })
@@ -1865,37 +1845,37 @@ describe('rubico', () => {
     const numbers = [1, 2, 3, 4, 5]
     const numbersObject = { a: 1, b: 2, c: 3, d: 4, e: 5 }
     it('[sync] tests fn against all items of iterable, true if any evaluation is truthy', async () => {
-      ase(r.any(x => x > 5)(numbers), false)
-      ase(r.any(x => x > 0)(numbers), true)
-      ase(r.any(x => x > 5)(new Set(numbers)), false)
-      ase(r.any(x => x > 0)(new Set(numbers)), true)
-      ase(r.any(x => x > 5)(numbersObject), false)
-      ase(r.any(x => x > 0)(numbersObject), true)
+      ase(any(x => x > 5)(numbers), false)
+      ase(any(x => x > 0)(numbers), true)
+      ase(any(x => x > 5)(new Set(numbers)), false)
+      ase(any(x => x > 0)(new Set(numbers)), true)
+      ase(any(x => x > 5)(numbersObject), false)
+      ase(any(x => x > 0)(numbersObject), true)
     })
     it('[async] tests fn against all items of iterable, true if any evaluation is truthy', async () => {
-      aok(r.any(async x => x > 5)(numbers) instanceof Promise)
-      ase(await r.any(async x => x > 5)(numbers), false)
-      ase(await r.any(async x => x > 0)(numbers), true)
-      ase(await r.any(async x => x > 5)(new Set(numbers)), false)
-      ase(await r.any(async x => x > 0)(new Set(numbers)), true)
-      ase(await r.any(async x => x > 5)(numbersObject), false)
-      ase(await r.any(async x => x > 0)(numbersObject), true)
+      aok(any(async x => x > 5)(numbers) instanceof Promise)
+      ase(await any(async x => x > 5)(numbers), false)
+      ase(await any(async x => x > 0)(numbers), true)
+      ase(await any(async x => x > 5)(new Set(numbers)), false)
+      ase(await any(async x => x > 0)(new Set(numbers)), true)
+      ase(await any(async x => x > 5)(numbersObject), false)
+      ase(await any(async x => x > 0)(numbersObject), true)
     })
     it('tests a variadic async function', async () => {
       ase(
-        await r.any(x => x < 2 ? Promise.resolve(false) : true)([1, 2, 3, 4, 5]),
+        await any(x => x < 2 ? Promise.resolve(false) : true)([1, 2, 3, 4, 5]),
         true,
       )
     })
     it('throws TypeError on non function setup', async () => {
       assert.throws(
-        () => r.any('hey'),
+        () => any('hey'),
         new TypeError('any(x); x is not a function'),
       )
     })
     it('throws TypeError if input not iterable or object', async () => {
       assert.throws(
-        () => r.any(x => x)(1),
+        () => any(x => x)(1),
         new TypeError('any(...)(x); x invalid'),
       )
     })
@@ -1905,37 +1885,37 @@ describe('rubico', () => {
     const numbers = [1, 2, 3, 4, 5]
     const numbersObject = { a: 1, b: 2, c: 3, d: 4, e: 5 }
     it('syncly evaluates fn against all items in iterable, true if all evaluations are truthy', async () => {
-      ase(r.all(x => x > 5)(numbers), false)
-      ase(r.all(x => x > 0)(numbers), true)
-      ase(r.all(x => x > 5)(new Set(numbers)), false)
-      ase(r.all(x => x > 0)(new Set(numbers)), true)
-      ase(r.all(x => x > 5)(numbersObject), false)
-      ase(r.all(x => x > 0)(numbersObject), true)
+      ase(all(x => x > 5)(numbers), false)
+      ase(all(x => x > 0)(numbers), true)
+      ase(all(x => x > 5)(new Set(numbers)), false)
+      ase(all(x => x > 0)(new Set(numbers)), true)
+      ase(all(x => x > 5)(numbersObject), false)
+      ase(all(x => x > 0)(numbersObject), true)
     })
     it('asyncly evaluates fn against all items in iterable, true if all evaluations are truthy', async () => {
-      aok(r.all(async x => x > 5)(numbers) instanceof Promise)
-      ase(await r.all(async x => x > 5)(numbers), false)
-      ase(await r.all(async x => x > 0)(numbers), true)
-      ase(await r.all(async x => x > 5)(new Set(numbers)), false)
-      ase(await r.all(async x => x > 0)(new Set(numbers)), true)
-      ase(await r.all(async x => x > 5)(numbersObject), false)
-      ase(await r.all(async x => x > 0)(numbersObject), true)
+      aok(all(async x => x > 5)(numbers) instanceof Promise)
+      ase(await all(async x => x > 5)(numbers), false)
+      ase(await all(async x => x > 0)(numbers), true)
+      ase(await all(async x => x > 5)(new Set(numbers)), false)
+      ase(await all(async x => x > 0)(new Set(numbers)), true)
+      ase(await all(async x => x > 5)(numbersObject), false)
+      ase(await all(async x => x > 0)(numbersObject), true)
     })
     it('tests a variadic async function', async () => {
       ase(
-        await r.all(x => x < 2 ? Promise.resolve(true) : false)([1, 2, 3, 4, 5]),
+        await all(x => x < 2 ? Promise.resolve(true) : false)([1, 2, 3, 4, 5]),
         false,
       )
     })
     it('throws TypeError on all(nonFunction)', async () => {
       assert.throws(
-        () => r.all('hey'),
+        () => all('hey'),
         new TypeError('all(x); x is not a function'),
       )
     })
     it('throws TypeError on all(...)(string)', async () => {
       assert.throws(
-        () => r.all(x => x)(1),
+        () => all(x => x)(1),
         new TypeError('all(...)(x); x invalid'),
       )
     })
@@ -1944,29 +1924,29 @@ describe('rubico', () => {
   describe('and', () => {
     const isGreaterThan1 = x => x > 1
     it('sync tests input against provided array of functions, true if all evaluations are truthy', async () => {
-      ase(r.and([isOdd, isGreaterThan1])(3), true)
-      ase(r.and([isOdd, isGreaterThan1])(1), false)
+      ase(and([isOdd, isGreaterThan1])(3), true)
+      ase(and([isOdd, isGreaterThan1])(1), false)
     })
     it('async tests input against provided array of functions, true if all evaluations are truthy', async () => {
-      aok(r.and([asyncIsEven, isGreaterThan1])(2) instanceof Promise)
-      ase(await r.and([asyncIsEven, isGreaterThan1])(2), true)
-      ase(await r.and([asyncIsEven, isGreaterThan1])(0), false)
+      aok(and([asyncIsEven, isGreaterThan1])(2) instanceof Promise)
+      ase(await and([asyncIsEven, isGreaterThan1])(2), true)
+      ase(await and([asyncIsEven, isGreaterThan1])(0), false)
     })
     it('throws a TypeError if passed a non array', async () => {
       assert.throws(
-        () => r.and('hey'),
+        () => and('hey'),
         new TypeError('and(x); x is not an array of functions'),
       )
     })
     it('throws a RangeError if passed less than one function', async () => {
       assert.throws(
-        () => r.and([]),
+        () => and([]),
         new RangeError('and(x); x is not an array of at least one function'),
       )
     })
     it('throws a TypeError if any item is not a function', async () => {
       assert.throws(
-        () => r.and([() => false, 'hey', () => 'hi']),
+        () => and([() => false, 'hey', () => 'hi']),
         new TypeError('and(x); x[1] is not a function'),
       )
     })
@@ -1975,29 +1955,29 @@ describe('rubico', () => {
   describe('or', () => {
     const isGreaterThan1 = x => x > 1
     it('sync tests input against provided array of functions, true if any evaluations are truthy', async () => {
-      ase(r.or([isOdd, isGreaterThan1])(3), true)
-      ase(r.or([isOdd, isGreaterThan1])(0), false)
+      ase(or([isOdd, isGreaterThan1])(3), true)
+      ase(or([isOdd, isGreaterThan1])(0), false)
     })
     it('async tests input against provided array of functions, true if any evaluations are truthy', async () => {
-      aok(r.or([asyncIsEven, isGreaterThan1])(2) instanceof Promise)
-      ase(await r.or([asyncIsEven, isGreaterThan1])(2), true)
-      ase(await r.or([asyncIsEven, isGreaterThan1])(1), false)
+      aok(or([asyncIsEven, isGreaterThan1])(2) instanceof Promise)
+      ase(await or([asyncIsEven, isGreaterThan1])(2), true)
+      ase(await or([asyncIsEven, isGreaterThan1])(1), false)
     })
     it('throws a TypeError if passed a non array', async () => {
       assert.throws(
-        () => r.or('hey'),
+        () => or('hey'),
         new TypeError('or(fns); fns is not an array of functions'),
       )
     })
     it('throws a RangeError if passed less than one function', async () => {
       assert.throws(
-        () => r.or([]),
+        () => or([]),
         new RangeError('or(fns); fns is not an array of at least one function'),
       )
     })
     it('throws a TypeError if any item is not a function', async () => {
       assert.throws(
-        () => r.or([() => false, 'hey', () => 'hi']),
+        () => or([() => false, 'hey', () => 'hi']),
         new TypeError('or(fns); fns[1] is not a function'),
       )
     })
@@ -2005,17 +1985,17 @@ describe('rubico', () => {
 
   describe('not', () => {
     it('[sync] not(isOdd)(x) === !isOdd(x)', async () => {
-      ase(r.not(isOdd)(2), true)
-      ase(r.not(isOdd)(1), false)
+      ase(not(isOdd)(2), true)
+      ase(not(isOdd)(1), false)
     })
     it('[async] not(isEven)(x) === !(await isEven(x))', async () => {
-      aok(r.not(asyncIsEven)(2) instanceof Promise)
-      ase(await r.not(asyncIsEven)(2), false)
-      ase(await r.not(asyncIsEven)(1), true)
+      aok(not(asyncIsEven)(2) instanceof Promise)
+      ase(await not(asyncIsEven)(2), false)
+      ase(await not(asyncIsEven)(1), true)
     })
     it('throws TypeError on not(nonFunction)', async () => {
       assert.throws(
-        () => r.not('hey'),
+        () => not('hey'),
         new TypeError('not(x); x is not a function'),
       )
     })
@@ -2023,186 +2003,208 @@ describe('rubico', () => {
 
   describe('eq', () => {
     it('[sync] eq(f, g)(x) === (f(x) === g(x))', async () => {
-      ase(r.eq(x => `${x}`, x => x)('hey'), true)
-      ase(r.eq(x => `${x}`, x => x)(1), false)
+      ase(eq(x => `${x}`, x => x)('hey'), true)
+      ase(eq(x => `${x}`, x => x)(1), false)
     })
     it('[async] eq(f, g)(x) === (f(x) === g(x))', async () => {
-      aok(r.eq(x => `${x}`, async x => x)('hey') instanceof Promise)
-      ase(await r.eq(x => `${x}`, async x => x)('hey'), true)
-      ase(await r.eq(x => `${x}`, async x => x)(1), false)
+      aok(eq(x => `${x}`, async x => x)('hey') instanceof Promise)
+      ase(await eq(async x => `${x}`, async x => x)('hey'), true)
+      ase(await eq(async x => `${x}`, async x => x)(1), false)
+    })
+    it('[sync] eq(f, value)(x) === (valueA === valueB)', async () => {
+      ase(eq(() => 'hey', 'hey')('ayylmao'), true)
+      ase(eq(() => 'hey', 'ho')('ayylmao'), false)
+    })
+    it('[async] eq(f, value)(x) === (valueA === valueB)', async () => {
+      ase(await eq(async () => 'hey', 'hey')('ayylmao'), true)
+      ase(await eq('hey', async () => 'ho')('ayylmao'), false)
+    })
+    it('[sync] eq(value, g)(x) === (valueA === valueB)', async () => {
+      ase(eq('hey', () => 'hey')('ayylmao'), true)
+      ase(eq('hey', () => 'ho')('ayylmao'), false)
     })
     it('[async] eq(value, g)(x) === (value === g(x))', async () => {
-      aok(r.eq('hey', async x => x)('hey') instanceof Promise)
-      ase(await r.eq('hey', async x => x)('hey'), true)
-      ase(await r.eq('ho', async x => x)(1), false)
+      aok(eq('hey', async x => x)('hey') instanceof Promise)
+      ase(await eq('hey', async x => x)('hey'), true)
+      ase(await eq('ho', async x => x)(1), false)
     })
     it('[sync] eq(valueA, valueB)(x) === (valueA === valueB)', async () => {
-      ase(r.eq('hey', 'hey')('ayylmao'), true)
-      ase(r.eq('hey', 'ho')('ayylmao'), false)
+      ase(eq('hey', 'hey')('ayylmao'), true)
+      ase(eq('hey', 'ho')('ayylmao'), false)
     })
-    it('throws RangeError on not enough arguments', async () => {
-      assert.throws(
-        () => r.eq('hey'),
-        new RangeError('eq(...arguments); exactly two arguments required'),
-      )
+    it('false for eq(string,)', async () => {
+      assert.strictEqual(eq('hey',)(), false)
     })
-    it('throws RangeError on too many arguments', async () => {
-      assert.throws(
-        () => r.eq('hey', () => {}, 'ho'),
-        new RangeError('eq(...arguments); exactly two arguments required'),
-      )
+    it('false for too many arguments', async () => {
+      assert.strictEqual(eq('hey', () => {}, 'ho')(), false)
     })
   })
 
   describe('gt', () => {
     it('[sync] gt(f, g)(x) === (f(x) > g(x))', async () => {
-      ase(r.gt(x => x + 1, x => x)(1), true)
-      ase(r.gt(x => x, x => x)(1), false)
-      ase(r.gt(x => x, x => x + 1)(1), false)
+      ase(gt(x => x + 1, x => x)(1), true)
+      ase(gt(x => x, x => x)(1), false)
+      ase(gt(x => x, x => x + 1)(1), false)
     })
     it('[async] gt(f, g)(x) === (f(x) > g(x))', async () => {
-      aok(r.gt(x => x + 1, async x => x)(1) instanceof Promise)
-      ase(await r.gt(x => x + 1, async x => x)(1), true)
-      ase(await r.gt(async x => x, x => x)(1), false)
-      ase(await r.gt(async x => x, async x => x + 1)(1), false)
+      aok(gt(x => x + 1, async x => x)(1) instanceof Promise)
+      ase(await gt(x => x + 1, async x => x)(1), true)
+      ase(await gt(async x => x, x => x)(1), false)
+      ase(await gt(async x => x, async x => x + 1)(1), false)
+    })
+    it('[sync] gt(f, value)(x) === (valueA > valueB)', async () => {
+      ase(gt(() => 1, 0)('ayylmao'), true)
+      ase(gt(() => 1, 1)('ayylmao'), false)
+      ase(gt(() => 0, 1)('ayylmao'), false)
+    })
+    it('[sync] gt(value, g)(x) === (valueA > valueB)', async () => {
+      ase(gt(1, () => 0)('ayylmao'), true)
+      ase(gt(1, () => 1)('ayylmao'), false)
+      ase(gt(0, () => 1)('ayylmao'), false)
     })
     it('[async] gt(value, g)(x) === (value > g(x))', async () => {
-      aok(r.gt(1, async x => x)(2) instanceof Promise)
-      ase(await r.gt(1, async x => x)(0), true)
-      ase(await r.gt(1, async x => x)(1), false)
-      ase(await r.gt(1, async x => x)(2), false)
+      aok(gt(1, async x => x)(2) instanceof Promise)
+      ase(await gt(1, async x => x)(0), true)
+      ase(await gt(1, async x => x)(1), false)
+      ase(await gt(1, async x => x)(2), false)
     })
     it('[sync] gt(valueA, valueB)(x) === (valueA > valueB)', async () => {
-      ase(r.gt(1, 0)('ayylmao'), true)
-      ase(r.gt(1, 1)('ayylmao'), false)
-      ase(r.gt(0, 1)('ayylmao'), false)
+      ase(gt(1, 0)('ayylmao'), true)
+      ase(gt(1, 1)('ayylmao'), false)
+      ase(gt(0, 1)('ayylmao'), false)
     })
     it('throws RangeError on not enough arguments', async () => {
-      assert.throws(
-        () => r.gt('hey'),
-        new RangeError('gt(...arguments); exactly two arguments required'),
-      )
+      assert.strictEqual(gt('hey')(), false)
     })
     it('throws RangeError on too many arguments', async () => {
-      assert.throws(
-        () => r.gt('hey', () => {}, 'ho'),
-        new RangeError('gt(...arguments); exactly two arguments required'),
-      )
+      assert.strictEqual(gt('hey', () => {}, 'ho')(), false)
     })
   })
 
   describe('lt', () => {
     it('[sync] lt(f, g)(x) === (f(x) < g(x))', async () => {
-      ase(r.lt(x => x + 1, x => x)(1), false)
-      ase(r.lt(x => x, x => x)(1), false)
-      ase(r.lt(x => x, x => x + 1)(1), true)
+      ase(lt(x => x + 1, x => x)(1), false)
+      ase(lt(x => x, x => x)(1), false)
+      ase(lt(x => x, x => x + 1)(1), true)
     })
     it('[async] lt(f, g)(x) === (f(x) < g(x))', async () => {
-      aok(r.lt(x => x + 1, async x => x)(1) instanceof Promise)
-      ase(await r.lt(x => x + 1, async x => x)(1), false)
-      ase(await r.lt(async x => x, x => x)(1), false)
-      ase(await r.lt(async x => x, async x => x + 1)(1), true)
+      aok(lt(x => x + 1, async x => x)(1) instanceof Promise)
+      ase(await lt(x => x + 1, async x => x)(1), false)
+      ase(await lt(async x => x, x => x)(1), false)
+      ase(await lt(async x => x, async x => x + 1)(1), true)
+    })
+    it('[sync] lt(f, value)(x) === (valueA < valueB)', async () => {
+      ase(lt(() => 1, 0)('ayylmao'), false)
+      ase(lt(() => 1, 1)('ayylmao'), false)
+      ase(lt(() => 0, 1)('ayylmao'), true)
+    })
+    it('[sync] lt(value, g)(x) === (valueA < valueB)', async () => {
+      ase(lt(1, () => 0)('ayylmao'), false)
+      ase(lt(1, () => 1)('ayylmao'), false)
+      ase(lt(0, () => 1)('ayylmao'), true)
     })
     it('[async] lt(value, g)(x) === (value < g(x))', async () => {
-      aok(r.lt(1, async x => x)(2) instanceof Promise)
-      ase(await r.lt(1, async x => x)(0), false)
-      ase(await r.lt(1, async x => x)(1), false)
-      ase(await r.lt(1, async x => x)(2), true)
+      aok(lt(1, async x => x)(2) instanceof Promise)
+      ase(await lt(1, async x => x)(0), false)
+      ase(await lt(1, async x => x)(1), false)
+      ase(await lt(1, async x => x)(2), true)
     })
     it('[sync] lt(valueA, valueB)(x) === (valueA < valueB)', async () => {
-      ase(r.lt(1, 0)('ayylmao'), false)
-      ase(r.lt(1, 1)('ayylmao'), false)
-      ase(r.lt(0, 1)('ayylmao'), true)
+      ase(lt(1, 0)('ayylmao'), false)
+      ase(lt(1, 1)('ayylmao'), false)
+      ase(lt(0, 1)('ayylmao'), true)
     })
     it('throws RangeError on not enough arguments', async () => {
-      assert.throws(
-        () => r.lt('hey'),
-        new RangeError('lt(...arguments); exactly two arguments required'),
-      )
+      assert.strictEqual(lt('hey')(), false)
     })
     it('throws RangeError on too many arguments', async () => {
-      assert.throws(
-        () => r.lt('hey', () => {}, 'ho'),
-        new RangeError('lt(...arguments); exactly two arguments required'),
-      )
+      assert.strictEqual(lt('hey', () => {}, 'ho')(), false)
     })
   })
 
   describe('gte', () => {
     it('[sync] gte(f, g)(x) === (f(x) >= g(x))', async () => {
-      ase(r.gte(x => x + 1, x => x)(1), true)
-      ase(r.gte(x => x, x => x)(1), true)
-      ase(r.gte(x => x, x => x + 1)(1), false)
+      ase(gte(x => x + 1, x => x)(1), true)
+      ase(gte(x => x, x => x)(1), true)
+      ase(gte(x => x, x => x + 1)(1), false)
     })
     it('[async] gte(f, g)(x) === (f(x) >= g(x))', async () => {
-      aok(r.gte(x => x + 1, async x => x)(1) instanceof Promise)
-      ase(await r.gte(x => x + 1, async x => x)(1), true)
-      ase(await r.gte(async x => x, x => x)(1), true)
-      ase(await r.gte(async x => x, async x => x + 1)(1), false)
+      aok(gte(x => x + 1, async x => x)(1) instanceof Promise)
+      ase(await gte(x => x + 1, async x => x)(1), true)
+      ase(await gte(async x => x, x => x)(1), true)
+      ase(await gte(async x => x, async x => x + 1)(1), false)
+    })
+    it('[sync] gte(f, value)(x) === (valueA >= valueB)', async () => {
+      ase(gte(() => 1, 0)('ayylmao'), true)
+      ase(gte(() => 1, 1)('ayylmao'), true)
+      ase(gte(() => 0, 1)('ayylmao'), false)
+    })
+    it('[sync] gte(value, g)(x) === (valueA >= valueB)', async () => {
+      ase(gte(1, () => 0)('ayylmao'), true)
+      ase(gte(1, () => 1)('ayylmao'), true)
+      ase(gte(0, () => 1)('ayylmao'), false)
     })
     it('[async] gte(value, g)(x) === (value >= g(x))', async () => {
-      aok(r.gte(1, async x => x)(2) instanceof Promise)
-      ase(await r.gte(1, async x => x)(0), true)
-      ase(await r.gte(1, async x => x)(1), true)
-      ase(await r.gte(1, async x => x)(2), false)
+      aok(gte(1, async x => x)(2) instanceof Promise)
+      ase(await gte(1, async x => x)(0), true)
+      ase(await gte(1, async x => x)(1), true)
+      ase(await gte(1, async x => x)(2), false)
     })
     it('[sync] gte(valueA, valueB)(x) === (valueA >= valueB)', async () => {
-      ase(r.gte(1, 0)('ayylmao'), true)
-      ase(r.gte(1, 1)('ayylmao'), true)
-      ase(r.gte(0, 1)('ayylmao'), false)
+      ase(gte(1, 0)('ayylmao'), true)
+      ase(gte(1, 1)('ayylmao'), true)
+      ase(gte(0, 1)('ayylmao'), false)
     })
     it('throws RangeError on not enough arguments', async () => {
-      assert.throws(
-        () => r.gte('hey'),
-        new RangeError('gte(...arguments); exactly two arguments required'),
-      )
+      assert.strictEqual(gte('hey')(), false)
     })
     it('throws RangeError on too many arguments', async () => {
-      assert.throws(
-        () => r.gte('hey', () => {}, 'ho'),
-        new RangeError('gte(...arguments); exactly two arguments required'),
-      )
+      assert.strictEqual(gte('hey', () => {}, 'ho')(), false)
     })
   })
 
   describe('lte', () => {
     it('[sync] lte(f, g)(x) === (f(x) <= g(x))', async () => {
-      ase(r.lte(x => x + 1, x => x)(1), false)
-      ase(r.lte(x => x, x => x)(1), true)
-      ase(r.lte(x => x, x => x + 1)(1), true)
+      ase(lte(x => x + 1, x => x)(1), false)
+      ase(lte(x => x, x => x)(1), true)
+      ase(lte(x => x, x => x + 1)(1), true)
     })
     it('[async] lte(f, g)(x) === (f(x) <= g(x))', async () => {
-      aok(r.lte(x => x + 1, async x => x)(1) instanceof Promise)
-      ase(await r.lte(x => x + 1, async x => x)(1), false)
-      ase(await r.lte(async x => x, x => x)(1), true)
-      ase(await r.lte(async x => x, async x => x + 1)(1), true)
+      aok(lte(x => x + 1, async x => x)(1) instanceof Promise)
+      ase(await lte(x => x + 1, async x => x)(1), false)
+      ase(await lte(async x => x, x => x)(1), true)
+      ase(await lte(async x => x, async x => x + 1)(1), true)
+    })
+    it('[sync] lte(f, value)(x) === (valueA <= valueB)', async () => {
+      ase(lte(() => 1, 0)('ayylmao'), false)
+      ase(lte(() => 1, 1)('ayylmao'), true)
+      ase(lte(() => 0, 1)('ayylmao'), true)
+    })
+    it('[sync] lte(value, g)(x) === (valueA <= valueB)', async () => {
+      ase(lte(1, () => 0)('ayylmao'), false)
+      ase(lte(1, () => 1)('ayylmao'), true)
+      ase(lte(0, () => 1)('ayylmao'), true)
     })
     it('[async] lte(value, g)(x) === (value <= g(x))', async () => {
-      aok(r.lte(1, async x => x)(2) instanceof Promise)
-      ase(await r.lte(1, async x => x)(0), false)
-      ase(await r.lte(1, async x => x)(1), true)
-      ase(await r.lte(1, async x => x)(2), true)
+      aok(lte(1, async x => x)(2) instanceof Promise)
+      ase(await lte(1, async x => x)(0), false)
+      ase(await lte(1, async x => x)(1), true)
+      ase(await lte(1, async x => x)(2), true)
     })
     it('[sync] lte(valueA, valueB)(x) === (valueA <= valueB)', async () => {
-      ase(r.lte(1, 0)('ayylmao'), false)
-      ase(r.lte(1, 1)('ayylmao'), true)
-      ase(r.lte(0, 1)('ayylmao'), true)
+      ase(lte(1, 0)('ayylmao'), false)
+      ase(lte(1, 1)('ayylmao'), true)
+      ase(lte(0, 1)('ayylmao'), true)
     })
     it('throws RangeError on not enough arguments', async () => {
-      assert.throws(
-        () => r.lte('hey'),
-        new RangeError('lte(...arguments); exactly two arguments required'),
-      )
+      assert.strictEqual(lte('hey')(), false)
     })
     it('throws RangeError on too many arguments', async () => {
-      assert.throws(
-        () => r.lte('hey', () => {}, 'ho'),
-        new RangeError('lte(...arguments); exactly two arguments required'),
-      )
+      assert.strictEqual(lte('hey', () => {}, 'ho')(), false)
     })
   })
 
   it('exports 24 functions', async () => {
-    ase(Object.keys(r).length, 24)
+    ase(Object.keys(rubico).length, 24)
   })
 })
