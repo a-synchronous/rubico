@@ -1,8 +1,8 @@
 ## v1.5.0
  * monad/PossiblePromise - Possibly a promise
  * monad/Instance - Type checking
- * monad/Flattenable - Flattening things
  * monad/Struct - Finite data structure
+ * monad/Mux - Multiplexing for Sequences of Sequences
  * x/timeInLoop.async - Like timeInLoop, but await all calls
  * x/find performance revamp + benchmarks
  * x/defaultsDeep performance revamp + benchmarks

@@ -60,7 +60,7 @@ const isAsyncSequence = x => x != null && (Boolean(x[symbolAsyncIterator])
  * <T any>new Mux(Sequence<Sequence<T>|T>|T) -> Mux
  *
  * @catchphrase
- * Multiplex
+ * Multiplexing for Sequences of Sequences
  *
  * @WARNING
  * Iterators have defined a self-referencing Symbol.iterator, which means they'll check out as Iterables but will deplete prematurely. Supplying a direct Iterator as the top level sequence in any capacity to Mux will cause undesirable behavior.
