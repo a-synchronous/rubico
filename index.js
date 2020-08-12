@@ -1309,31 +1309,18 @@ const flatMapArray = (fn, x) => possiblePromiseThen(mapArray(fn, x), arrayFlatte
 /*
  * @synopsis
  * TODO
- *
- * @note
- * TODO: refactor to possiblePromiseThen
  */
 const flatMapSet = (fn, x) => possiblePromiseThen(
   mapSet(fn, x),
   res => genericFlatten('add', new Set(), res),
 )
 
-/* const flatMapSet = (fn, x) => {
-  const y = mapSet(fn, x)
-  return isPromise(y) ? y.then(flattenToSet) : flattenToSet(y)
-} */
-
 /*
  * @synopsis
  * TODO
- *
- * @note
- * TODO: refactor to possiblePromiseThen
  */
-const flatMapReducer = (fn, reducer) => (y, xi) => {
-  const yi = fn(xi)
-  return isPromise(yi) ? yi.then(reduce(reducer, y)) : reduce(reducer, y)(yi)
-}
+const flatMapReducer = (fn, reducer) => (y, xi) => (
+  possiblePromiseThen(fn(xi), reduce(reducer, y)))
 
 /*
  * @synopsis
