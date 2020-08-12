@@ -67,21 +67,51 @@ const arrayOf = (item, length) => Array.from({ length }, () => item)
 
 const promiseAll = Promise.all.bind(Promise)
 
-const PossiblePromise = function(p) { this.value = p }
+/**
+ * @name possiblePromiseThen
+ *
+ * @synopsis
+ * possiblePromiseThen(value Promise|any, func function) -> Promise|any
+ */
+const possiblePromiseThen = (value, func) => (
+  isPromise(value) ? value.then(func) : func(value))
 
-PossiblePromise.prototype.then = function(f) {
-  return f(this.value)
-  // const p = this.value
-  // return isPromise(p) ? p.then(f) : f(p)
-}
+/**
+ * @name possiblePromiseCatch
+ *
+ * @synopsis
+ * possiblePromiseCatch(value Promise|any, func any=>Promise|any) -> Promise|any
+ */
+const possiblePromiseCatch = (value, func) => (
+  isPromise(value) ? value.catch(func) : value)
 
-const possiblePromiseThen = (p, f) => isPromise(p) ? p.then(f) : f(p)
+/**
+ * @name SyncThenable
+ *
+ * @synopsis
+ * new SyncThenable(value any) -> SyncThenable
+ */
+const SyncThenable = function(value) { this.value = value }
 
-const possiblePromiseCatch = (p, f) => isPromise(p) ? p.catch(f) : p
+/**
+ * @name SyncThenable.prototype.then
+ *
+ * @synopsis
+ * new SyncThenable(value any).then(func function) -> any
+ */
+SyncThenable.prototype.then = function(func) { return func(this.value) }
 
-const possiblePromiseAll = ps => (ps.some(isPromise)
-  ? promiseAll(ps)
-  : new PossiblePromise(ps))
+/**
+ * @name possiblePromiseAll
+ *
+ * @synopsis
+ * possiblePromiseAll(
+ *   values Array<Promise>|Array,
+ * ) -> Promise<Array>|SyncThenable<Array>
+ */
+const possiblePromiseAll = values => (values.some(isPromise)
+  ? promiseAll(values)
+  : new SyncThenable(values))
 
 /**
  * @name functionIteratorPipeAsync
@@ -133,7 +163,7 @@ const reverseArrayIter = function*(arr) {
 }
 
 /*
- * @name: pipe
+ * @name pipe
  *
  * @synopsis
  * pipe(
@@ -151,9 +181,9 @@ const reverseArrayIter = function*(arr) {
  *
  * `pipe(funcs)` returns a Promise when any function of `funcs` is asynchronous.
  *
- * @catchphrase: define flow: chain functions together
+ * @catchphrase define flow: chain functions together
  *
- * @execution: series
+ * @execution series
  *
  * @example
  * pipe([
@@ -210,7 +240,7 @@ const objectFork = (fns, x) => {
 }
 
 /*
- * @name: fork
+ * @name fork
  *
  * @synopsis
  * <T any>fork(
@@ -226,9 +256,9 @@ const objectFork = (fns, x) => {
  *
  * `fork(funcs)` returns a Promise when any function of `funcs` is asynchronous.
  *
- * @catchphrase: duplicate and diverge flow
+ * @catchphrase duplicate and diverge flow
  *
- * @execution: concurrent
+ * @execution concurrent
  *
  * @example
  * const greet = whom => greeting => greeting + ' ' + whom
@@ -281,7 +311,7 @@ const fork = fns => {
  *   y Array<any>,
  * ) -> Array<any>|Promise<Array<any>>
  *
- * @TODO: iterative implementation
+ * @TODO iterative implementation
  */
 const arrayForkSeries = (fns, x, i, y) => {
   if (i === fns.length) return y
@@ -347,7 +377,7 @@ const tap = f => {
  * @synopsis
  * tap.if(cond function, f function)(x any) -> Promise|any
  *
- * @TODO: https://github.com/a-synchronous/rubico/issues/100
+ * @TODO https://github.com/a-synchronous/rubico/issues/100
  */
 tap.if = (cond, f) => {}
 
@@ -375,7 +405,7 @@ const tryCatch = (f, onError) => {
  * @synopsis
  * arraySwitchCase(fns Array<function>, x any, i number) -> Promise|any
  *
- * @TODO: reimplement to iterative
+ * @TODO reimplement to iterative
  */
 const arraySwitchCase = (fns, x, i) => {
   if (i === fns.length - 1) return fns[i](x)
@@ -416,7 +446,7 @@ const switchCase = fns => {
  * @synopsis
  * mapAsyncIterable(f function, x AsyncIterable<any>) -> AsyncIterable<any>
  *
- * @TODO: refactor for proper generator syntax
+ * @TODO refactor for proper generator syntax
  */
 const mapAsyncIterable = (fn, x) => (async function*() {
   for await (const xi of x) yield fn(xi)
@@ -426,7 +456,7 @@ const mapAsyncIterable = (fn, x) => (async function*() {
  * @synopsis
  * mapIterable(f function, x Iterable<any>) -> Iterable<any>
  *
- * @TODO: refactor for proper generator syntax
+ * @TODO refactor for proper generator syntax
  */
 const mapIterable = (fn, x) => (function*() {
   for (const xi of x) yield fn(xi)
@@ -719,7 +749,7 @@ const mapStringWithIndex = (f, x) => possiblePromiseThen(
  *
  * map.withIndex(f any=>any)(x T) -> T|Promise<T>
  *
- * @TODO: x can be an Object
+ * @TODO x can be an Object
  */
 map.withIndex = fn => {
   if (!isFunction(fn)) {
@@ -737,7 +767,7 @@ map.withIndex = fn => {
  * filterAsyncIterable(predicate any=>any, x AsyncIterable)
  *   -> AsyncIterable<any>
  *
- * @TODO: refactor for proper generator syntax
+ * @TODO refactor for proper generator syntax
  */
 const filterAsyncIterable = (predicate, x) => (async function*() {
   for await (const xi of x) { if (await predicate(xi)) yield xi }
@@ -747,7 +777,7 @@ const filterAsyncIterable = (predicate, x) => (async function*() {
  * @synopsis
  * filterIterable(predicate any=>any, x Iterable<any>) -> Iterable<any>
  *
- * @TODO: refactor for proper generator syntax
+ * @TODO refactor for proper generator syntax
  */
 const filterIterable = (predicate, x) => (function*() {
   for (const xi of x) {
@@ -1371,6 +1401,8 @@ const flatMapReducer = (func, reducer) => (aggregate, value) => (
  *     number => [number ** 2, number ** 3],
  *   )([1, 2, 3]),
  * ) // [1, 1, 4, 8, 9, 27]
+ *
+ * @execution concurrent
  */
 const flatMap = func => {
   if (!isFunction(func)) {
