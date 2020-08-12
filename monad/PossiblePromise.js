@@ -6,9 +6,7 @@
 
 'use strict'
 
-const Instance = require('./Instance')
-
-const { isPromise } = Instance
+const isPromise = value => value != null && typeof value.then == 'function'
 
 const promiseAll = Promise.all.bind(Promise)
 
@@ -16,108 +14,109 @@ const promiseAll = Promise.all.bind(Promise)
  * @name PossiblePromise
  *
  * @synopsis
- * new PossiblePromise(p Promise|any) -> PossiblePromise
+ * new PossiblePromise(value Promise|any) -> PossiblePromise
  *
  * @catchphrase
  * Possibly a Promise
  */
-const PossiblePromise = function(p) {
-  this.value = p
+const PossiblePromise = function(value) {
+  this.value = value
 }
 
 /**
  * @name PossiblePromise.prototype.then
  *
  * @synopsis
- * new PossiblePromise(p Promise|any).then(f function) -> Promise|any
+ * new PossiblePromise(value Promise|any).then(func function) -> Promise|any
  *
  * @catchphrase
  * .then if internal Promise, else call
  */
-PossiblePromise.prototype.then = function(f) {
-  const p = this.value
-  return isPromise(p) ? p.then(f) : f(p)
+PossiblePromise.prototype.then = function(func) {
+  const value = this.value
+  return isPromise(value) ? value.then(func) : func(value)
 }
 
 /**
  * @name PossiblePromise.then
  *
  * @synopsis
- * PossiblePromise.then(p Promise|any, f function) -> Promise|any
+ * PossiblePromise.then(value Promise|any, func function) -> Promise|any
  *
  * @catchphrase
  * .then if passed a Promise, else call
  */
-PossiblePromise.then = (p, f) => isPromise(p) ? p.then(f) : f(p)
+PossiblePromise.then = (value, func) => (
+  isPromise(value) ? value.then(func) : func(value))
 
 /**
  * @name PossiblePromise.catch
  *
  * @synopsis
  * PossiblePromise.catch(
- *   p Promise|any,
- *   f any=>Promise|any,
+ *   value Promise|any,
+ *   func any=>Promise|any,
  * ) -> Promise|any
  *
  * @catchphrase
  * .catch if passed a Promise, else noop
  */
-PossiblePromise.catch = (p, f) => isPromise(p) ? p.catch(f) : p
+PossiblePromise.catch = (value, func) => (
+  isPromise(value) ? value.catch(func) : value)
 
 /**
  * @name PossiblePromise.all
  *
  * @synopsis
  * PossiblePromise.all(
- *   ps Array<Promise>|Array,
+ *   values Array<Promise>|Array,
  * ) -> Promise<Array>|PossiblePromise<Array>
  *
  * @catchphrase
  * Always returns a thenable of an Array
  */
-PossiblePromise.all = ps => (ps.some(isPromise)
-  ? promiseAll(ps)
-  : new PossiblePromise(ps))
+PossiblePromise.all = values => (values.some(isPromise)
+  ? promiseAll(values)
+  : new PossiblePromise(values))
 
 /**
  * @name PossiblePromise.args
  *
  * @synopsis
- * PossiblePromise.args(f function)(args ...any) -> Promise|any
+ * PossiblePromise.args(func function)(args ...any) -> Promise|any
  *
  * @catchphrase
  * Resolves any Promises supplied as arguments to a function
  */
+PossiblePromise.args = func => (...args) => (args.some(isPromise)
+  ? promiseAll(args).then(res => func(...res))
+  : func(...args))
 
-PossiblePromise.args = f => (...args) => (args.some(isPromise)
-  ? promiseAll(args).then(res => f(...res))
-  : f(...args))
+/* PossiblePromise.argsSome = func => (...args) => (args.some(isPromise)
+  ? promiseAll(args).then(res => func(...res))
+  : func(...args))
 
-/* PossiblePromise.argsSome = f => (...args) => (args.some(isPromise)
-  ? promiseAll(args).then(res => f(...res))
-  : f(...args))
-
-PossiblePromise.argsSomeApply = f => {
-  const fApply = f.apply.bind(f)
+PossiblePromise.argsSomeApply = func => {
+  const fApply = func.apply.bind(func)
   return (...args) => (args.some(isPromise)
     ? promiseAll(args).then(res => fApply(null, res))
     : fApply(null, args))
 }
 
-PossiblePromise.argumentsLoop = f => function() {
+PossiblePromise.argumentsLoop = func => function() {
   for (let i = 0; i < arguments.length; i++) {
     if (isPromise(arguments[i])) {
-      return promiseAll(arguments).then(res => f(...res))
+      return promiseAll(arguments).then(res => func(...res))
     }
   }
-  return f.apply(null, arguments)
+  return func.apply(null, arguments)
 }
 
-PossiblePromise.argsLoop = f => (...args) => {
+PossiblePromise.argsLoop = func => (...args) => {
   for (const arg of args) {
-    if (isPromise(arg)) return promiseAll(args).then(res => f(...res))
+    if (isPromise(arg)) return promiseAll(args).then(res => func(...res))
   }
-  return f(...args)
+  return func(...args)
 } */
 
 module.exports = PossiblePromise
