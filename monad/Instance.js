@@ -102,7 +102,7 @@ Instance.prototype.isString = function() {
  * Instance.isNumber(x any) -> boolean
  */
 Instance.isNumber = x => (
-  typeof x === 'number' || (x != null && x.constructor == Number))
+  typeof x == 'number' || (x != null && x.constructor == Number))
 
 /*
  * @name Instance.prototype.isNumber
@@ -112,7 +112,7 @@ Instance.isNumber = x => (
  */
 Instance.prototype.isNumber = function() {
   const x = this.value
-  return typeof x === 'number' || (x != null && x.constructor == Number)
+  return typeof x == 'number' || (x != null && x.constructor == Number)
 }
 
 /*

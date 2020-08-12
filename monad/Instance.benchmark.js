@@ -51,20 +51,20 @@ const constructedString = String('hey')
  * @node_version 14.3.0
  *
  * @benchmark
- * typeof 1 === 'number': 1e+7: 12.28ms
- * typeof 1 == 'number': 1e+7: 12.314ms
- * Instance.isNumber(1): 1e+7: 12.838ms
- * _.isNumber(1): 1e+7: 12.858ms
+ * typeof 1 === 'number': 1e+7: 11.981ms
+ * typeof 1 == 'number': 1e+7: 11.938ms
+ * Instance.isNumber(1): 1e+7: 12.426ms
+ * _.isNumber(1): 1e+7: 12.486ms
  *
- * typeof undefined === 'number': 1e+7: 12.165ms
- * typeof undefined == 'number': 1e+7: 12.174ms
- * Instance.isNumber(undefined): 1e+7: 13.582ms
- * _.isNumber(undefined): 1e+7: 13.936ms
+ * typeof undefined === 'number': 1e+7: 11.817ms
+ * typeof undefined == 'number': 1e+7: 11.819ms
+ * Instance.isNumber(undefined): 1e+7: 13.263ms
+ * _.isNumber(undefined): 1e+7: 13.424ms
  *
- * typeof constructedNumber === 'number': 1e+7: 12.356ms
- * typeof constructedNumber == 'number': 1e+7: 12.389ms
- * Instance.isNumber(constructedNumber): 1e+7: 12.891ms
- * _.isNumber(constructedNumber): 1e+7: 12.993ms
+ * typeof constructedNumber === 'number': 1e+7: 11.992ms
+ * typeof constructedNumber == 'number': 1e+7: 12.029ms
+ * Instance.isNumber(constructedNumber): 1e+7: 12.483ms
+ * _.isNumber(constructedNumber): 1e+7: 12.515ms
  */
 
 // timeInLoop('typeof 1 === \'number\'', 1e7, () => { typeof 1 === 'number' })
