@@ -12,23 +12,40 @@ const symbolIterator = Symbol.iterator
  * @name Instance
  *
  * @synopsis
- * new Instance(x any) -> Instance
+ * new Instance(value any) -> Instance
  *
  * @catchphrase
  * Type checking
  */
-const Instance = function(x) {
-  if (x == null) {
-    throw new TypeError(`cannot convert ${x} to Instance`)
-  }
-  this.value = x
+const Instance = function(value) {
+  this.value = value
 }
 
 /**
- * @name Instance.prototype.flatMap
+ * @name Instance.prototype.map
  *
  * @synopsis
- * <A any, B any>new Instance(x A).flatMap(f A=>B) -> B
+ * <A any, B any>new Instance(value A).map(func A=>B) -> Instance<B>
+Instance.prototype.map = function(func) {
+  return new Instance(func(this.value))
+} */
+
+/**
+ * @name Instance.prototype.join
+ *
+ * @synopsis
+ * <T any>new Instance(Instance<T>).join() -> Instance<T>
+ *
+ * <T any>new Instance(value T).join() -> value T
+Instance.prototype.join = function() {
+  return this.value
+} */
+
+/**
+ * @name Instance.prototype.chain
+ *
+ * @synopsis
+ * <A any, B any>new Instance(x A).chain(f A=>Instance<B>) -> Instance<B>
  *
  * @catchphrase
  * For associativity
@@ -36,10 +53,10 @@ const Instance = function(x) {
  * @example
  * const inst = new Instance(3)
  * console.log(
- *   inst.flatMap(number => new Instance(number ** 2))
+ *   inst.chain(number => new Instance(number ** 2))
  * ) // Instance { 9 }
  */
-Instance.prototype.flatMap = function(f) {
+Instance.prototype.chain = function(f) {
   return f(this.value)
 }
 

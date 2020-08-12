@@ -7,26 +7,22 @@ describe('Instance', () => {
       assert.strictEqual(new Instance(1).constructor.name, 'Instance')
       assert(new Instance(1).value === 1)
     })
-    it('x null; TypeError', async () => {
-      assert.throws(
-        () => new Instance(null),
-        new TypeError('cannot convert null to Instance')
-      )
+    it('x null; Instance<null>', async () => {
+      assert.strictEqual(new Instance(null).constructor.name, 'Instance')
+      assert(new Instance(null).value === null)
     })
     it('x undefined; Instance<undefined>', async () => {
-      assert.throws(
-        () => new Instance(undefined),
-        new TypeError('cannot convert undefined to Instance')
-      )
+      assert.strictEqual(new Instance(undefined).constructor.name, 'Instance')
+      assert(new Instance(undefined).value === undefined)
     })
   })
 
-  describe('<A any, B any>new Instance(x A).flatMap(f A=>B) -> B', () => {
+  describe('<A any, B any>new Instance(x A).chain(f A=>Instance<B>) -> Instance<B>', () => {
     it('x 1; f x=>x; 1', async () => {
-      assert.strictEqual(new Instance(1).flatMap(x => x), 1)
+      assert.strictEqual(new Instance(1).chain(x => x), 1)
     })
-    it('x 1; f x=>Instance(x); Instance { 1 }', async () => {
-      assert.deepEqual(new Instance(1).flatMap(x => new Instance(x)), new Instance(1))
+    it('x 1; f x=>Instance(x + 1); Instance { 2 }', async () => {
+      assert.deepEqual(new Instance(1).chain(x => new Instance(x + 1)), new Instance(2))
     })
   })
 
