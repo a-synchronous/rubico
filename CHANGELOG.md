@@ -4,6 +4,7 @@
  * monad/Struct - Finite data structure
  * monad/Mux - Multiplexing for Sequences of Sequences
  * x/size - Get the size of a collection
+ * x/isFunction - Tell if Function
  * x/timeInLoop.async - Like timeInLoop, but await all calls
  * x/find performance revamp + benchmarks
  * x/defaultsDeep performance revamp + benchmarks
