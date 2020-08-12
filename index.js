@@ -1341,44 +1341,71 @@ const flatMap = fn => {
   }
 }
 
-/*
+/**
+ * @name isDelimitedBy
+ *
  * @synopsis
- * TODO
+ * isDelimitedBy(delim string, value string) -> boolean
  */
-const isDelimitedBy = (delim, x) => (x
-  && x[0] !== delim
-  && x[x.length - 1] !== delim
-  && x.slice(1, x.length - 1).includes(delim))
+const isDelimitedBy = (delim, value) => (value != null
+  && value[0] !== delim
+  && value[value.length - 1] !== delim
+  && value.slice(1, value.length - 1).includes(delim))
 
-/*
+/**
+ * @name arrayPathGet
+ *
  * @synopsis
- * TODO
+ * arrayPathGet(
+ *   path Array<string|number>,
+ *   value any,
+ *   defaultValue function|any,
+ * ) -> result any
  */
-const arrayGet = (path, x, defaultValue) => {
-  let y = x
-  if (!isDefined(y)) {
-    return isFunction(defaultValue) ? defaultValue(x) : defaultValue
+const arrayPathGet = (path, value, defaultValue) => {
+  if (value == null) {
+    return isFunction(defaultValue) ? defaultValue(value) : defaultValue
   }
-  for (let i = 0; i < path.length; i++) {
-    y = y[path[i]]
-    if (!isDefined(y)) {
-      return isFunction(defaultValue) ? defaultValue(x) : defaultValue
+  const pathLength = path.length
+  let result = value, i = -1
+  while (++i < pathLength) {
+    result = result[path[i]]
+    if (result == null) {
+      return isFunction(defaultValue) ? defaultValue(value) : defaultValue
     }
   }
-  return y
+  return result
 }
 
-/*
+/**
+ * @name get
+ *
  * @synopsis
- * TODO
+ * get(
+ *   path Array<number|string>|number|string,
+ *   defaultValue function|any,
+ * )(value any) -> result any
+ *
+ * @catchphrase
+ * Access a property by path
+ *
+ * @description
+ * `get` takes an Array of Numbers or Strings, Number, or String `path` argument, a function or any `defaultValue` argument, and returns a getter function that, when supplied any `value`, returns a property on that `value` by `path`.
+ *
+ * @example
+ * const nestedABC = { a: { b: { c: 1 } } }
+ *
+ * console.log(
+ *   get('a.b.c')(nestedABC),
+ * ) // 1
  */
 const get = (path, defaultValue) => {
-  if (isArray(path)) return x => arrayGet(path, x, defaultValue)
-  if (isNumber(path)) return x => arrayGet([path], x, defaultValue)
+  if (isArray(path)) return value => arrayPathGet(path, value, defaultValue)
+  if (isNumber(path)) return value => arrayPathGet([path], value, defaultValue)
   if (isString(path)) return (isDelimitedBy('.', path)
-    ? x => arrayGet(path.split('.'), x, defaultValue)
-    : x => arrayGet([path], x, defaultValue))
-  throw new TypeError('get(x, y); x invalid')
+    ? value => arrayPathGet(path.split('.'), value, defaultValue)
+    : value => arrayPathGet([path], value, defaultValue))
+  throw new TypeError(`get(value); invalid value ${value}`)
 }
 
 /*
