@@ -861,7 +861,7 @@ describe('rubico', () => {
     it('throws TypeError on map.pool(NaN)', async () => {
       assert.throws(
         () => r.map.pool(NaN),
-        new TypeError('map.pool(size, f); size is not a number'),
+        new TypeError('map.pool(size, f); invalid size NaN'),
       )
     })
     it('throws RangeError on map.pool(lessThan1)', async () => {

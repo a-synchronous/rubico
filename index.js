@@ -41,17 +41,25 @@ const isFunction = x => typeof x == 'function'
 
 const isArray = Array.isArray
 
+const isObject = x => x != null && x.constructor == Object
+
+const isSet = x => x != null && x.constructor == Set
+
+const isMap = x => x != null && x.constructor == Map
+
 const isTypedArray = ArrayBuffer.isView
 
-const isNumber = x => typeof x === 'number' && !isNaN(x)
+const isNumber = x => (
+  typeof x == 'number' || (x != null && x.constructor == Number))
 
-const isBigInt = x => typeof x === 'bigint'
+const isNaN = Number.isNaN
 
-const isString = x => typeof x === 'string'
+const isBigInt = x => typeof x == 'bigint'
 
-const isPromise = x => x && typeof x.then === 'function'
+const isString = x => (
+  typeof x == 'string' || (x != null && x.constructor == String))
 
-const is = fn => x => x && x.constructor === fn
+const isPromise = x => x != null && typeof x.then == 'function'
 
 const range = (start, end) => Array.from({ length: end - start }, (x, i) => i + start)
 
@@ -281,7 +289,7 @@ const fork = fns => {
     }
     return PossiblePromise.args(x => arrayFork(fns, x))
   }
-  if (is(Object)(fns)) {
+  if (isObject(fns)) {
     if (Object.keys(fns).length < 1) {
       throw new RangeError('fork(x); x is not an object of at least one entry')
     }
@@ -342,11 +350,11 @@ fork.series = fns => {
  * assign(funcs Object<function>)(x any) -> Object<any>|Promise<Object<any>>
  */
 const assign = funcs => {
-  if (!is(Object)(funcs)) {
+  if (!isObject(funcs)) {
     throw new TypeError('assign(funcs); funcs is not an object of functions')
   }
   return PossiblePromise.args(x => {
-    if (!is(Object)(x)) {
+    if (!isObject(x)) {
       throw new TypeError('assign(...)(x); x is not an object')
     }
     return PossiblePromise.then(
@@ -593,11 +601,11 @@ const map = f => {
     if (isAsyncIterable(x)) return mapAsyncIterable(f, x)
     if (isArray(x)) return mapArray(f, x)
     if (isString(x)) return mapString(f, x)
-    if (is(Set)(x)) return mapSet(f, x)
-    if (is(Map)(x)) return mapMap(f, x)
+    if (isSet(x)) return mapSet(f, x)
+    if (isMap(x)) return mapMap(f, x)
     if (isTypedArray(x)) return mapTypedArray(f, x)
     if (isIterable(x)) return mapIterable(f, x) // for generators or custom iterators
-    if (is(Object)(x)) return mapObject(f, x)
+    if (isObject(x)) return mapObject(f, x)
     if (isFunction(x)) return mapReducer(f, x)
     throw new TypeError('map(...)(x); x invalid')
   }
@@ -689,8 +697,8 @@ const mapPoolMap = (size, f, x) => (
  * @TODO: refactor to PossiblePromise.args
  */
 map.pool = (size, fn) => {
-  if (!isNumber(size)) {
-    throw new TypeError('map.pool(size, f); size is not a number')
+  if (!isNumber(size) || isNaN(size)) {
+    throw new TypeError(`map.pool(size, f); invalid size ${size}`)
   }
   if (size < 1) {
     throw new RangeError('map.pool(size, f); size must be 1 or more')
@@ -700,8 +708,8 @@ map.pool = (size, fn) => {
   }
   return x => {
     if (isArray(x)) return mapPoolArray(size, fn, x)
-    if (is(Set)(x)) return mapPoolSet(size, fn, x)
-    if (is(Map)(x)) return mapPoolMap(size, fn, x)
+    if (isSet(x)) return mapPoolSet(size, fn, x)
+    if (isMap(x)) return mapPoolMap(size, fn, x)
     throw new TypeError('map.pool(...)(x); x invalid')
   }
 }
@@ -931,11 +939,11 @@ const filter = predicate => {
     if (isAsyncIterable(x)) return filterAsyncIterable(predicate, x)
     if (isArray(x)) return filterArray(predicate, x)
     if (isString(x)) return filterString(predicate, x)
-    if (is(Set)(x)) return filterSet(predicate, x)
-    if (is(Map)(x)) return filterMap(predicate, x)
+    if (isSet(x)) return filterSet(predicate, x)
+    if (isMap(x)) return filterMap(predicate, x)
     if (isTypedArray(x)) return filterTypedArray(predicate, x)
     if (isIterable(x)) return filterIterable(predicate, x) // for generators or custom iterators
-    if (is(Object)(x)) return filterObject(predicate, x)
+    if (isObject(x)) return filterObject(predicate, x)
     if (isFunction(x)) return filterReducer(predicate, x)
     throw new TypeError('filter(...)(x); x invalid')
   }
@@ -1106,7 +1114,7 @@ const reduce = (fn, init) => {
       p.cancel = () => { state.cancel(new Error('cancelled')) }
       return p
     }
-    if (is(Object)(x)) return PossiblePromise.then(
+    if (isObject(x)) return PossiblePromise.then(
       x0,
       res => reduceObject(fn, res, x),
     )
@@ -1248,7 +1256,7 @@ const objectTransform = (fn, x0) => reduce(
     if (isArray(xi)) { y[xi[0]] = xi[1]; return y }
     return Object.assign(y, xi)
     // TODO: implement
-    // if (is(Object)(xi)) Object.assign(y, xi)
+    // if (isObject(xi)) Object.assign(y, xi)
     // else throw new TypeError('...')
   }),
   x0,
@@ -1262,11 +1270,11 @@ const _transformBranch = (fn, x0, x) => {
   if (isNull(x0)) return nullTransform(fn, x0)(x)
   if (isArray(x0)) return arrayTransform(fn, x0)(x)
   if (isString(x0)) return stringTransform(fn, x0)(x)
-  if (is(Set)(x0)) return setTransform(fn, x0)(x)
-  if (is(Map)(x0)) return mapTransform(fn, x0)(x)
+  if (isSet(x0)) return setTransform(fn, x0)(x)
+  if (isMap(x0)) return mapTransform(fn, x0)(x)
   if (isTypedArray(x0)) return typedArrayTransform(fn, x0)(x)
   if (isWritable(x0)) return writableTransform(fn, x0)(x)
-  if (is(Object)(x0)) return objectTransform(fn, x0)(x)
+  if (isObject(x0)) return objectTransform(fn, x0)(x)
   throw new TypeError('transform(x, y); x invalid')
 }
 
@@ -1295,7 +1303,7 @@ const flattenIterable = (reducer, x0, x) => {
   for (const xi of x) {
     if (isIterable(xi)) {
       for (const xii of xi) y = reducer(y, xii)
-    } else if (is(Object)(xi)) {
+    } else if (isObject(xi)) {
       for (const k in xi) y = reducer(y, xi[k])
     } else {
       y = reducer(y, xi)
@@ -1372,7 +1380,7 @@ const flatMap = fn => {
   }
   return x => {
     if (isArray(x)) return flatMapArray(fn, x)
-    if (is(Set)(x)) return flatMapSet(fn, x)
+    if (isSet(x)) return flatMapSet(fn, x)
     if (isFunction(x)) return flatMapReducer(fn, x)
     throw new TypeError('flatMap(...)(x); x invalid')
   }
@@ -1436,7 +1444,7 @@ const pickObject = (props, x) => {
  */
 const pick = props => {
   if (isArray(props)) return x => {
-    if (is(Object)(x)) return pickObject(props, x)
+    if (isObject(x)) return pickObject(props, x)
     throw new TypeError('pick(...)(x); x is not an object')
   }
   throw new TypeError('pick(x); x is not an array')
@@ -1460,7 +1468,7 @@ const omitObject = (props, x) => {
  */
 const omit = props => {
   if (isArray(props)) return x => {
-    if (is(Object)(x)) return omitObject(props, x)
+    if (isObject(x)) return omitObject(props, x)
     throw new TypeError('omit(...)(x); x is not an object')
   }
   throw new TypeError('omit(x); x is not an array')
@@ -1505,7 +1513,7 @@ const any = fn => {
   }
   return x => {
     if (isIterable(x)) return anyIterable(fn, x)
-    if (is(Object)(x)) return anyObject(fn, x)
+    if (isObject(x)) return anyObject(fn, x)
     throw new TypeError('any(...)(x); x invalid')
   }
 }
@@ -1549,7 +1557,7 @@ const all = fn => {
   }
   return x => {
     if (isIterable(x)) return allIterable(fn, x)
-    if (is(Object)(x)) return allObject(fn, x)
+    if (isObject(x)) return allObject(fn, x)
     throw new TypeError('all(...)(x); x invalid')
   }
 }
