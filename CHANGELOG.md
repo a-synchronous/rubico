@@ -3,6 +3,7 @@
  * monad/Instance - Type checking
  * monad/Struct - Finite data structure
  * monad/Mux - Multiplexing for Sequences of Sequences
+ * x/size - Get the size of a collection
  * x/timeInLoop.async - Like timeInLoop, but await all calls
  * x/find performance revamp + benchmarks
  * x/defaultsDeep performance revamp + benchmarks
