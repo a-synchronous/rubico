@@ -1457,7 +1457,7 @@ describe('rubico', () => {
       for (const constructor of numberTypedArrayConstructors) {
         assert.throws(
           () => r.transform(r.map(x => x), new constructor(0))([true, false, false]),
-          new TypeError('toNumberTypedArray(typedArray, y); cannot convert y to typedArray'),
+          new TypeError('toTypedArray(typedArray, y); cannot convert y to typedArray'),
         )
       }
     })
@@ -1465,7 +1465,7 @@ describe('rubico', () => {
       for (const constructor of bigIntTypedArrayConstructors) {
         assert.throws(
           () => r.transform(r.map(x => x), new constructor(0))([true, false, false]),
-          new TypeError('toBigIntTypedArray(typedArray, y); cannot convert y to typedArray'),
+          new TypeError('toTypedArray(typedArray, y); cannot convert y to typedArray'),
         )
       }
     })

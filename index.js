@@ -41,25 +41,7 @@ const isFunction = x => typeof x == 'function'
 
 const isArray = Array.isArray
 
-const numberTypedArrays = new Set([
-  'Uint8ClampedArray',
-  'Uint8Array', 'Int8Array',
-  'Uint16Array', 'Int16Array',
-  'Uint32Array', 'Int32Array',
-  'Float32Array', 'Float64Array',
-])
-
-const isNumberTypedArray = x => x && x.constructor && (
-  numberTypedArrays.has(x.constructor.name)
-)
-
-const bigIntTypedArrays = new Set([
-  'BigUint64Array', 'BigInt64Array',
-])
-
-const isBigIntTypedArray = x => x && x.constructor && (
-  bigIntTypedArrays.has(x.constructor.name)
-)
+const isTypedArray = ArrayBuffer.isView
 
 const isNumber = x => typeof x === 'number' && !isNaN(x)
 
@@ -613,8 +595,7 @@ const map = f => {
     if (isString(x)) return mapString(f, x)
     if (is(Set)(x)) return mapSet(f, x)
     if (is(Map)(x)) return mapMap(f, x)
-    if (isNumberTypedArray(x)) return mapTypedArray(f, x)
-    if (isBigIntTypedArray(x)) return mapTypedArray(f, x)
+    if (isTypedArray(x)) return mapTypedArray(f, x)
     if (isIterable(x)) return mapIterable(f, x) // for generators or custom iterators
     if (is(Object)(x)) return mapObject(f, x)
     if (isFunction(x)) return mapReducer(f, x)
@@ -952,8 +933,7 @@ const filter = predicate => {
     if (isString(x)) return filterString(predicate, x)
     if (is(Set)(x)) return filterSet(predicate, x)
     if (is(Map)(x)) return filterMap(predicate, x)
-    if (isNumberTypedArray(x)) return filterTypedArray(predicate, x)
-    if (isBigIntTypedArray(x)) return filterTypedArray(predicate, x)
+    if (isTypedArray(x)) return filterTypedArray(predicate, x)
     if (isIterable(x)) return filterIterable(predicate, x) // for generators or custom iterators
     if (is(Object)(x)) return filterObject(predicate, x)
     if (isFunction(x)) return filterReducer(predicate, x)
@@ -1010,16 +990,8 @@ filter.withIndex = fn => {
     throw new TypeError('filter.withIndex(f); f is not a function')
   }
   return x => {
-    // if (isAsyncIterable(x)) return filterAsyncIterable(fn, x)
     if (isArray(x)) return filterArrayWithIndex(fn, x)
     if (isString(x)) return filterStringWithIndex(fn, x)
-    // if (is(Set)(x)) return filterSet(fn, x)
-    // if (is(Map)(x)) return filterMap(fn, x)
-    // if (isNumberTypedArray(x)) return filterTypedArray(fn, x)
-    // if (isBigIntTypedArray(x)) return filterTypedArray(fn, x)
-    // if (isIterable(x)) return filterIterable(fn, x) // for generators or custom iterators
-    // if (is(Object)(x)) return filterObject(fn, x)
-    // if (isFunction(x)) return filterReducer(fn, x)
     throw new TypeError('filter.withIndex(...)(x); x invalid')
   }
 }
@@ -1203,11 +1175,11 @@ const stringToCharCodes = x => {
  * @synopsis
  * TODO
  */
-const toNumberTypedArray = (constructor, x) => {
-  if (isNumber(x)) return constructor.of(x)
+const toTypedArray = (constructor, x) => {
+  if (isNumber(x) || isBigInt(x)) return constructor.of(x)
   if (isString(x)) return new constructor(stringToCharCodes(x))
   throw new TypeError([
-    'toNumberTypedArray(typedArray, y)',
+    'toTypedArray(typedArray, y)',
     'cannot convert y to typedArray',
   ].join('; '))
 }
@@ -1241,57 +1213,22 @@ const typedArrayConcat = (y, chunk, offset) => {
 
 /*
  * @synopsis
- * TODO
+ * Iterable|GeneratorFunction
+ *   |AsyncIterable|AsyncGeneratorFunction -> Sequence
  *
- * @note
- * TODO: refactor to PossiblePromise.then
+ * <T TypedArray>typedArrayTransform(fn function, x0 T)(x Sequence) -> T
  */
-const numberTypedArrayTransform = (fn, x0) => x => {
-  const point = reduce(
+const typedArrayTransform = (fn, x0) => x => PossiblePromise.then(
+  reduce(
     fn(({ y, offset }, xi) => {
-      const chunk = toNumberTypedArray(x0.constructor, xi)
+      const chunk = toTypedArray(x0.constructor, xi)
       const buf = typedArrayConcat(y, chunk, offset)
       return { y: buf, offset: offset + chunk.length }
     }),
     { y: x0.constructor.from(x0), offset: x0.length },
-  )(x)
-  return isPromise(point) ? point.then(
-    res => res.y.slice(0, res.offset)
-  ) : point.y.slice(0, point.offset)
-}
-
-/*
- * @synopsis
- * TODO
- */
-const toBigIntTypedArray = (constructor, x) => {
-  if (isBigInt(x)) return constructor.of(x)
-  throw new TypeError([
-    'toBigIntTypedArray(typedArray, y)',
-    'cannot convert y to typedArray',
-  ].join('; '))
-}
-
-/*
- * @synopsis
- * TODO
- *
- * @note
- * TODO: refactor to PossiblePromise.then
- */
-const bigIntTypedArrayTransform = (fn, x0) => x => {
-  const point = reduce(
-    fn(({ y, offset }, xi) => {
-      const chunk = toBigIntTypedArray(x0.constructor, xi)
-      const buf = typedArrayConcat(y, chunk, offset)
-      return { y: buf, offset: offset + chunk.length }
-    }),
-    { y: x0.constructor.from(x0), offset: x0.length },
-  )(x)
-  return isPromise(point) ? point.then(
-    res => res.y.slice(0, res.offset)
-  ) : point.y.slice(0, point.offset)
-}
+  )(x),
+  ({ y, offset }) => y.slice(0, offset),
+)
 
 /*
  * @synopsis
@@ -1327,8 +1264,7 @@ const _transformBranch = (fn, x0, x) => {
   if (isString(x0)) return stringTransform(fn, x0)(x)
   if (is(Set)(x0)) return setTransform(fn, x0)(x)
   if (is(Map)(x0)) return mapTransform(fn, x0)(x)
-  if (isNumberTypedArray(x0)) return numberTypedArrayTransform(fn, x0)(x)
-  if (isBigIntTypedArray(x0)) return bigIntTypedArrayTransform(fn, x0)(x)
+  if (isTypedArray(x0)) return typedArrayTransform(fn, x0)(x)
   if (isWritable(x0)) return writableTransform(fn, x0)(x)
   if (is(Object)(x0)) return objectTransform(fn, x0)(x)
   throw new TypeError('transform(x, y); x invalid')
