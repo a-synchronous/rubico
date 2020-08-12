@@ -1629,19 +1629,11 @@ describe('rubico', () => {
         [1, 2, 3, 4, 5],
       )
     })
-    it('maps then flattens an array of objects', async () => {
+    it('does not flatten objects', async () => {
       const createObject = () => ({ a: 1, b: 2, c: 3 })
       ade(
-        r.flatMap(
-          x => x,
-        )(arrayOf(createObject, 3)),
-        [1, 2, 3, 1, 2, 3, 1, 2, 3],
-      )
-      ade(
-        r.flatMap(
-          r.map(x => x ** 2),
-        )(arrayOf(createObject, 3)),
-        [1, 4, 9, 1, 4, 9, 1, 4, 9],
+        r.flatMap(x => x)(arrayOf(createObject, 3)),
+        arrayOf(createObject, 3),
       )
     })
     it('maps then flattens a Set', async () => {
@@ -1658,11 +1650,15 @@ describe('rubico', () => {
         )(new Set([1, 2, 3])),
         new Set([1, 4, 8, 9, 27]),
       )
+    })
+    it('does not flatten objects', async () => {
       ade(
-        r.flatMap(
-          x => ({ square: x ** 2, cube: x ** 3 })
-        )(new Set([1, 2, 3])),
-        new Set([1, 4, 8, 9, 27]),
+        r.flatMap(x => ({ square: x ** 2, cube: x ** 3 }))(new Set([1, 2, 3])),
+        new Set([
+          { square: 1, cube: 1 },
+          { square: 4, cube: 8 },
+          { square: 9, cube: 27 },
+        ]),
       )
     })
     it('[async] maps then flattens a Set', async () => {
@@ -1686,17 +1682,6 @@ describe('rubico', () => {
       ade(
         await r.flatMap(
           x => powers(x).then(x => new Set(x))
-        )(new Set([1, 2, 3])),
-        new Set([1, 4, 8, 9, 27]),
-      )
-      aok(
-        r.flatMap(
-          async x => ({ square: x ** 2, cube: x ** 3 })
-        )(new Set([1, 2, 3])) instanceof Promise
-      )
-      ade(
-        await r.flatMap(
-          async x => ({ square: x ** 2, cube: x ** 3 })
         )(new Set([1, 2, 3])),
         new Set([1, 4, 8, 9, 27]),
       )

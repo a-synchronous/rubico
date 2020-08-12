@@ -1234,19 +1234,67 @@ const transform = (fn, init) => {
   )
 }
 
-/*
+/**
+ * @name arrayPushArray
+ *
  * @synopsis
- * TODO
+ * arrayPushArray(x Array, array Array) -> undefined
  */
-const flattenIterable = (reducer, x0, x) => {
-  let y = x0
+const arrayPushArray = (x, array) => {
+  const offset = x.length, length = array.length
+  let i = -1
+  while (++i < length) {
+    x[offset + i] = array[i]
+  }
+}
+
+/**
+ * @name arrayPushIterable
+ *
+ * @synopsis
+ * arrayPushIterable(x Array, array Array) -> undefined
+ */
+const arrayPushIterable = (x, iterable) => {
+  const offset = x.length
+  let i = 0
+  for (const value of iterable) {
+    x[offset + i] = value
+    i += 1
+  }
+}
+
+/**
+ * @name arrayFlatten
+ *
+ * @synopsis
+ * <T any>arrayFlatten(Array<Array<T>|T>) -> Array<T>
+ */
+const arrayFlatten = x => {
+  const y = []
+  for (const xi of x) {
+    (isArray(xi) ? arrayPushArray(y, xi) :
+      isIterable(xi) ? arrayPushIterable(y, xi) : y.push(xi))
+  }
+  return y
+}
+
+/*
+ * @name genericFlatten
+ *
+ * @synopsis
+ * <T any>genericFlatten(
+ *   method string,
+ *   y Set<>,
+ *   x Iterable<Iterable<T>|T>,
+ * ) -> Set<T>
+ */
+const genericFlatten = (method, y, x) => {
+  const add = y[method].bind(y)
   for (const xi of x) {
     if (isIterable(xi)) {
-      for (const xii of xi) y = reducer(y, xii)
-    } else if (isObject(xi)) {
-      for (const k in xi) y = reducer(y, xi[k])
+      for (const v of xi) add(v)
     } else {
-      y = reducer(y, xi)
+      add(xi)
     }
   }
   return y
@@ -1256,21 +1304,7 @@ const flattenIterable = (reducer, x0, x) => {
  * @synopsis
  * TODO
  */
-const flattenToArray = x => flattenIterable(
-  (y, xii) => { y.push(xii); return y },
-  [],
-  x,
-)
-
-/*
- * @synopsis
- * TODO
- */
-const flattenToSet = x => flattenIterable(
-  (y, xii) => y.add(xii),
-  new Set(),
-  x,
-)
+const flatMapArray = (fn, x) => possiblePromiseThen(mapArray(fn, x), arrayFlatten)
 
 /*
  * @synopsis
@@ -1279,22 +1313,15 @@ const flattenToSet = x => flattenIterable(
  * @note
  * TODO: refactor to possiblePromiseThen
  */
-const flatMapArray = (fn, x) => {
-  const y = mapArray(fn, x)
-  return isPromise(y) ? y.then(flattenToArray) : flattenToArray(y)
-}
+const flatMapSet = (fn, x) => possiblePromiseThen(
+  mapSet(fn, x),
+  res => genericFlatten('add', new Set(), res),
+)
 
-/*
- * @synopsis
- * TODO
- *
- * @note
- * TODO: refactor to possiblePromiseThen
- */
-const flatMapSet = (fn, x) => {
+/* const flatMapSet = (fn, x) => {
   const y = mapSet(fn, x)
   return isPromise(y) ? y.then(flattenToSet) : flattenToSet(y)
-}
+} */
 
 /*
  * @synopsis
