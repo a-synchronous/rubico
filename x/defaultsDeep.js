@@ -47,10 +47,6 @@ const structDefaultsDeep = (defaultCollection, checkingFunc, x) => {
  * console.log(
  *   defaultsDeep({ a: 1 })({ b: 2, c: 3 }),
  * ) // { a: 1, b: 2, c: 3 }
- *
- * console.log(
- *   defaultsDeep([new Set([1, 2, ['hey']])])([new Set([1, 2])]),
- * ) // [new Set([1, 2, ['hey']])]
  */
 const defaultsDeep = (defaultCollection, checkingFunc = Instance.isInstance) => {
   if (!isStruct(defaultCollection)) {
