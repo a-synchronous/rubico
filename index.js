@@ -83,7 +83,24 @@ const possiblePromiseAll = ps => (ps.some(isPromise)
   ? promiseAll(ps)
   : new PossiblePromise(ps))
 
-const functionIteratorPipeAsync = async (iter, args) => {}
+/**
+ * @name functionIteratorPipeAsync
+ *
+ * @synopsis
+ * functionIteratorPipeAsync(
+ *   iter Iterator<function>,
+ *   arg any,
+ * ) -> Promise
+ */
+const functionIteratorPipeAsync = async (iter, arg) => {
+  const { value: func0, done } = iter.next()
+  if (done) return arg
+  let result = await func0(arg)
+  for (const func of iter) {
+    result = await func(result)
+  }
+  return result
+}
 
 /*
  * @synopsis
@@ -93,12 +110,18 @@ const functionIteratorPipeAsync = async (iter, args) => {}
  * ) -> Promise|any
  */
 const functionIteratorPipe = (iter, args) => {
-  const { value: f0 } = iter.next()
-  let output = f0(...args)
-  for (const fn of iter) {
-    output = possiblePromiseThen(output, fn)
+  const { value: func0 } = iter.next()
+  let result = func0(...args)
+  if (isPromise(result)) {
+    return result.then(res => functionIteratorPipeAsync(iter, res))
   }
-  return output
+  for (const func of iter) {
+    result = func(result)
+    if (isPromise(result)) {
+      return result.then(res => functionIteratorPipeAsync(iter, res))
+    }
+  }
+  return result
 }
 
 /*
@@ -133,14 +156,10 @@ const reverseArrayIter = function*(arr) {
  * @execution: series
  *
  * @example
- * const addA = x => x + 'A'
- * const asyncAddB = async x => x + 'B'
- * const addC = x => x + 'C'
- *
  * pipe([
- *   addA,
- *   asyncAddB,
- *   addC,
+ *   str => str + 'A',
+ *   async str => str + 'B',
+ *   str => str + 'C',
  * ])('').then(console.log) // ABC
  */
 const pipe = fns => {
@@ -156,8 +175,7 @@ const pipe = fns => {
   }
   return (...args) => (isFunction(args[0])
     ? functionIteratorPipe(reverseArrayIter(fns), args)
-    : functionIteratorPipe(fns[Symbol.iterator].call(fns), args)
-  )
+    : functionIteratorPipe(fns[symbolIterator](), args))
 }
 
 /*
