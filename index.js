@@ -1303,41 +1303,69 @@ const genericFlatten = (method, y, x) => {
   return y
 }
 
-/*
+/**
+ * @name flatMapArray
+ *
  * @synopsis
- * TODO
+ * <A any, B any>flatMapArray(
+ *   func A=>Iterable<B>|B,
+ *   arr Array<A>
+ * ) -> result Array<B>
  */
-const flatMapArray = (fn, x) => possiblePromiseThen(mapArray(fn, x), arrayFlatten)
+const flatMapArray = (func, arr) => (
+  possiblePromiseThen(mapArray(func, arr), arrayFlatten))
 
-/*
+/**
+ * @name flatMapSet
+ *
  * @synopsis
- * TODO
+ * <A any, B any>flatMapSet(
+ *   func A=>Iterable<B>|B,
+ *   set Set<A>
+ * ) -> result Set<B>
  */
-const flatMapSet = (fn, x) => possiblePromiseThen(
-  mapSet(fn, x),
+const flatMapSet = (func, set) => possiblePromiseThen(
+  mapSet(func, set),
   res => genericFlatten('add', new Set(), res),
 )
 
-/*
+/**
+ * @name flatMapReducer
+ *
  * @synopsis
- * TODO
+ * <A any, B any>flatMapReducer(
+ *   func A=>Iterable<B>|B,
+ *   reducer (any, any)=>any
+ * ) -> transducedReducer (aggregate any, value any)=>any
  */
-const flatMapReducer = (fn, reducer) => (y, xi) => (
-  possiblePromiseThen(fn(xi), reduce(reducer, y)))
+const flatMapReducer = (func, reducer) => (aggregate, value) => (
+  possiblePromiseThen(func(value), reduce(reducer, aggregate)))
 
-/*
+/**
+ * @name flatMap
+ *
  * @synopsis
- * TODO
+ * flatMap(
+ *   func A=>Iterable<B>|B
+ * )(value Array<Array<A>|A>) -> result Array<B>
+ *
+ * flatMap(
+ *   func A=>Iterable<B>|B
+ * )(value Set<Set<A>|A>) -> result Set<B>
+ *
+ * flatMap(
+ *   func A=>Iterable<B>|B
+ * )(value (any, any)=>any) -> transducedReducer (any, any)=>any
  */
-const flatMap = fn => {
-  if (!isFunction(fn)) {
-    throw new TypeError('flatMap(x); x is not a function')
+const flatMap = func => {
+  if (!isFunction(func)) {
+    throw new TypeError('flatMap(func); func is not a function')
   }
-  return x => {
-    if (isArray(x)) return flatMapArray(fn, x)
-    if (isSet(x)) return flatMapSet(fn, x)
-    if (isFunction(x)) return flatMapReducer(fn, x)
-    throw new TypeError('flatMap(...)(x); x invalid')
+  return value => {
+    if (isArray(value)) return flatMapArray(func, value)
+    if (isSet(value)) return flatMapSet(func, value)
+    if (isFunction(value)) return flatMapReducer(func, value)
+    throw new TypeError('flatMap(...)(value); value invalid')
   }
 }
 
