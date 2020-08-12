@@ -1733,13 +1733,13 @@ describe('rubico', () => {
     it('throws a TypeError on flatMap(nonFunction)', async () => {
       assert.throws(
         () => r.flatMap({}),
-        new TypeError('flatMap(x); x is not a function'),
+        new TypeError('flatMap(func); func is not a function'),
       )
     })
     it('throws a TypeError on flatMap(...)(null)', async () => {
       assert.throws(
         () => r.flatMap(() => 'hi')(null),
-        new TypeError('flatMap(...)(x); x invalid')
+        new TypeError('flatMap(...)(value); invalid value null')
       )
     })
   })

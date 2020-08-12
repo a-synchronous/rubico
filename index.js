@@ -1365,7 +1365,7 @@ const flatMap = func => {
     if (isArray(value)) return flatMapArray(func, value)
     if (isSet(value)) return flatMapSet(func, value)
     if (isFunction(value)) return flatMapReducer(func, value)
-    throw new TypeError('flatMap(...)(value); value invalid')
+    throw new TypeError(`flatMap(...)(value); invalid value ${value}`)
   }
 }
 
