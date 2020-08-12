@@ -204,37 +204,53 @@ const pipe = funcs => (...args) => (isFunction(args[0])
   ? functionIteratorPipe(arrayReverseIterator(funcs), args)
   : functionIteratorPipe(funcs[symbolIterator](), args))
 
+/* pipe.reduce = funcs => value => isFunction(value)
+  ? funcs.reduceRight((result, func) => isPromise(result)
+    ? result.then(func)
+    : func(result), value)
+  : funcs.reduce((result, func) => isPromise(result)
+    ? result.then(func)
+    : func(result), value) */
+
 /**
  * @name arrayFork
  *
  * @synopsis
- * arrayFork(fns Array<function>, x any) -> Promise<Array>|Array
+ * <T any>arrayFork(
+ *   funcs Array<T=>any>,
+ *   value T,
+ * ) -> Promise<Array>|Array
  */
-const arrayFork = (fns, x) => {
+const arrayFork = (funcs, value) => {
   let isAsync = false
-  const y = fns.map(fn => {
-    const point = fn(x)
-    if (isPromise(point)) isAsync = true
-    return point
+  const result = funcs.map(func => {
+    const res = func(value)
+    if (isPromise(res)) isAsync = true
+    return res
   })
-  return isAsync ? Promise.all(y) : y
+  return isAsync ? promiseAll(result) : result
 }
 
-/*
+/**
+ * @name objectFork
+ *
  * @synopsis
- * objectFork(fns Object<function>, x any) -> Object|Promise<Object>
+ * <T any>objectFork(
+ *   funcs Object<T=>any>,
+ *   value T,
+ * ) -> Promise<Object>|Object
  */
-const objectFork = (fns, x) => {
-  const y = {}, promises = []
-  for (const k in fns) {
-    const point = fns[k](x)
-    if (isPromise(point)) {
-      promises.push(point.then(res => { y[k] = res }))
+const objectFork = (funcs, value) => {
+  const result = {}, promises = []
+  for (const k in funcs) {
+    const res = funcs[k](value)
+    if (isPromise(res)) {
+      promises.push(res.then(x => { result[k] = x }))
     } else {
-      y[k] = point
+      result[k] = res
     }
   }
-  return promises.length > 0 ? Promise.all(promises).then(() => y) : y
+  return promises.length > 0 ? Promise.all(promises).then(() => result) : result
 }
 
 /*
