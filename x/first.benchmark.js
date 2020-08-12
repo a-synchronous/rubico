@@ -14,12 +14,12 @@ const arr = [1, 2, 3]
  * R.first(arr): 1e+7: 1.903s
  */
 
-// timeInLoop('first(arr)', 1e7, () => first(arr))
-
 const _head = _.head
 
-// timeInLoop('_.head(arr)', 1e7, () => _head(arr))
-
 const RFirst = R.head
+
+// timeInLoop('first(arr)', 1e7, () => first(arr))
+
+// timeInLoop('_.head(arr)', 1e7, () => _head(arr))
 
 // timeInLoop('R.first(arr)', 1e7, () => RFirst(arr))

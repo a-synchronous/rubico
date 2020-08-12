@@ -17,9 +17,9 @@ const value = { a: 1 }
 
 const _defaultsDeep = _.defaultsDeep
 
-// timeInLoop('_.defaultsDeep', 1e5, () => _defaultsDeep(defaultCollection, value))
-
 const defaultsDeepRubico = defaultsDeep(defaultCollection)
+
+// timeInLoop('_.defaultsDeep', 1e5, () => _defaultsDeep(defaultCollection, value))
 
 // timeInLoop('defaultsDeep', 1e5, () => defaultsDeepRubico(value))
 
