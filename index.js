@@ -1309,8 +1309,8 @@ const genericFlatten = (method, y, x) => {
  * @synopsis
  * <A any, B any>flatMapArray(
  *   func A=>Iterable<B>|B,
- *   arr Array<A>
- * ) -> result Array<B>
+ *   arr Array<A>,
+ * ) -> result Promise<Array<B>>|Array<B>
  */
 const flatMapArray = (func, arr) => (
   possiblePromiseThen(mapArray(func, arr), arrayFlatten))
@@ -1322,7 +1322,7 @@ const flatMapArray = (func, arr) => (
  * <A any, B any>flatMapSet(
  *   func A=>Iterable<B>|B,
  *   set Set<A>
- * ) -> result Set<B>
+ * ) -> result Promise<Set<B>>|Set<B>
  */
 const flatMapSet = (func, set) => possiblePromiseThen(
   mapSet(func, set),
@@ -1335,8 +1335,8 @@ const flatMapSet = (func, set) => possiblePromiseThen(
  * @synopsis
  * <A any, B any>flatMapReducer(
  *   func A=>Iterable<B>|B,
- *   reducer (any, any)=>any
- * ) -> transducedReducer (aggregate any, value any)=>any
+ *   reducer (any, A)=>any
+ * ) -> transducedReducer (aggregate any, value A)=>Promise|any
  */
 const flatMapReducer = (func, reducer) => (aggregate, value) => (
   possiblePromiseThen(func(value), reduce(reducer, aggregate)))
@@ -1345,17 +1345,32 @@ const flatMapReducer = (func, reducer) => (aggregate, value) => (
  * @name flatMap
  *
  * @synopsis
- * flatMap(
+ * <A any, B any>flatMap(
  *   func A=>Iterable<B>|B
  * )(value Array<Array<A>|A>) -> result Array<B>
  *
- * flatMap(
+ * <A any, B any>flatMap(
  *   func A=>Iterable<B>|B
  * )(value Set<Set<A>|A>) -> result Set<B>
  *
- * flatMap(
+ * <A any, B any>flatMap(
  *   func A=>Iterable<B>|B
  * )(value (any, any)=>any) -> transducedReducer (any, any)=>any
+ *
+ * @catchphrase
+ * map then flatten
+ *
+ * @description
+ * `flatMap` accepts a mapper function `func` and an Array or Set `value`, and returns a new flattened and mapped Array or Set `result`. Each item of `result` is the result of applying the mapper function `func` to a given item of the input Array or Set `value`. The final `result` Array or Set is flattened one depth level.
+ *
+ * When `value` is a reducer function, the output is another reducer function `transducedReducer` that represents a flatMap step in a transducer chain. A flatMap step involves the application of the mapper function `func` to a given element of a collecting being reduced, then flattening the result into the aggregate. For more information on this behavior, please see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
+ *
+ * @example
+ * console.log(
+ *   flatMap(
+ *     number => [number ** 2, number ** 3],
+ *   )([1, 2, 3]),
+ * ) // [1, 1, 4, 8, 9, 27]
  */
 const flatMap = func => {
   if (!isFunction(func)) {
@@ -1418,7 +1433,7 @@ const arrayPathGet = (path, value, defaultValue) => {
  * Access a property by path
  *
  * @description
- * `get` takes an Array of Numbers or Strings, Number, or String `path` argument, a function or any `defaultValue` argument, and returns a getter function that, when supplied any `value`, returns a property on that `value` by `path`.
+ * `get` takes an Array of Numbers or Strings, Number, or String `path` argument, a function or any `defaultValue` argument, and returns a getter function that, when supplied any `value`, returns a property on that `value` described by `path`.
  *
  * @example
  * const nestedABC = { a: { b: { c: 1 } } }
