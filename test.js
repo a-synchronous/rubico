@@ -1774,6 +1774,7 @@ describe('rubico', () => {
     })
     it('handles null and undefined initial value with default or undefined', async () => {
       ase(r.get('a')(null), undefined)
+      ase(r.get('a', () => 'yo')(null), 'yo')
       ase(r.get('a', 'yo')(null), 'yo')
       ase(r.get('a', 'yo')(undefined), 'yo')
     })
