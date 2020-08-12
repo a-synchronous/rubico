@@ -65,6 +65,28 @@ PossiblePromise.catch = (value, func) => (
   isPromise(value) ? value.catch(func) : value)
 
 /**
+ * @name SyncThenable
+ *
+ * @synopsis
+ * new SyncThenable(value any) -> SyncThenable
+ *
+ * @catchphrase
+ * A synchronous Promise-like structure
+ */
+const SyncThenable = function(value) { this.value = value }
+
+/**
+ * @name SyncThenable.prototype.then
+ *
+ * @synopsis
+ * new SyncThenable(value any).then(func function) -> any
+ *
+ * @catchphrase
+ * .then as a function call
+ */
+SyncThenable.prototype.then = function(func) { return func(this.value) }
+
+/**
  * @name PossiblePromise.all
  *
  * @synopsis
@@ -77,7 +99,7 @@ PossiblePromise.catch = (value, func) => (
  */
 PossiblePromise.all = values => (values.some(isPromise)
   ? promiseAll(values)
-  : new PossiblePromise(values))
+  : new SyncThenable(values))
 
 /**
  * @name PossiblePromise.args
