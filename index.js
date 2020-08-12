@@ -70,8 +70,8 @@ const promiseAll = Promise.all.bind(Promise)
 const PossiblePromise = function(p) { this.value = p }
 
 PossiblePromise.prototype.then = function(f) {
-  const p = this.value
-  return f(p)
+  return f(this.value)
+  // const p = this.value
   // return isPromise(p) ? p.then(f) : f(p)
 }
 
