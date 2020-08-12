@@ -10,17 +10,17 @@ const possiblePromiseArgs = PossiblePromise.args
  * last
  *
  * @synopsis
- * last(x Promise<string>|string) -> lastChar string
+ * last(value Promise<string>|string) -> lastChar string
  *
- * last(x Promise<Array>|Array) -> lastItem any
+ * last(value Promise<Array>|Array) -> lastItem any
  *
  * @catchphrase
  * Get the last item from a string or Array
  */
-const last = x => {
-  if (x == null) return undefined
-  const length = x.length
-  return length ? x[length - 1] : undefined
+const last = value => {
+  if (value == null) return undefined
+  const length = value.length
+  return length ? value[length - 1] : undefined
 }
 
 module.exports = last
