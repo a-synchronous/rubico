@@ -1,3 +1,6 @@
+## v1.5.2
+ * x/unionWith performance revamp + benchmarks
+
 ## v1.5.0
  * monad/PossiblePromise - Possibly a promise
  * monad/Instance - Type checking
