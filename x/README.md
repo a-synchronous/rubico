@@ -331,6 +331,21 @@ unionWith((a, b) => a.a === b.a)([
 ]) // [{ a: 1 }, { a: 2 }, { a: 3 }, { b: 5 }, { a: 5 }]
 ```
 
+### uniq
+
+*uniq* returns an array with unique values.
+
+```javascript
+result = uniq(arr)
+```
+
+`arr` and `result` are Arrays
+
+
+```javascript
+uniq([1, 2, 2, 3]) // [1, 2, 3]
+```
+
 # Contributing
 **Additions to this list are welcome and encouraged!**. If you have a suggestion, open a new issue as `rubico/x/your-suggested-module`.
 
