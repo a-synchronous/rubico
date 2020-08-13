@@ -15,6 +15,7 @@ const possiblePromiseThen = PossiblePromise.then
 const {
   isAsyncSequence,
   concat: muxConcat,
+  flatten: muxFlatten,
 } = Mux
 
 /**
@@ -107,15 +108,19 @@ const asyncGenericUnionWithGeneric = async (predicate, iter, result, setter) => 
  *   result Iterable<T>,
  *   setter (result Iterable<T>, T)=>(),
  * ) -> result Promise|Iterable<T>
+ *
+ * @NOTE no asyncIterators in this version
  */
 const genericUnionWithGeneric = (predicate, iter, result, setter) => {
   const iterNext = iter.next.bind(iter)
   const next = iterNext()
-  if (isPromise(next)) return next.then(({ value, done }) => {
+
+  /* if (isPromise(next)) return next.then(({ value, done }) => {
     if (done) return result
     setter(result, value)
     return asyncGenericUnionWithGeneric(predicate, iter, result, setter)
-  })
+  }) */
+
   const { value, done } = next
   if (done) return result
   setter(result, value)
@@ -158,8 +163,16 @@ const genericUnionWithGeneric = (predicate, iter, result, setter) => {
  *   predicate (T, T)=>boolean
  *   iter Iterator<T>
  * ) -> Iterator<T>
- */
 const iteratorUnionWithIterator = function*(predicate, iter) {
+  const yielded = [], iterNext = iter.next.bind(iter)
+  for (const value of iter) {
+    if (existsWith(predicate, value, yielded[symbolIterator]())) continue
+    arrayPush(yielded, value)
+    yield value
+  }
+} */
+
+/* const iteratorUnionWithIterator = function*(predicate, iter) {
   const yielded = [], iterNext = iter.next.bind(iter)
   while (true) {
     const { value, done } = iterNext()
@@ -168,15 +181,7 @@ const iteratorUnionWithIterator = function*(predicate, iter) {
     arrayPush(yielded, value)
     yield value
   }
-
-  /* Alternative implementation
-  for (const value of iter) {
-    if (existsWith(predicate, value, yielded[symbolIterator]())) continue
-    arrayPush(yielded, value)
-    yield value
-  }
-  */
-}
+} */
 
 /**
  * @name asyncIteratorUnionWithAsyncIterator
@@ -186,7 +191,6 @@ const iteratorUnionWithIterator = function*(predicate, iter) {
  *   predicate (T, T)=>boolean
  *   iter AsyncIterator<T>
  * ) -> AsyncIterator<T>
- */
 const asyncIteratorUnionWithAsyncIterator = async function*(predicate, iter) {
   const yielded = []
   for await (const value of iter) {
@@ -194,7 +198,7 @@ const asyncIteratorUnionWithAsyncIterator = async function*(predicate, iter) {
     arrayPush(yielded, value)
     yield value
   }
-}
+} */
 
 /**
  * @name unionWith
@@ -232,14 +236,23 @@ const asyncIteratorUnionWithAsyncIterator = async function*(predicate, iter) {
  */
 const unionWith = predicate => values => {
   if (values == null) return []
-  const iter = muxConcat(values)
   if (isArray(values)) return genericUnionWithGeneric(
-    predicate, iter, [], arrayPush)
+    predicate, muxFlatten(values)[symbolIterator](), [], arrayPush)
   if (isSet(values)) return genericUnionWithGeneric(
-    predicate, iter, new Set(), setAdd)
+    predicate, muxFlatten(values)[symbolIterator](), new Set(), setAdd)
+  return [values]
+}
+
+/* unionWith = predicate => values => { // TODO: performance is a problem for generators vs Arrays. Would be nice to
+                                        //       figure out a way to get good Array performance even with support for full muxes
+  if (isArray(values)) return genericUnionWithGeneric(
+    predicate, muxConcat(values), [], arrayPush)
+  if (isSet(values)) return genericUnionWithGeneric(
+    predicate, muxConcat(values), new Set(), setAdd)
+  const iter = muxConcat(values)
   return (iter[symbolIterator]
     ? iteratorUnionWithIterator(predicate, iter)
     : asyncIteratorUnionWithAsyncIterator(predicate, iter))
-}
+} */
 
 module.exports = unionWith
