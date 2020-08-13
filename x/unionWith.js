@@ -168,7 +168,8 @@ const iteratorUnionWithIterator = function*(predicate, iter) {
     arrayPush(yielded, value)
     yield value
   }
-  /*
+
+  /* Alternative implementation
   for (const value of iter) {
     if (existsWith(predicate, value, yielded[symbolIterator]())) continue
     arrayPush(yielded, value)

@@ -141,6 +141,7 @@ module.exports = {
         'no-catch-shadow': 'error',
         'no-confusing-arrow': 'off',
         'no-console': 'off',
+        'no-constant-condition': 'off',
         'no-constructor-return': 'error',
         'no-continue': 'off',
         'no-div-regex': 'error',
