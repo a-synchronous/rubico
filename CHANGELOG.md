@@ -1,5 +1,6 @@
 ## v1.5.2
  * x/unionWith performance revamp + benchmarks
+ * x/uniq - Get unique values of a collection
 
 ## v1.5.0
  * monad/PossiblePromise - Possibly a promise
