@@ -208,46 +208,42 @@ describe('rubico', () => {
         ['yohey', 'yohey', 'yohi'],
       )
     })
-    it('throws TypeError for fork([])', async () => {
-      assert.throws(
-        () => fork([]),
-        new RangeError('fork(x); x is not an array of at least one function'),
-      )
+    it('fork([])() -> []', async () => {
+      ade(fork([])(), [])
+      ade(fork([])('hey'), [])
     })
-    it('throws TypeError for fork({})', async () => {
-      assert.throws(
-        () => fork({}),
-        new RangeError('fork(x); x is not an object of at least one entry'),
-      )
+    it('fork({})() -> {}', async () => {
+      ade(fork({})(), {})
+      ade(fork({})('hey'), {})
     })
-    it('throws TypeError for fork([nonFunction])', async () => {
+    it('TypeError for fork([\'hey\'])()', async () => {
       assert.throws(
-        () => fork(['hey']),
-        new TypeError('fork(x); x[0] is not a function'),
+        () => fork(['hey'])(),
+        new TypeError('func is not a function'),
       )
     })
     it('throws TypeError for fork({ a: nonFunction })', async () => {
       assert.throws(
-        () => fork({ a: 'hey' }),
-        new TypeError('fork(x); x[\'a\'] is not a function'),
+        () => fork({ a: 'hey' })(),
+        new TypeError('funcs[key] is not a function'),
       )
     })
     it('throws TypeError for String', async () => {
       assert.throws(
         () => fork('ayelmao'),
-        new TypeError('fork(x); x invalid'),
+        new TypeError('fork(funcs); invalid funcs ayelmao'),
       )
     })
     it('throws TypeError for Set', async () => {
       assert.throws(
         () => fork(new Set([hi])),
-        new TypeError('fork(x); x invalid'),
+        new TypeError('fork(funcs); invalid funcs [object Set]'),
       )
     })
     it('throws TypeError for Map', async () => {
       assert.throws(
         () => fork(new Map([['a', hi]])),
-        new TypeError('fork(x); x invalid'),
+        new TypeError('fork(funcs); invalid funcs [object Map]'),
       )
     })
   })

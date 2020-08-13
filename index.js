@@ -189,16 +189,16 @@ const arrayReverseIterator = function*(values) {
  *
  * `pipe(funcs)(...)` returns a Promise when any function of `funcs` is asynchronous.
  *
- * @serial true
- *
- * @transducing true
- *
  * @example
  * pipe([
  *   str => str + 'A',
  *   async str => str + 'B',
  *   str => str + 'C',
  * ])('').then(console.log) // ABC
+ *
+ * @serial true
+ *
+ * @transducing true
  */
 const pipe = funcs => (...args) => (isFunction(args[0])
   ? functionIteratorPipe(arrayReverseIterator(funcs), args)
@@ -224,9 +224,9 @@ const pipe = funcs => (...args) => (isFunction(args[0])
 const arrayFork = (funcs, value) => {
   let isAsync = false
   const result = funcs.map(func => {
-    const res = func(value)
-    if (isPromise(res)) isAsync = true
-    return res
+    const mappedValue = func(value)
+    if (isPromise(mappedValue)) isAsync = true
+    return mappedValue
   })
   return isAsync ? promiseAll(result) : result
 }
@@ -259,11 +259,11 @@ const objectFork = (funcs, value) => {
  * @synopsis
  * <T any>fork(
  *   funcs Object<T=>any>,
- * )(x Promise<T>|T) -> y Promise<Object>|Object
+ * )(x Promise<T>|T) -> y Promise|Object
  *
  * <T any>fork(
  *   funcs Array<T=>any>,
- * )(x Promise<T>|T) -> y Promise<Array>|Array
+ * )(x Promise<T>|T) -> y Promise|Array
  *
  * @catchphrase duplicate and diverge flow
  *
@@ -278,34 +278,16 @@ const objectFork = (funcs, value) => {
  *     greetings: fork([
  *       greeting => greeting + 'world',
  *       greeting => greeting + 'mom',
- *     ])
+ *     ]),
  *   })('hello'),
  * ) // { greetings: ['hello world', 'hello mom'] }
  *
  * @concurrent true
  */
-const fork = fns => {
-  if (isArray(fns)) {
-    if (fns.length < 1) {
-      throw new RangeError('fork(x); x is not an array of at least one function')
-    }
-    for (let i = 0; i < fns.length; i++) {
-      if (isFunction(fns[i])) continue
-      throw new TypeError(`fork(x); x[${i}] is not a function`)
-    }
-    return x => arrayFork(fns, x)
-  }
-  if (isObject(fns)) {
-    if (Object.keys(fns).length < 1) {
-      throw new RangeError('fork(x); x is not an object of at least one entry')
-    }
-    for (const k in fns) {
-      if (isFunction(fns[k])) continue
-      throw new TypeError(`fork(x); x['${k}'] is not a function`)
-    }
-    return x => objectFork(fns, x)
-  }
-  throw new TypeError('fork(x); x invalid')
+const fork = funcs => {
+  if (isArray(funcs)) return value => arrayFork(funcs, value)
+  if (isObject(funcs)) return value => objectFork(funcs, value)
+  throw new TypeError(`fork(funcs); invalid funcs ${funcs}`)
 }
 
 /*
