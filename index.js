@@ -191,7 +191,7 @@ const arrayReverseIterator = function*(values) {
  *
  * @concurrent true
  *
- * @transducer true
+ * @transducing true
  *
  * @example
  * pipe([
@@ -242,18 +242,18 @@ const arrayFork = (funcs, value) => {
  */
 const objectFork = (funcs, value) => {
   const result = {}, promises = []
-  for (const k in funcs) {
-    const res = funcs[k](value)
-    if (isPromise(res)) {
-      promises.push(res.then(x => { result[k] = x }))
+  for (const key in funcs) {
+    const forkedValue = funcs[key](value)
+    if (isPromise(forkedValue)) {
+      promises.push(forkedValue.then(res => { result[key] = res }))
     } else {
-      result[k] = res
+      result[key] = forkedValue
     }
   }
-  return promises.length > 0 ? Promise.all(promises).then(() => result) : result
+  return promises.length > 0 ? promiseAll(promises).then(() => result) : result
 }
 
-/*
+/**
  * @name fork
  *
  * @synopsis
