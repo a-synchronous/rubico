@@ -225,7 +225,8 @@ describe('unionWith', () => {
       const subject = unionWith(() => true)(NaN)
       assert(isSequence(subject))
       const arr = [...subject]
-      assert.deepEqual(arr, [NaN])
+      assert.equal(arr.length, 1)
+      assert(isNaN(arr[0]))
     })
     it('unionWith(predicate)([]); []', async () => {
       const subject = unionWith(() => true)([])
