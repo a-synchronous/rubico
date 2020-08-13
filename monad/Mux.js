@@ -79,7 +79,7 @@ const Mux = function(x) {
  * Mux.isSequence(x any) -> boolean
  *
  * @catchphrase
- * Tell if Mux
+ * Tell if Sequence
  *
  * @description
  * Mux.isSequence takes anything and returns a Boolean value. Mux.isSequence returns true if the value is an Iterable, GeneratorFunction, AsyncIterable, or AsyncGeneratorFunction.
