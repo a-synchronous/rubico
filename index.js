@@ -468,15 +468,27 @@ const assign = funcs => value => {
     : ({ ...value, ...forked })
 }
 
-/*
+/**
+ * @name tap
+ *
  * @synopsis
- * tap(f function)(x any) -> Promise|any
+ * tap(func function)(value any) -> Promise|any
+ *
+ * @catchphrase
+ * spy on flow
+ *
+ * @description
+ * **tap** accepts a function and any value, calls the function with the value, and returns the value unchanged.
+ *
+ * @example
+ * tap(num => {
+ *   console.log(num) // 5
+ *   return 'this return value is discarded'
+ * })(5) // 5
  */
-const tap = f => {
-  if (!isFunction(f)) {
-    throw new TypeError('tap(f); f is not a function')
-  }
-  return x => possiblePromiseThen(f(x), () => x)
+const tap = func => value => {
+  const call = func(value)
+  return isPromise(call) ? call.then(() => value) : value
 }
 
 /*
