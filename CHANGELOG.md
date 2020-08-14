@@ -1,3 +1,6 @@
+## v1.5.3
+ * x/uniq - export in x/index
+
 ## v1.5.2
  * x/unionWith performance revamp + benchmarks
  * x/uniq - Get unique values of a collection
