@@ -321,16 +321,13 @@ describe('rubico', () => {
         { a: 'a', b: 'ayo', c: 'ayaya' },
       )
     })
-    it('throws TypeError on assign(nonObject)', async () => {
-      assert.throws(
-        () => assign(new Set(['hey'])),
-        new TypeError('assign(funcs); funcs is not an object of functions'),
-      )
+    it('assign(Set)(nonObject) -> {}', async () => {
+      assert.deepEqual(assign(new Set(['hey']))(), {})
     })
-    it('throws TypeError on assign(...)(nonObject)', async () => {
-      assert.throws(
-        () => assign({ a: hi })('hi'),
-        new TypeError('assign(...)(x); x is not an object'),
+    it('assign(...)(string) -> { 0: s, 1: t, ... }', async () => {
+      assert.deepEqual(
+        assign({ a: value => value })('hi'),
+        { '0': 'h', '1': 'i', a: 'hi' },
       )
     })
   })

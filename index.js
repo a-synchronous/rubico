@@ -233,7 +233,7 @@ const arrayReverseIterator = function*(values) {
  * @catchphrase define flow: chain functions together
  *
  * @description
- * `pipe` is a function composition and serial execution function that takes an Array of functions `funcs`, arguments `args`, and returns the `result` of passing `args` to the chain of functions `funcs`. The arguments `args` are supplied to the first function of `funcs`, the result of that call is supplied as a single argument to the next function, and so on until all functions of `funcs` have been called. The final return value of a pipe is the return value of the last function in a chain.
+ * **pipe** is a function composition and serial execution function that takes an Array of functions `funcs`, arguments `args`, and returns the `result` of passing `args` to the chain of functions `funcs`. The arguments `args` are supplied to the first function of `funcs`, the result of that call is supplied as a single argument to the next function, and so on until all functions of `funcs` have been called. The final return value of a pipe is the return value of the last function in a chain.
  *
  * When `pipe(funcs)` is passed a `reducer` function, the returned result is another reducer function `composedReducer` that would perform the pipeline operation described by `funcs` on every element of a given collection when used with [reduce](https://doc.rubico.land/#reduce) or the `.reduce` method of an Array. For more information on this behavior, please see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md)
  *
@@ -318,7 +318,7 @@ const objectFork = (funcs, value) => {
  * @catchphrase duplicate and diverge flow
  *
  * @description
- * `fork` is a function composition and concurrent execution function that takes either an Array or Object of functions `funcs`, an input `value`, and returns a `result` that mirrors the shape of `funcs`. Specifically, `result` is each function of `funcs` applied with the input `value`.
+ * **fork** is a function composition and concurrent execution function that takes either an Array or Object of functions `funcs`, an input `value`, and returns a `result` that mirrors the shape of `funcs`. Specifically, `result` is each function of `funcs` applied with the input `value`.
  *
  * `fork(funcs)` returns a Promise when any function of `funcs` is asynchronous.
  *
@@ -413,7 +413,7 @@ const arrayForkSeries = (funcIter, value, result) => {
  * fork in series
  *
  * @description
- * `fork.series` accepts an Array of functions `funcs` and an input `value` and returns an Array with each function of `funcs` applied with `value`. `fork.series` returns a Promise if any functions of `funcs` are asynchronous.
+ * **fork.series** accepts an Array of functions `funcs` and an input `value` and returns an Array with each function of `funcs` applied with `value`. `fork.series` returns a Promise if any functions of `funcs` are asynchronous.
  *
  * @example
  * const sleep = ms => () => new Promise(resolve => setTimeout(resolve, ms))
@@ -437,23 +437,35 @@ fork.series = funcs => {
   throw new TypeError('fork.series(funcs); funcs is not an Array')
 }
 
-/*
+/**
+ * @name assign
+ *
  * @synopsis
- * assign(funcs Object<function>)(x any) -> Object<any>|Promise<Object<any>>
+ * <T Object>assign(
+ *   funcs Object<T=>any>,
+ * )(value T) -> result Promise|Object
+ *
+ * @catchphrase
+ * fork, then merge results
+ *
+ * @description
+ * **assign** accepts an Object of functions `funcs` and an Object `value` and returns an Object `result`. `result` is each function of `funcs` applied with Object `value` merged into the input Object `value`. If any functions of `funcs` is asynchronous, `result` is a Promise.
+ *
+ * @example
+ * console.log(
+ *   assign({
+ *     squared: ({ number }) => number ** 2,
+ *     cubed: ({ number }) => number ** 3,
+ *   })({ number: 3 }),
+ * ) // { number: 3, squared: 9, cubed: 27 }
+ *
+ * @concurrent
  */
-const assign = funcs => {
-  if (!isObject(funcs)) {
-    throw new TypeError('assign(funcs); funcs is not an object of functions')
-  }
-  return x => {
-    if (!isObject(x)) {
-      throw new TypeError('assign(...)(x); x is not an object')
-    }
-    return possiblePromiseThen(
-      objectFork(funcs, x),
-      res => Object.assign({}, x, res),
-    )
-  }
+const assign = funcs => value => {
+  const forked = objectFork(funcs, value)
+  return isPromise(forked)
+    ? forked.then(res => ({ ...value, ...res }))
+    : ({ ...value, ...forked })
 }
 
 /*
@@ -1485,7 +1497,7 @@ const flatMapReducer = (func, reducer) => (aggregate, value) => (
  * map then flatten
  *
  * @description
- * `flatMap` accepts a mapper function `func` and an Array or Set `value`, and returns a new flattened and mapped Array or Set `result`. Each item of `result` is the result of applying the mapper function `func` to a given item of the input Array or Set `value`. The final `result` Array or Set is flattened one depth level.
+ * **flatMap** accepts a mapper function `func` and an Array or Set `value`, and returns a new flattened and mapped Array or Set `result`. Each item of `result` is the result of applying the mapper function `func` to a given item of the input Array or Set `value`. The final `result` Array or Set is flattened one depth level.
  *
  * When `value` is a reducer function, the output is another reducer function `transducedReducer` that represents a flatMap step in a transducer chain. A flatMap step involves the application of the mapper function `func` to a given element of a collecting being reduced, then flattening the result into the aggregate. For more information on this behavior, please see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
  *
@@ -1496,7 +1508,7 @@ const flatMapReducer = (func, reducer) => (aggregate, value) => (
  *   )([1, 2, 3]),
  * ) // [1, 1, 4, 8, 9, 27]
  *
- * @concurrent true
+ * @concurrent
  */
 const flatMap = func => {
   if (!isFunction(func)) {
@@ -1559,7 +1571,7 @@ const arrayPathGet = (path, value, defaultValue) => {
  * Access a property by path
  *
  * @description
- * `get` takes an Array of Numbers or Strings, Number, or String `path` argument, a function or any `defaultValue` argument, and returns a getter function that, when supplied any `value`, returns a property on that `value` described by `path`.
+ * **get** takes an Array of Numbers or Strings, Number, or String `path` argument, a function or any `defaultValue` argument, and returns a getter function that, when supplied any `value`, returns a property on that `value` described by `path`.
  *
  * @example
  * const nestedABC = { a: { b: { c: 1 } } }
