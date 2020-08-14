@@ -481,14 +481,16 @@ const assign = funcs => value => {
  * **tap** accepts a function and any value, calls the function with the value, and returns the value unchanged.
  *
  * @example
- * tap(num => {
- *   console.log(num) // 5
- *   return 'this return value is discarded'
- * })(5) // 5
+ * pipe([
+ *   tap(console.log),
+ *   value => value + 'bar'
+ *   tap(console.log),
+ * ])('foo') // 'foo'
+ *           // 'foobar'
  */
 const tap = func => value => {
-  const call = func(value)
-  return isPromise(call) ? call.then(() => value) : value
+  const returned = func(value)
+  return isPromise(returned) ? returned.then(() => value) : value
 }
 
 /*
