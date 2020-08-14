@@ -230,21 +230,15 @@ describe('rubico', () => {
     })
     it('throws TypeError for String', async () => {
       assert.throws(
-        () => fork('ayelmao'),
-        new TypeError('fork(funcs); invalid funcs ayelmao'),
+        () => fork('ayelmao')(),
+        new TypeError('funcs[key] is not a function'),
       )
     })
-    it('throws TypeError for Set', async () => {
-      assert.throws(
-        () => fork(new Set([hi])),
-        new TypeError('fork(funcs); invalid funcs [object Set]'),
-      )
+    it('{} for Set<[func]>; no functions exposed via in', async () => {
+      assert.deepEqual(fork(new Set([() => 'yo']))('hey'), {})
     })
-    it('throws TypeError for Map', async () => {
-      assert.throws(
-        () => fork(new Map([['a', hi]])),
-        new TypeError('fork(funcs); invalid funcs [object Map]'),
-      )
+    it('{} for Map<[[1, func]]>', async () => {
+      assert.deepEqual(fork(new Map([[1, () => 'yo']]))('hey'), {})
     })
   })
 

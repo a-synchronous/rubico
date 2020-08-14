@@ -303,6 +303,9 @@ const objectFork = (funcs, value) => {
   return promises.length > 0 ? promiseAll(promises).then(() => result) : result
 }
 
+const genericFork = (funcs, value, result, setter) => {
+}
+
 /**
  * @name fork
  *
@@ -334,11 +337,9 @@ const objectFork = (funcs, value) => {
  *
  * @concurrent
  */
-const fork = funcs => {
-  if (isArray(funcs)) return value => arrayFork(funcs, value)
-  if (isObject(funcs)) return value => objectFork(funcs, value)
-  throw new TypeError(`fork(funcs); invalid funcs ${funcs}`)
-}
+const fork = funcs => isArray(funcs)
+  ? value => arrayFork(funcs, value)
+  : value => objectFork(funcs, value)
 
 /**
  * @name asyncGenericForkSeries
