@@ -282,21 +282,18 @@ describe('rubico', () => {
       ade(arr2, [3, 2, 1])
     })
     it('throws TypeError for fork([])', async () => {
-      assert.throws(
-        () => fork.series([]),
-        new RangeError('fork.series(x); x is not an array of at least one function'),
-      )
+      assert.deepEqual(fork.series([])(), [])
     })
     it('throws TypeError for fork([nonFunction])', async () => {
       assert.throws(
-        () => fork.series(['hey']),
-        new TypeError('fork.series(x); x[0] is not a function'),
+        () => fork.series(['hey'])(),
+        new TypeError('func is not a function')
       )
     })
     it('throws TypeError for non array functions', async () => {
       assert.throws(
         () => fork.series({}),
-        new TypeError('fork.series(x); x invalid'),
+        new TypeError('fork.series(funcs); funcs is not an Array'),
       )
     })
   })

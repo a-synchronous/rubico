@@ -68,6 +68,16 @@ const arrayOf = (item, length) => Array.from({ length }, () => item)
 const promiseAll = Promise.all.bind(Promise)
 
 /**
+ * @name arrayPush
+ *
+ * @synopsis
+ * arrayPush(x Array, value any) -> undefined
+ */
+const arrayPush = (array, value) => {
+  array[array.length] = value
+}
+
+/**
  * @name possiblePromiseThen
  *
  * @synopsis
@@ -112,6 +122,46 @@ SyncThenable.prototype.then = function(func) { return func(this.value) }
 const possiblePromiseAll = values => (values.some(isPromise)
   ? promiseAll(values)
   : new SyncThenable(values))
+
+/**
+ * @synopsis
+ * <T>objectEntriesGenerator(x Object<T>) -> Iterator<[key string, T]>
+const objectEntriesGenerator = function*(x) {
+  for (const k in x) {
+    yield [k, x[k]]
+  }
+} */
+
+/**
+ * @name structEntries
+ *
+ * @synopsis
+ * <T any>structEntries(x Array<T>) -> Iterator<[index number, T]>
+ *
+ * <T any>structEntries(x Object<T>) -> Iterator<[key string, T]>
+ *
+ * <T any>structEntries(x Set<T>) -> Iterator<[T, T]>
+ *
+ * <A any, B any>structEntries(x Map<A, B>) -> Iterator<[A, B]>
+const structEntries = x => isObject(x) ? objectEntriesGenerator(x) : x.entries() */
+
+/**
+ * @name structSet
+ *
+ * @synopsis
+ * structSet(x Array, value any, index number) -> mutated Array
+ *
+ * structSet(x Object, value any, index string) -> mutated Object
+ *
+ * structSet(x Set, value any) -> mutated Set
+ *
+ * structSet(x Map, value any, index any) -> mutated Map
+const structSet = (x, value, index) => {
+  if (typeof x.set == 'function') return x.set(index, value)
+  if (typeof x.add == 'function') return x.add(value)
+  x[index] = value
+  return x
+} */
 
 /**
  * @name functionIteratorPipeAsync
@@ -196,9 +246,9 @@ const arrayReverseIterator = function*(values) {
  *   str => str + 'C',
  * ])('').then(console.log) // ABC
  *
- * @serial true
+ * @serial
  *
- * @transducing true
+ * @transducing
  */
 const pipe = funcs => (...args) => (isFunction(args[0])
   ? functionIteratorPipe(arrayReverseIterator(funcs), args)
@@ -282,7 +332,7 @@ const objectFork = (funcs, value) => {
  *   })('hello'),
  * ) // { greetings: ['hello world', 'hello mom'] }
  *
- * @concurrent true
+ * @concurrent
  */
 const fork = funcs => {
   if (isArray(funcs)) return value => arrayFork(funcs, value)
@@ -293,42 +343,99 @@ const fork = funcs => {
 /*
  * @synopsis
  * arrayForkSeries(
- *   fns Array<functions>,
+ *   funcs Array<functions>,
  *   x any,
  *   i number,
  *   y Array<any>,
  * ) -> Array<any>|Promise<Array<any>>
  *
  * @TODO iterative implementation
- */
-const arrayForkSeries = (fns, x, i, y) => {
-  if (i === fns.length) return y
+const arrayForkSeries = (funcs, x, i, y) => {
+  if (i === funcs.length) return y
+  const forkedValue = funcs[i](x)
+  return isPromise(forkedValue)
+    ? forkedValue.then(res => arrayForkSeries(funcs, x, i + 1, ))
+    : arrayForkSeries(funcs, )
   return possiblePromiseThen(
-    fns[i](x),
-    res => arrayForkSeries(fns, x, i + 1, y.concat(res)),
+    funcs[i](x),
+    res => arrayForkSeries(funcs, x, i + 1, y.concat(res)),
   )
+} */
+
+/**
+ * @name asyncArrayForkSeries
+ *
+ * @synopsis
+ * <T any>asyncArrayForkSeries(
+ *   funcIter Iterator<T=>any>,
+ *   value T,
+ *   result Array<T>,
+ * ) -> result Promise<Array<T>>
+ */
+const asyncArrayForkSeries = async (funcIter, value, result) => {
+  for (const func of funcIter) {
+    const forkedValue = await func(value)
+    arrayPush(result, forkedValue)
+  }
+  return result
 }
 
-/*
+/**
+ * @name arrayForkSeries
+ *
  * @synopsis
- * fork.series(
- *   funcs Array<function>,
- * )(x any) -> y Array|Promise<Array>
+ * <T any>arrayForkSeries(
+ *   funcIter Iterator<T=>any>,
+ *   value T,
+ *   result Array<T>,
+ * ) -> result Array<T>
  */
-fork.series = fns => {
-  if (isArray(fns)) {
-    if (fns.length < 1) {
-      throw new RangeError(
-        'fork.series(x); x is not an array of at least one function',
-      )
-    }
-    for (let i = 0; i < fns.length; i++) {
-      if (isFunction(fns[i])) continue
-      throw new TypeError(`fork.series(x); x[${i}] is not a function`)
-    }
-    return x => arrayForkSeries(fns, x, 0, [])
+const arrayForkSeries = (funcIter, value, result) => {
+  for (const func of funcIter) {
+    const forkedValue = func(value)
+    if (isPromise(forkedValue)) return forkedValue.then(res => {
+      arrayPush(result, res)
+      return asyncArrayForkSeries(funcIter, value, result)
+    })
+    arrayPush(result, forkedValue)
   }
-  throw new TypeError('fork.series(x); x invalid')
+  return result
+}
+
+/**
+ * @name fork.series
+ *
+ * @synopsis
+ * <T any>fork.series(
+ *   funcs Array<T=>any>,
+ * )(value T) -> result Promise|Array
+ *
+ * @catchphrase
+ * fork in series
+ *
+ * @description
+ * `fork.series` accepts an Array of functions `funcs` and an input `value` and returns an Array with each function of `funcs` applied with `value`. `fork.series` returns a Promise if any functions of `funcs` are asynchronous.
+ *
+ * @example
+ * const sleep = ms => () => new Promise(resolve => setTimeout(resolve, ms))
+ *
+ * fork.series([
+ *   x => console.log(x + ' world'),
+ *   sleep(1000),
+ *   x => console.log(x + ' mom'),
+ *   sleep(1000),
+ *   x => console.log(x + ' darkness'),
+ * ])('hello') // hello world
+ *             // hello mom
+ *             // hello darkness
+ *
+ * @serial true
+ */
+fork.series = funcs => {
+  if (isArray(funcs)) {
+    return value => arrayForkSeries(funcs[symbolIterator](), value, [])
+  }
+  throw new TypeError('fork.series(funcs); funcs is not an Array')
 }
 
 /*
