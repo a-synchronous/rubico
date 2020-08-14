@@ -18,4 +18,5 @@ module.exports = {
   trace: require('./trace'),
   tracef: require('./tracef'),
   unionWith: require('./unionWith'),
+  uniq: require('./uniq')
 }
