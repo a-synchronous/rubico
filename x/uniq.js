@@ -18,7 +18,7 @@ const { reduce } = require('../index');
  *
  * @example
  * console.log(
- *   uniq([1, 1, 2, 2, 3, 3, 3]),
+ *   uniq([1, 2, 2, 3]),
  * ) // [1, 2, 3]
  */
 const uniq = arr => {
