@@ -31,11 +31,12 @@ const asyncNumbers = async function*() {
   yield 1; yield 2; yield 3; yield 4; yield 5
 }
 
+/* coming soon
 for await (const number of squaredOdds(asyncNumbers)) {
   console.log(number) // 1
                       // 9
                       // 25
-}
+} */
 ```
 
 # Motivation
