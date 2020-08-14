@@ -349,7 +349,6 @@ const fork = funcs => {
  *   y Array<any>,
  * ) -> Array<any>|Promise<Array<any>>
  *
- * @TODO iterative implementation
 const arrayForkSeries = (funcs, x, i, y) => {
   if (i === funcs.length) return y
   const forkedValue = funcs[i](x)
@@ -420,16 +419,16 @@ const arrayForkSeries = (funcIter, value, result) => {
  * const sleep = ms => () => new Promise(resolve => setTimeout(resolve, ms))
  *
  * fork.series([
- *   x => console.log(x + ' world'),
+ *   greeting => console.log(greeting + ' world'),
  *   sleep(1000),
- *   x => console.log(x + ' mom'),
+ *   greeting => console.log(greeting + ' mom'),
  *   sleep(1000),
- *   x => console.log(x + ' darkness'),
+ *   greeting => console.log(greeting + ' darkness'),
  * ])('hello') // hello world
  *             // hello mom
  *             // hello darkness
  *
- * @serial true
+ * @serial
  */
 fork.series = funcs => {
   if (isArray(funcs)) {
