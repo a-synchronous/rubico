@@ -312,18 +312,16 @@ const genericFork = (funcs, value, result, setter) => {
  * @synopsis
  * <T any>fork(
  *   funcs Object<T=>any>,
- * )(x Promise<T>|T) -> y Promise|Object
+ * )(value T) -> result Promise|Object
  *
  * <T any>fork(
  *   funcs Array<T=>any>,
- * )(x Promise<T>|T) -> y Promise|Array
+ * )(value T) -> result Promise|Array
  *
  * @catchphrase duplicate and diverge flow
  *
  * @description
- * **fork** is a function composition and concurrent execution function that takes either an Array or Object of functions `funcs`, an input `value`, and returns a `result` that mirrors the shape of `funcs`. Specifically, `result` is each function of `funcs` applied with the input `value`.
- *
- * `fork(funcs)` returns a Promise when any function of `funcs` is asynchronous.
+ * **fork** takes an Array or Object of functions `funcs` and an input `value`, returning a `result` Array or Object of all applications of functions in `funcs` with the input value. `result` is a Promise if any function of `funcs` is asynchronous. **fork** executes functions of `funcs` concurrently.
  *
  * @example
  * console.log(
