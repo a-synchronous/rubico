@@ -9,21 +9,33 @@
 ```javascript
 import { pipe, map, filter } from 'rubico'
 
-const isOdd = x => x % 2 === 1
+const isOdd = number => number % 2 === 1
 
-const square = x => x ** 2
+const square = number => number ** 2
 
-pipe([
+const squaredOdds = pipe([
   filter(isOdd),
   map(square),
-])([1, 2, 3, 4, 5]) // [1, 9, 25]
+])
 
-const asyncSquare = async x => x ** 2
+console.log(
+  squaredOdds([1, 2, 3, 4, 5])
+) // [1, 9, 25]
 
-pipe([
-  filter(isOdd),
-  map(asyncSquare),
-])([1, 2, 3, 4, 5]) // Promise { [1, 9, 25] }
+console.log(
+  [1, 2, 3, 4, 5].reduce(
+    squaredOdds((a, b) => a + b), 0)
+) // 35
+
+const asyncNumbers = async function*() {
+  yield 1; yield 2; yield 3; yield 4; yield 5
+}
+
+for await (const number of squaredOdds(asyncNumbers)) {
+  console.log(number) // 1
+                      // 9
+                      // 25
+}
 ```
 
 # Motivation
