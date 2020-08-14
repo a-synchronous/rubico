@@ -340,63 +340,45 @@ const fork = funcs => {
   throw new TypeError(`fork(funcs); invalid funcs ${funcs}`)
 }
 
-/*
- * @synopsis
- * arrayForkSeries(
- *   funcs Array<functions>,
- *   x any,
- *   i number,
- *   y Array<any>,
- * ) -> Array<any>|Promise<Array<any>>
- *
-const arrayForkSeries = (funcs, x, i, y) => {
-  if (i === funcs.length) return y
-  const forkedValue = funcs[i](x)
-  return isPromise(forkedValue)
-    ? forkedValue.then(res => arrayForkSeries(funcs, x, i + 1, ))
-    : arrayForkSeries(funcs, )
-  return possiblePromiseThen(
-    funcs[i](x),
-    res => arrayForkSeries(funcs, x, i + 1, y.concat(res)),
-  )
-} */
-
 /**
- * @name asyncArrayForkSeries
+ * @name asyncGenericForkSeries
  *
  * @synopsis
- * <T any>asyncArrayForkSeries(
+ * <T any>asyncGenericForkSeries(
  *   funcIter Iterator<T=>any>,
  *   value T,
- *   result Array<T>,
- * ) -> result Promise<Array<T>>
+ *   result <T>,
+ *   setter (<T>, T)=>()
+ * ) -> result Promise<<T>>
+ *
+ * @NOTE <T> means "anything of T"
  */
-const asyncArrayForkSeries = async (funcIter, value, result) => {
+const asyncGenericForkSeries = async (funcIter, value, result, setter) => {
   for (const func of funcIter) {
     const forkedValue = await func(value)
-    arrayPush(result, forkedValue)
+    setter(result, forkedValue)
   }
   return result
 }
 
 /**
- * @name arrayForkSeries
+ * @name genericForkSeries
  *
  * @synopsis
- * <T any>arrayForkSeries(
+ * <T any>genericForkSeries(
  *   funcIter Iterator<T=>any>,
  *   value T,
- *   result Array<T>,
- * ) -> result Array<T>
+ *   result <T>,
+ * ) -> result <T>
  */
-const arrayForkSeries = (funcIter, value, result) => {
+const genericForkSeries = (funcIter, value, result, setter) => {
   for (const func of funcIter) {
     const forkedValue = func(value)
     if (isPromise(forkedValue)) return forkedValue.then(res => {
-      arrayPush(result, res)
-      return asyncArrayForkSeries(funcIter, value, result)
+      setter(result, res)
+      return asyncGenericForkSeries(funcIter, value, result, setter)
     })
-    arrayPush(result, forkedValue)
+    setter(result, forkedValue)
   }
   return result
 }
@@ -406,7 +388,7 @@ const arrayForkSeries = (funcIter, value, result) => {
  *
  * @synopsis
  * <T any>fork.series(
- *   funcs Array<T=>any>,
+ *   funcs Iterable<T=>any>,
  * )(value T) -> result Promise|Array
  *
  * @catchphrase
@@ -430,20 +412,16 @@ const arrayForkSeries = (funcIter, value, result) => {
  *
  * @serial
  */
-fork.series = funcs => {
-  if (isArray(funcs)) {
-    return value => arrayForkSeries(funcs[symbolIterator](), value, [])
-  }
-  throw new TypeError('fork.series(funcs); funcs is not an Array')
-}
+fork.series = funcs => value => (
+  genericForkSeries(funcs[symbolIterator](), value, [], arrayPush))
 
 /**
  * @name assign
  *
  * @synopsis
- * <T Object>assign(
- *   funcs Object<T=>any>,
- * )(value T) -> result Promise|Object
+ * <T any>assign(
+ *   funcs Object<Object<T>=>any>,
+ * )(value Object<T>) -> result Promise|Object
  *
  * @catchphrase
  * fork, then merge results
@@ -493,13 +471,38 @@ const tap = func => value => {
   return isPromise(returned) ? returned.then(() => value) : value
 }
 
-/*
- * @synopsis
- * tap.if(cond function, f function)(x any) -> Promise|any
+/**
+ * @name tap.if
  *
- * @TODO https://github.com/a-synchronous/rubico/issues/100
+ * @synopsis
+ * <T any>tap.if(
+ *   cond T=>boolean,
+ *   func T=>any,
+ * )(value T) -> result Promise|T
+ *
+ * @catchphrase
+ * Conditional tap
+ *
+ * @description
+ * **tap.if** takes a condition `cond`, a function `func`, and an input `value`, returning the `result` as the unchanged `value`. If `cond` applied with `value` is falsy, `func` is not called; otherwise, `func` is called with `value`. `result` is a Promise if either `func` or `cond` is asynchronous.
+ *
+ * @example
+ * const isOdd = number => number % 2 == 1
+ *
+ * pipe([
+ *   tap.if(isOdd, number => {
+ *     console.log('odd', number)
+ *   }),
+ *   number => number ** 2,
+ *   tap.if(isOdd, number => {
+ *     console.log('squared odd', number)
+ *   }),
+ * ])(3) // odd 3
+ *       // squared odd 9
+ *
+ * @TODO
  */
-tap.if = (cond, f) => {}
+tap.if = (cond, func) => {}
 
 /*
  * @synopsis

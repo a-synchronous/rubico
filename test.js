@@ -292,8 +292,8 @@ describe('rubico', () => {
     })
     it('throws TypeError for non array functions', async () => {
       assert.throws(
-        () => fork.series({}),
-        new TypeError('fork.series(funcs); funcs is not an Array'),
+        () => fork.series({})(),
+        new TypeError('funcs[symbolIterator] is not a function'),
       )
     })
   })
@@ -359,9 +359,9 @@ describe('rubico', () => {
       ade(oddNumbers, [1, 3, 5])
     })
     xit('[async] tap.if(condition, f); conditional tap; only calls fn on truthy condition')
-    xit('throws TypeError on tap.if(nonFunction, f)')
-    xit('throws TypeError on tap.if(condition, nonFunction)')
-    xit('handles errors thrown from condition of tap.if(condition, f)')
+    xit('throws TypeError on tap.if(nonFunction, f)()')
+    xit('throws TypeError on tap.if(condition, nonFunction)()')
+    xit('handles errors thrown from condition of tap.if(condition, f)()')
     xit('handles errors thrown from f of tap.if(condition, f)')
   })
 
