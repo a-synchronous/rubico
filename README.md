@@ -19,12 +19,13 @@ const squaredOdds = pipe([
 ])
 
 console.log(
-  squaredOdds([1, 2, 3, 4, 5])
+  squaredOdds([1, 2, 3, 4, 5]),
 ) // [1, 9, 25]
 
+const add = (a, b) => a + b
+
 console.log(
-  [1, 2, 3, 4, 5].reduce(
-    squaredOdds((a, b) => a + b), 0)
+  [1, 2, 3, 4, 5].reduce(squaredOdds(add), 0),
 ) // 35
 
 const asyncNumbers = async function*() {
