@@ -21,23 +21,6 @@ const squaredOdds = pipe([
 console.log(
   squaredOdds([1, 2, 3, 4, 5]),
 ) // [1, 9, 25]
-
-const add = (a, b) => a + b
-
-console.log(
-  [1, 2, 3, 4, 5].reduce(squaredOdds(add), 0),
-) // 35
-
-const asyncNumbers = async function*() {
-  yield 1; yield 2; yield 3; yield 4; yield 5
-}
-
-/* coming soon
-for await (const number of squaredOdds(asyncNumbers)) {
-  console.log(number) // 1
-                      // 9
-                      // 25
-} */
 ```
 
 # Motivation
