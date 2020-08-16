@@ -418,7 +418,7 @@ const objectFork = (funcs, value) => {
  * @catchphrase duplicate and diverge flow
  *
  * @description
- * **fork** takes an Array or Object of functions `funcs` and an input `value`, returning a `result` Array or Object of all applications of functions in `funcs` with the input value. `result` is a Promise if any function of `funcs` is asynchronous. **fork** executes functions of `funcs` concurrently.
+ * **fork** takes an Array or Object of functions `funcs` and an input `value` and returns a `result` Array or Object of all evaluations of functions in `funcs` with the input `value`. `result` is a Promise if any function of `funcs` is asynchronous. **fork** executes all functions of `funcs` concurrently.
  *
  * @example
  * console.log(
@@ -432,9 +432,9 @@ const objectFork = (funcs, value) => {
  *
  * @concurrent
  */
-const fork = funcs => isArray(funcs)
-  ? value => arrayFork(funcs, value)
-  : value => objectFork(funcs, value)
+const fork = funcs => function forkFuncs(value) {
+  return isArray(funcs) ? arrayFork(funcs, value) : objectFork(funcs, value)
+}
 
 /**
  * @name asyncGenericForkSeries
