@@ -118,11 +118,22 @@ const constructedNumber = Number(1)
  * @benchmark
  * _.isObject({}): 1e+7: 13.329ms
  * Instance.isObject({}): 1e+7: 13.757ms
+ *
+ * isObject1({}): 1e+8: 100.753ms
+ * isObject2({}): 1e+8: 100.645ms
  */
+
+const isObject1 = value => typeof value != null && value.constructor == Object
+
+const isObject2 = value => typeof value != null && Object(value) === value
 
 // timeInLoop('_.isObject({})', 1e7, () => { _.isObject({}) })
 
 // timeInLoop('Instance.isObject({})', 1e7, () => { Instance.isObject({}) })
+
+// timeInLoop('isObject1({})', 1e8, () => { isObject1({}) })
+
+// timeInLoop('isObject2({})', 1e8, () => { isObject2({}) })
 
 /*
  * @name Instance.isSet
