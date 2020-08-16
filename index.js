@@ -9,7 +9,7 @@
   if (typeof module == 'object') (module.exports = exported) // CommonJS
   else if (typeof define == 'function') define(() => exported) // AMD
   else (root.rubico = exported) // Browser
-}(this || self, function () { 'use strict'
+}(this || self, (function () { 'use strict'
 
 /**
  * design principles
@@ -1986,4 +1986,4 @@ return {
   get, pick, omit,
 }
 
-}()))
+})()))
