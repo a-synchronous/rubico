@@ -74,52 +74,6 @@ const arrayOf = (item, length) => Array.from({ length }, () => item)
 const promiseAll = Promise.all.bind(Promise)
 
 /**
- * @name SpecScript-Specification
- *
- * @motivation
- * SpecScript is an attempt to unify specification, documentation, and testing workflows for software written in JavaScript.
- *
- * @introduction
- * SpecScript is a programming language that specifies, documents, and tests JavaScript code.
- *
- * @example
- * // a comment
- *
- * // variable declarations
- * myNumberVar number // variable name on the left, type on the right
- * myStringVar string // all results of the JavaScript `typeof` operator
- * myFuncVar function // are lowercase global types in SpecScript
- * myObjectVar object
- * myBooleanVar boolean
- * myBigIntVar bigint
- * myArrayVar Array // all JavaScript global type constructors
- * myObjectVar Object // are SpecScript global types as well
- * myPromiseVar Promise
- *
- * { value: any, done: boolean } // object literal for an object with properties
- *                               // any `value` and boolean `done`
- *
- * [number, number, number] // array literal for an Array of three numbers
- *
- * Array // an Array of anything
- *
- * Array<number> // an Array of numbers
- *
- * -> // the `is` operator
- *
- * { name: string, age: number } -> Person
- * // the Person type is an Object with parameters `name` and `age`
- *
- * <T Person>Array<T>
- * // Array of T; T is a Person
- *
- * <T any><T> // generic of T
- *
- * <A any, B any>(A, B)=>(C any)
- * // a function type that takes A and B and returns any value C
- */
-
-/**
  * @name arrayPush
  *
  * @synopsis
