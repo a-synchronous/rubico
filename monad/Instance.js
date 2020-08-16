@@ -221,7 +221,7 @@ Instance.isIterable = function isIterable(value) {
  * @name Instance.prototype.isIterable
  *
  * @synopsis
- * new Instance(x any).isIterable() -> boolean
+ * new Instance(value any).isIterable() -> boolean
  */
 Instance.prototype.isIterable = function isIterable() {
   const value = this.value
@@ -234,19 +234,21 @@ const symbolAsyncIterator = Symbol.asyncIterator
  * @name Instance.isAsyncIterable
  *
  * @synopsis
- * Instance.isAsyncIterable(x any) -> boolean
+ * Instance.isAsyncIterable(value any) -> boolean
  */
-Instance.isAsyncIterable = x => x != null && Boolean(x[symbolAsyncIterator])
+Instance.isAsyncIterable = function isAsyncIterable(value) {
+  return value != null && typeof value[symbolAsyncIterator] == 'function'
+}
 
 /*
  * @name Instance.prototype.isAsyncIterable
  *
  * @synopsis
- * new Instance(x any).isAsyncIterable() -> boolean
+ * new Instance(value any).isAsyncIterable() -> boolean
  */
 Instance.prototype.isAsyncIterable = function() {
-  const x = this.value
-  return x != null && Boolean(x[symbolAsyncIterator])
+  const value = this.value
+  return value != null && typeof value[symbolAsyncIterator] == 'function'
 }
 
 /*
