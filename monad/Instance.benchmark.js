@@ -119,13 +119,13 @@ const constructedNumber = Number(1)
  * _.isObject({}): 1e+7: 13.329ms
  * Instance.isObject({}): 1e+7: 13.757ms
  *
- * isObject1({}): 1e+8: 100.753ms
- * isObject2({}): 1e+8: 100.645ms
+ * isObject1({}): 1e+8: 100.769ms
+ * isObject2({}): 1e+8: 100.656ms
  */
 
-const isObject1 = value => typeof value != null && value.constructor == Object
+const isObject1 = value => value != null && value.constructor == Object
 
-const isObject2 = value => typeof value != null && Object(value) === value
+const isObject2 = value => value != null && Object(value) === value
 
 // timeInLoop('_.isObject({})', 1e7, () => { _.isObject({}) })
 
