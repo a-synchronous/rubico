@@ -293,7 +293,7 @@ const arrayReverseIterator = function*(values) {
  * define flow: chain functions together
  *
  * @description
- * **pipe** takes an Array of functions `funcs` and either a `reducer` function or a variadic number of arguments `...args` and returns either a Reducer function or any value `result`. When the first argument supplied to the anonymous function `pipe(funcs)` is a function, `pipe` assumes it is being used in transducer position, and iterates through `funcs` in reverse. This is due to an implementation detail in transducers, and is valuable because it enables a certain API to use transducers with the library
+ * **pipe** takes an Array of functions `funcs` and either a `reducer` function or a variadic number of arguments `...args` and returns either a Reducer function or any value `result`. When any functions of `funcs` are asynchronous, `pipe(funcs)` returns a Promise. When the first argument supplied to the anonymous function `pipe(funcs)` is a function, `pipe` assumes it is being used in transducer position, and iterates through `funcs` in reverse. This is due to an implementation detail in transducers, and enables a certain API to use transducers with the library
  *
  * ```javascript
  * const isOdd = number => number % 2 == 1
@@ -317,7 +317,7 @@ const arrayReverseIterator = function*(values) {
  *
  * The above depicts the rubico transducer API in action, enabled by **pipe**, **map**, and **filter**. `squaredOdds` is a transduced reducer function, and acts as a reducer that takes a given item of a generic collection being reduced, skips that item if it is even, applies the function `square` to the item, and concatenates the item to the accumulated result.
  *
- * In addition to reducer functions like `concat`, `squaredOdds` is capable of acting on 
+ * In addition to reducer functions like `concat`, `squaredOdds` is capable of acting on any value classified as a **Mux** type, defined by
  * ```
  * Instance -> "any value not undefined or null (not nil)" -> "value => value != null"
  *
@@ -334,12 +334,6 @@ const arrayReverseIterator = function*(values) {
  *
  * <T any>Sequence<Sequence<T>|T>|T -> Mux
  * ```
- *
- * **pipe** is a function composition and serial execution function that takes an Array of functions `funcs`, arguments `args`, and returns the `result` of passing `args` to the chain of functions `funcs`. The arguments `args` are supplied to the first function of `funcs`, the result of that call is supplied as a single argument to the next function, and so on until all functions of `funcs` have been called. The final return value of a pipe is the return value of the last function in a chain.
- *
- * When `pipe(funcs)` is passed a `reducer` function, the returned result is another reducer function `composedReducer` that would perform the pipeline operation described by `funcs` on every element of a given collection when used with [reduce](https://doc.rubico.land/#reduce) or the `.reduce` method of an Array. For more information on this behavior, please see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md)
- *
- * `pipe(funcs)(...)` returns a Promise when any function of `funcs` is asynchronous.
  *
  * @example
  * console.log(
