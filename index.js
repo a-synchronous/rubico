@@ -23,45 +23,49 @@
  * avoid variadic functions; use lists
  */
 
-const isDefined = x => x != null
-
-const isUndefined = x => typeof x == 'undefined'
-
-const isNull = x => x === null
-
 const symbolIterator = Symbol.iterator
-
-const isIterable = x => x != null && Boolean(x[symbolIterator])
 
 const symbolAsyncIterator = Symbol.asyncIterator
 
-const isAsyncIterable = x => x != null && Boolean(x[symbolAsyncIterator])
+const isDefined = value => value != null
 
-const isWritable = x => x != null && typeof x.write == 'function'
+const isUndefined = value => typeof value == 'undefined'
 
-const isFunction = x => typeof x == 'function'
+const isNull = value => value === null
+
+const isIterable = value => value != null
+  && typeof value[symbolIterator] == 'function'
+
+const isAsyncIterable = value => value != null
+  && typeof value[symbolAsyncIterator] == 'function'
+
+const isWritable = value => value != null && typeof value.write == 'function'
+
+const isFunction = value => typeof value == 'function'
 
 const isArray = Array.isArray
 
-const isObject = x => x != null && x.constructor == Object
+const isObject = value => value != null && value.constructor == Object
 
-const isSet = x => x != null && x.constructor == Set
+const isSet = value => value != null && value.constructor == Set
 
-const isMap = x => x != null && x.constructor == Map
+const isMap = value => value != null && value.constructor == Map
 
 const isTypedArray = ArrayBuffer.isView
 
-const isNumber = x => (
-  typeof x == 'number' || (x != null && x.constructor == Number))
+const isNumber = function (value) {
+  return typeof value == 'number'
+    || (value != null && value.constructor == Number)
+}
 
 const isNaN = Number.isNaN
 
 const isBigInt = x => typeof x == 'bigint'
 
-const isString = x => (
-  typeof x == 'string' || (x != null && x.constructor == String))
+const isString = value => typeof value == 'string'
+  || (value != null && value.constructor == String)
 
-const isPromise = x => x != null && typeof x.then == 'function'
+const isPromise = value => value != null && typeof value.then == 'function'
 
 const range = (start, end) => Array.from({ length: end - start }, (x, i) => i + start)
 
@@ -270,16 +274,13 @@ const arrayReverseIterator = function*(values) {
  * @name pipe
  *
  * @synopsis
- * <T any>(<T>, T)=><T> -> Reducer<T> -> `
- * a Reducer of any value T is a function that takes
- * a generic of T and a value T and returns a generic of T`
+ * <T any>(<T>, T)=><T> -> Reducer<T> // <T> means "generic of T"
+ *
+ * <T any>Reducer<T>=>Reducer<T> -> Transducer<T>
+ * // a Transducer takes a Reducer and returns another Reducer
  *
  * <T any>pipe(
- *   funcs Array<Reducer<T>>,
- * )(reducer Reducer<T>) -> result Reducer<T>
- *
- * <T any>pipe(
- *   funcs Array<Reducer<T>>,
+ *   funcs Array<Transducer<T>>,
  * )(reducer Reducer<T>) -> result Reducer<T>
  *
  * <T any>pipe(
@@ -319,15 +320,13 @@ const arrayReverseIterator = function*(values) {
  *
  * In addition to reducer functions like `concat`, `squaredOdds` is capable of acting on any value classified as a **Mux** type, defined by
  * ```
- * Instance // any value not undefined or null (not nil) -> "value => value != null"
+ * Iterable // any value implementing Symbol.iterator
  *
- * Iterable // any Instance implementing Symbol.iterator
+ * AsyncIterable // any value implementing Symbol.asyncIterator
  *
- * AsyncIterable // any Instance implementing Symbol.asyncIterator
+ * GeneratorFunction // function* () {...}
  *
- * GeneratorFunction // function*(){...}
- *
- * AsyncGeneratorFunction // async function*(){...}
+ * AsyncGeneratorFunction // async function* () {...}
  *
  * Iterable|GeneratorFunction
  *   |AsyncIterable|AsyncGeneratorFunction -> Sequence
@@ -349,6 +348,7 @@ const arrayReverseIterator = function*(values) {
  */
 const pipe = funcs => function pipeOfFuncs(args0, ...args) {
   if (isFunction(args0)) {
+    // if (isMux(args0))
     return functionIteratorPipe(arrayReverseIterator(funcs), [args0, ...args])
   }
   return functionIteratorPipe(funcs[symbolIterator](), [args0, ...args])
