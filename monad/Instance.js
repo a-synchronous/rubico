@@ -211,9 +211,11 @@ Instance.prototype.isMap = function() {
  * @name Instance.isIterable
  *
  * @synopsis
- * Instance.isIterable(x any) -> boolean
+ * Instance.isIterable(value any) -> boolean
  */
-Instance.isIterable = x => x != null && Boolean(x[symbolIterator])
+Instance.isIterable = function isIterable(value) {
+  return value != null && typeof value[symbolIterator] == 'function'
+}
 
 /*
  * @name Instance.prototype.isIterable
@@ -221,9 +223,9 @@ Instance.isIterable = x => x != null && Boolean(x[symbolIterator])
  * @synopsis
  * new Instance(x any).isIterable() -> boolean
  */
-Instance.prototype.isIterable = function() {
-  const x = this.value
-  return x != null && Boolean(x[symbolIterator])
+Instance.prototype.isIterable = function isIterable() {
+  const value = this.value
+  return value != null && typeof value[symbolIterator] == 'function'
 }
 
 const symbolAsyncIterator = Symbol.asyncIterator

@@ -182,6 +182,7 @@ const constructedNumber = Number(1)
  *
  * isIterable1([]): 1e+8: 101.399ms
  * isIterable2([]): 1e+8: 101.262ms
+ * isIterable3([]): 1e+8: 100.874ms
  *
  * @remarks
  * Dereferencing Symbol.iterator vs symbolIterator is slower in some cases
@@ -192,6 +193,8 @@ const symbolIterator = Symbol.iterator
 const isIterable1 = value => value != null && Boolean(value[symbolIterator])
 
 const isIterable2 = value => value != null && symbolIterator in value
+
+const isIterable3 = value => value != null && typeof value[symbolIterator] == 'function'
 
 // timeInLoop('Boolean([][Symbol.iterator])', 1e7, () => { Boolean([][Symbol.iterator]) })
 
@@ -206,6 +209,8 @@ const isIterable2 = value => value != null && symbolIterator in value
 // timeInLoop('isIterable1([])', 1e8, () => isIterable1([]))
 
 // timeInLoop('isIterable2([])', 1e8, () => isIterable2([]))
+
+// timeInLoop('isIterable3([])', 1e8, () => isIterable3([]))
 
 /*
  * @name Instance.isAsyncIterable
@@ -222,9 +227,19 @@ const isIterable2 = value => value != null && symbolIterator in value
  * Instance.isAsyncIterable([]): 1e+7: 13.061ms Boolean(x[symbolAsyncIterator])
  * Instance.isAsyncIterable([]): 1e+7: 15.02ms !!(x[Symbol.asyncIterator])
  * Instance.isAsyncIterable([]): 1e+7: 15.205ms !!(x[symbolAsyncIterator])
+ *
+ * isAsyncIterable1([]): 1e+8: 101.159ms
+ * isAsyncIterable2([]): 1e+8: 101.132ms
+ * isAsyncIterable3([]): 1e+8: 100.894ms
  */
 
 const symbolAsyncIterator = Symbol.asyncIterator
+
+const isAsyncIterable1 = value => value != null && Boolean(value[symbolAsyncIterator])
+
+const isAsyncIterable2 = value => value != null && symbolAsyncIterator in value
+
+const isAsyncIterable3 = value => value != null && typeof value[symbolAsyncIterator] == 'function'
 
 // timeInLoop('Boolean([][Symbol.asyncIterator])', 1e7, () => { Boolean([][Symbol.asyncIterator]) })
 
@@ -235,6 +250,12 @@ const symbolAsyncIterator = Symbol.asyncIterator
 // timeInLoop('!!([][symbolAsyncIterator])', 1e7, () => { !!([][symbolAsyncIterator]) })
 
 // timeInLoop('Instance.isAsyncIterable([])', 1e7, () => Instance.isAsyncIterable([]))
+
+// timeInLoop('isAsyncIterable1([])', 1e8, () => isAsyncIterable1([]))
+
+// timeInLoop('isAsyncIterable2([])', 1e8, () => isAsyncIterable2([]))
+
+// timeInLoop('isAsyncIterable3([])', 1e8, () => isAsyncIterable3([]))
 
 /*
  * @name Instance.isFunction
