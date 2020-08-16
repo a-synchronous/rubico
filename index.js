@@ -319,15 +319,15 @@ const arrayReverseIterator = function*(values) {
  *
  * In addition to reducer functions like `concat`, `squaredOdds` is capable of acting on any value classified as a **Mux** type, defined by
  * ```
- * Instance -> "any value not undefined or null (not nil)" -> "value => value != null"
+ * Instance // any value not undefined or null (not nil) -> "value => value != null"
  *
- * Iterable -> "any Instance implementing Symbol.iterator"
+ * Iterable // any Instance implementing Symbol.iterator
  *
- * AsyncIterable -> "any Instance implementing Symbol.asyncIterator"
+ * AsyncIterable // any Instance implementing Symbol.asyncIterator
  *
- * GeneratorFunction -> "function*(){...}"
+ * GeneratorFunction // function*(){...}
  *
- * AsyncGeneratorFunction -> "async function*(){...}"
+ * AsyncGeneratorFunction // async function*(){...}
  *
  * Iterable|GeneratorFunction
  *   |AsyncIterable|AsyncGeneratorFunction -> Sequence
@@ -347,9 +347,11 @@ const arrayReverseIterator = function*(values) {
  *
  * @transducing
  */
-const pipe = funcs => (args0, ...args) => (isFunction(args0)
-  ? functionIteratorPipe(arrayReverseIterator(funcs), [args0, ...args])
-  : functionIteratorPipe(funcs[symbolIterator](), [args0, ...args]))
+const pipe = funcs => function pipeOfFuncs(args0, ...args) {
+  if (isFunction(args0)) return functionIteratorPipe(
+    arrayReverseIterator(funcs), [args0, ...args])
+  return functionIteratorPipe(funcs[symbolIterator](), [args0, ...args])
+}
 
 /* pipe.reduce = funcs => value => isFunction(value)
   ? funcs.reduceRight((result, func) => isPromise(result)
