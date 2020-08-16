@@ -348,8 +348,9 @@ const arrayReverseIterator = function*(values) {
  * @transducing
  */
 const pipe = funcs => function pipeOfFuncs(args0, ...args) {
-  if (isFunction(args0)) return functionIteratorPipe(
-    arrayReverseIterator(funcs), [args0, ...args])
+  if (isFunction(args0)) {
+    return functionIteratorPipe(arrayReverseIterator(funcs), [args0, ...args])
+  }
   return functionIteratorPipe(funcs[symbolIterator](), [args0, ...args])
 }
 
