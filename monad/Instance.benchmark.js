@@ -180,11 +180,18 @@ const constructedNumber = Number(1)
  * Instance.isIterable([]): 1e+7: 13.841ms - !!(x[Symbol.iterator])
  * Instance.isIterable([]): 1e+7: 14.804ms - !!(x[symbolIterator])
  *
+ * isIterable1([]): 1e+8: 101.399ms
+ * isIterable2([]): 1e+8: 101.262ms
+ *
  * @remarks
  * Dereferencing Symbol.iterator vs symbolIterator is slower in some cases
  */
 
 const symbolIterator = Symbol.iterator
+
+const isIterable1 = value => value != null && Boolean(value[symbolIterator])
+
+const isIterable2 = value => value != null && symbolIterator in value
 
 // timeInLoop('Boolean([][Symbol.iterator])', 1e7, () => { Boolean([][Symbol.iterator]) })
 
@@ -195,6 +202,10 @@ const symbolIterator = Symbol.iterator
 // timeInLoop('!!([][symbolIterator])', 1e7, () => { !!([][symbolIterator]) })
 
 // timeInLoop('Instance.isIterable([])', 1e7, () => Instance.isIterable([]))
+
+// timeInLoop('isIterable1([])', 1e8, () => isIterable1([]))
+
+// timeInLoop('isIterable2([])', 1e8, () => isIterable2([]))
 
 /*
  * @name Instance.isAsyncIterable
