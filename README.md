@@ -9,7 +9,7 @@
 ```javascript
 import { pipe, map, filter } from 'rubico'
 
-const isOdd = number => number % 2 === 1
+const isOdd = number => number % 2 == 1
 
 const square = number => number ** 2
 
