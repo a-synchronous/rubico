@@ -1,16 +1,18 @@
-/* rubico v1.5.0
+/**
+ * rubico v1.5.0
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2020 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 
-(function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
-  typeof define === 'function' && define.amd ? define(['exports'], factory) :
-  (global = global || self, factory(global.rubico = {}));
-}(this, function (exports) { 'use strict'
+(function (root, exported) {
+  if (typeof module == 'object') (module.exports = exported) // CommonJS
+  else if (typeof define == 'function') define(() => exported) // AMD
+  else (root.rubico = exported) // Browser
+}(this || self, function () { 'use strict'
 
-/* design principles
+/**
+ * design principles
  *
  * rubico is a module, not a utility library
  * functional code should not care about async
@@ -68,6 +70,52 @@ const arrayOf = (item, length) => Array.from({ length }, () => item)
 const promiseAll = Promise.all.bind(Promise)
 
 /**
+ * @name SpecScript-Specification
+ *
+ * @motivation
+ * SpecScript is an attempt to unify specification, documentation, and testing workflows for software written in JavaScript.
+ *
+ * @introduction
+ * SpecScript is a programming language that specifies, documents, and tests JavaScript code.
+ *
+ * @example
+ * // a comment
+ *
+ * // variable declarations
+ * myNumberVar number // variable name on the left, type on the right
+ * myStringVar string // all results of the JavaScript `typeof` operator
+ * myFuncVar function // are lowercase global types in SpecScript
+ * myObjectVar object
+ * myBooleanVar boolean
+ * myBigIntVar bigint
+ * myArrayVar Array // all JavaScript global type constructors
+ * myObjectVar Object // are SpecScript global types as well
+ * myPromiseVar Promise
+ *
+ * { value: any, done: boolean } // object literal for an object with properties
+ *                               // any `value` and boolean `done`
+ *
+ * [number, number, number] // array literal for an Array of three numbers
+ *
+ * Array // an Array of anything
+ *
+ * Array<number> // an Array of numbers
+ *
+ * -> // the `is` operator
+ *
+ * { name: string, age: number } -> Person
+ * // the Person type is an Object with parameters `name` and `age`
+ *
+ * <T Person>Array<T>
+ * // Array of T; T is a Person
+ *
+ * <T any><T> // generic of T
+ *
+ * <A any, B any>(A, B)=>(C any)
+ * // a function type that takes A and B and returns any value C
+ */
+
+/**
  * @name arrayPush
  *
  * @synopsis
@@ -101,7 +149,7 @@ const possiblePromiseCatch = (value, func) => (
  * @synopsis
  * new SyncThenable(value any) -> SyncThenable
  */
-const SyncThenable = function(value) { this.value = value }
+const SyncThenable = function (value) { this.value = value }
 
 /**
  * @name SyncThenable.prototype.then
@@ -109,7 +157,7 @@ const SyncThenable = function(value) { this.value = value }
  * @synopsis
  * new SyncThenable(value any).then(func function) -> any
  */
-SyncThenable.prototype.then = function(func) { return func(this.value) }
+SyncThenable.prototype.then = function (func) { return func(this.value) }
 
 /**
  * @name possiblePromiseAll
@@ -218,21 +266,75 @@ const arrayReverseIterator = function*(values) {
   }
 }
 
-/*
+/**
  * @name pipe
  *
  * @synopsis
- * pipe(
- *   funcs Array<function>,
- * )(args ...any) -> result Promise|any
+ * <T any>(<T>, T)=><T> -> Reducer<T> -> `
+ * a Reducer of any value T is a function that takes
+ * a generic of T and a value T and returns a generic of T`
  *
- * pipe(
- *   funcs Array<function>,
- * )(reducer function) -> composedReducer function
+ * <T any>pipe(
+ *   funcs Array<Reducer<T>>,
+ * )(reducer Reducer<T>) -> result Reducer<T>
  *
- * @catchphrase define flow: chain functions together
+ * <T any>pipe(
+ *   funcs Array<Reducer<T>>,
+ * )(reducer Reducer<T>) -> result Reducer<T>
+ *
+ * <T any>pipe(
+ *   funcs [
+ *     (...args)=>any,
+ *     ...(any=>any),
+ *   ],
+ * )(...args) -> result Promise|any
+ *
+ * @catchphrase
+ * define flow: chain functions together
  *
  * @description
+ * **pipe** takes an Array of functions `funcs` and either a `reducer` function or a variadic number of arguments `...args` and returns either a Reducer function or any value `result`. When the first argument supplied to the anonymous function `pipe(funcs)` is a function, `pipe` assumes it is being used in transducer position, and iterates through `funcs` in reverse. This is due to an implementation detail in transducers, and is valuable because it enables a certain API to use transducers with the library
+ *
+ * ```javascript
+ * const isOdd = number => number % 2 == 1
+ *
+ * const square = number => number ** 2
+ *
+ * const concat = (result, value) => result.concat(value)
+ *
+ * const squaredOdds = pipe([
+ *   filter(isOdd),
+ *   map(square),
+ * ])
+ *
+ * console.log(
+ *   reduce(
+ *     squaredOdds(concat),
+ *     () => [],
+ *   )([1, 2, 3, 4, 5])
+ * ) // [1, 9, 25]
+ * ```
+ *
+ * The above depicts the rubico transducer API in action, enabled by **pipe**, **map**, and **filter**. `squaredOdds` is a transduced reducer function, and acts as a reducer that takes a given item of a generic collection being reduced, skips that item if it is even, applies the function `square` to the item, and concatenates the item to the accumulated result.
+ *
+ * In addition to reducer functions like `concat`, `squaredOdds` is capable of acting on 
+ * ```
+ * Instance -> "any value not undefined or null (not nil)" -> "value => value != null"
+ *
+ * Iterable -> "any Instance implementing Symbol.iterator"
+ *
+ * AsyncIterable -> "any Instance implementing Symbol.asyncIterator"
+ *
+ * GeneratorFunction -> "function*(){...}"
+ *
+ * AsyncGeneratorFunction -> "async function*(){...}"
+ *
+ * Iterable|GeneratorFunction
+ *   |AsyncIterable|AsyncGeneratorFunction -> Sequence
+ *
+ * <T any>Sequence<Sequence<T>|T>|T -> Mux
+ * ```
+ *
  * **pipe** is a function composition and serial execution function that takes an Array of functions `funcs`, arguments `args`, and returns the `result` of passing `args` to the chain of functions `funcs`. The arguments `args` are supplied to the first function of `funcs`, the result of that call is supplied as a single argument to the next function, and so on until all functions of `funcs` have been called. The final return value of a pipe is the return value of the last function in a chain.
  *
  * When `pipe(funcs)` is passed a `reducer` function, the returned result is another reducer function `composedReducer` that would perform the pipeline operation described by `funcs` on every element of a given collection when used with [reduce](https://doc.rubico.land/#reduce) or the `.reduce` method of an Array. For more information on this behavior, please see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md)
@@ -240,19 +342,20 @@ const arrayReverseIterator = function*(values) {
  * `pipe(funcs)(...)` returns a Promise when any function of `funcs` is asynchronous.
  *
  * @example
- * pipe([
- *   str => str + 'A',
- *   async str => str + 'B',
- *   str => str + 'C',
- * ])('').then(console.log) // ABC
+ * console.log(
+ *   pipe([
+ *     number => [number, number ** 2],
+ *     ([number, squared]) => `The square of ${number} is ${squared}`,
+ *   ])(3),
+ * ) // The square of 3 is 9
  *
  * @serial
  *
  * @transducing
  */
-const pipe = funcs => (...args) => (isFunction(args[0])
-  ? functionIteratorPipe(arrayReverseIterator(funcs), args)
-  : functionIteratorPipe(funcs[symbolIterator](), args))
+const pipe = funcs => (args0, ...args) => (isFunction(args0)
+  ? functionIteratorPipe(arrayReverseIterator(funcs), [args0, ...args])
+  : functionIteratorPipe(funcs[symbolIterator](), [args0, ...args]))
 
 /* pipe.reduce = funcs => value => isFunction(value)
   ? funcs.reduceRight((result, func) => isPromise(result)
@@ -269,7 +372,7 @@ const pipe = funcs => (...args) => (isFunction(args[0])
  * <T any>arrayFork(
  *   funcs Array<T=>any>,
  *   value T,
- * ) -> Promise<Array>|Array
+ * ) -> Promise|Array
  */
 const arrayFork = (funcs, value) => {
   let isAsync = false
@@ -288,7 +391,7 @@ const arrayFork = (funcs, value) => {
  * <T any>objectFork(
  *   funcs Object<T=>any>,
  *   value T,
- * ) -> Promise<Object>|Object
+ * ) -> Promise|Object
  */
 const objectFork = (funcs, value) => {
   const result = {}, promises = []
@@ -301,9 +404,6 @@ const objectFork = (funcs, value) => {
     }
   }
   return promises.length > 0 ? promiseAll(promises).then(() => result) : result
-}
-
-const genericFork = (funcs, value, result, setter) => {
 }
 
 /**
@@ -1835,7 +1935,7 @@ const eq = (f, g) => {
  * @synopsis
  * TODO
  */
-const gt = function(f, g) {
+const gt = function (f, g) {
   if (isFunction(f) && isFunction(g)) return x => (
     possiblePromiseAll([f(x), g(x)]).then(([fx, gx]) => fx > gx))
   if (isFunction(f)) return x => possiblePromiseThen(f(x), fx => fx > g)
@@ -1848,7 +1948,7 @@ const gt = function(f, g) {
  * @synopsis
  * TODO
  */
-const lt = function(f, g) {
+const lt = function (f, g) {
   if (isFunction(f) && isFunction(g)) return x => (
     possiblePromiseAll([f(x), g(x)]).then(([fx, gx]) => fx < gx))
   if (isFunction(f)) return x => possiblePromiseThen(f(x), fx => fx < g)
@@ -1861,7 +1961,7 @@ const lt = function(f, g) {
  * @synopsis
  * TODO
  */
-const gte = function(f, g) {
+const gte = function (f, g) {
   if (isFunction(f) && isFunction(g)) return x => (
     possiblePromiseAll([f(x), g(x)]).then(([fx, gx]) => fx >= gx))
   if (isFunction(f)) return x => possiblePromiseThen(f(x), fx => fx >= g)
@@ -1874,7 +1974,7 @@ const gte = function(f, g) {
  * @synopsis
  * TODO
  */
-const lte = function(f, g) {
+const lte = function (f, g) {
   if (isFunction(f) && isFunction(g)) return x => (
     possiblePromiseAll([f(x), g(x)]).then(([fx, gx]) => fx <= gx))
   if (isFunction(f)) return x => possiblePromiseThen(f(x), fx => fx <= g)
@@ -1883,29 +1983,13 @@ const lte = function(f, g) {
   return () => h
 }
 
-exports.pipe = pipe
-exports.fork = fork
-exports.assign = assign
-exports.tap = tap
-exports.tryCatch = tryCatch
-exports.switchCase = switchCase
-exports.map = map
-exports.flatMap = flatMap
-exports.filter = filter
-exports.reduce = reduce
-exports.transform = transform
-exports.get = get
-exports.pick = pick
-exports.omit = omit
-exports.any = any
-exports.all = all
-exports.and = and
-exports.or = or
-exports.not = not
-exports.eq = eq
-exports.gt = gt
-exports.lt = lt
-exports.gte = gte
-exports.lte = lte
+return {
+  pipe, fork, assign,
+  tap, tryCatch, switchCase,
+  map, filter, reduce, transform, flatMap,
+  any, all, and, or, not,
+  eq, gt, lt, gte, lte,
+  get, pick, omit,
+}
 
-}))
+}()))
