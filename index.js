@@ -227,74 +227,140 @@ const arrayReverseIterator = function*(values) {
 /**
  * @name pipe
  *
- * @synopsis
- * <T any>(<T>, T)=><T> -> Reducer<T> // <T> means "generic of T"
- *
- * <T any>Reducer<T>=>Reducer<T> -> Transducer<T>
- * // a Transducer takes a Reducer and returns another Reducer
- *
- * <T any>pipe(
- *   funcs Array<Transducer<T>>,
- * )(reducer Reducer<T>) -> result Reducer<T>
- *
- * <T any>pipe(
- *   funcs [
- *     (...args)=>any,
- *     ...(any=>any),
- *   ],
- * )(...args) -> result Promise|any
- *
  * @catchphrase
  * define flow: chain functions together
  *
+ * @synopsis
+ * pipe(funcs Array<function>)(value any) -> result any
+ *
+ * any -> T
+ *
+ * (<T>, T)=>Promise|<T> -> Reducer<T>
+ *
+ * Reducer<T>=>Reducer<T> -> Transducer<T>
+ *
+ * pipe(
+ *   funcs Array<Transducer<T>>,
+ * )(reducer Reducer<T>) -> compositeReducer Reducer<T>
+ *
+ * Iterable<T>|AsyncIterable<T>
+ *   |GeneratorFunction<T>|AsyncGeneratorFunction<T> -> Sequence<T>
+ *
+ * Sequence<T> -> SequenceT
+ *
+ * pipe(
+ *   funcs Array<Sequence=>Sequence>,
+ * )(value Sequence) -> result Iterator|AsyncIterator
+ *
  * @description
- * **pipe** takes an Array of functions `funcs` and either a `reducer` function or a variadic number of arguments `...args` and returns either a Reducer function or any value `result`. When any functions of `funcs` are asynchronous, `pipe(funcs)` returns a Promise. When the first argument supplied to the anonymous function `pipe(funcs)` is a function, `pipe` assumes it is being used in transducer position, and iterates through `funcs` in reverse. This is due to an implementation detail in transducers, and enables a certain API to use transducers with the library
+ * **pipe** accepts an array of functions `funcs` and any value `value` and returns any value `result`. A pipe of functions acts as a chain of those functions; each function passes its return value as a single argument to the next. The result of the evaluation of a pipe of functions with an input value is the result of the last of the functions in the chain.
  *
  * ```javascript
+ * pipe([
+ *   number => number + 1,
+ *   number => number + 2,
+ *   number => number + 3,
+ * ])(5) // 11
+ * ```
+ *
+ * A pipe of functions behaves differently depending on the supplied type. When the first argument supplied to a pipe of functions is a binary function, **pipe** assumes it is being used in transducer position, and iterates through `funcs` in reverse. This is due to an implementation detail in transducers, and enables the library Transducers API.
+ *
+ * ```
+ * any -> T
+ *
+ * (<T>, T)=>Promise|<T> -> Reducer<T> // the standalone <T> means "generic of T"
+ *
+ * Reducer<T>=>Reducer<T> -> Transducer<T>
+ * ```
+ *
+ * A Reducer is a function that takes a generic of any type T, a given instance of type T, and returns possibly a Promise of a generic of type T, that is Promise<<T>>|<T>, abbreviated above as Promise|<T>. A Transducer is a function that takes a Reducer and returns another Reducer.
+ *
+ * ```
+ * any -> T
+ *
+ * pipe(
+ *   funcs Array<Transducer<T>>,
+ * )(reducer Reducer<T>) -> compositeReducer Reducer<T>
+ * ```
+ *
+ * **pipe** supports Transducer composition. When passed a reducer function, a pipe of functions assumes it is being used in transducer position and returns a new Reducer `compositeReducer` that applies the Transducers of `funcs` in series, ending the chain with the last supplied Reducer `reducer`. `compositeReducer` must be used in transducer position in conjunction with **reduce** or any implementation of reduce to have a transducing effect.
+ *
+ * ```javascript
+ * import { pipe, map, filter } from 'rubico'
+ *
  * const isOdd = number => number % 2 == 1
  *
  * const square = number => number ** 2
  *
- * const concat = (result, value) => result.concat(value)
- *
  * const squaredOdds = pipe([
  *   filter(isOdd),
  *   map(square),
- * ])
+ * ]) // squaredOdds is `compositeReducer`
  *
- * console.log(
- *   reduce(
- *     squaredOdds(concat),
- *     () => [],
- *   )([1, 2, 3, 4, 5])
- * ) // [1, 9, 25]
+ * const add = (a, b) => a + b
+ *
+ * [1, 2, 3, 4, 5].reduce(
+ *   squaredOdds(add), // squaredOdds is in transducer position
+ *   0,
+ * ) // 1 + 9 + 25 -> 35
+ *
+ * squaredOdds([1, 2, 3, 4, 5]) // [1, 9, 25]
+ * // squaredOdds is not in transducer position
  * ```
  *
- * The above depicts the rubico transducer API in action, enabled by **pipe**, **map**, and **filter**. `squaredOdds` is a transduced reducer function, and acts as a reducer that takes a given item of a generic collection being reduced, skips that item if it is even, applies the function `square` to the item, and concatenates the item to the accumulated result.
+ * In addition to transducers, a pipe of functions can express a chain of operations on Sequences.
  *
- * In addition to reducer functions like `concat`, `squaredOdds` is capable of acting on any value classified as a **Mux** type, defined by
  * ```
- * Iterable // any value implementing Symbol.iterator
+ * any -> T
  *
- * AsyncIterable // any value implementing Symbol.asyncIterator
- *
- * GeneratorFunction // function* () {...}
- *
- * AsyncGeneratorFunction // async function* () {...}
- *
- * Iterable|GeneratorFunction
- *   |AsyncIterable|AsyncGeneratorFunction -> Sequence
- *
- * <T any>Sequence<Sequence<T>|T>|T -> Mux
+ * Iterable<T>|AsyncIterable<T>
+ *   |GeneratorFunction<T>|AsyncGeneratorFunction<T> -> Sequence<T>
  * ```
  *
- * @example
- * console.log(
- *   pipe([
- *     number => [number, number ** 2],
- *     ([number, squared]) => `The square of ${number} is ${squared}`,
- *   ])(3),
- * ) // The square of 3 is 9
+ * A Sequence is a composite type that encompasses all Iterables, AsyncIterables, GeneratorFunctions, and AsyncGeneratorFunctions.
+ *
+ * ```
+ * pipe(
+ *   funcs Array<Sequence=>Sequence>
+ * )(value Sequence) -> iter Iterator|AsyncIterator
+ * ```
+ *
+ * A pipe of functions, specifically functions that accept Sequences and return Sequences, when acting on a Sequence, returns an Iterator or AsyncIterator `iter` that, when iterated, supplies a value computed as the original iteration item run through the pipe of functions.
+ *
+ * ```javascript
+ * const numberGeneratorFunction = function* () {
+ *   yield 1; yield 2; yield 3; yield 4; yield 5
+ * }
+ *
+ * const add1GeneratorFunction = function* (iter) {
+ *   for (const number of iter) {
+ *     yield number + 1
+ *   }
+ * }
+ *
+ * const mult2GeneratorFunction = function* (iter) {
+ *   for (const number of iter) {
+ *     yield number * 2
+ *   }
+ * }
+ *
+ * const pipedNumbersIter = pipe([
+ *   add1GeneratorFunction,
+ *   mult2GeneratorFunction,
+ * ])(numberGeneratorFunction)
+ *
+ * for (const number of pipedNumbersIter) {
+ *   console.log(number) // 4 6 8 10 12
+ * }
+ * ```
+ *
+ * Last but not least, **pipe** supports multiple arguments on the first function.
+ *
+ * ```
+ * pipe(
+ *   funcs [(...any)=>any, ...(any=>any)],
+ * )(...any) -> result any
+ * ```
  *
  * @serial
  *
@@ -516,7 +582,7 @@ const assign = funcs => value => {
  * ])('foo') // 'foo'
  *           // 'foobar'
  */
-const tap = func => value => {
+const tap = func => function tapFunc(value) {
   const returned = func(value)
   return isPromise(returned) ? returned.then(() => value) : value
 }
@@ -632,8 +698,26 @@ const mapAsyncIterable = (fn, x) => (async function*() {
  * @TODO refactor for proper generator syntax
  */
 const mapIterable = (fn, x) => (function*() {
-  for (const xi of x) yield fn(xi)
+  for (const xi of x) {
+    yield fn(xi)
+  }
 })()
+
+/**
+ * @name sequenceMap
+ *
+ * @synopsis
+ * any -> T
+ *
+ * Iterable<T>|AsyncIterable<T>
+ *   |GeneratorFunction<T>|AsyncGeneratorFunction<T> -> Sequence<T>
+ *
+ * sequenceMap(seq Sequence<T>, func T=>any) -> Sequence
+const iteratorMap = function* (seq, func) {
+  for (const item of getIterator(seq)) {
+    yield func(item)
+  }
+} */
 
 /*
  * @synopsis
