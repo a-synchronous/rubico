@@ -126,8 +126,9 @@ describe('rubico', () => {
     it('chains async and regular functions together', async () => {
       ase(await pipe([hi, ho, asyncHey])('yo'), 'yohihohey')
     })
-    it('chains functions in reverse if passed a reducer (very contrived)', async () => {
+    it('chains functions in reverse if passed a function (very contrived)', async () => {
       ase(await pipe([hi, ho, asyncHey])((y, xi) => y + xi), '(y, xi) => y + xiheyhohi')
+      ase(await pipe([asyncHey, ho, hi])((y, xi) => y + xi), '(y, xi) => y + xihihohey')
     })
     it('does something without arguments', async () => {
       ase(await pipe([hi, ho, asyncHey])(), 'undefinedhihohey')
@@ -141,18 +142,55 @@ describe('rubico', () => {
     it('returns a promise if any fns async', async () => {
       aok(pipe([hi, hi, hi, asyncHey])('yo') instanceof Promise)
     })
+    it('pipe(Array<GeneratorFunction>)(Generator)', async () => {
+      const numbersGen = function* () {
+        yield 1; yield 2; yield 3; yield 4; yield 5
+      }
+      const isOddGen = function* (iter) {
+        for (const item of iter) {
+          if (item % 2 == 1) yield item
+        }
+      }
+      const squareGen = function* (iter) {
+        for (const item of iter) {
+          yield item ** 2
+        }
+      }
+      const iter = pipe([isOddGen, squareGen])(numbersGen())
+      const arr = [...iter]
+      assert.deepEqual(arr, [1, 9, 25])
+    })
+    it('pipe(Array<AsyncGeneratorFunction>)(AsyncGenerator)', async () => {
+      const asyncNumbersGen = async function* () {
+        yield 1; yield 2; yield 3; yield 4; yield 5
+      }
+      const isOddGen = async function* (iter) {
+        for await (const item of iter) {
+          if (item % 2 == 1) yield item
+        }
+      }
+      const squareGen = async function* (iter) {
+        for await (const item of iter) {
+          yield item ** 2
+        }
+      }
+      const iter = pipe([isOddGen, squareGen])(asyncNumbersGen())
+      const arr = []
+      for await (const item of iter) arr.push(item)
+      assert.deepEqual(arr, [1, 9, 25])
+    })
     it('throws a TypeError if first argument not an array', async () => {
       assert.throws(
         () => {
           pipe(() => 1, undefined, () => 2)()
         },
-        new TypeError('funcs[symbolIterator] is not a function')
+        new TypeError('funcs.reduce is not a function')
       )
     })
-    it('throws a RangeError if passed less than one function', async () => {
+    it('throws a TypeError if passed less than one function', async () => {
       assert.throws(
         () => pipe([])(),
-        new TypeError('func0 is not a function'),
+        new TypeError('Reduce of empty array with no initial value'),
       )
     })
     it('throws a TypeError if any arguments are not a function', async () => {
@@ -160,7 +198,7 @@ describe('rubico', () => {
         () => {
           pipe([() => 1, undefined, () => 2])()
         },
-        new TypeError('func is not a function'),
+        new TypeError('Cannot read property \'call\' of undefined'),
       )
     })
     it('handles sync errors good', async () => {

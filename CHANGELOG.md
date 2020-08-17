@@ -1,3 +1,6 @@
+## v1.5.5
+ * pipe revamp
+
 ## v1.5.3
  * x/uniq - export in x/index
 

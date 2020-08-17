@@ -27,6 +27,18 @@ const symbolIterator = Symbol.iterator
 
 const symbolAsyncIterator = Symbol.asyncIterator
 
+const objectProto = Object.prototype
+
+const nativeObjectToString = objectProto.toString
+
+const objectToString = x => nativeObjectToString.call(x)
+
+const generatorFunctionTag = '[object GeneratorFunction]'
+
+const asyncGeneratorFunctionTag = '[object AsyncGeneratorFunction]'
+
+const promiseAll = Promise.all.bind(Promise)
+
 const isDefined = value => value != null
 
 const isUndefined = value => typeof value == 'undefined'
@@ -70,8 +82,6 @@ const isPromise = value => value != null && typeof value.then == 'function'
 const range = (start, end) => Array.from({ length: end - start }, (x, i) => i + start)
 
 const arrayOf = (item, length) => Array.from({ length }, () => item)
-
-const promiseAll = Promise.all.bind(Promise)
 
 /**
  * @name arrayPush
@@ -170,59 +180,34 @@ const structSet = (x, value, index) => {
 } */
 
 /**
- * @name functionIteratorPipeAsync
+ * @name functionConcat
  *
  * @synopsis
- * functionIteratorPipeAsync(
- *   iter Iterator<function>,
- *   arg any,
- * ) -> Promise
+ * functionConcat(funcA function, funcB function) -> funcAThenB function,
  */
-const functionIteratorPipeAsync = async (iter, arg) => {
-  const { value: func0, done } = iter.next()
-  if (done) return arg
-  let result = await func0(arg)
-  for (const func of iter) {
-    result = await func(result)
-  }
-  return result
+const functionConcat = (funcA, funcB) => function funcAThenB () {
+  const funcACall = funcA.apply(null, arguments)
+  return isPromise(funcACall)
+    ? funcACall.then(res => funcB.call(null, res))
+    : funcB.call(null, funcACall)
 }
 
 /**
- * @name functionIteratorPipe
- *
  * @synopsis
- * functionIteratorPipe(
- *   iter Iterator<function>,
- *   args Array,
- * ) -> Promise|any
+ * isGeneratorFunction(value !null) -> boolean
  */
-const functionIteratorPipe = (iter, args) => {
-  const { value: func0 } = iter.next()
-  let result = func0(...args)
-  if (isPromise(result)) {
-    return result.then(res => functionIteratorPipeAsync(iter, res))
-  }
-  for (const func of iter) {
-    result = func(result)
-    if (isPromise(result)) {
-      return result.then(res => functionIteratorPipeAsync(iter, res))
-    }
-  }
-  return result
+const isGeneratorFunction = function (value) {
+  const tag = objectToString(value)
+  return tag == generatorFunctionTag || tag == asyncGeneratorFunctionTag
 }
 
 /**
- * @name arrayReverseIterator
- *
  * @synopsis
- * arrayReverseIterator(values Array) -> Iterator
- */
-const arrayReverseIterator = function*(values) {
-  for (let i = values.length - 1; i >= 0; i--) {
-    yield values[i]
-  }
-}
+ * isSequence(value any) -> boolean
+const isSequence = value => value != null
+  && (typeof value[symbolIterator] == 'function'
+    || typeof value[symbolAsyncIterator] == 'function'
+    || isGeneratorFunction(value)) */
 
 /**
  * @name pipe
@@ -231,7 +216,9 @@ const arrayReverseIterator = function*(values) {
  * define flow: chain functions together
  *
  * @synopsis
- * pipe(funcs Array<function>)(value any) -> result any
+ * pipe(
+ *   funcs Array<any=>any>,
+ * )(value any) -> result any
  *
  * any -> T
  *
@@ -243,10 +230,8 @@ const arrayReverseIterator = function*(values) {
  *   funcs Array<Transducer<T>>,
  * )(reducer Reducer<T>) -> compositeReducer Reducer<T>
  *
- * Iterable<T>|AsyncIterable<T>
- *   |GeneratorFunction<T>|AsyncGeneratorFunction<T> -> Sequence<T>
- *
- * Sequence<T> -> SequenceT
+ * Iterable|AsyncIterable
+ *   |GeneratorFunction|AsyncGeneratorFunction -> Sequence
  *
  * pipe(
  *   funcs Array<Sequence=>Sequence>,
@@ -263,7 +248,7 @@ const arrayReverseIterator = function*(values) {
  * ])(5) // 11
  * ```
  *
- * A pipe of functions behaves differently depending on the supplied type. When the first argument supplied to a pipe of functions is a binary function, **pipe** assumes it is being used in transducer position, and iterates through `funcs` in reverse. This is due to an implementation detail in transducers, and enables the library Transducers API.
+ * A pipe of functions behaves differently depending on the input type. When the first argument supplied to a pipe of functions is a non-generator function, **pipe** assumes it is being used in transducer position, and iterates through `funcs` in reverse. This is due to an implementation detail in transducers, and enables the library Transducers API.
  *
  * ```
  * any -> T
@@ -366,21 +351,17 @@ const arrayReverseIterator = function*(values) {
  *
  * @transducing
  */
-const pipe = funcs => function pipeOfFuncs(args0, ...args) {
-  if (isFunction(args0)) {
-    // if (isMux(args0))
-    return functionIteratorPipe(arrayReverseIterator(funcs), [args0, ...args])
+const pipe = function (funcs) {
+  const functionPipeline = funcs.reduce(functionConcat),
+    functionComposition = funcs.reduceRight(functionConcat)
+  return function pipeline() {
+    const firstArg = arguments[0]
+    if (isFunction(firstArg) && !isGeneratorFunction(firstArg)) {
+      return functionComposition.apply(null, arguments)
+    }
+    return functionPipeline.apply(null, arguments)
   }
-  return functionIteratorPipe(funcs[symbolIterator](), [args0, ...args])
 }
-
-/* pipe.reduce = funcs => value => isFunction(value)
-  ? funcs.reduceRight((result, func) => isPromise(result)
-    ? result.then(func)
-    : func(result), value)
-  : funcs.reduce((result, func) => isPromise(result)
-    ? result.then(func)
-    : func(result), value) */
 
 /**
  * @name arrayFork
