@@ -14,7 +14,7 @@ const objectProto = Object.prototype
 
 const nativeObjectToString = objectProto.toString
 
-const objectToString = x => nativeObjectToString.call(x)
+const objectToString = value => nativeObjectToString.call(value)
 
 const symbolIterator = Symbol.iterator
 
@@ -28,26 +28,29 @@ const promiseRace = Promise.race.bind(Promise)
 
 /**
  * @synopsis
- * isMaybeAsyncGeneratorFunction(x !=null) -> boolean
+ * isGeneratorFunction(value !null) -> boolean
  */
-const isMaybeAsyncGeneratorFunction = x => {
-  const tag = objectToString(x)
+const isGeneratorFunction = value => {
+  const tag = objectToString(value)
   return tag == generatorFunctionTag || tag == asyncGeneratorFunctionTag
 }
 
 /**
  * @synopsis
- * isSequence(x any) -> boolean
+ * isSequence(value any) -> boolean
  */
-const isSequence = x => x != null && (Boolean(x[symbolIterator])
-  || Boolean(x[symbolAsyncIterator]) || isMaybeAsyncGeneratorFunction(x))
+const isSequence = value => value != null
+  && (typeof value[symbolIterator] == 'function'
+    || typeof value[symbolAsyncIterator] == 'function'
+    || isGeneratorFunction(value))
 
 /**
  * @synopsis
- * isAsyncSequence(x any) -> boolean
+ * isAsyncSequence(value any) -> boolean
  */
-const isAsyncSequence = x => x != null && (Boolean(x[symbolAsyncIterator])
-  || objectToString(x) == asyncGeneratorFunctionTag)
+const isAsyncSequence = value => value != null
+  && (typeof value[symbolAsyncIterator] == 'function'
+    || objectToString(value) == asyncGeneratorFunctionTag)
 
 /**
  * @name Mux

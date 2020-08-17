@@ -2,7 +2,7 @@ const timeInLoop = require('../x/timeInLoop')
 const Mux = require('./Mux')
 const _ = require('lodash')
 
-/*
+/**
  * @name Mux.flatten
  *
  * @benchmark
