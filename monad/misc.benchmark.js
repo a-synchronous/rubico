@@ -139,10 +139,10 @@ const mapFromForLoopDestructuring = x => {
  * @name objectIteration
  *
  * @benchmarks
- * forKeyInObj: 1e+6: 63.886ms
- * forOwnKeyInObj: 1e+6: 97.916ms
- * objectKeysMap: 1e+6: 222.563ms
- * objectValuesIterate: 1e+6: 259.114ms
+ * forKeyInObj: 1e+6: 20.02ms
+ * forOwnKeyInObj: 1e+6: 21.986ms
+ * objectKeysReduce: 1e+6: 225.397ms
+ * objectValuesIterate: 1e+6: 261.689ms
  */
 
 {
@@ -152,14 +152,18 @@ const mapFromForLoopDestructuring = x => {
 
   const forKeyInObj = () => {
     let total = 0
-    for (k in obj) total += obj[k]
+    for (const k in obj) total += obj[k]
     return total
   }
 
+  const hasOwnProperty = Object.prototype.hasOwnProperty
+
+  const hasOwn = (obj, key) => hasOwnProperty.call(obj, key)
+
   const forOwnKeyInObj = () => {
     let total = 0
-    for (k in obj) {
-      if (obj.hasOwnProperty(k)) {
+    for (const k in obj) {
+      if (hasOwn(obj, k)) {
         total += obj[k]
       }
     }
@@ -183,9 +187,9 @@ const mapFromForLoopDestructuring = x => {
   }
 
   // const func = forKeyInObj
-  const func = forOwnKeyInObj
+  // const func = forOwnKeyInObj
   // const func = objectKeysReduce
-  // const func = objectValuesIterate
+  const func = objectValuesIterate
 
   console.log(func())
 
