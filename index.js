@@ -240,7 +240,7 @@ const isSequence = value => value != null
  * )(value Sequence) -> result Iterator|AsyncIterator
  *
  * @description
- * **pipe** accepts an array of functions `funcs` and any value `value` and returns any value `result`. A pipe of functions acts as a chain of those functions; each function passes its return value as a single argument to the next. The result of the evaluation of a pipe of functions with an input value is the result of the last of the functions in the chain.
+ * **pipe** accepts an array of functions `funcs` and composes those functions from left to right. The first function in a pipe of functions can accept a variadic number of arguments, while the remaining functions should be unary. A pipe of functions acts as a chain of those functions; each function passes its return value as a single argument to the next. The result of the evaluation of a pipe of functions with an input value is the result of the last of the functions in the chain.
  *
  * ```javascript
  * pipe([
@@ -270,7 +270,7 @@ const isSequence = value => value != null
  * )(reducer Reducer<T>) -> compositeReducer Reducer<T>
  * ```
  *
- * **pipe** supports Transducer composition. When passed a reducer function, a pipe of functions assumes it is being used in transducer position and returns a new Reducer `compositeReducer` that applies the Transducers of `funcs` in series, ending the chain with the last supplied Reducer `reducer`. `compositeReducer` must be used in transducer position in conjunction with **reduce** or any implementation of reduce to have a transducing effect.
+ * **pipe** supports Transducer composition. When passed a reducer function, a pipe of functions assumes it is being used in transducer position and returns a new Reducer `compositeReducer` that applies the Transducers of `funcs` in series, ending the chain with the last supplied Reducer `reducer`. `compositeReducer` must be used in transducer position in conjunction with **reduce** or any implementation of reduce to have a transducing effect. For more information on this behavior, please see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
  *
  * ```javascript
  * import { pipe, map, filter } from 'rubico'
@@ -298,10 +298,8 @@ const isSequence = value => value != null
  * In addition to transducers, a pipe of functions can express a chain of operations on Sequences.
  *
  * ```
- * any -> T
- *
- * Iterable<T>|AsyncIterable<T>
- *   |GeneratorFunction<T>|AsyncGeneratorFunction<T> -> Sequence<T>
+ * Iterable|AsyncIterable
+ *   |GeneratorFunction|AsyncGeneratorFunction -> Sequence
  * ```
  *
  * A Sequence is a composite type that encompasses all Iterables, AsyncIterables, GeneratorFunctions, and AsyncGeneratorFunctions.
@@ -337,16 +335,12 @@ const isSequence = value => value != null
  * ])(numberGeneratorFunction)
  *
  * for (const number of pipedNumbersIter) {
- *   console.log(number) // 4 6 8 10 12
+ *   console.log(number) // 4
+ *                       // 6
+ *                       // 8
+ *                       // 10
+ *                       // 12
  * }
- * ```
- *
- * Last but not least, **pipe** supports multiple arguments on the first function.
- *
- * ```
- * pipe(
- *   funcs [(...any)=>any, ...(any=>any)],
- * )(...any) -> result any
  * ```
  *
  * @serial
