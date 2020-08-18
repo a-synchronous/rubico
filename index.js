@@ -185,9 +185,9 @@ const structSet = (x, value, index) => {
  * @synopsis
  * any -> A; any -> B; any -> C
  *
- * functionConcat(funcAB A=>B, funcBC B=>C) -> funcAC A=>C,
+ * functionConcat(funcAB A=>B, funcBC B=>C) -> concatenatedFunction A=>C
  */
-const functionConcat = (funcAB, funcBC) => function funcAC() {
+const functionConcat = (funcAB, funcBC) => function concatenatedFunction() {
   const callAB = funcAB.apply(null, arguments)
   return isPromise(callAB)
     ? callAB.then(res => funcBC.call(null, res))
@@ -219,7 +219,7 @@ const isSequence = value => value != null
  *
  * @synopsis
  * pipe(
- *   funcs Array<any=>any>,
+ *   funcs Array<function>,
  * )(value any) -> result any
  *
  * any -> T
@@ -365,17 +365,17 @@ const pipe = function (funcs) {
  * @synopsis
  * <T any>arrayFork(
  *   funcs Array<T=>any>,
- *   value T,
- * ) -> Promise|Array
+ *   input T,
+ * ) -> output Promise|Array
  */
-const arrayFork = (funcs, value) => {
+const arrayFork = (funcs, input) => {
   let isAsync = false
-  const result = funcs.map(func => {
-    const mappedValue = func(value)
-    if (isPromise(mappedValue)) isAsync = true
-    return mappedValue
+  const output = funcs.map(func => {
+    const outputItem = func(input)
+    if (isPromise(outputItem)) isAsync = true
+    return outputItem
   })
-  return isAsync ? promiseAll(result) : result
+  return isAsync ? promiseAll(output) : output
 }
 
 /**
