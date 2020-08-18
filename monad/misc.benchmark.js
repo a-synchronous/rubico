@@ -134,3 +134,60 @@ const mapFromForLoopDestructuring = x => {
 
   // timeInLoop('obj.a?.b?.c', 1e7, () => { obj.a?.b?.c })
 }
+
+/*
+ * @name objectIteration
+ *
+ * @benchmarks
+ * forKeyInObj: 1e+6: 63.886ms
+ * forOwnKeyInObj: 1e+6: 97.916ms
+ * objectKeysMap: 1e+6: 222.563ms
+ * objectValuesIterate: 1e+6: 259.114ms
+ */
+
+{
+  const obj = { a: 1, b: 2, c: 3 }
+
+  const noop = () => {}
+
+  const forKeyInObj = () => {
+    let total = 0
+    for (k in obj) total += obj[k]
+    return total
+  }
+
+  const forOwnKeyInObj = () => {
+    let total = 0
+    for (k in obj) {
+      if (obj.hasOwnProperty(k)) {
+        total += obj[k]
+      }
+    }
+    return total
+  }
+
+  const add = (a, b) => a + b
+
+  const objectKeysReduce = () => Object.values(obj).reduce(add)
+
+  const objectValues = function* (object) {
+    for (const key in object) {
+      yield object[key]
+    }
+  }
+
+  const objectValuesIterate = () => {
+    let total = 0
+    for (const value of objectValues(obj)) total += value
+    return total
+  }
+
+  // const func = forKeyInObj
+  const func = forOwnKeyInObj
+  // const func = objectKeysReduce
+  // const func = objectValuesIterate
+
+  console.log(func())
+
+  timeInLoop(func.name, 1e6, func)
+}
