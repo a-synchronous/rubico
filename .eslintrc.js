@@ -165,7 +165,7 @@ module.exports = {
         'no-labels': 'error',
         'no-lone-blocks': 'error',
         'no-lonely-if': 'error',
-        'no-loop-func': 'error',
+        'no-loop-func': 'off',
         'no-loss-of-precision': 'error',
         'no-magic-numbers': 'off',
         'no-mixed-operators': 'off',
