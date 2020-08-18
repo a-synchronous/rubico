@@ -185,10 +185,10 @@ const structSet = (x, value, index) => {
  * @synopsis
  * any -> A; any -> B; any -> C
  *
- * functionConcat(funcAB A=>B, funcBC B=>C) -> concatenatedFunction A=>C
+ * functionConcat(funcAB A=>B, funcBC B=>C) -> pipedFunction A=>C
  */
-const functionConcat = (funcAB, funcBC) => function concatenatedFunction() {
-  const callAB = funcAB.apply(null, arguments)
+const functionConcat = (funcAB, funcBC) => function pipedFunction(...args) {
+  const callAB = funcAB.apply(null, args)
   return isPromise(callAB)
     ? callAB.then(res => funcBC.call(null, res))
     : funcBC.call(null, callAB)
@@ -360,44 +360,48 @@ const pipe = function (funcs) {
 }
 
 /**
- * @name arrayFork
+ * @name funcObjectAll
  *
  * @synopsis
- * <T any>arrayFork(
- *   funcs Array<T=>any>,
- *   input T,
- * ) -> output Promise|Array
+ * ...any -> args
+ *
+ * funcObjectAll(
+ *   funcs Object<args=>Promise|any>
+ * ) -> concurrentObjectFunction args=>Promise|Object
  */
-const arrayFork = (funcs, input) => {
+const funcObjectAll = funcs => function concurrentObjectFunction(...args) {
+  const output = {}, promises = []
+  for (const key in funcs) {
+    const outputItem = funcs[key].apply(null, args)
+    if (isPromise(outputItem)) {
+      promises.push(outputItem.then(res => {
+        output[key] = res
+      }))
+    } else {
+      output[key] = outputItem
+    }
+  }
+  return promises.length == 0 ? output : promiseAll(promises).then(() => output)
+}
+
+/**
+ * @name funcAll
+ *
+ * @synopsis
+ * ...any -> args
+ *
+ * funcAll(
+ *   funcs Array<args=>Promise|any>
+ * ) -> concurrentFunction args=>Promise|Array
+ */
+const funcAll = funcs => function concurrentFunction(...args) {
   let isAsync = false
   const output = funcs.map(func => {
-    const outputItem = func(input)
+    const outputItem = func.apply(null, args)
     if (isPromise(outputItem)) isAsync = true
     return outputItem
   })
   return isAsync ? promiseAll(output) : output
-}
-
-/**
- * @name objectFork
- *
- * @synopsis
- * <T any>objectFork(
- *   funcs Object<T=>any>,
- *   value T,
- * ) -> Promise|Object
- */
-const objectFork = (funcs, value) => {
-  const result = {}, promises = []
-  for (const key in funcs) {
-    const forkedValue = funcs[key](value)
-    if (isPromise(forkedValue)) {
-      promises.push(forkedValue.then(res => { result[key] = res }))
-    } else {
-      result[key] = forkedValue
-    }
-  }
-  return promises.length > 0 ? promiseAll(promises).then(() => result) : result
 }
 
 /**
@@ -432,9 +436,7 @@ const objectFork = (funcs, value) => {
  *
  * @concurrent
  */
-const fork = funcs => function forkFuncs(value) {
-  return isArray(funcs) ? arrayFork(funcs, value) : objectFork(funcs, value)
-}
+const fork = funcs => isArray(funcs) ? funcAll(funcs) : funcObjectAll(funcs)
 
 /**
  * @name asyncGenericForkSeries
@@ -523,7 +525,7 @@ fork.series = funcs => value => (
  * fork, then merge results
  *
  * @description
- * **assign** accepts an Object of functions `funcs` and an Object `value` and returns an Object `result`. `result` is each function of `funcs` applied with Object `value` merged into the input Object `value`. If any functions of `funcs` is asynchronous, `result` is a Promise.
+ * **assign** accepts an object of functions and an object input and returns an object output. The output is composed of the original input and an object computed from a concurrent evaluation of the object of functions with the input. `result` is each function of `funcs` applied with Object `value` merged into the input Object `value`. If any functions of `funcs` is asynchronous, `result` is a Promise.
  *
  * @example
  * console.log(
@@ -535,11 +537,14 @@ fork.series = funcs => value => (
  *
  * @concurrent
  */
-const assign = funcs => value => {
-  const forked = objectFork(funcs, value)
-  return isPromise(forked)
-    ? forked.then(res => ({ ...value, ...res }))
-    : ({ ...value, ...forked })
+const assign = function (funcs) {
+  const allFuncs = funcObjectAll(funcs)
+  return function assignment(input) {
+    const output = allFuncs.call(null, input)
+    return isPromise(output)
+      ? output.then(res => ({ ...input, ...res }))
+      : ({ ...input, ...output })
+  }
 }
 
 /**
