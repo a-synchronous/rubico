@@ -177,8 +177,6 @@ const isSequence = value => value != null
  * define flow: chain functions together
  *
  * @synopsis
- * ...any => args
- *
  * any -> T
  *
  * (<T>, T)=>Promise|<T> -> Reducer<T>
@@ -188,11 +186,11 @@ const isSequence = value => value != null
  * pipe([
  *   args=>any,
  *   ...Array<any=>any>,
- * ])(args) -> any
+ * ])(args ...any) -> output any
  *
  * pipe(
  *   Array<Transducer>,
- * )(Reducer) -> Reducer
+ * )(Reducer) -> composed Reducer
  *
  * @description
  * **pipe** takes an array of functions and chains them together, each function passing its return value to the next function until all functions have been called. The final output for a given pipe and input is the result of the last function in the pipe.
@@ -222,10 +220,10 @@ const isSequence = value => value != null
  * ```
  * pipe(
  *   Array<Transducer>,
- * )(Reducer) -> Reducer
+ * )(Reducer) -> composed Reducer
  * ```
  *
- * **pipe** supports transducer composition. When passed a reducer function, a pipe of functions returns a new reducer function that applies the transducers of the functions array in series, ending the chain with the last supplied Reducer `reducer`. `compositeReducer` must be used in transducer position in conjunction with **reduce** or any implementation of reduce to have a transducing effect. For more information on this behavior, please see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
+ * **pipe** supports transducer composition. When passed a reducer function, a pipe of functions returns a new reducer function that applies the transducers of the functions array in series, ending the chain with the passed in reducer. `compositeReducer` must be used in transducer position in conjunction with **reduce** or any implementation of reduce to have a transducing effect. For more information on this behavior, please see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
  *
  * ```javascript
  * const isOdd = number => number % 2 == 1
@@ -268,11 +266,9 @@ const pipe = function (funcs) {
  * @name funcObjectAll
  *
  * @synopsis
- * ...any -> args
- *
  * funcObjectAll(
  *   funcs Object<args=>Promise|any>
- * ) -> objectAllFuncs args=>Promise|Object
+ * )(args ...any) -> objectAllFuncs args=>Promise|Object
  */
 const funcObjectAll = funcs => function objectAllFuncs(...args) {
   const output = {}, promises = []
@@ -319,11 +315,11 @@ const funcAll = funcs => function allFuncs(...args) {
  * ...any -> args
  *
  * fork(
- *   funcs Object<args=>Promise|any>,
+ *   Object<args=>Promise|any>,
  * )(args) -> Promise|Object
  *
  * fork(
- *   funcs Array<args=>Promise|any>,
+ *   Array<args=>Promise|any>,
  * )(args) -> Promise|Array
  *
  * @description
@@ -373,9 +369,9 @@ const asyncFuncAllSeries = async function (funcs, args, output, funcsIndex) {
  *
  * funcAllSeries(
  *   funcs Array<args=>any>,
- * ) -> serialFunction args=>Promise|Array
+ * ) -> allFuncsSeries args=>Promise|Array
  */
-const funcAllSeries = funcs => function serialFunction(...args) {
+const funcAllSeries = funcs => function allFuncsSeries(...args) {
   const funcsLength = funcs.length, output = []
   let funcsIndex = -1
   while (++funcsIndex < funcsLength) {
@@ -428,13 +424,13 @@ fork.series = funcAllSeries
 /**
  * @name assign
  *
- * @synopsis
- * <T any>assign(
- *   funcs Object<Object<T>=>any>,
- * )(value Object<T>) -> result Promise|Object
- *
  * @catchphrase
  * fork, then merge results
+ *
+ * @synopsis
+ * assign(
+ *   Object<input=>any>,
+ * )(input Object) -> output Promise|Object
  *
  * @description
  * **assign** accepts an object of functions and an object input and returns an object output. The output is composed of the original input and an object computed from a concurrent evaluation of the object of functions with the input. `result` is each function of `funcs` applied with Object `value` merged into the input Object `value`. If any functions of `funcs` is asynchronous, `result` is a Promise.
