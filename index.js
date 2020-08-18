@@ -183,13 +183,15 @@ const structSet = (x, value, index) => {
  * @name functionConcat
  *
  * @synopsis
- * functionConcat(funcA function, funcB function) -> funcAThenB function,
+ * any -> A; any -> B; any -> C
+ *
+ * functionConcat(funcAB A=>B, funcBC B=>C) -> funcAC A=>C,
  */
-const functionConcat = (funcA, funcB) => function funcAThenB () {
-  const funcACall = funcA.apply(null, arguments)
-  return isPromise(funcACall)
-    ? funcACall.then(res => funcB.call(null, res))
-    : funcB.call(null, funcACall)
+const functionConcat = (funcAB, funcBC) => function funcAC() {
+  const callAB = funcAB.apply(null, arguments)
+  return isPromise(callAB)
+    ? callAB.then(res => funcBC.call(null, res))
+    : funcBC.call(null, callAB)
 }
 
 /**
