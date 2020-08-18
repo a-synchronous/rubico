@@ -240,7 +240,7 @@ const isSequence = value => value != null
  * )(value Sequence) -> result Iterator|AsyncIterator
  *
  * @description
- * **pipe** accepts an array of functions `funcs` and composes those functions from left to right. The first function in a pipe of functions can accept a variadic number of arguments, while the remaining functions should be unary. A pipe of functions acts as a chain of those functions; each function passes its return value as a single argument to the next. The result of the evaluation of a pipe of functions with an input value is the result of the last of the functions in the chain.
+ * **pipe** takes an array of functions and chains them together. A pipe of functions acts as a chain of those functions; each function in a pipe passes its return value as a single argument to the next. The first function in a pipe of functions can accept a variadic number of arguments, while the remaining functions should be unary. The result of the evaluation of a pipe of functions with an input value is the result of the last of the functions in the chain.
  *
  * ```javascript
  * pipe([
@@ -302,7 +302,7 @@ const isSequence = value => value != null
  *   |GeneratorFunction|AsyncGeneratorFunction -> Sequence
  * ```
  *
- * A Sequence is a composite type that encompasses all Iterables, AsyncIterables, GeneratorFunctions, and AsyncGeneratorFunctions.
+ * A Sequence is a polymorphic type that encompasses all Iterables, AsyncIterables, GeneratorFunctions, and AsyncGeneratorFunctions.
  *
  * ```
  * pipe(
@@ -310,7 +310,7 @@ const isSequence = value => value != null
  * )(value Sequence) -> iter Iterator|AsyncIterator
  * ```
  *
- * A pipe of functions, specifically functions that accept Sequences and return Sequences, when acting on a Sequence, returns an Iterator or AsyncIterator `iter` that, when iterated, supplies a value computed as the original iteration item run through the pipe of functions.
+ * When acting on a Sequence, a pipe of Sequence-handling functions (e.g. generator functions) returns an Iterator or AsyncIterator `iter` that, when iterated, supplies the piped result of a given item of the input Sequence.
  *
  * ```javascript
  * const numberGeneratorFunction = function* () {
@@ -332,7 +332,7 @@ const isSequence = value => value != null
  * const pipedNumbersIter = pipe([
  *   add1GeneratorFunction,
  *   mult2GeneratorFunction,
- * ])(numberGeneratorFunction)
+ * ])(numberGeneratorFunction())
  *
  * for (const number of pipedNumbersIter) {
  *   console.log(number) // 4
@@ -404,7 +404,9 @@ const objectFork = (funcs, value) => {
  * @name fork
  *
  * @synopsis
- * <T any>fork(
+ * any -> T
+ *
+ * fork(
  *   funcs Object<T=>any>,
  * )(value T) -> result Promise|Object
  *
@@ -412,7 +414,8 @@ const objectFork = (funcs, value) => {
  *   funcs Array<T=>any>,
  * )(value T) -> result Promise|Array
  *
- * @catchphrase duplicate and diverge flow
+ * @catchphrase
+ * duplicate and diverge flow
  *
  * @description
  * **fork** takes an Array or Object of functions `funcs` and an input `value` and returns a `result` Array or Object of all evaluations of functions in `funcs` with the input `value`. `result` is a Promise if any function of `funcs` is asynchronous. **fork** executes all functions of `funcs` concurrently.
