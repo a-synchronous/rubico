@@ -319,14 +319,11 @@ describe('rubico', () => {
     it('throws TypeError for fork([nonFunction])', async () => {
       assert.throws(
         () => fork.series(['hey'])(),
-        new TypeError('func is not a function')
+        new TypeError('funcs[funcsIndex].apply is not a function')
       )
     })
-    it('throws TypeError for non array functions', async () => {
-      assert.throws(
-        () => fork.series({})(),
-        new TypeError('funcs[symbolIterator] is not a function'),
-      )
+    it('defaults to array', async () => {
+      assert.deepEqual(fork.series({})(), [])
     })
   })
 

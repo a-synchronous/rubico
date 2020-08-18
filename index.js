@@ -88,10 +88,9 @@ const arrayOf = (item, length) => Array.from({ length }, () => item)
  *
  * @synopsis
  * arrayPush(x Array, value any) -> undefined
- */
 const arrayPush = (array, value) => {
   array[array.length] = value
-}
+} */
 
 /**
  * @name possiblePromiseThen
@@ -140,46 +139,6 @@ const possiblePromiseAll = values => (values.some(isPromise)
   : new SyncThenable(values))
 
 /**
- * @synopsis
- * <T>objectEntriesGenerator(x Object<T>) -> Iterator<[key string, T]>
-const objectEntriesGenerator = function*(x) {
-  for (const k in x) {
-    yield [k, x[k]]
-  }
-} */
-
-/**
- * @name structEntries
- *
- * @synopsis
- * <T any>structEntries(x Array<T>) -> Iterator<[index number, T]>
- *
- * <T any>structEntries(x Object<T>) -> Iterator<[key string, T]>
- *
- * <T any>structEntries(x Set<T>) -> Iterator<[T, T]>
- *
- * <A any, B any>structEntries(x Map<A, B>) -> Iterator<[A, B]>
-const structEntries = x => isObject(x) ? objectEntriesGenerator(x) : x.entries() */
-
-/**
- * @name structSet
- *
- * @synopsis
- * structSet(x Array, value any, index number) -> mutated Array
- *
- * structSet(x Object, value any, index string) -> mutated Object
- *
- * structSet(x Set, value any) -> mutated Set
- *
- * structSet(x Map, value any, index any) -> mutated Map
-const structSet = (x, value, index) => {
-  if (typeof x.set == 'function') return x.set(index, value)
-  if (typeof x.add == 'function') return x.add(value)
-  x[index] = value
-  return x
-} */
-
-/**
  * @name functionConcat
  *
  * @synopsis
@@ -218,129 +177,75 @@ const isSequence = value => value != null
  * define flow: chain functions together
  *
  * @synopsis
- * pipe(
- *   funcs Array<function>,
- * )(value any) -> result any
+ * ...any => args
  *
  * any -> T
  *
  * (<T>, T)=>Promise|<T> -> Reducer<T>
  *
- * Reducer<T>=>Reducer<T> -> Transducer<T>
+ * Reducer=>Reducer -> Transducer
+ *
+ * pipe([
+ *   args=>any,
+ *   ...Array<any=>any>,
+ * ])(args) -> any
  *
  * pipe(
- *   funcs Array<Transducer<T>>,
- * )(reducer Reducer<T>) -> compositeReducer Reducer<T>
- *
- * Iterable|AsyncIterable
- *   |GeneratorFunction|AsyncGeneratorFunction -> Sequence
- *
- * pipe(
- *   funcs Array<Sequence=>Sequence>,
- * )(value Sequence) -> result Iterator|AsyncIterator
+ *   Array<Transducer>,
+ * )(Reducer) -> Reducer
  *
  * @description
- * **pipe** takes an array of functions and chains them together. A pipe of functions acts as a chain of those functions; each function in a pipe passes its return value as a single argument to the next. The first function in a pipe of functions can accept a variadic number of arguments, while the remaining functions should be unary. The result of the evaluation of a pipe of functions with an input value is the result of the last of the functions in the chain.
+ * **pipe** takes an array of functions and chains them together, each function passing its return value to the next function until all functions have been called. The final output for a given pipe and input is the result of the last function in the pipe.
  *
  * ```javascript
- * pipe([
- *   number => number + 1,
- *   number => number + 2,
- *   number => number + 3,
- * ])(5) // 11
+ * console.log(
+ *   pipe([
+ *     number => number + 1,
+ *     number => number + 2,
+ *     number => number + 3,
+ *   ])(5),
+ * ) // 11
  * ```
  *
- * A pipe of functions behaves differently depending on the input type. When the first argument supplied to a pipe of functions is a non-generator function, **pipe** assumes it is being used in transducer position, and iterates through `funcs` in reverse. This is due to an implementation detail in transducers, and enables the library Transducers API.
+ * When the first argument supplied to a pipe of functions is a non-generator function, **pipe** assumes it is being used in transducer position and iterates through its functions in reverse. This is due to an implementation detail in transducers, and enables the library Transducers API.
  *
  * ```
  * any -> T
  *
  * (<T>, T)=>Promise|<T> -> Reducer<T> // the standalone <T> means "generic of T"
  *
- * Reducer<T>=>Reducer<T> -> Transducer<T>
+ * Reducer=>Reducer -> Transducer
  * ```
  *
- * A Reducer is a function that takes a generic of any type T, a given instance of type T, and returns possibly a Promise of a generic of type T, that is Promise<<T>>|<T>, abbreviated above as Promise|<T>. A Transducer is a function that takes a Reducer and returns another Reducer.
+ * A reducer is a function that takes a generic of any type T, a given instance of type T, and returns possibly a Promise of a generic of type T. A transducer is a function that takes a reducer and returns another reducer.
  *
  * ```
- * any -> T
- *
  * pipe(
- *   funcs Array<Transducer<T>>,
- * )(reducer Reducer<T>) -> compositeReducer Reducer<T>
+ *   Array<Transducer>,
+ * )(Reducer) -> Reducer
  * ```
  *
- * **pipe** supports Transducer composition. When passed a reducer function, a pipe of functions assumes it is being used in transducer position and returns a new Reducer `compositeReducer` that applies the Transducers of `funcs` in series, ending the chain with the last supplied Reducer `reducer`. `compositeReducer` must be used in transducer position in conjunction with **reduce** or any implementation of reduce to have a transducing effect. For more information on this behavior, please see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
+ * **pipe** supports transducer composition. When passed a reducer function, a pipe of functions returns a new reducer function that applies the transducers of the functions array in series, ending the chain with the last supplied Reducer `reducer`. `compositeReducer` must be used in transducer position in conjunction with **reduce** or any implementation of reduce to have a transducing effect. For more information on this behavior, please see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
  *
  * ```javascript
- * import { pipe, map, filter } from 'rubico'
- *
  * const isOdd = number => number % 2 == 1
  *
  * const square = number => number ** 2
  *
+ * const add = (a, b) => a + b
+ *
  * const squaredOdds = pipe([
  *   filter(isOdd),
  *   map(square),
- * ]) // squaredOdds is `compositeReducer`
+ * ])
  *
- * const add = (a, b) => a + b
- *
- * [1, 2, 3, 4, 5].reduce(
- *   squaredOdds(add), // squaredOdds is in transducer position
- *   0,
+ * console.log(
+ *   [1, 2, 3, 4, 5].reduce(squaredOdds(add), 0),
  * ) // 1 + 9 + 25 -> 35
  *
- * squaredOdds([1, 2, 3, 4, 5]) // [1, 9, 25]
- * // squaredOdds is not in transducer position
- * ```
- *
- * In addition to transducers, a pipe of functions can express a chain of operations on Sequences.
- *
- * ```
- * Iterable|AsyncIterable
- *   |GeneratorFunction|AsyncGeneratorFunction -> Sequence
- * ```
- *
- * A Sequence is a polymorphic type that encompasses all Iterables, AsyncIterables, GeneratorFunctions, and AsyncGeneratorFunctions.
- *
- * ```
- * pipe(
- *   funcs Array<Sequence=>Sequence>
- * )(value Sequence) -> iter Iterator|AsyncIterator
- * ```
- *
- * When acting on a Sequence, a pipe of Sequence-handling functions (e.g. generator functions) returns an Iterator or AsyncIterator `iter` that, when iterated, supplies the piped result of a given item of the input Sequence.
- *
- * ```javascript
- * const numberGeneratorFunction = function* () {
- *   yield 1; yield 2; yield 3; yield 4; yield 5
- * }
- *
- * const add1GeneratorFunction = function* (iter) {
- *   for (const number of iter) {
- *     yield number + 1
- *   }
- * }
- *
- * const mult2GeneratorFunction = function* (iter) {
- *   for (const number of iter) {
- *     yield number * 2
- *   }
- * }
- *
- * const pipedNumbersIter = pipe([
- *   add1GeneratorFunction,
- *   mult2GeneratorFunction,
- * ])(numberGeneratorFunction())
- *
- * for (const number of pipedNumbersIter) {
- *   console.log(number) // 4
- *                       // 6
- *                       // 8
- *                       // 10
- *                       // 12
- * }
+ * console.log(
+ *   squaredOdds([1, 2, 3, 4, 5])
+ * ) // [1, 9, 25]
  * ```
  *
  * @serial
@@ -367,9 +272,9 @@ const pipe = function (funcs) {
  *
  * funcObjectAll(
  *   funcs Object<args=>Promise|any>
- * ) -> concurrentObjectFunction args=>Promise|Object
+ * ) -> objectAllFuncs args=>Promise|Object
  */
-const funcObjectAll = funcs => function concurrentObjectFunction(...args) {
+const funcObjectAll = funcs => function objectAllFuncs(...args) {
   const output = {}, promises = []
   for (const key in funcs) {
     const outputItem = funcs[key].apply(null, args)
@@ -392,9 +297,9 @@ const funcObjectAll = funcs => function concurrentObjectFunction(...args) {
  *
  * funcAll(
  *   funcs Array<args=>Promise|any>
- * ) -> concurrentFunction args=>Promise|Array
+ * ) -> allFuncs args=>Promise|Array
  */
-const funcAll = funcs => function concurrentFunction(...args) {
+const funcAll = funcs => function allFuncs(...args) {
   let isAsync = false
   const output = funcs.map(func => {
     const outputItem = func.apply(null, args)
@@ -408,21 +313,23 @@ const funcAll = funcs => function concurrentFunction(...args) {
  * @name fork
  *
  * @synopsis
- * any -> T
+ * ...any -> args
  *
  * fork(
- *   funcs Object<T=>any>,
- * )(value T) -> result Promise|Object
+ *   funcs Object<args=>Promise|any>,
+ * )(args) -> Promise|Object
  *
- * <T any>fork(
- *   funcs Array<T=>any>,
- * )(value T) -> result Promise|Array
+ * fork(
+ *   funcs Array<args=>Promise|any>,
+ * )(args) -> Promise|Array
  *
  * @catchphrase
  * duplicate and diverge flow
  *
  * @description
- * **fork** takes an Array or Object of functions `funcs` and an input `value` and returns a `result` Array or Object of all evaluations of functions in `funcs` with the input `value`. `result` is a Promise if any function of `funcs` is asynchronous. **fork** executes all functions of `funcs` concurrently.
+ * **fork** takes an array or object of functions and an input value and returns an array or object
+ *
+ * of all evaluations of functions in `funcs` with the input `value`. `result` is a Promise if any function of `funcs` is asynchronous. **fork** executes all functions of `funcs` concurrently.
  *
  * @example
  * console.log(
@@ -439,55 +346,59 @@ const funcAll = funcs => function concurrentFunction(...args) {
 const fork = funcs => isArray(funcs) ? funcAll(funcs) : funcObjectAll(funcs)
 
 /**
- * @name asyncGenericForkSeries
+ * @name asyncFuncAllSeries
  *
  * @synopsis
- * <T any>asyncGenericForkSeries(
- *   funcIter Iterator<T=>any>,
- *   value T,
- *   result <T>,
- *   setter (<T>, T)=>()
- * ) -> result Promise<<T>>
- *
- * @NOTE <T> means "anything of T"
+ * asyncFuncAllSeries(
+ *   funcs Array<function>,
+ *   input any,
+ *   output Array,
+ *   funcsIndex number,
+ * ) -> output Array
  */
-const asyncGenericForkSeries = async (funcIter, value, result, setter) => {
-  for (const func of funcIter) {
-    const forkedValue = await func(value)
-    setter(result, forkedValue)
+const asyncFuncAllSeries = async function (funcs, args, output, funcsIndex) {
+  const funcsLength = funcs.length
+  while (++funcsIndex < funcsLength) {
+    output[funcsIndex] = await funcs[funcsIndex].apply(null, args)
   }
-  return result
+  return output
 }
 
 /**
- * @name genericForkSeries
+ * @name funcAllSeries
  *
  * @synopsis
- * <T any>genericForkSeries(
- *   funcIter Iterator<T=>any>,
- *   value T,
- *   result <T>,
- * ) -> result <T>
+ * ...any -> args
+ *
+ * funcAllSeries(
+ *   funcs Array<args=>any>,
+ * ) -> serialFunction args=>Promise|Array
  */
-const genericForkSeries = (funcIter, value, result, setter) => {
-  for (const func of funcIter) {
-    const forkedValue = func(value)
-    if (isPromise(forkedValue)) return forkedValue.then(res => {
-      setter(result, res)
-      return asyncGenericForkSeries(funcIter, value, result, setter)
-    })
-    setter(result, forkedValue)
+const funcAllSeries = funcs => function serialFunction(...args) {
+  const funcsLength = funcs.length, output = []
+  let funcsIndex = -1
+  while (++funcsIndex < funcsLength) {
+    const outputItem = funcs[funcsIndex].apply(null, args)
+    if (isPromise(outputItem)) {
+      return outputItem.then(res => {
+        output[funcsIndex] = res
+        return asyncFuncAllSeries(funcs, args, output, funcsIndex)
+      })
+    }
+    output[funcsIndex] = outputItem
   }
-  return result
+  return output
 }
 
 /**
  * @name fork.series
  *
  * @synopsis
- * <T any>fork.series(
- *   funcs Iterable<T=>any>,
- * )(value T) -> result Promise|Array
+ * ...any -> args
+ *
+ * fork.series(
+ *   funcs Array<args=>any>,
+ * )(args) -> Promise|Array
  *
  * @catchphrase
  * fork in series
@@ -510,8 +421,7 @@ const genericForkSeries = (funcIter, value, result, setter) => {
  *
  * @serial
  */
-fork.series = funcs => value => (
-  genericForkSeries(funcs[symbolIterator](), value, [], arrayPush))
+fork.series = funcAllSeries
 
 /**
  * @name assign
