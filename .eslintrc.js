@@ -259,8 +259,8 @@ module.exports = {
         'prefer-promise-reject-errors': 'error',
         'prefer-reflect': 'off',
         'prefer-regex-literals': 'error',
-        'prefer-rest-params': 'error',
-        'prefer-spread': 'error',
+        'prefer-rest-params': 'off',
+        'prefer-spread': 'off',
         'prefer-template': 'error',
         'quote-props': 'off',
         'quotes': [
