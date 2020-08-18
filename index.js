@@ -5,10 +5,10 @@
  * rubico may be freely distributed under the MIT license.
  */
 
-(function (root, exported) {
-  if (typeof module == 'object') (module.exports = exported) // CommonJS
-  else if (typeof define == 'function') define(() => exported) // AMD
-  else (root.rubico = exported) // Browser
+(function (root, rubico) {
+  if (typeof module == 'object') (module.exports = rubico) // CommonJS
+  else if (typeof define == 'function') define(() => rubico) // AMD
+  else (root.rubico = rubico) // Browser
 }(this, (function () { 'use strict'
 
 /**
@@ -312,6 +312,9 @@ const funcAll = funcs => function allFuncs(...args) {
 /**
  * @name fork
  *
+ * @catchphrase
+ * duplicate and diverge flow
+ *
  * @synopsis
  * ...any -> args
  *
@@ -323,15 +326,12 @@ const funcAll = funcs => function allFuncs(...args) {
  *   funcs Array<args=>Promise|any>,
  * )(args) -> Promise|Array
  *
- * @catchphrase
- * duplicate and diverge flow
- *
  * @description
  * **fork** takes an array or object of functions and an input value and returns an array or object
  *
  * of all evaluations of functions in `funcs` with the input `value`. `result` is a Promise if any function of `funcs` is asynchronous. **fork** executes all functions of `funcs` concurrently.
  *
- * @example
+ * ```javascript
  * console.log(
  *   fork({
  *     greetings: fork([
@@ -340,6 +340,7 @@ const funcAll = funcs => function allFuncs(...args) {
  *     ]),
  *   })('hello'),
  * ) // { greetings: ['hello world', 'hello mom'] }
+ * ```
  *
  * @concurrent
  */
@@ -397,16 +398,16 @@ const funcAllSeries = funcs => function serialFunction(...args) {
  * ...any -> args
  *
  * fork.series(
- *   funcs Array<args=>any>,
+ *   Array<args=>any>,
  * )(args) -> Promise|Array
  *
  * @catchphrase
  * fork in series
  *
  * @description
- * **fork.series** accepts an Array of functions `funcs` and an input `value` and returns an Array with each function of `funcs` applied with `value`. `fork.series` returns a Promise if any functions of `funcs` are asynchronous.
+ * **fork.series** is **fork** with serial instead of concurrent execution of functions.
  *
- * @example
+ * ```javascript
  * const sleep = ms => () => new Promise(resolve => setTimeout(resolve, ms))
  *
  * fork.series([
@@ -418,6 +419,7 @@ const funcAllSeries = funcs => function serialFunction(...args) {
  * ])('hello') // hello world
  *             // hello mom
  *             // hello darkness
+ * ```
  *
  * @serial
  */
@@ -437,13 +439,14 @@ fork.series = funcAllSeries
  * @description
  * **assign** accepts an object of functions and an object input and returns an object output. The output is composed of the original input and an object computed from a concurrent evaluation of the object of functions with the input. `result` is each function of `funcs` applied with Object `value` merged into the input Object `value`. If any functions of `funcs` is asynchronous, `result` is a Promise.
  *
- * @example
+ * ```javascript
  * console.log(
  *   assign({
  *     squared: ({ number }) => number ** 2,
  *     cubed: ({ number }) => number ** 3,
  *   })({ number: 3 }),
  * ) // { number: 3, squared: 9, cubed: 27 }
+ * ```
  *
  * @concurrent
  */
