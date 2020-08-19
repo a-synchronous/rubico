@@ -1,5 +1,13 @@
+## v1.5.6
+ * fork rewrite + benchmarks
+ * fork.series rewrite + benchmarks
+ * assign rewrite + benchmarks
+ * tap rewrite + benchmarks
+ * tryCatch rewrite + benchmarks
+ * switchCase rewrite + benchmarks
+
 ## v1.5.5
- * pipe revamp
+ * pipe rewrite + benchmarks
 
 ## v1.5.3
  * x/uniq - export in x/index
