@@ -372,7 +372,7 @@ describe('rubico', () => {
     it('throws a TypeError if passed a non function', async () => {
       assert.throws(
         () => tap('hey')(),
-        new TypeError('func is not a function'),
+        new TypeError('func.call is not a function'),
       )
     })
   })
@@ -455,15 +455,15 @@ describe('rubico', () => {
       ase(e2.x, 1)
     })
     it('throws a TypeError if passed a non function tryer', async () => {
-      assert.throws(
-        () => tryCatch('hey', () => {}),
-        new TypeError('tryCatch(x, y); x is not a function'),
+      assert.deepEqual(
+        tryCatch('hey', (...args) => args)('sup'),
+        [new TypeError('tryer is not a function'), 'sup'],
       )
     })
-    it('throws a TypeError if passed a non function catcher', async () => {
-      assert.throws(
-        () => tryCatch(() => {}, Buffer.from('abc')),
-        new TypeError('tryCatch(x, y); y is not a function'),
+    it('won\'t enforce the catcher function typecheck', async () => {
+      assert.deepEqual(
+        tryCatch(() => 'ayo', Buffer.from('abc'))('hey'),
+        'ayo',
       )
     })
   })

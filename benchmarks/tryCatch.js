@@ -1,59 +1,44 @@
 const { tryCatch } = require('..')
 const { timeInLoop } = require('../x')
 
-const noop = () => {}
+/**
+ * @name tryCatch
+ *
+ * @benchmark
+ * tryCatch1Run: 1e+6: 35.7ms
+ * tryCatch2Run: 1e+6: 37.875ms
+ */
 
-timeInLoop('noop', 1e5, () => {
-  noop()
-})
+{
+  const identity = value => value
 
-const throwError = err => { throw err }
+  const noop = () => {}
 
-// 1e+5: 771.797ms
-timeInLoop('tryCatch_caught_vanilla', 1e5, () => {
-  try {
-    throwError(new Error('hey'))
-  } catch (err) {
-    noop()
+  const tryCatch1 = tryCatch(identity, noop)
+
+  const isPromise = value => value != null && typeof value.then == 'function'
+
+  const tryCatchApplyCall = (tryer, catcher) => function tryCatcher(...args) {
+    try {
+      const output = tryer.apply(null, args)
+      return isPromise(output)
+        ? output.catch(err => catcher.call(null, err, ...args))
+        : output
+    } catch (err) {
+      return catcher.call(null, err, ...args)
+    }
   }
-})
 
-const tryCatchThrow = tryCatch(throwError, noop)
+  const tryCatch2 = tryCatchApplyCall(identity, noop)
 
-// 1e+5: 764.897ms
-timeInLoop('tryCatch_caught_rubicoHappyPath', 1e5, () => {
-  tryCatchThrow(new Error('hey'))
-})
+  const tryCatch1Run = () => tryCatch1('yo')
 
-// 1e+5: 783.742ms
-timeInLoop('tryCatch_caught_rubicoFullInit', 1e5, () => {
-  tryCatch(throwError, noop)(new Error('hey'))
-})
+  const tryCatch2Run = () => tryCatch2('yo')
 
-const identity = x => x
+  // const func = tryCatch1Run
+  const func = tryCatch2Run
 
-// 1e+6: 9.086ms
-timeInLoop('identity', 1e6, () => {
-  identity(1)
-})
+  console.log('func()', func())
 
-// 1e+6: 9.388ms
-timeInLoop('tryCatch_identity_vanilla', 1e6, () => {
-  try {
-    identity(1)
-  } catch (err) {
-    // unreachable
-  }
-})
-
-const tryCatchIdentity = tryCatch(identity, noop)
-
-// 1e+6: 12.05ms
-timeInLoop('tryCatch_identity_rubicoHappyPath', 1e6, () => {
-  tryCatchIdentity(1)
-})
-
-// 1e+6: 54.061ms
-timeInLoop('tryCatch_identity_rubicoFullInit', 1e6, () => {
-  tryCatch(identity, noop)(1)
-})
+  timeInLoop(func.name, 1e6, func)
+}

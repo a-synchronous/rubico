@@ -102,15 +102,6 @@ const possiblePromiseThen = (value, func) => (
   isPromise(value) ? value.then(func) : func(value))
 
 /**
- * @name possiblePromiseCatch
- *
- * @synopsis
- * possiblePromiseCatch(value Promise|any, func any=>Promise|any) -> Promise|any
- */
-const possiblePromiseCatch = (value, func) => (
-  isPromise(value) ? value.catch(func) : value)
-
-/**
  * @name SyncThenable
  *
  * @synopsis
@@ -447,7 +438,7 @@ fork.series = funcAllSeries
  * @concurrent
  */
 const assign = function (funcs) {
-  const allFuncs = funcObjectAll(funcs)
+  const allFuncs = funcObjectAll.call(null, funcs)
   return function assignment(input) {
     const output = allFuncs.call(null, input)
     return isPromise(output)
@@ -516,23 +507,44 @@ const tap = func => function tapping(input) {
  */
 tap.if = (cond, func) => {}
 
-/*
+/**
+ * @name tryCatch
+ *
+ * @catchphrase
+ * try a function, catch with another
+ *
  * @synopsis
- * tryCatch(f function, onError function)(x any) -> Promise|any
+ * tryCatch(
+ *   tryer args=>Promise|any,
+ *   catcher (err Error|any, ...args)=>Promise|any,
+ * )(args ...any) -> Promise|any
+ *
+ * @description
+ * **tryCatch** takes two functions, a tryer and a catcher, and returns a tryCatcher function that, when called, calls the tryer with the arguments. If the tryer throws an Error or returns a Promise that rejects, tryCatch calls the catcher with the thrown value and the arguments. If the tryer called with the arguments does not throw, the tryCatcher returns the result of that call.
+ *
+ * ```javascript
+ * const errorThrower = tryCatch(
+ *   message => {
+ *     throw new Error(message)
+ *   },
+ *   (err, message) => {
+ *     console.log(err)
+ *     return `${message} from catcher`
+ *   },
+ * )
+ *
+ * console.log(errorThrower('hello')) // Error: hello
+ *                                    // hello from catcher
+ * ```
  */
-const tryCatch = (f, onError) => {
-  if (!isFunction(f)) {
-    throw new TypeError('tryCatch(x, y); x is not a function')
-  }
-  if (!isFunction(onError)) {
-    throw new TypeError('tryCatch(x, y); y is not a function')
-  }
-  return x => {
-    try {
-      return possiblePromiseCatch(f(x), e => onError(e, x))
-    } catch (e) {
-      return onError(e, x)
-    }
+const tryCatch = (tryer, catcher) => function tryCatcher(...args) {
+  try {
+    const output = tryer(...args)
+    return isPromise(output)
+      ? output.catch(err => catcher(err, ...args))
+      : output
+  } catch (err) {
+    return catcher(err, ...args)
   }
 }
 
