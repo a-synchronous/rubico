@@ -552,6 +552,13 @@ describe('rubico', () => {
     it('acts as identity for a single case', async () => {
       assert.strictEqual(switchCase([() => false])(), false)
     })
+    it('first function must always return true for only two cases', async () => {
+      assert.strictEqual(switchCase([() => true, () => 'hey'])(), 'hey')
+      assert.throws(
+        () => switchCase([() => false, () => 'hey'])(),
+        new TypeError('funcs[funcsIndex] is not a function'),
+      )
+    })
     it('throws a TypeError if passed a non array', async () => {
       assert.throws(
         () => switchCase('hey')(),
