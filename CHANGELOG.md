@@ -5,6 +5,7 @@
  * tap rewrite + benchmarks
  * tryCatch rewrite + benchmarks
  * switchCase rewrite + benchmarks
+ * switchCase supports even numbers of functions
 
 ## v1.5.5
  * pipe rewrite + benchmarks
