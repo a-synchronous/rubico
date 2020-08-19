@@ -543,28 +543,37 @@ describe('rubico', () => {
         'hey',
       )
     })
+    it('acts as identity for a single case', async () => {
+      assert.throws(
+        () => switchCase([])(),
+        new TypeError('funcs[funcsIndex] is not a function'),
+      )
+    })
+    it('acts as identity for a single case', async () => {
+      assert.strictEqual(switchCase([() => false])(), false)
+    })
     it('throws a TypeError if passed a non array', async () => {
       assert.throws(
-        () => switchCase('hey'),
-        new TypeError('switchCase(fns); fns is not an array of functions'),
+        () => switchCase('hey')(),
+        new TypeError('funcs[funcsIndex] is not a function'),
       )
     })
-    it('throws a RangeError if passed less than three functions', async () => {
-      assert.throws(
-        () => switchCase([() => false, () => 'hey']),
-        new RangeError('switchCase(fns); fns is not an array of at least three functions'),
+    it('does not throw if passed an even number of functions', async () => {
+      assert.strictEqual(
+        switchCase([() => false, () => 'hey', () => true, () => 'ho'])(),
+        'ho',
       )
     })
-    it('throws a RangeError if passed an even number of functions', async () => {
+    it('however, throws TypeError if even number of functions and all cases are false', async () => {
       assert.throws(
-        () => switchCase([() => false, () => 'hey', () => true, () => 'ho']),
-        new RangeError('switchCase(fns); fns is not an array of an odd number of functions'),
+        () => switchCase([() => false, () => 'hey'])(),
+        new TypeError('funcs[funcsIndex] is not a function'),
       )
     })
-    it('throws a TypeError if any item is not a function', async () => {
+    it('throws a TypeError if any item of the funcs array is not a function', async () => {
       assert.throws(
-        () => switchCase([() => false, 'hey', () => true, () => 'ho', () => 'hi']),
-        new TypeError('switchCase(fns); fns[1] is not a function'),
+        () => switchCase([() => true, 'hey', () => true, () => 'ho', () => 'hi'])(),
+        new TypeError('funcs[(funcsIndex + 1)] is not a function'),
       )
     })
   })

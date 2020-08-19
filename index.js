@@ -130,14 +130,14 @@ const possiblePromiseAll = values => (values.some(isPromise)
   : new SyncThenable(values))
 
 /**
- * @name functionConcat
+ * @name funcConcat
  *
  * @synopsis
  * any -> A; any -> B; any -> C
  *
- * functionConcat(funcAB A=>B, funcBC B=>C) -> pipedFunction A=>C
+ * funcConcat(funcAB A=>B, funcBC B=>C) -> pipedFunction A=>C
  */
-const functionConcat = (funcAB, funcBC) => function pipedFunction(...args) {
+const funcConcat = (funcAB, funcBC) => function pipedFunction(...args) {
   const callAB = funcAB.apply(null, args)
   return isPromise(callAB)
     ? callAB.then(res => funcBC.call(null, res))
@@ -146,7 +146,7 @@ const functionConcat = (funcAB, funcBC) => function pipedFunction(...args) {
 
 /**
  * @synopsis
- * isGeneratorFunction(value !null) -> boolean
+ * isGeneratorFunction(value any) -> boolean
  */
 const isGeneratorFunction = function (value) {
   const tag = objectToString(value)
@@ -175,9 +175,9 @@ const isSequence = value => value != null
  * Reducer=>Reducer -> Transducer
  *
  * pipe([
- *   args=>any,
- *   ...Array<any=>any>,
- * ])(args ...any) -> output any
+ *   args=>Promise|any,
+ *   ...Array<any=>Promise|any>,
+ * ])(args ...any) -> output Promise|any
  *
  * pipe(
  *   Array<Transducer>,
@@ -214,7 +214,7 @@ const isSequence = value => value != null
  * )(Reducer) -> composed Reducer
  * ```
  *
- * **pipe** supports transducer composition. When passed a reducer function, a pipe of functions returns a new reducer function that applies the transducers of the functions array in series, ending the chain with the passed in reducer. `compositeReducer` must be used in transducer position in conjunction with **reduce** or any implementation of reduce to have a transducing effect. For more information on this behavior, please see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
+ * **pipe** supports transducer composition. When passed a reducer function, a pipe of functions returns a new reducer function that applies the transducers of the functions array in series, ending the chain with the passed in reducer. `compositeReducer` must be used in transducer position in conjunction with **reduce** or any implementation of reduce to have a transducing effect. For more information on this behavior, see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
  *
  * ```javascript
  * const isOdd = number => number % 2 == 1
@@ -237,13 +237,13 @@ const isSequence = value => value != null
  * ) // [1, 9, 25]
  * ```
  *
- * @serial
+ * @execution series
  *
  * @transducing
  */
 const pipe = function (funcs) {
-  const functionPipeline = funcs.reduce(functionConcat),
-    functionComposition = funcs.reduceRight(functionConcat)
+  const functionPipeline = funcs.reduce(funcConcat),
+    functionComposition = funcs.reduceRight(funcConcat)
   return function pipeline() {
     const firstArg = arguments[0]
     if (isFunction(firstArg) && !isGeneratorFunction(firstArg)) {
@@ -306,17 +306,17 @@ const funcAll = funcs => function allFuncs(...args) {
  * ...any -> args
  *
  * fork(
- *   Object<args=>Promise|any>,
+ *   funcs Object<args=>Promise|any>,
  * )(args) -> Promise|Object
  *
  * fork(
- *   Array<args=>Promise|any>,
+ *   funcs Array<args=>Promise|any>,
  * )(args) -> Promise|Array
  *
  * @description
- * **fork** takes an array or object of functions and an input value and returns an array or object
+ * **fork** takes an array or object of optionally async functions and an input value and returns an array or object or Promise of either. The resulting array or object is the product of applying each function in the array or object of functions to any amount of input arguments.
  *
- * of all evaluations of functions in `funcs` with the input `value`. `result` is a Promise if any function of `funcs` is asynchronous. **fork** executes all functions of `funcs` concurrently.
+ * All functions of `funcs`, including additional forks, are executed concurrently.
  *
  * ```javascript
  * console.log(
@@ -329,7 +329,7 @@ const funcAll = funcs => function allFuncs(...args) {
  * ) // { greetings: ['hello world', 'hello mom'] }
  * ```
  *
- * @concurrent
+ * @execution concurrent
  */
 const fork = funcs => isArray(funcs) ? funcAll(funcs) : funcObjectAll(funcs)
 
@@ -385,14 +385,14 @@ const funcAllSeries = funcs => function allFuncsSeries(...args) {
  * ...any -> args
  *
  * fork.series(
- *   Array<args=>any>,
+ *   funcs Array<args=>Promise|any>,
  * )(args) -> Promise|Array
  *
  * @catchphrase
  * fork in series
  *
  * @description
- * **fork.series** is **fork** with serial instead of concurrent execution of functions.
+ * **fork.series** is fork with serial execution instead of concurrent execution of functions. All functions of `funcs` are then executed in series.
  *
  * ```javascript
  * const sleep = ms => () => new Promise(resolve => setTimeout(resolve, ms))
@@ -408,7 +408,7 @@ const funcAllSeries = funcs => function allFuncsSeries(...args) {
  *             // hello darkness
  * ```
  *
- * @serial
+ * @execution series
  */
 fork.series = funcAllSeries
 
@@ -420,11 +420,13 @@ fork.series = funcAllSeries
  *
  * @synopsis
  * assign(
- *   Object<input=>any>,
+ *   funcs Object<input=>Promise|any>,
  * )(input Object) -> output Promise|Object
  *
  * @description
- * **assign** accepts an object of functions and an object input and returns an object output. The output is composed of the original input and an object computed from a concurrent evaluation of the object of functions with the input. `result` is each function of `funcs` applied with Object `value` merged into the input Object `value`. If any functions of `funcs` is asynchronous, `result` is a Promise.
+ * **assign** accepts an object of optionally async functions and an object input and returns an output object or a Promise of an object. The output is composed of the original input and an object computed from a concurrent evaluation of the object of functions with the input. `result` is each function of `funcs` applied with Object `value` merged into the input Object `value`. If any functions of `funcs` is asynchronous, `result` is a Promise.
+ *
+ * All functions of `funcs`, including additional forks, are executed concurrently.
  *
  * ```javascript
  * console.log(
@@ -435,7 +437,7 @@ fork.series = funcAllSeries
  * ) // { number: 3, squared: 9, cubed: 27 }
  * ```
  *
- * @concurrent
+ * @execution concurrent
  */
 const assign = function (funcs) {
   const allFuncs = funcObjectAll.call(null, funcs)
@@ -541,53 +543,66 @@ const tryCatch = (tryer, catcher) => function tryCatcher(...args) {
   try {
     const output = tryer(...args)
     return isPromise(output)
-      ? output.catch(err => catcher(err, ...args))
-      : output
+      ? output.catch(err => catcher(err, ...args)) : output
   } catch (err) {
     return catcher(err, ...args)
   }
 }
 
-/*
- * @synopsis
- * arraySwitchCase(fns Array<function>, x any, i number) -> Promise|any
+/**
+ * @name asyncFuncSwitch
  *
- * @TODO reimplement to iterative
+ * @synopsis
+ * asyncFuncSwitch(
+ *   funcs Array<args=>Promise|any>,
+ *   args Array,
+ *   funcsIndex number,
+ * ) -> Promise|any
  */
-const arraySwitchCase = (fns, x, i) => {
-  if (i === fns.length - 1) return fns[i](x)
-  return possiblePromiseThen(
-    fns[i](x),
-    ok => ok ? fns[i + 1](x) : arraySwitchCase(fns, x, i + 2),
-  )
+const asyncFuncSwitch = async function (funcs, args, funcsIndex) {
+  const lastIndex = funcs.length - 1
+  while ((funcsIndex += 2) < lastIndex) {
+    if (await funcs[funcsIndex](...args)) {
+      return funcs[funcsIndex + 1](...args)
+    }
+  }
+  return funcs[funcsIndex](...args)
 }
 
-/*
+/**
+ * @name funcConditional
+ *
  * @synopsis
+ * funcConditional(
+ *   funcs Array<args=>Promise|any>,
+ * )(args ...any) -> Promise|any
+ */
+const funcConditional = funcs => function funcSwitching(...args) {
+  const lastIndex = funcs.length - 1
+  let funcsIndex = -2
+  while ((funcsIndex += 2) < lastIndex) {
+    const shouldReturnNext = funcs[funcsIndex](...args)
+    if (isPromise(shouldReturnNext)) {
+      return shouldReturnNext.then(res => res
+        ? funcs[funcsIndex + 1](...args)
+        : asyncFuncSwitch(funcs, args, funcsIndex))
+    }
+    if (shouldReturnNext) {
+      return funcs[funcsIndex + 1](...args)
+    }
+  }
+  return funcs[funcsIndex](...args)
+}
+
+/**
+ * @name switchCase
+ *
+ * @synopsis
+ * switchCase(funcs)
+ *
  * switchCase(fns Array<function>)(x any) -> Promise|any
  */
-const switchCase = fns => {
-  if (!isArray(fns)) {
-    throw new TypeError('switchCase(fns); fns is not an array of functions')
-  }
-  if (fns.length < 3) {
-    throw new RangeError([
-      'switchCase(fns)',
-      'fns is not an array of at least three functions',
-    ].join('; '))
-  }
-  if (fns.length % 2 === 0) {
-    throw new RangeError([
-      'switchCase(fns)',
-      'fns is not an array of an odd number of functions',
-    ].join('; '))
-  }
-  for (let i = 0; i < fns.length; i++) {
-    if (isFunction(fns[i])) continue
-    throw new TypeError(`switchCase(fns); fns[${i}] is not a function`)
-  }
-  return x => arraySwitchCase(fns, x, 0)
-}
+const switchCase = funcConditional
 
 /*
  * @synopsis
@@ -1567,7 +1582,7 @@ const flatMapReducer = (func, reducer) => (aggregate, value) => (
  *   )([1, 2, 3]),
  * ) // [1, 1, 4, 8, 9, 27]
  *
- * @concurrent
+ * @execution concurrent
  */
 const flatMap = func => {
   if (!isFunction(func)) {
