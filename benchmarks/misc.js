@@ -116,7 +116,7 @@ const mapFromForLoopDestructuring = x => {
 
 // timeInLoop('mapFromForLoopDestructuring(map)', 1e5, () => mapFromForLoopDestructuring(map))
 
-/*
+/**
  * @name conditionalPropertyAccess
  *
  * @benchmarks
@@ -135,7 +135,7 @@ const mapFromForLoopDestructuring = x => {
   // timeInLoop('obj.a?.b?.c', 1e7, () => { obj.a?.b?.c })
 }
 
-/*
+/**
  * @name objectIteration
  *
  * @benchmarks
@@ -195,7 +195,7 @@ const mapFromForLoopDestructuring = x => {
   // timeInLoop(func.name, 1e6, func)
 }
 
-/*
+/**
  * @name functionCalls
  *
  * @benchmarks
@@ -233,6 +233,22 @@ const mapFromForLoopDestructuring = x => {
   // const func = protoApply
   // const func = boundProtoApply
 
-  console.log(func())
-  timeInLoop(func.name, 1e7, func)
+  // console.log(func())
+  // timeInLoop(func.name, 1e7, func)
+}
+
+/**
+ * @name async-await
+ *
+ * @benchmarks
+ * async-add: 1e+6: 111.432ms
+ * async-add-return-await: 1e+6: 238.221ms
+ */
+
+{
+  const add = (a, b) => a + b
+
+  // timeInLoop.async('async-add', 1e6, async () => add(1, 2))
+
+  // timeInLoop.async('async-add-return-await', 1e6, async () => await add(1, 2))
 }
