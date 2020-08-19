@@ -460,25 +460,26 @@ const assign = function (funcs) {
  * @name tap
  *
  * @synopsis
- * tap(func function)(value any) -> Promise|any
+ * tap(function)(input any) -> Promise|input
  *
  * @catchphrase
  * spy on flow
  *
  * @description
- * **tap** accepts a function and any value, calls the function with the value, and returns the value unchanged.
+ * **tap** accepts a function and any input, calls the function with the input, and returns the original input. This is useful for running side effects in function pipelines, e.g. logging out data in a pipeline to the console.
  *
- * @example
+ * ```javascript
  * pipe([
  *   tap(console.log),
  *   value => value + 'bar'
  *   tap(console.log),
  * ])('foo') // 'foo'
  *           // 'foobar'
+ * ```
  */
-const tap = func => function tapFunc(value) {
-  const returned = func(value)
-  return isPromise(returned) ? returned.then(() => value) : value
+const tap = func => function tapping(input) {
+  const call = func.call(null, input)
+  return isPromise(call) ? call.then(() => input) : input
 }
 
 /**
@@ -496,7 +497,7 @@ const tap = func => function tapFunc(value) {
  * @description
  * **tap.if** takes a condition `cond`, a function `func`, and an input `value`, returning the `result` as the unchanged `value`. If `cond` applied with `value` is falsy, `func` is not called; otherwise, `func` is called with `value`. `result` is a Promise if either `func` or `cond` is asynchronous.
  *
- * @example
+ * ```javascript
  * const isOdd = number => number % 2 == 1
  *
  * pipe([
@@ -509,6 +510,7 @@ const tap = func => function tapFunc(value) {
  *   }),
  * ])(3) // odd 3
  *       // squared odd 9
+ * ```
  *
  * @TODO
  */
