@@ -191,7 +191,48 @@ const mapFromForLoopDestructuring = x => {
   // const func = objectKeysReduce
   const func = objectValuesIterate
 
-  console.log(func())
+  // console.log(func())
+  // timeInLoop(func.name, 1e6, func)
+}
 
-  timeInLoop(func.name, 1e6, func)
+/*
+ * @name functionCalls
+ *
+ * @benchmarks
+ * regularCall: 1e+7: 13.045ms
+ * protoCall: 1e+7: 13.261ms
+ * boundProtoCall: 1e+7: 13.025ms
+ * protoApply: 1e+7: 167.227ms
+ * boundProtoApply: 1e+7: 161.647ms
+ */
+
+{
+  const identity = value => value
+
+  const identityCall = identity.call.bind(identity)
+
+  const identityApply = identity.apply.bind(identity)
+
+  const hey = 'hey'
+
+  const heyArr = ['hey']
+
+  const regularCall = () => identity(hey)
+
+  const protoCall = () => identity.call(null, hey)
+
+  const boundProtoCall = () => identityCall(null, hey)
+
+  const protoApply = () => identity.apply(null, heyArr)
+
+  const boundProtoApply = () => identityApply(null, heyArr)
+
+  // const func = regularCall
+  // const func = protoCall
+  // const func = boundProtoCall
+  // const func = protoApply
+  // const func = boundProtoApply
+
+  console.log(func())
+  timeInLoop(func.name, 1e7, func)
 }
