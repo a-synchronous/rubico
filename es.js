@@ -4,399 +4,592 @@
  * rubico may be freely distributed under the MIT license.
  */
 
-const isDefined = x => x != null
-
-const isUndefined = x => typeof x == 'undefined'
-
-const isNull = x => x === null
-
 const symbolIterator = Symbol.iterator
-
-const isIterable = x => x != null && Boolean(x[symbolIterator])
 
 const symbolAsyncIterator = Symbol.asyncIterator
 
-const isAsyncIterable = x => x != null && Boolean(x[symbolAsyncIterator])
+const objectProto = Object.prototype
 
-const isWritable = x => x != null && typeof x.write == 'function'
+const nativeObjectToString = objectProto.toString
 
-const isFunction = x => typeof x == 'function'
+const objectToString = x => nativeObjectToString.call(x)
+
+const generatorFunctionTag = '[object GeneratorFunction]'
+
+const asyncGeneratorFunctionTag = '[object AsyncGeneratorFunction]'
+
+const promiseAll = Promise.all.bind(Promise)
+
+const isDefined = value => value != null
+
+const isUndefined = value => typeof value == 'undefined'
+
+const isNull = value => value === null
+
+const isIterable = value => value != null
+  && typeof value[symbolIterator] == 'function'
+
+const isAsyncIterable = value => value != null
+  && typeof value[symbolAsyncIterator] == 'function'
+
+const isWritable = value => value != null && typeof value.write == 'function'
+
+const isFunction = value => typeof value == 'function'
 
 const isArray = Array.isArray
 
-const isObject = x => x != null && x.constructor == Object
+const isObject = value => value != null && value.constructor == Object
 
-const isSet = x => x != null && x.constructor == Set
+const isSet = value => value != null && value.constructor == Set
 
-const isMap = x => x != null && x.constructor == Map
+const isMap = value => value != null && value.constructor == Map
 
 const isTypedArray = ArrayBuffer.isView
 
-const isNumber = x => (
-  typeof x == 'number' || (x != null && x.constructor == Number))
+const isNumber = function (value) {
+  return typeof value == 'number'
+    || (value != null && value.constructor == Number)
+}
 
 const isNaN = Number.isNaN
 
 const isBigInt = x => typeof x == 'bigint'
 
-const isString = x => (
-  typeof x == 'string' || (x != null && x.constructor == String))
+const isString = value => typeof value == 'string'
+  || (value != null && value.constructor == String)
 
-const isPromise = x => x != null && typeof x.then == 'function'
+const isPromise = value => value != null && typeof value.then == 'function'
 
 const range = (start, end) => Array.from({ length: end - start }, (x, i) => i + start)
 
 const arrayOf = (item, length) => Array.from({ length }, () => item)
 
-const promiseAll = Promise.all.bind(Promise)
+/**
+ * @name arrayPush
+ *
+ * @synopsis
+ * arrayPush(x Array, value any) -> undefined
+const arrayPush = (array, value) => {
+  array[array.length] = value
+} */
 
-const PossiblePromise = function(p) { this.value = p }
+/**
+ * @name possiblePromiseThen
+ *
+ * @synopsis
+ * possiblePromiseThen(value Promise|any, func function) -> Promise|any
+ */
+const possiblePromiseThen = (value, func) => (
+  isPromise(value) ? value.then(func) : func(value))
 
-PossiblePromise.prototype.then = function(f) {
-  const p = this.value
-  return f(p)
-  // return isPromise(p) ? p.then(f) : f(p)
+/**
+ * @name SyncThenable
+ *
+ * @synopsis
+ * new SyncThenable(value any) -> SyncThenable
+ */
+const SyncThenable = function (value) { this.value = value }
+
+/**
+ * @name SyncThenable.prototype.then
+ *
+ * @synopsis
+ * new SyncThenable(value any).then(func function) -> any
+ */
+SyncThenable.prototype.then = function (func) { return func(this.value) }
+
+/**
+ * @name possiblePromiseAll
+ *
+ * @synopsis
+ * possiblePromiseAll(
+ *   values Array<Promise>|Array,
+ * ) -> Promise<Array>|SyncThenable<Array>
+ */
+const possiblePromiseAll = values => (values.some(isPromise)
+  ? promiseAll(values)
+  : new SyncThenable(values))
+
+/**
+ * @name funcConcat
+ *
+ * @synopsis
+ * any -> A; any -> B; any -> C
+ *
+ * funcConcat(funcAB A=>B, funcBC B=>C) -> pipedFunction A=>C
+ */
+const funcConcat = (funcAB, funcBC) => function pipedFunction(...args) {
+  const callAB = funcAB.apply(null, args)
+  return isPromise(callAB)
+    ? callAB.then(res => funcBC.call(null, res))
+    : funcBC.call(null, callAB)
 }
 
-const possiblePromiseThen = (p, f) => isPromise(p) ? p.then(f) : f(p)
-
-const possiblePromiseCatch = (p, f) => isPromise(p) ? p.catch(f) : p
-
-const possiblePromiseAll = ps => (ps.some(isPromise)
-  ? promiseAll(ps)
-  : new PossiblePromise(ps))
-
-/*
+/**
  * @synopsis
- * <T any>toFunction(x function|T) -> function|()=>T
+ * isGeneratorFunction(value any) -> boolean
  */
-const toFunction = x => isFunction(x) ? x : () => x
+const isGeneratorFunction = function (value) {
+  const tag = objectToString(value)
+  return tag == generatorFunctionTag || tag == asyncGeneratorFunctionTag
+}
 
-/*
+/**
  * @synopsis
- * iteratorPipe(
- *   iter Iterator<function>,
- *   args Array,
- * ) -> Promise|any
+ * isSequence(value any) -> boolean
+const isSequence = value => value != null
+  && (typeof value[symbolIterator] == 'function'
+    || typeof value[symbolAsyncIterator] == 'function'
+    || isGeneratorFunction(value)) */
+
+/**
+ * @name pipe
+ *
+ * @catchphrase
+ * define flow: chain functions together
+ *
+ * @synopsis
+ * any -> T
+ *
+ * (<T>, T)=>Promise|<T> -> Reducer<T>
+ *
+ * Reducer=>Reducer -> Transducer
+ *
+ * pipe([
+ *   args=>Promise|any,
+ *   ...Array<any=>Promise|any>,
+ * ])(args ...any) -> output Promise|any
+ *
+ * pipe(
+ *   Array<Transducer>,
+ * )(Reducer) -> composed Reducer
+ *
+ * @description
+ * **pipe** takes an array of functions and chains them together, each function passing its return value to the next function until all functions have been called. The final output for a given pipe and input is the result of the last function in the pipe.
+ *
+ * ```javascript
+ * console.log(
+ *   pipe([
+ *     number => number + 1,
+ *     number => number + 2,
+ *     number => number + 3,
+ *   ])(5),
+ * ) // 11
+ * ```
+ *
+ * When the first argument supplied to a pipe of functions is a non-generator function, **pipe** assumes it is being used in transducer position and iterates through its functions in reverse. This is due to an implementation detail in transducers, and enables the library Transducers API.
+ *
+ * ```
+ * any -> T
+ *
+ * (<T>, T)=>Promise|<T> -> Reducer<T> // the standalone <T> means "generic of T"
+ *
+ * Reducer=>Reducer -> Transducer
+ * ```
+ *
+ * A reducer is a function that takes a generic of any type T, a given instance of type T, and returns possibly a Promise of a generic of type T. A transducer is a function that takes a reducer and returns another reducer.
+ *
+ * ```
+ * pipe(
+ *   Array<Transducer>,
+ * )(Reducer) -> composed Reducer
+ * ```
+ *
+ * **pipe** supports transducer composition. When passed a reducer function, a pipe of functions returns a new reducer function that applies the transducers of the functions array in series, ending the chain with the passed in reducer. `compositeReducer` must be used in transducer position in conjunction with **reduce** or any implementation of reduce to have a transducing effect. For more information on this behavior, see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
+ *
+ * ```javascript
+ * const isOdd = number => number % 2 == 1
+ *
+ * const square = number => number ** 2
+ *
+ * const add = (a, b) => a + b
+ *
+ * const squaredOdds = pipe([
+ *   filter(isOdd),
+ *   map(square),
+ * ])
+ *
+ * console.log(
+ *   [1, 2, 3, 4, 5].reduce(squaredOdds(add), 0),
+ * ) // 1 + 9 + 25 -> 35
+ *
+ * console.log(
+ *   squaredOdds([1, 2, 3, 4, 5])
+ * ) // [1, 9, 25]
+ * ```
+ *
+ * @execution series
+ *
+ * @transducing
  */
-const iteratorPipe = (iter, args) => {
-  const { value: f0 } = iter.next()
-  let output = f0(...args)
-  for (const fn of iter) {
-    output = possiblePromiseThen(output, fn)
+const pipe = function (funcs) {
+  const functionPipeline = funcs.reduce(funcConcat),
+    functionComposition = funcs.reduceRight(funcConcat)
+  return function pipeline() {
+    const firstArg = arguments[0]
+    if (isFunction(firstArg) && !isGeneratorFunction(firstArg)) {
+      return functionComposition.apply(null, arguments)
+    }
+    return functionPipeline.apply(null, arguments)
+  }
+}
+
+/**
+ * @name funcObjectAll
+ *
+ * @synopsis
+ * funcObjectAll(
+ *   funcs Object<args=>Promise|any>
+ * )(args ...any) -> objectAllFuncs args=>Promise|Object
+ */
+const funcObjectAll = funcs => function objectAllFuncs(...args) {
+  const output = {}, promises = []
+  for (const key in funcs) {
+    const outputItem = funcs[key].apply(null, args)
+    if (isPromise(outputItem)) {
+      promises.push(outputItem.then(res => {
+        output[key] = res
+      }))
+    } else {
+      output[key] = outputItem
+    }
+  }
+  return promises.length == 0 ? output : promiseAll(promises).then(() => output)
+}
+
+/**
+ * @name funcAll
+ *
+ * @synopsis
+ * ...any -> args
+ *
+ * funcAll(
+ *   funcs Array<args=>Promise|any>
+ * ) -> allFuncs args=>Promise|Array
+ */
+const funcAll = funcs => function allFuncs(...args) {
+  let isAsync = false
+  const output = funcs.map(func => {
+    const outputItem = func.apply(null, args)
+    if (isPromise(outputItem)) isAsync = true
+    return outputItem
+  })
+  return isAsync ? promiseAll(output) : output
+}
+
+/**
+ * @name fork
+ *
+ * @catchphrase
+ * duplicate and diverge flow
+ *
+ * @synopsis
+ * ...any -> args
+ *
+ * fork(
+ *   funcs Object<args=>Promise|any>,
+ * )(args) -> Promise|Object
+ *
+ * fork(
+ *   funcs Array<args=>Promise|any>,
+ * )(args) -> Promise|Array
+ *
+ * @description
+ * **fork** takes an array or object of optionally async functions and an input value and returns an array or object or Promise of either. The resulting array or object is the product of applying each function in the array or object of functions to any amount of input arguments.
+ *
+ * All functions of `funcs`, including additional forks, are executed concurrently.
+ *
+ * ```javascript
+ * console.log(
+ *   fork({
+ *     greetings: fork([
+ *       greeting => greeting + 'world',
+ *       greeting => greeting + 'mom',
+ *     ]),
+ *   })('hello'),
+ * ) // { greetings: ['hello world', 'hello mom'] }
+ * ```
+ *
+ * @execution concurrent
+ */
+const fork = funcs => isArray(funcs) ? funcAll(funcs) : funcObjectAll(funcs)
+
+/**
+ * @name asyncFuncAllSeries
+ *
+ * @synopsis
+ * asyncFuncAllSeries(
+ *   funcs Array<function>,
+ *   input any,
+ *   output Array,
+ *   funcsIndex number,
+ * ) -> output Array
+ */
+const asyncFuncAllSeries = async function (funcs, args, output, funcsIndex) {
+  const funcsLength = funcs.length
+  while (++funcsIndex < funcsLength) {
+    output[funcsIndex] = await funcs[funcsIndex].apply(null, args)
   }
   return output
 }
 
-/*
- * @synopsis
- * reverseArrayIter(arr Array) -> Iterator
- *
- * @TODO: refactor for proper generator syntax
- */
-const reverseArrayIter = arr => (function*() {
-  for (let i = arr.length - 1; i >= 0; i--) yield arr[i]
-})()
-
-/*
- * @name: pipe
+/**
+ * @name funcAllSeries
  *
  * @synopsis
- * pipe(
- *   funcs Array<function>,
- * )(args ...any) -> y Promise|any
+ * ...any -> args
  *
- * pipe(
- *   funcs Array<function>,
- * )(reducer function) -> composedReducer function
- *
- * @description
- * `pipe` is a function composition and serial execution function that takes an Array of functions `funcs` and returns an anonymous inner function `pipe(funcs)`. `pipe(funcs)` accepts any number of arguments `args` and supplies them to the first function of `funcs`. The result of that call is supplied as a single argument to the next function, and so on until all functions of `funcs` have been called. The return value of `pipe(funcs)` for a given input is the return value of the final function of the array of functions `funcs` in a chain.
- *
- * When `pipe(funcs)` is passed a `reducer` function, the returned result is another reducer function `composedReducer` that would perform the pipeline operation described by `funcs` on every element of a given collection when used with [reduce](https://doc.rubico.land/#reduce) or the `.reduce` method of an Array. For more information on this behavior, please see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md)
- *
- * `pipe(funcs)` returns a Promise when any function of `funcs` is asynchronous.
- *
- * @catchphrase: define flow: chain functions together
- *
- * @execution: series
- *
- * @example
- * const addA = x => x + 'A'
- * const asyncAddB = async x => x + 'B'
- * const addC = x => x + 'C'
- *
- * const addAC = pipe([
- *   addA, // '' => 'A'
- *   addC, // 'A' => 'AC'
- * ])
- *
- * console.log(addAC(''))
- *
- * const asyncAddABC = pipe([
- *   addA, // '' => 'A'
- *   asyncAddB, // 'A' => Promise { 'AB' }
- *   addC, // Promise { 'AB' } => Promise { 'ABC' }
- * ])
- *
- * asyncAddABC('').then(console.log)
+ * funcAllSeries(
+ *   funcs Array<args=>any>,
+ * ) -> allFuncsSeries args=>Promise|Array
  */
-const pipe = fns => {
-  if (!isArray(fns)) {
-    throw new TypeError('pipe(fns); fns is not an array of functions')
+const funcAllSeries = funcs => function allFuncsSeries(...args) {
+  const funcsLength = funcs.length, output = []
+  let funcsIndex = -1
+  while (++funcsIndex < funcsLength) {
+    const outputItem = funcs[funcsIndex].apply(null, args)
+    if (isPromise(outputItem)) {
+      return outputItem.then(res => {
+        output[funcsIndex] = res
+        return asyncFuncAllSeries(funcs, args, output, funcsIndex)
+      })
+    }
+    output[funcsIndex] = outputItem
   }
-  if (fns.length < 1) {
-    throw new RangeError('pipe(fns); fns is not an array of at least one function')
-  }
-  for (let i = 0; i < fns.length; i++) {
-    if (isFunction(fns[i])) continue
-    throw new TypeError(`pipe(fns); fns[${i}] is not a function`)
-  }
-  return (...args) => (isFunction(args[0])
-    ? iteratorPipe(reverseArrayIter(fns), args)
-    : iteratorPipe(fns[Symbol.iterator].call(fns), args)
-  )
+  return output
 }
 
-/*
- * @synopsis
- * arrayFork(fns Array<function>, x any) -> Promise<Array>|Array
- */
-const arrayFork = (fns, x) => {
-  let isAsync = false
-  const y = fns.map(fn => {
-    const point = fn(x)
-    if (isPromise(point)) isAsync = true
-    return point
-  })
-  return isAsync ? Promise.all(y) : y
-}
-
-/*
- * @synopsis
- * objectFork(fns Object<function>, x any) -> Object|Promise<Object>
- */
-const objectFork = (fns, x) => {
-  const y = {}, promises = []
-  for (const k in fns) {
-    const point = fns[k](x)
-    if (isPromise(point)) {
-      promises.push(point.then(res => { y[k] = res }))
-    } else {
-      y[k] = point
-    }
-  }
-  return promises.length > 0 ? Promise.all(promises).then(() => y) : y
-}
-
-/*
- * @name: fork
+/**
+ * @name fork.series
  *
  * @synopsis
- * <T any>fork(
- *   funcs Object<T=>any>,
- * )(x Promise<T>|T) -> y Promise<Object>|Object
+ * ...any -> args
  *
- * <T any>fork(
- *   funcs Array<T=>any>,
- * )(x Promise<T>|T) -> y Promise<Array>|Array
- *
- * @description
- * `fork` is a function composition and concurrent execution function that takes either an Array or Object of functions `funcs` and returns an anonymous function `fork(funcs)` that executes all functions of `funcs` concurrently. `fork(funcs)`, when passed input `x`, returns an output `y` that mirrors the shape of `funcs`. `y`'s values are the results of the concurrent executions of functions of `funcs` with input `x`.
- *
- * `fork(funcs)` returns a Promise when any function of `funcs` is asynchronous.
- *
- * @catchphrase: duplicate and diverge flow
- *
- * @execution: concurrent
- *
- * @example
- * const greet = whom => greeting => greeting + ' ' + whom
- *
- * const greetAll = fork([
- *   greet('world'), // 'hello' => 'hello world'
- *   greet('mom'), // 'hello' => 'hello mom'
- * ])
- *
- * console.log(greetAll('hello'))
- *
- * const asyncGreetAll = fork({
- *   toWorld: greet('world'), // 'hello => 'hello world'
- *   toMom: greet('mom'), // 'hello => 'hello mom'
- *   toAsync: async x => greet('async')(x), // 'hello => Promise { 'hello async' }
- * })
- *
- * asyncGreetAll('hello').then(console.log)
- */
-const fork = fns => {
-  if (isArray(fns)) {
-    if (fns.length < 1) {
-      throw new RangeError('fork(x); x is not an array of at least one function')
-    }
-    for (let i = 0; i < fns.length; i++) {
-      if (isFunction(fns[i])) continue
-      throw new TypeError(`fork(x); x[${i}] is not a function`)
-    }
-    return x => arrayFork(fns, x)
-  }
-  if (isObject(fns)) {
-    if (Object.keys(fns).length < 1) {
-      throw new RangeError('fork(x); x is not an object of at least one entry')
-    }
-    for (const k in fns) {
-      if (isFunction(fns[k])) continue
-      throw new TypeError(`fork(x); x['${k}'] is not a function`)
-    }
-    return x => objectFork(fns, x)
-  }
-  throw new TypeError('fork(x); x invalid')
-}
-
-/*
- * @synopsis
- * arrayForkSeries(
- *   fns Array<functions>,
- *   x any,
- *   i number,
- *   y Array<any>,
- * ) -> Array<any>|Promise<Array<any>>
- *
- * @TODO: iterative implementation
- */
-const arrayForkSeries = (fns, x, i, y) => {
-  if (i === fns.length) return y
-  return possiblePromiseThen(
-    fns[i](x),
-    res => arrayForkSeries(fns, x, i + 1, y.concat(res)),
-  )
-}
-
-/*
- * @synopsis
  * fork.series(
- *   funcs Array<function>,
- * )(x any) -> y Array|Promise<Array>
- */
-fork.series = fns => {
-  if (isArray(fns)) {
-    if (fns.length < 1) {
-      throw new RangeError(
-        'fork.series(x); x is not an array of at least one function',
-      )
-    }
-    for (let i = 0; i < fns.length; i++) {
-      if (isFunction(fns[i])) continue
-      throw new TypeError(`fork.series(x); x[${i}] is not a function`)
-    }
-    return x => arrayForkSeries(fns, x, 0, [])
-  }
-  throw new TypeError('fork.series(x); x invalid')
-}
-
-/*
- * @synopsis
- * assign(funcs Object<function>)(x any) -> Object<any>|Promise<Object<any>>
- */
-const assign = funcs => {
-  if (!isObject(funcs)) {
-    throw new TypeError('assign(funcs); funcs is not an object of functions')
-  }
-  return x => {
-    if (!isObject(x)) {
-      throw new TypeError('assign(...)(x); x is not an object')
-    }
-    return possiblePromiseThen(
-      objectFork(funcs, x),
-      res => Object.assign({}, x, res),
-    )
-  }
-}
-
-/*
- * @synopsis
- * tap(f function)(x any) -> Promise|any
- */
-const tap = f => {
-  if (!isFunction(f)) {
-    throw new TypeError('tap(f); f is not a function')
-  }
-  return x => possiblePromiseThen(f(x), () => x)
-}
-
-/*
- * @synopsis
- * tap.if(cond function, f function)(x any) -> Promise|any
+ *   funcs Array<args=>Promise|any>,
+ * )(args) -> Promise|Array
  *
- * @TODO: https://github.com/a-synchronous/rubico/issues/100
+ * @catchphrase
+ * fork in series
+ *
+ * @description
+ * **fork.series** is fork with serial execution instead of concurrent execution of functions. All functions of `funcs` are then executed in series.
+ *
+ * ```javascript
+ * const sleep = ms => () => new Promise(resolve => setTimeout(resolve, ms))
+ *
+ * fork.series([
+ *   greeting => console.log(greeting + ' world'),
+ *   sleep(1000),
+ *   greeting => console.log(greeting + ' mom'),
+ *   sleep(1000),
+ *   greeting => console.log(greeting + ' darkness'),
+ * ])('hello') // hello world
+ *             // hello mom
+ *             // hello darkness
+ * ```
+ *
+ * @execution series
  */
-tap.if = (cond, f) => {}
+fork.series = funcAllSeries
 
-/*
+/**
+ * @name assign
+ *
+ * @catchphrase
+ * fork, then merge results
+ *
  * @synopsis
- * tryCatch(f function, onError function)(x any) -> Promise|any
+ * assign(
+ *   funcs Object<input=>Promise|any>,
+ * )(input Object) -> output Promise|Object
+ *
+ * @description
+ * **assign** accepts an object of optionally async functions and an object input and returns an output object or a Promise of an object. The output is composed of the original input and an object computed from a concurrent evaluation of the object of functions with the input. `result` is each function of `funcs` applied with Object `value` merged into the input Object `value`. If any functions of `funcs` is asynchronous, `result` is a Promise.
+ *
+ * All functions of `funcs`, including additional forks, are executed concurrently.
+ *
+ * ```javascript
+ * console.log(
+ *   assign({
+ *     squared: ({ number }) => number ** 2,
+ *     cubed: ({ number }) => number ** 3,
+ *   })({ number: 3 }),
+ * ) // { number: 3, squared: 9, cubed: 27 }
+ * ```
+ *
+ * @execution concurrent
  */
-const tryCatch = (f, onError) => {
-  if (!isFunction(f)) {
-    throw new TypeError('tryCatch(x, y); x is not a function')
+const assign = function (funcs) {
+  const allFuncs = funcObjectAll.call(null, funcs)
+  return function assignment(input) {
+    const output = allFuncs.call(null, input)
+    return isPromise(output)
+      ? output.then(res => ({ ...input, ...res }))
+      : ({ ...input, ...output })
   }
-  if (!isFunction(onError)) {
-    throw new TypeError('tryCatch(x, y); y is not a function')
+}
+
+/**
+ * @name tap
+ *
+ * @synopsis
+ * tap(function)(input any) -> Promise|input
+ *
+ * @catchphrase
+ * spy on flow
+ *
+ * @description
+ * **tap** accepts a function and any input, calls the function with the input, and returns the original input. This is useful for running side effects in function pipelines, e.g. logging out data in a pipeline to the console.
+ *
+ * ```javascript
+ * pipe([
+ *   tap(console.log),
+ *   value => value + 'bar'
+ *   tap(console.log),
+ * ])('foo') // 'foo'
+ *           // 'foobar'
+ * ```
+ */
+const tap = func => function tapping(input) {
+  const call = func.call(null, input)
+  return isPromise(call) ? call.then(() => input) : input
+}
+
+/**
+ * @name tap.if
+ *
+ * @synopsis
+ * <T any>tap.if(
+ *   cond T=>boolean,
+ *   func T=>any,
+ * )(value T) -> result Promise|T
+ *
+ * @catchphrase
+ * Conditional tap
+ *
+ * @description
+ * **tap.if** takes a condition `cond`, a function `func`, and an input `value`, returning the `result` as the unchanged `value`. If `cond` applied with `value` is falsy, `func` is not called; otherwise, `func` is called with `value`. `result` is a Promise if either `func` or `cond` is asynchronous.
+ *
+ * ```javascript
+ * const isOdd = number => number % 2 == 1
+ *
+ * pipe([
+ *   tap.if(isOdd, number => {
+ *     console.log('odd', number)
+ *   }),
+ *   number => number ** 2,
+ *   tap.if(isOdd, number => {
+ *     console.log('squared odd', number)
+ *   }),
+ * ])(3) // odd 3
+ *       // squared odd 9
+ * ```
+ *
+ * @TODO
+ */
+tap.if = (cond, func) => {}
+
+/**
+ * @name tryCatch
+ *
+ * @catchphrase
+ * try a function, catch with another
+ *
+ * @synopsis
+ * tryCatch(
+ *   tryer args=>Promise|any,
+ *   catcher (err Error|any, ...args)=>Promise|any,
+ * )(args ...any) -> Promise|any
+ *
+ * @description
+ * **tryCatch** takes two functions, a tryer and a catcher, and returns a tryCatcher function that, when called, calls the tryer with the arguments. If the tryer throws an Error or returns a Promise that rejects, tryCatch calls the catcher with the thrown value and the arguments. If the tryer called with the arguments does not throw, the tryCatcher returns the result of that call.
+ *
+ * ```javascript
+ * const errorThrower = tryCatch(
+ *   message => {
+ *     throw new Error(message)
+ *   },
+ *   (err, message) => {
+ *     console.log(err)
+ *     return `${message} from catcher`
+ *   },
+ * )
+ *
+ * console.log(errorThrower('hello')) // Error: hello
+ *                                    // hello from catcher
+ * ```
+ */
+const tryCatch = (tryer, catcher) => function tryCatcher(...args) {
+  try {
+    const output = tryer(...args)
+    return isPromise(output)
+      ? output.catch(err => catcher(err, ...args)) : output
+  } catch (err) {
+    return catcher(err, ...args)
   }
-  return x => {
-    try {
-      return possiblePromiseCatch(f(x), e => onError(e, x))
-    } catch (e) {
-      return onError(e, x)
+}
+
+/**
+ * @name asyncFuncSwitch
+ *
+ * @synopsis
+ * asyncFuncSwitch(
+ *   funcs Array<args=>Promise|any>,
+ *   args Array,
+ *   funcsIndex number,
+ * ) -> Promise|any
+ */
+const asyncFuncSwitch = async function (funcs, args, funcsIndex) {
+  const lastIndex = funcs.length - 1
+  while ((funcsIndex += 2) < lastIndex) {
+    if (await funcs[funcsIndex](...args)) {
+      return funcs[funcsIndex + 1](...args)
     }
   }
+  return funcs[funcsIndex](...args)
 }
 
-/*
- * @synopsis
- * arraySwitchCase(fns Array<function>, x any, i number) -> Promise|any
+/**
+ * @name funcConditional
  *
- * @TODO: reimplement to iterative
+ * @synopsis
+ * funcConditional(
+ *   funcs Array<args=>Promise|any>,
+ * )(args ...any) -> Promise|any
  */
-const arraySwitchCase = (fns, x, i) => {
-  if (i === fns.length - 1) return fns[i](x)
-  return possiblePromiseThen(
-    fns[i](x),
-    ok => ok ? fns[i + 1](x) : arraySwitchCase(fns, x, i + 2),
-  )
+const funcConditional = funcs => function funcSwitching(...args) {
+  const lastIndex = funcs.length - 1
+  let funcsIndex = -2
+  while ((funcsIndex += 2) < lastIndex) {
+    const shouldReturnNext = funcs[funcsIndex](...args)
+    if (isPromise(shouldReturnNext)) {
+      return shouldReturnNext.then(res => res
+        ? funcs[funcsIndex + 1](...args)
+        : asyncFuncSwitch(funcs, args, funcsIndex))
+    }
+    if (shouldReturnNext) {
+      return funcs[funcsIndex + 1](...args)
+    }
+  }
+  return funcs[funcsIndex](...args)
 }
 
-/*
+/**
+ * @name switchCase
+ *
  * @synopsis
+ * switchCase(funcs)
+ *
  * switchCase(fns Array<function>)(x any) -> Promise|any
  */
-const switchCase = fns => {
-  if (!isArray(fns)) {
-    throw new TypeError('switchCase(fns); fns is not an array of functions')
-  }
-  if (fns.length < 3) {
-    throw new RangeError([
-      'switchCase(fns)',
-      'fns is not an array of at least three functions',
-    ].join('; '))
-  }
-  if (fns.length % 2 === 0) {
-    throw new RangeError([
-      'switchCase(fns)',
-      'fns is not an array of an odd number of functions',
-    ].join('; '))
-  }
-  for (let i = 0; i < fns.length; i++) {
-    if (isFunction(fns[i])) continue
-    throw new TypeError(`switchCase(fns); fns[${i}] is not a function`)
-  }
-  return x => arraySwitchCase(fns, x, 0)
-}
+const switchCase = funcConditional
 
 /*
  * @synopsis
  * mapAsyncIterable(f function, x AsyncIterable<any>) -> AsyncIterable<any>
  *
- * @TODO: refactor for proper generator syntax
+ * @TODO refactor for proper generator syntax
  */
 const mapAsyncIterable = (fn, x) => (async function*() {
   for await (const xi of x) yield fn(xi)
@@ -406,11 +599,29 @@ const mapAsyncIterable = (fn, x) => (async function*() {
  * @synopsis
  * mapIterable(f function, x Iterable<any>) -> Iterable<any>
  *
- * @TODO: refactor for proper generator syntax
+ * @TODO refactor for proper generator syntax
  */
 const mapIterable = (fn, x) => (function*() {
-  for (const xi of x) yield fn(xi)
+  for (const xi of x) {
+    yield fn(xi)
+  }
 })()
+
+/**
+ * @name sequenceMap
+ *
+ * @synopsis
+ * any -> T
+ *
+ * Iterable<T>|AsyncIterable<T>
+ *   |GeneratorFunction<T>|AsyncGeneratorFunction<T> -> Sequence<T>
+ *
+ * sequenceMap(seq Sequence<T>, func T=>any) -> Sequence
+const iteratorMap = function* (seq, func) {
+  for (const item of getIterator(seq)) {
+    yield func(item)
+  }
+} */
 
 /*
  * @synopsis
@@ -699,7 +910,7 @@ const mapStringWithIndex = (f, x) => possiblePromiseThen(
  *
  * map.withIndex(f any=>any)(x T) -> T|Promise<T>
  *
- * @TODO: x can be an Object
+ * @TODO x can be an Object
  */
 map.withIndex = fn => {
   if (!isFunction(fn)) {
@@ -717,7 +928,7 @@ map.withIndex = fn => {
  * filterAsyncIterable(predicate any=>any, x AsyncIterable)
  *   -> AsyncIterable<any>
  *
- * @TODO: refactor for proper generator syntax
+ * @TODO refactor for proper generator syntax
  */
 const filterAsyncIterable = (predicate, x) => (async function*() {
   for await (const xi of x) { if (await predicate(xi)) yield xi }
@@ -727,7 +938,7 @@ const filterAsyncIterable = (predicate, x) => (async function*() {
  * @synopsis
  * filterIterable(predicate any=>any, x Iterable<any>) -> Iterable<any>
  *
- * @TODO: refactor for proper generator syntax
+ * @TODO refactor for proper generator syntax
  */
 const filterIterable = (predicate, x) => (function*() {
   for (const xi of x) {
@@ -1021,7 +1232,7 @@ const reduce = (fn, init) => {
     throw new TypeError('reduce(x, y); x is not a function')
   }
   return x => {
-    const x0 = toFunction(init)(x)
+    const x0 = isFunction(init) ? init(x) : init
     if (isIterable(x)) return possiblePromiseThen(
       x0,
       res => reduceIterable(fn, res, x),
@@ -1212,7 +1423,7 @@ const transform = (fn, init) => {
     throw new TypeError('transform(x, y); y is not a function')
   }
   return x => possiblePromiseThen(
-    toFunction(init)(x),
+    isFunction(init) ? init(x) : init,
     res => _transformBranch(fn, res, x),
   )
 }
@@ -1283,78 +1494,154 @@ const genericFlatten = (method, y, x) => {
   return y
 }
 
-/*
+/**
+ * @name flatMapArray
+ *
  * @synopsis
- * TODO
+ * <A any, B any>flatMapArray(
+ *   func A=>Iterable<B>|B,
+ *   arr Array<A>,
+ * ) -> result Promise<Array<B>>|Array<B>
  */
-const flatMapArray = (fn, x) => possiblePromiseThen(mapArray(fn, x), arrayFlatten)
+const flatMapArray = (func, arr) => (
+  possiblePromiseThen(mapArray(func, arr), arrayFlatten))
 
-/*
+/**
+ * @name flatMapSet
+ *
  * @synopsis
- * TODO
+ * <A any, B any>flatMapSet(
+ *   func A=>Iterable<B>|B,
+ *   set Set<A>
+ * ) -> result Promise<Set<B>>|Set<B>
  */
-const flatMapSet = (fn, x) => possiblePromiseThen(
-  mapSet(fn, x),
+const flatMapSet = (func, set) => possiblePromiseThen(
+  mapSet(func, set),
   res => genericFlatten('add', new Set(), res),
 )
 
-/*
+/**
+ * @name flatMapReducer
+ *
  * @synopsis
- * TODO
+ * <A any, B any>flatMapReducer(
+ *   func A=>Iterable<B>|B,
+ *   reducer (any, A)=>any
+ * ) -> transducedReducer (aggregate any, value A)=>Promise|any
  */
-const flatMapReducer = (fn, reducer) => (y, xi) => (
-  possiblePromiseThen(fn(xi), reduce(reducer, y)))
+const flatMapReducer = (func, reducer) => (aggregate, value) => (
+  possiblePromiseThen(func(value), reduce(reducer, aggregate)))
 
-/*
+/**
+ * @name flatMap
+ *
  * @synopsis
- * TODO
+ * <A any, B any>flatMap(
+ *   func A=>Iterable<B>|B
+ * )(value Array<Array<A>|A>) -> result Array<B>
+ *
+ * <A any, B any>flatMap(
+ *   func A=>Iterable<B>|B
+ * )(value Set<Set<A>|A>) -> result Set<B>
+ *
+ * <A any, B any>flatMap(
+ *   func A=>Iterable<B>|B
+ * )(value (any, any)=>any) -> transducedReducer (any, any)=>any
+ *
+ * @catchphrase
+ * map then flatten
+ *
+ * @description
+ * **flatMap** accepts a mapper function `func` and an Array or Set `value`, and returns a new flattened and mapped Array or Set `result`. Each item of `result` is the result of applying the mapper function `func` to a given item of the input Array or Set `value`. The final `result` Array or Set is flattened one depth level.
+ *
+ * When `value` is a reducer function, the output is another reducer function `transducedReducer` that represents a flatMap step in a transducer chain. A flatMap step involves the application of the mapper function `func` to a given element of a collecting being reduced, then flattening the result into the aggregate. For more information on this behavior, please see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
+ *
+ * @example
+ * console.log(
+ *   flatMap(
+ *     number => [number ** 2, number ** 3],
+ *   )([1, 2, 3]),
+ * ) // [1, 1, 4, 8, 9, 27]
+ *
+ * @execution concurrent
  */
-const flatMap = fn => {
-  if (!isFunction(fn)) {
-    throw new TypeError('flatMap(x); x is not a function')
+const flatMap = func => {
+  if (!isFunction(func)) {
+    throw new TypeError('flatMap(func); func is not a function')
   }
-  return x => {
-    if (isArray(x)) return flatMapArray(fn, x)
-    if (isSet(x)) return flatMapSet(fn, x)
-    if (isFunction(x)) return flatMapReducer(fn, x)
-    throw new TypeError('flatMap(...)(x); x invalid')
+  return value => {
+    if (isArray(value)) return flatMapArray(func, value)
+    if (isSet(value)) return flatMapSet(func, value)
+    if (isFunction(value)) return flatMapReducer(func, value)
+    throw new TypeError(`flatMap(...)(value); invalid value ${value}`)
   }
 }
 
-/*
+/**
+ * @name isDelimitedBy
+ *
  * @synopsis
- * TODO
+ * isDelimitedBy(delim string, value string) -> boolean
  */
-const isDelimitedBy = (delim, x) => (x
-  && x[0] !== delim
-  && x[x.length - 1] !== delim
-  && x.slice(1, x.length - 1).includes(delim))
+const isDelimitedBy = (delim, value) => (value != null
+  && value[0] !== delim
+  && value[value.length - 1] !== delim
+  && value.slice(1, value.length - 1).includes(delim))
 
-/*
+/**
+ * @name arrayPathGet
+ *
  * @synopsis
- * TODO
+ * arrayPathGet(
+ *   path Array<string|number>,
+ *   value any,
+ *   defaultValue function|any,
+ * ) -> result any
  */
-const arrayGet = (path, x, defaultValue) => {
-  let y = x
-  if (!isDefined(y)) return toFunction(defaultValue)(x)
-  for (let i = 0; i < path.length; i++) {
-    y = y[path[i]]
-    if (!isDefined(y)) return toFunction(defaultValue)(x)
+const arrayPathGet = (path, value, defaultValue) => {
+  if (value == null) {
+    return isFunction(defaultValue) ? defaultValue(value) : defaultValue
   }
-  return y
+  const pathLength = path.length
+  let result = value, i = -1
+  while (++i < pathLength) {
+    result = result[path[i]]
+    if (result == null) {
+      return isFunction(defaultValue) ? defaultValue(value) : defaultValue
+    }
+  }
+  return result
 }
 
-/*
+/**
+ * @name get
+ *
  * @synopsis
- * TODO
+ * get(
+ *   path Array<number|string>|number|string,
+ *   defaultValue function|any,
+ * )(value any) -> result any
+ *
+ * @catchphrase
+ * Access a property by path
+ *
+ * @description
+ * **get** takes an Array of Numbers or Strings, Number, or String `path` argument, a function or any `defaultValue` argument, and returns a getter function that, when supplied any `value`, returns a property on that `value` described by `path`.
+ *
+ * @example
+ * const nestedABC = { a: { b: { c: 1 } } }
+ *
+ * console.log(
+ *   get('a.b.c')(nestedABC),
+ * ) // 1
  */
 const get = (path, defaultValue) => {
-  if (isArray(path)) return x => arrayGet(path, x, defaultValue)
-  if (isNumber(path)) return x => arrayGet([path], x, defaultValue)
+  if (isArray(path)) return value => arrayPathGet(path, value, defaultValue)
+  if (isNumber(path)) return value => arrayPathGet([path], value, defaultValue)
   if (isString(path)) return (isDelimitedBy('.', path)
-    ? x => arrayGet(path.split('.'), x, defaultValue)
-    : x => arrayGet([path], x, defaultValue))
-  throw new TypeError('get(x, y); x invalid')
+    ? value => arrayPathGet(path.split('.'), value, defaultValue)
+    : value => arrayPathGet([path], value, defaultValue))
+  throw new TypeError(`get(path); invalid path ${path}`)
 }
 
 /*
@@ -1587,7 +1874,7 @@ const eq = (f, g) => {
  * @synopsis
  * TODO
  */
-const gt = function(f, g) {
+const gt = function (f, g) {
   if (isFunction(f) && isFunction(g)) return x => (
     possiblePromiseAll([f(x), g(x)]).then(([fx, gx]) => fx > gx))
   if (isFunction(f)) return x => possiblePromiseThen(f(x), fx => fx > g)
@@ -1600,7 +1887,7 @@ const gt = function(f, g) {
  * @synopsis
  * TODO
  */
-const lt = function(f, g) {
+const lt = function (f, g) {
   if (isFunction(f) && isFunction(g)) return x => (
     possiblePromiseAll([f(x), g(x)]).then(([fx, gx]) => fx < gx))
   if (isFunction(f)) return x => possiblePromiseThen(f(x), fx => fx < g)
@@ -1613,7 +1900,7 @@ const lt = function(f, g) {
  * @synopsis
  * TODO
  */
-const gte = function(f, g) {
+const gte = function (f, g) {
   if (isFunction(f) && isFunction(g)) return x => (
     possiblePromiseAll([f(x), g(x)]).then(([fx, gx]) => fx >= gx))
   if (isFunction(f)) return x => possiblePromiseThen(f(x), fx => fx >= g)
@@ -1626,7 +1913,7 @@ const gte = function(f, g) {
  * @synopsis
  * TODO
  */
-const lte = function(f, g) {
+const lte = function (f, g) {
   if (isFunction(f) && isFunction(g)) return x => (
     possiblePromiseAll([f(x), g(x)]).then(([fx, gx]) => fx <= gx))
   if (isFunction(f)) return x => possiblePromiseThen(f(x), fx => fx <= g)
