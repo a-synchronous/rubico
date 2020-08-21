@@ -279,18 +279,14 @@ const pipe = function (funcs) {
  * TODO: revisit
  */
 const funcObjectAll = funcs => function objectAllFuncs(...args) {
-  const result = {}, promises = []
+  const result = {}
+  let isAsync = false
   for (const key in funcs) {
-    const resultItem = funcs[key].apply(null, args)
-    if (isPromise(resultItem)) {
-      promises.push(resultItem.then(res => {
-        result[key] = res
-      }))
-    } else {
-      result[key] = resultItem
-    }
+    const resultItem = funcs[key](...args)
+    if (isPromise(resultItem)) isAsync = true
+    result[key] = resultItem
   }
-  return promises.length == 0 ? result : promiseAll(promises).then(() => result)
+  return isAsync ? promiseObjectAll(result) : result
 }
 
 /**
@@ -304,12 +300,14 @@ const funcObjectAll = funcs => function objectAllFuncs(...args) {
  * ) -> allFuncs args=>Promise|Array
  */
 const funcAll = funcs => function allFuncs(...args) {
-  let isAsync = false
-  const result = funcs.map(func => {
-    const resultItem = func.apply(null, args)
+  const funcsLength = funcs.length,
+    result = Array(funcsLength)
+  let funcsIndex = -1, isAsync = false
+  while (++funcsIndex < funcsLength) {
+    const resultItem = funcs[funcsIndex](...args)
     if (isPromise(resultItem)) isAsync = true
-    return resultItem
-  })
+    result[funcsIndex] = resultItem
+  }
   return isAsync ? promiseAll(result) : result
 }
 
@@ -320,15 +318,13 @@ const funcAll = funcs => function allFuncs(...args) {
  * duplicate and diverge flow
  *
  * @synopsis
- * ...any -> args
- *
  * fork(
  *   funcs Object<args=>Promise|any>,
- * )(args) -> Promise|Object
+ * )(args ...any) -> Promise|Object
  *
  * fork(
  *   funcs Array<args=>Promise|any>,
- * )(args) -> Promise|Array
+ * )(args ...any) -> Promise|Array
  *
  * @description
  * **fork** takes an array or object of optionally async functions and an input value and returns an array or object or Promise of either. The resulting array or object is the product of applying each function in the array or object of functions to any amount of input arguments.
@@ -364,7 +360,7 @@ const fork = funcs => isArray(funcs) ? funcAll(funcs) : funcObjectAll(funcs)
 const asyncFuncAllSeries = async function (funcs, args, result, funcsIndex) {
   const funcsLength = funcs.length
   while (++funcsIndex < funcsLength) {
-    result[funcsIndex] = await funcs[funcsIndex].apply(null, args)
+    result[funcsIndex] = await funcs[funcsIndex](...args)
   }
   return result
 }
@@ -383,7 +379,7 @@ const funcAllSeries = funcs => function allFuncsSeries(...args) {
   const funcsLength = funcs.length, result = []
   let funcsIndex = -1
   while (++funcsIndex < funcsLength) {
-    const resultItem = funcs[funcsIndex].apply(null, args)
+    const resultItem = funcs[funcsIndex](...args)
     if (isPromise(resultItem)) {
       return resultItem.then(res => {
         result[funcsIndex] = res

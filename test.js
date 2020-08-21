@@ -263,19 +263,19 @@ describe('rubico', () => {
     it('TypeError for fork([\'hey\'])()', async () => {
       assert.throws(
         () => fork(['hey'])(),
-        new TypeError('func.apply is not a function'),
+        new TypeError('funcs[funcsIndex] is not a function'),
       )
     })
     it('throws TypeError for fork({ a: nonFunction })', async () => {
       assert.throws(
         () => fork({ a: 'hey' })(),
-        new TypeError('funcs[key].apply is not a function'),
+        new TypeError('funcs[key] is not a function'),
       )
     })
     it('throws TypeError for String', async () => {
       assert.throws(
         () => fork('ayelmao')(),
-        new TypeError('funcs[key].apply is not a function'),
+        new TypeError('funcs[key] is not a function'),
       )
     })
     it('{} for Set<[func]>; no functions exposed via in', async () => {
@@ -325,7 +325,7 @@ describe('rubico', () => {
     it('throws TypeError for fork([nonFunction])', async () => {
       assert.throws(
         () => fork.series(['hey'])(),
-        new TypeError('funcs[funcsIndex].apply is not a function')
+        new TypeError('funcs[funcsIndex] is not a function')
       )
     })
     it('defaults to array', async () => {
