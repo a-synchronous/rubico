@@ -480,7 +480,7 @@ const assign = function (funcs) {
  * ```
  */
 const tap = func => function tapping(value) {
-  const call = func.call(null, value)
+  const call = func(value)
   return isPromise(call) ? call.then(() => value) : value
 }
 
