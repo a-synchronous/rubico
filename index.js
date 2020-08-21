@@ -956,13 +956,13 @@ const map = func => function mapping(value) {
   if (value == null) {
     return value
   }
-  if (value.constructor == Object) {
-    return objectMap(value, func)
-  }
   if (typeof value.next == 'function') {
     return symbolIterator in value
       ? new MappingIterator(value, func)
       : new MappingAsyncIterator(value, func)
+  }
+  if (value.constructor == Object) {
+    return objectMap(value, func)
   }
   return typeof value.map == 'function' ? value.map(func) : func(value)
 }
