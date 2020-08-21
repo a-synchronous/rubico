@@ -552,7 +552,8 @@ const tryCatch = (tryer, catcher) => function tryCatcher(...args) {
   try {
     const result = tryer(...args)
     return isPromise(result)
-      ? result.catch(err => catcher(err, ...args)) : result
+      ? result.catch(err => catcher(err, ...args))
+      : result
   } catch (err) {
     return catcher(err, ...args)
   }
