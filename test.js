@@ -13,6 +13,12 @@ const {
   get, pick, omit,
 } = rubico
 
+const objectProto = Object.prototype
+
+const nativeObjectToString = objectProto.toString
+
+const objectToString = x => nativeObjectToString.call(x)
+
 const ase = assert.strictEqual
 
 const ade = assert.deepEqual
@@ -586,198 +592,156 @@ describe('rubico', () => {
   })
 
   describe('map', () => {
-    it('lazily applies an async function in parallel to all values of an async iterable', async () => {
-      aok(!(map(async x => x + 1)(makeAsyncNumbers()) instanceof Promise))
-      aok(map(async x => x + 1)(makeAsyncNumbers())[Symbol.asyncIterator])
-      aok(asyncIteratorToArray(
-        map(async x => x + 1)(makeAsyncNumbers()),
-      ) instanceof Promise)
-      ade(
-        await asyncIteratorToArray(
-          map(async x => x + 1)(makeAsyncNumbers()),
-        ),
-        [2, 3, 4, 5, 6]
-      )
-    })
-    it('lazily applies a sync function in parallel to all values of an async iterable', async () => {
-      aok(!(map(x => x + 1)(makeAsyncNumbers()) instanceof Promise))
-      aok(map(x => x + 1)(makeAsyncNumbers())[Symbol.asyncIterator])
-      aok(asyncIteratorToArray(
-        map(x => x + 1)(makeAsyncNumbers()),
-      ) instanceof Promise)
-      ade(
-        await asyncIteratorToArray(
-          map(x => x + 1)(makeAsyncNumbers()),
-        ),
-        [2, 3, 4, 5, 6]
-      )
-    })
-    it('lazily applies an async function in parallel to all values of a sync generator iterable', async () => {
-      aok(!(map(async x => x + 1)(makeNumbers()) instanceof Promise))
-      aok(map(async x => x + 1)(makeNumbers())[Symbol.iterator])
-      aok(iteratorToArray(
-        map(async x => x + 1)(makeNumbers()),
-      ) instanceof Promise)
-      ade(
-        await iteratorToArray(
-          map(async x => x + 1)(makeNumbers()),
-        ),
-        [2, 3, 4, 5, 6],
-      )
-    })
-    it('lazily applies a sync function in parallel to all values of a sync generator iterable', async () => {
-      aok(map(x => x + 1)(makeNumbers())[Symbol.iterator])
-      ade(
-        iteratorToArray(
-          map(x => x + 1)(makeNumbers()),
-        ),
-        [2, 3, 4, 5, 6],
-      )
-    })
-    it('applies an async function in parallel to all elements of an array', async () => {
-      aok(map(asyncHey)(['yo', 1]) instanceof Promise)
-      ade(
-        await map(asyncHey)(['yo', 1]),
-        ['yohey', '1hey'],
-      )
-    })
-    it('applies a sync function to all elements of an array', async () => {
-      ade(
-        map(hi)(['yo', 1]),
-        ['yohi', '1hi'],
-      )
-    })
-    it('applies an async function in parallel to all elements of a string', async () => {
-      aok(map(async x => x + 'hey')('abcde') instanceof Promise)
-      ade(
-        await map(async x => x + 'hey')('abcde'),
-        'aheybheycheydheyehey',
-      )
-    })
-    it('applies a sync function to all elements of a string', async () => {
-      ade(
-        map(x => x + 'hi')('abcde'),
-        'ahibhichidhiehi',
-      )
-    })
-    it('applies an async function in parallel to all elements of a number typed array', async () => {
-      for (const x of numberTypedArrayConstructors) {
-        aok(map(async x => x + 1)(new x([1, 2, 3, 4, 5])) instanceof Promise)
-        ade(
-          await map(async x => x + 1)(new x([1, 2, 3, 4, 5])),
-          new x([2, 3, 4, 5, 6]),
+    describe('map(func A=>Promise|B)(Array<A>) -> Promise|Array<B>', () => {
+      it('func A=>B; B', async () => {
+        assert.deepEqual(
+          map(num => num ** 2)([1, 2, 3, 4, 5]),
+          [1, 4, 9, 16, 25],
         )
-      }
-    })
-    it('applies a sync function in parallel to all elements of a number typed array', async () => {
-      for (const x of numberTypedArrayConstructors) {
-        ade(
-          map(x => x + 1)(new x([1, 2, 3, 4, 5])),
-          new x([2, 3, 4, 5, 6]),
+      })
+      it('func A=>Promise<B>; Promise<B>', async () => {
+        assert.deepEqual(
+          await map(async num => num ** 2)([1, 2, 3, 4, 5]),
+          [1, 4, 9, 16, 25],
         )
-      }
+      })
     })
-    it('applies an async function in parallel to all elements of a bigint typed array', async () => {
-      for (const x of bigIntTypedArrayConstructors) {
-        aok(map(async x => x + 1n)(new x([1n, 2n, 3n, 4n, 5n])) instanceof Promise)
-        ade(
-          await map(async x => x + 1n)(new x([1n, 2n, 3n, 4n, 5n])),
-          new x([2n, 3n, 4n, 5n, 6n]),
+
+    describe('map(func A=>Promise|B)(Object<A>) -> Promise|Object<B>', () => {
+      it('func A=>B; B', async () => {
+        assert.deepEqual(
+          map(num => num ** 2)({ a: 1, b: 2, c: 3, d: 4, e: 5 }),
+          { a: 1, b: 4, c: 9, d: 16, e: 25 },
         )
-      }
-    })
-    it('applies a sync function in parallel to all elements of a bigint typed array', async () => {
-      for (const x of bigIntTypedArrayConstructors) {
-        ade(
-          map(x => x + 1n)(new x([1n, 2n, 3n, 4n, 5n])),
-          new x([2n, 3n, 4n, 5n, 6n]),
+      })
+      it('func A=>Promise<B>; Promise<B>', async () => {
+        assert.deepEqual(
+          await map(async num => num ** 2)({ a: 1, b: 2, c: 3, d: 4, e: 5 }),
+          { a: 1, b: 4, c: 9, d: 16, e: 25 },
         )
-      }
+        assert.deepEqual(
+          await map(
+            num => num % 2 == 1 ? Promise.resolve(num ** 2) : num ** 2,
+          )({ a: 1, b: 2, c: 3, d: 4, e: 5 }),
+          { a: 1, b: 4, c: 9, d: 16, e: 25 },
+        )
+      })
     })
-    it('applies an async function in parallel to all elements of a set', async () => {
-      aok(map(asyncHey)(new Set(['yo', 1])) instanceof Promise)
-      ade(
-        await map(asyncHey)(new Set(['yo', 1])),
-        new Set(['yohey', '1hey']),
-      )
+
+    describe('map(func A=>B)(GeneratorFunction<A>) -> GeneratorFunction<B>', () => {
+      it('func A=>B; B', async () => {
+        const numbers = function* () { let i = 0; while (++i < 6) yield i }
+        const squares = map(num => num ** 2)(numbers)
+        assert.equal(objectToString(squares), '[object GeneratorFunction]')
+        assert.deepEqual([...squares()], [1, 4, 9, 16, 25])
+      })
     })
-    it('applies a sync function to all elements of a set', async () => {
-      ade(
-        map(hi)(new Set(['yo', 1])),
-        new Set(['yohi', '1hi']),
-      )
+
+    describe('map(func A=>B)(Iterator<A>) -> Iterator<B>', () => {
+      it('func A=>B; B', async () => {
+        const numbers = function* () { let i = 0; while (++i < 6) yield i }
+        const squaresIterator = map(num => num ** 2)(numbers())
+        assert.equal(objectToString(squaresIterator), '[object Object]')
+        assert.deepEqual([...squaresIterator], [1, 4, 9, 16, 25])
+      })
     })
-    it('applies an async function in parallel to all elements of a map', async () => {
-      aok(map(
-        async ([k, v]) => [k + k, v + v],
-      )(new Map([['a', 1], ['b', 2]])) instanceof Promise)
-      ade(
-        await map(async ([k, v]) => [k + k, v + v])(new Map([['a', 1], ['b', 2]])),
-        new Map([['aa', 2], ['bb', 4]]),
-      )
+
+    describe('map(func A=>Promise|B)(AsyncGeneratorFunction<A>) -> AsyncGeneratorFunction<B>', () => {
+      it('func A=>B; B', async () => {
+        const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
+        const asyncSquares = map(num => num ** 2)(asyncNumbers)
+        assert.equal(objectToString(asyncSquares), '[object AsyncGeneratorFunction]')
+        const squaresArray = []
+        for await (const number of asyncSquares()) squaresArray.push(number)
+        assert.deepEqual(squaresArray, [1, 4, 9, 16, 25])
+      })
+      it('func A=>Promise<B>; Promise<B>', async () => {
+        const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
+        const asyncSquares = map(async num => num ** 2)(asyncNumbers)
+        assert.equal(objectToString(asyncSquares), '[object AsyncGeneratorFunction]')
+        const squaresArray = []
+        for await (const number of asyncSquares()) squaresArray.push(number)
+        assert.deepEqual(squaresArray, [1, 4, 9, 16, 25])
+      })
     })
-    it('applies a sync function to all elements of a map', async () => {
-      ade(
-        map(([k, v]) => [k + k, v + v])(new Map([['a', 1], ['b', 2]])),
-        new Map([['aa', 2], ['bb', 4]]),
-      )
+
+    describe('map(func A=>Promise|B)(AsyncIterator<A>) -> AsyncIterator<B>', () => {
+      it('func A=>B; AsyncIterator<B>', async () => {
+        const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
+        const asyncSquaresGenerator = map(num => num ** 2)(asyncNumbers())
+        assert.equal(objectToString(asyncSquaresGenerator), '[object Object]')
+        const squaresArray = []
+        for await (const number of asyncSquaresGenerator) squaresArray.push(number)
+        assert.deepEqual(squaresArray, [1, 4, 9, 16, 25])
+      })
+      it('func A=>Promise<B>; AsyncIterator<B>', async () => {
+        const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
+        const asyncSquaresGenerator = map(async num => num ** 2)(asyncNumbers())
+        assert.equal(objectToString(asyncSquaresGenerator), '[object Object]')
+        const squaresArray = []
+        for await (const number of asyncSquaresGenerator) squaresArray.push(number)
+        assert.deepEqual(squaresArray, [1, 4, 9, 16, 25])
+      })
     })
-    it('applies an async function in parallel to all values of an object', async () => {
-      ade(
-        await map(asyncHey)({ a: 'yo', b: 1 }),
-        { a: 'yohey', b: '1hey' },
-      )
+
+    describe('map(func A=>Promise|B)(Reducer<A>) -> Reducer<B>', () => {
+      it('func A=>B; Reducer<B>', async () => {
+        const add = (a, b) => a + b
+        assert.strictEqual(
+          [1, 2, 3, 4, 5].reduce(map(num => num ** 2)(add), 0),
+          55,
+        )
+      })
+      it('func A=>B; async Reducer<A>; Reducer<B>', async () => {
+        const asyncAdd = async (a, b) => a + b
+        const asyncReducer = map(num => num ** 2)(asyncAdd)
+        let total = 0
+        for (const number of [1, 2, 3, 4, 5]) {
+          total = await asyncReducer(total, number)
+        }
+        assert.strictEqual(total, 55)
+      })
+      it('func A=>Promise<B>; Reducer<B>', async () => {
+        const add = (a, b) => a + b
+        const asyncReducer = map(async num => num ** 2)(add)
+        let total = 0
+        for (const number of [1, 2, 3, 4, 5]) {
+          total = await asyncReducer(total, number)
+        }
+        assert.strictEqual(total, 55)
+      })
     })
-    it('applies a sync function to all values of an object', async () => {
-      ade(
-        map(hi)({ a: 'yo', b: 1 }),
-        { a: 'yohi', b: '1hi' },
-      )
+
+    describe('map(func A=>B)(Mappable<A>) -> Mappable<B>', () => {
+      it('func A=>B; B', async () => {
+        const Mappable = function (value) {
+          this.value = value
+        }
+        Mappable.prototype.map = function (func) {
+          return new Mappable(func(this.value))
+        }
+        assert.deepEqual(
+          map(value => value ** 2)(new Mappable(3)),
+          new Mappable(9),
+        )
+      })
     })
-    it('acts as a map transducer: binary function => reducer', async () => {
-      const addHiReducer = map(hi)((y, xi) => y + xi)
-      ase(typeof addHiReducer, 'function')
-      ase(addHiReducer.length, 2)
-      const addHeyReducer = map(asyncHey)(
-        (y, xi) => new Promise(resolve => resolve(y + xi)),
-      )
-      ase(typeof addHeyReducer, 'function')
-      ase(addHeyReducer.length, 2)
+
+    describe('map(func A=>Promise|B)(A) -> Promise|B', () => {
+      it('func A=>B; B', async () => {
+        assert.strictEqual(map(value => value)(1), 1)
+      })
+      it('func A=>Promise<B>; Promise<B>', async () => {
+        assert.strictEqual(await map(async value => value)(1), 1)
+      })
     })
-    it('transducer handles sync transformations', async () => {
-      const addHiReducer = map(hi)((y, xi) => y + xi)
-      ase([1, 2, 3].reduce(addHiReducer), '12hi3hi')
-      ase([1, 2, 3].reduce(addHiReducer, ''), '1hi2hi3hi')
+
+    it('undefined; undefined', async () => {
+      assert.strictEqual(map(value => value)(undefined), undefined)
     })
-    it('transducer handles async transformations', async () => {
-      const addHeyReducer = map(asyncHey)((y, xi) => y + xi)
-      aok(asyncArrayReduce(addHeyReducer)([1, 2, 3]) instanceof Promise)
-      ase(await asyncArrayReduce(addHeyReducer)([1, 2, 3]), '12hey3hey')
-      ase(await asyncArrayReduce(addHeyReducer, '')([1, 2, 3]), '1hey2hey3hey')
-    })
-    it('throws a TypeError on map(nonFunction)', async () => {
-      assert.throws(
-        () => map({}),
-        new TypeError('map(f); f is not a function'),
-      )
-    })
-    it('throws a TypeError on map(...)(null)', async () => {
-      assert.throws(
-        () => map(hi)(null),
-        new TypeError('map(...)(x); x invalid')
-      )
-    })
-    it('handles sync errors good', async () => {
-      assert.throws(
-        () => map(x => { throw new Error(`throwing ${x}`) })(['yo']),
-        new Error('throwing yo')
-      )
-    })
-    it('handles async errors good', async () => {
-      assert.rejects(
-        () => map(async x => { throw new Error(`throwing ${x}`) })(['yo']),
-        new Error('throwing yo'),
-      )
+
+    it('null; null', async () => {
+      assert.strictEqual(map(value => value)(null), null)
     })
   })
 
@@ -789,22 +753,6 @@ describe('rubico', () => {
         [1, 2, 3],
       )
       ade(arr, [1, 2, 3])
-    })
-    it('asyncly forks into array of functions, running each function in series', async () => {
-      const arr = []
-      const invertedSleepPushSeries = map.series(
-        x => sleep(15 - (x * 5)).then(() => { arr.push(x); return x })
-      )([1, 2, 3])
-      aok(invertedSleepPushSeries instanceof Promise)
-      ade(await invertedSleepPushSeries, [1, 2, 3])
-      ade(arr, [1, 2, 3])
-      const arr2 = []
-      const invertedSleepPush = map(
-        x => sleep(15 - (x * 5)).then(() => { arr2.push(x); return x })
-      )([1, 2, 3])
-      aok(invertedSleepPush instanceof Promise)
-      ade(await invertedSleepPush, [1, 2, 3])
-      ade(arr2, [3, 2, 1])
     })
     it('throws TypeError for non functions', async () => {
       assert.throws(

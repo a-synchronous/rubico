@@ -8,7 +8,7 @@
 (function (root, rubico) {
   if (typeof module == 'object') (module.exports = rubico) // CommonJS
   else if (typeof define == 'function') define(() => rubico) // AMD
-  else (root.rubico = rubico) // Browser
+  else (root = root || self, root.rubico = rubico) // Browser
 }(this, (function () { 'use strict'
 
 /**
@@ -44,6 +44,18 @@ const isDefined = value => value != null
 const isUndefined = value => typeof value == 'undefined'
 
 const isNull = value => value === null
+
+const isGeneratorFunction = value => objectToString(value) == generatorFunctionTag
+
+const isAsyncGeneratorFunction = value => objectToString(value) == asyncGeneratorFunctionTag
+
+const isIterator = value => value != null
+  && typeof value.next == 'function'
+  && typeof value[symbolIterator] == 'function'
+
+const isAsyncIterator = value => value != null
+  && typeof value.next == 'function'
+  && typeof value[symbolAsyncIterator] == 'function'
 
 const isIterable = value => value != null
   && typeof value[symbolIterator] == 'function'
@@ -84,13 +96,29 @@ const range = (start, end) => Array.from({ length: end - start }, (x, i) => i + 
 const arrayOf = (item, length) => Array.from({ length }, () => item)
 
 /**
- * @name arrayPush
+ * @name promiseObjectAll
  *
  * @synopsis
- * arrayPush(x Array, value any) -> undefined
-const arrayPush = (array, value) => {
-  array[array.length] = value
-} */
+ * promiseObjectAll(object<Promise|any>) -> Promise<object>
+ */
+const promiseObjectAll = object => new Promise(function (resolve) {
+  const result = {}
+  let numPromises = 0
+  for (const key in object) {
+    const value = object[key]
+    if (isPromise(value)) {
+      numPromises += 1
+      value.then((key => function (res) {
+        result[key] = res
+        numPromises -= 1
+        if (numPromises == 0) resolve(result)
+      })(key))
+    } else {
+      result[key] = value
+    }
+  }
+  if (numPromises == 0) resolve(result)
+})
 
 /**
  * @name possiblePromiseThen
@@ -145,23 +173,6 @@ const funcConcat = (funcAB, funcBC) => function pipedFunction(...args) {
 }
 
 /**
- * @synopsis
- * isGeneratorFunction(value any) -> boolean
- */
-const isGeneratorFunction = function (value) {
-  const tag = objectToString(value)
-  return tag == generatorFunctionTag || tag == asyncGeneratorFunctionTag
-}
-
-/**
- * @synopsis
- * isSequence(value any) -> boolean
-const isSequence = value => value != null
-  && (typeof value[symbolIterator] == 'function'
-    || typeof value[symbolAsyncIterator] == 'function'
-    || isGeneratorFunction(value)) */
-
-/**
  * @name pipe
  *
  * @catchphrase
@@ -170,21 +181,21 @@ const isSequence = value => value != null
  * @synopsis
  * any -> T
  *
- * (<T>, T)=>Promise|<T> -> Reducer<T>
+ * (any, T)=>Promise|any -> Reducer<T>
  *
  * Reducer=>Reducer -> Transducer
  *
  * pipe([
  *   args=>Promise|any,
  *   ...Array<any=>Promise|any>,
- * ])(args ...any) -> output Promise|any
+ * ])(args ...any) -> Promise|any
  *
  * pipe(
  *   Array<Transducer>,
  * )(Reducer) -> composed Reducer
  *
  * @description
- * **pipe** takes an array of functions and chains them together, each function passing its return value to the next function until all functions have been called. The final output for a given pipe and input is the result of the last function in the pipe.
+ * **pipe** takes an array of functions and chains them together, each function passing its return value to the next function until all functions have been called. The final output for a given pipe is the output of the last function in the pipe.
  *
  * ```javascript
  * console.log(
@@ -196,12 +207,12 @@ const isSequence = value => value != null
  * ) // 11
  * ```
  *
- * When the first argument supplied to a pipe of functions is a non-generator function, **pipe** assumes it is being used in transducer position and iterates through its functions in reverse. This is due to an implementation detail in transducers, and enables the library Transducers API.
+ * When the first argument supplied to a pipe of functions is a non-generator function, **pipe** assumes it is being used in transducer position and iterates through its functions in reverse. This is due to an implementation detail in transducers, and enables the library transducer API.
  *
  * ```
  * any -> T
  *
- * (<T>, T)=>Promise|<T> -> Reducer<T> // the standalone <T> means "generic of T"
+ * (any, T)=>Promise|any -> Reducer<T> // the standalone <T> means "generic of T"
  *
  * Reducer=>Reducer -> Transducer
  * ```
@@ -246,7 +257,11 @@ const pipe = function (funcs) {
     functionComposition = funcs.reduceRight(funcConcat)
   return function pipeline() {
     const firstArg = arguments[0]
-    if (isFunction(firstArg) && !isGeneratorFunction(firstArg)) {
+    if (
+      isFunction(firstArg)
+        && !isGeneratorFunction(firstArg)
+        && !isAsyncGeneratorFunction(firstArg)
+    ) {
       return functionComposition.apply(null, arguments)
     }
     return functionPipeline.apply(null, arguments)
@@ -260,20 +275,22 @@ const pipe = function (funcs) {
  * funcObjectAll(
  *   funcs Object<args=>Promise|any>
  * )(args ...any) -> objectAllFuncs args=>Promise|Object
+ *
+ * TODO: revisit
  */
 const funcObjectAll = funcs => function objectAllFuncs(...args) {
-  const output = {}, promises = []
+  const result = {}, promises = []
   for (const key in funcs) {
-    const outputItem = funcs[key].apply(null, args)
-    if (isPromise(outputItem)) {
-      promises.push(outputItem.then(res => {
-        output[key] = res
+    const resultItem = funcs[key].apply(null, args)
+    if (isPromise(resultItem)) {
+      promises.push(resultItem.then(res => {
+        result[key] = res
       }))
     } else {
-      output[key] = outputItem
+      result[key] = resultItem
     }
   }
-  return promises.length == 0 ? output : promiseAll(promises).then(() => output)
+  return promises.length == 0 ? result : promiseAll(promises).then(() => result)
 }
 
 /**
@@ -288,12 +305,12 @@ const funcObjectAll = funcs => function objectAllFuncs(...args) {
  */
 const funcAll = funcs => function allFuncs(...args) {
   let isAsync = false
-  const output = funcs.map(func => {
-    const outputItem = func.apply(null, args)
-    if (isPromise(outputItem)) isAsync = true
-    return outputItem
+  const result = funcs.map(func => {
+    const resultItem = func.apply(null, args)
+    if (isPromise(resultItem)) isAsync = true
+    return resultItem
   })
-  return isAsync ? promiseAll(output) : output
+  return isAsync ? promiseAll(result) : result
 }
 
 /**
@@ -339,17 +356,17 @@ const fork = funcs => isArray(funcs) ? funcAll(funcs) : funcObjectAll(funcs)
  * @synopsis
  * asyncFuncAllSeries(
  *   funcs Array<function>,
- *   input any,
- *   output Array,
+ *   args Array,
+ *   result Array,
  *   funcsIndex number,
- * ) -> output Array
+ * ) -> result
  */
-const asyncFuncAllSeries = async function (funcs, args, output, funcsIndex) {
+const asyncFuncAllSeries = async function (funcs, args, result, funcsIndex) {
   const funcsLength = funcs.length
   while (++funcsIndex < funcsLength) {
-    output[funcsIndex] = await funcs[funcsIndex].apply(null, args)
+    result[funcsIndex] = await funcs[funcsIndex].apply(null, args)
   }
-  return output
+  return result
 }
 
 /**
@@ -363,23 +380,26 @@ const asyncFuncAllSeries = async function (funcs, args, output, funcsIndex) {
  * ) -> allFuncsSeries args=>Promise|Array
  */
 const funcAllSeries = funcs => function allFuncsSeries(...args) {
-  const funcsLength = funcs.length, output = []
+  const funcsLength = funcs.length, result = []
   let funcsIndex = -1
   while (++funcsIndex < funcsLength) {
-    const outputItem = funcs[funcsIndex].apply(null, args)
-    if (isPromise(outputItem)) {
-      return outputItem.then(res => {
-        output[funcsIndex] = res
-        return asyncFuncAllSeries(funcs, args, output, funcsIndex)
+    const resultItem = funcs[funcsIndex].apply(null, args)
+    if (isPromise(resultItem)) {
+      return resultItem.then(res => {
+        result[funcsIndex] = res
+        return asyncFuncAllSeries(funcs, args, result, funcsIndex)
       })
     }
-    output[funcsIndex] = outputItem
+    result[funcsIndex] = resultItem
   }
-  return output
+  return result
 }
 
 /**
  * @name fork.series
+ *
+ * @catchphrase
+ * fork in series
  *
  * @synopsis
  * ...any -> args
@@ -387,9 +407,6 @@ const funcAllSeries = funcs => function allFuncsSeries(...args) {
  * fork.series(
  *   funcs Array<args=>Promise|any>,
  * )(args) -> Promise|Array
- *
- * @catchphrase
- * fork in series
  *
  * @description
  * **fork.series** is fork with serial execution instead of concurrent execution of functions. All functions of `funcs` are then executed in series.
@@ -420,11 +437,11 @@ fork.series = funcAllSeries
  *
  * @synopsis
  * assign(
- *   funcs Object<input=>Promise|any>,
- * )(input Object) -> output Promise|Object
+ *   funcs Object<object=>Promise|any>,
+ * )(object Object) -> result Promise|Object
  *
  * @description
- * **assign** accepts an object of optionally async functions and an object input and returns an output object or a Promise of an object. The output is composed of the original input and an object computed from a concurrent evaluation of the object of functions with the input. `result` is each function of `funcs` applied with Object `value` merged into the input Object `value`. If any functions of `funcs` is asynchronous, `result` is a Promise.
+ * **assign** accepts an object of optionally async functions and an object input and returns an object or a Promise of an object. The result is composed of the original input and an object computed from a concurrent evaluation of the object of functions with the input. `result` is each function of `funcs` applied with Object `object` merged into the input Object `object`. If any functions of `funcs` is asynchronous, `result` is a Promise.
  *
  * All functions of `funcs`, including additional forks, are executed concurrently.
  *
@@ -441,25 +458,25 @@ fork.series = funcAllSeries
  */
 const assign = function (funcs) {
   const allFuncs = funcObjectAll.call(null, funcs)
-  return function assignment(input) {
-    const output = allFuncs.call(null, input)
-    return isPromise(output)
-      ? output.then(res => ({ ...input, ...res }))
-      : ({ ...input, ...output })
+  return function assignment(object) {
+    const result = allFuncs.call(null, object)
+    return isPromise(result)
+      ? result.then(res => ({ ...object, ...res }))
+      : ({ ...object, ...result })
   }
 }
 
 /**
  * @name tap
  *
- * @synopsis
- * tap(function)(input any) -> Promise|input
- *
  * @catchphrase
  * spy on flow
  *
+ * @synopsis
+ * tap(function)(value any) -> Promise|value
+ *
  * @description
- * **tap** accepts a function and any input, calls the function with the input, and returns the original input. This is useful for running side effects in function pipelines, e.g. logging out data in a pipeline to the console.
+ * **tap** accepts a function and any value, calls the function with the value, and returns the original value. This is useful for running side effects in function pipelines, e.g. logging out data in a pipeline to the console.
  *
  * ```javascript
  * pipe([
@@ -470,22 +487,22 @@ const assign = function (funcs) {
  *           // 'foobar'
  * ```
  */
-const tap = func => function tapping(input) {
-  const call = func.call(null, input)
-  return isPromise(call) ? call.then(() => input) : input
+const tap = func => function tapping(value) {
+  const call = func.call(null, value)
+  return isPromise(call) ? call.then(() => value) : value
 }
 
 /**
  * @name tap.if
  *
- * @synopsis
- * <T any>tap.if(
- *   cond T=>boolean,
- *   func T=>any,
- * )(value T) -> result Promise|T
- *
  * @catchphrase
  * Conditional tap
+ *
+ * @synopsis
+ * tap.if(
+ *   cond value=>boolean,
+ *   func value=>Promise|any,
+ * )(value any) -> value
  *
  * @description
  * **tap.if** takes a condition `cond`, a function `func`, and an input `value`, returning the `result` as the unchanged `value`. If `cond` applied with `value` is falsy, `func` is not called; otherwise, `func` is called with `value`. `result` is a Promise if either `func` or `cond` is asynchronous.
@@ -541,9 +558,9 @@ tap.if = (cond, func) => {}
  */
 const tryCatch = (tryer, catcher) => function tryCatcher(...args) {
   try {
-    const output = tryer(...args)
-    return isPromise(output)
-      ? output.catch(err => catcher(err, ...args)) : output
+    const result = tryer(...args)
+    return isPromise(result)
+      ? result.catch(err => catcher(err, ...args)) : result
   } catch (err) {
     return catcher(err, ...args)
   }
@@ -606,44 +623,6 @@ const switchCase = funcConditional
 
 /*
  * @synopsis
- * mapAsyncIterable(f function, x AsyncIterable<any>) -> AsyncIterable<any>
- *
- * @TODO refactor for proper generator syntax
- */
-const mapAsyncIterable = (fn, x) => (async function*() {
-  for await (const xi of x) yield fn(xi)
-})()
-
-/*
- * @synopsis
- * mapIterable(f function, x Iterable<any>) -> Iterable<any>
- *
- * @TODO refactor for proper generator syntax
- */
-const mapIterable = (fn, x) => (function*() {
-  for (const xi of x) {
-    yield fn(xi)
-  }
-})()
-
-/**
- * @name sequenceMap
- *
- * @synopsis
- * any -> T
- *
- * Iterable<T>|AsyncIterable<T>
- *   |GeneratorFunction<T>|AsyncGeneratorFunction<T> -> Sequence<T>
- *
- * sequenceMap(seq Sequence<T>, func T=>any) -> Sequence
-const iteratorMap = function* (seq, func) {
-  for (const item of getIterator(seq)) {
-    yield func(item)
-  }
-} */
-
-/*
- * @synopsis
  * mapArray(f function, x Array<any>) -> Array<any>|Promise<Array<any>>
  *
  * @note
@@ -662,40 +641,6 @@ const mapArray = (f, x) => {
 
 /*
  * @synopsis
- * mapIterableToArray(f function, x Iterable<any>)
- *   -> Array<any>|Promise<Array<any>>
- */
-const mapIterableToArray = (fn, x) => {
-  let isAsync = false
-  const y = []
-  for (const xi of x) {
-    const point = fn(xi)
-    if (isPromise(point)) isAsync = true
-    y.push(point)
-  }
-  return isAsync ? Promise.all(y) : y
-}
-
-/*
- * @synopsis
- * mapString(f function, x string) -> string
- */
-const mapString = (f, x) => possiblePromiseThen(
-  mapIterableToArray(f, x),
-  res => res.join(''),
-)
-
-/*
- * @synopsis
- * mapTypedArray(f function, x TypedArray<any>) -> TypedArray<any>
- */
-const mapTypedArray = (f, x) => possiblePromiseThen(
-  mapIterableToArray(f, x),
-  res => new x.constructor(res),
-)
-
-/*
- * @synopsis
  * mapSet(f function, x Set<any>) -> Set<any>
  */
 const mapSet = (f, x) => {
@@ -711,71 +656,315 @@ const mapSet = (f, x) => {
   return promises.length > 0 ? Promise.all(promises).then(() => y) : y
 }
 
-/*
- * @synopsis
- * mapMap(f function, x Map<any=>any>) -> Map<any=>any>
- */
-const mapMap = (fn, x) => {
-  const y = new Map(), promises = []
-  for (const entry of x) {
-    const point = fn(entry)
-    if (isPromise(point)) {
-      promises.push(point.then(res => { y.set(...res) }))
-    } else {
-      y.set(...point)
-    }
-  }
-  return promises.length > 0 ? Promise.all(promises).then(() => y) : y
-}
-
-/*
- * @synopsis
- * mapObject(f function, x Object<any>) -> Object<any>
- */
-const mapObject = (fn, x) => {
-  const y = {}, promises = []
-  for (const k in x) {
-    const point = fn(x[k])
-    if (isPromise(point)) {
-      promises.push(point.then(res => { y[k] = res }))
-    } else {
-      y[k] = point
-    }
-  }
-  return promises.length > 0 ? Promise.all(promises).then(() => y) : y
-}
-
-/*
- * @synopsis
- * mapReducer(f function, reducer function)
- *   -> anotherReducer (y any, xi any)=>Promise|any
- */
-const mapReducer = (f, reducer) => (y, xi) => (
-  possiblePromiseThen(f(xi), res => reducer(y, res)))
-
-/*
- * @synopsis
- * <T any>AsyncIterable<T>|Array<T>|string|Set<T>|Map<T>
- *   |TypedArray<T>|Iterable<T>|Object<T>|(any, T)=>any -> Mappable<T>
+/**
+ * @name arrayMap
  *
- * <T Mappable>map(f function)(x T<any>) -> T<any>
+ * @synopsis
+ * any -> A; any -> B
+ *
+ * arrayMap(array Array<A>, func A=>Promise|B) -> Promise|Array<B>
  */
-const map = f => {
-  if (!isFunction(f)) {
-    throw new TypeError('map(f); f is not a function')
+const arrayMap = function (array, func) {
+  const arrayLength = array.length,
+    result = Array(arrayLength)
+  let index = -1, isAsync = false
+  while (++index < arrayLength) {
+    const resultItem = func(array[index])
+    if (isPromise(resultItem)) isAsync = true
+    result[index] = resultItem
   }
-  return x => {
-    if (isAsyncIterable(x)) return mapAsyncIterable(f, x)
-    if (isArray(x)) return mapArray(f, x)
-    if (isString(x)) return mapString(f, x)
-    if (isSet(x)) return mapSet(f, x)
-    if (isMap(x)) return mapMap(f, x)
-    if (isTypedArray(x)) return mapTypedArray(f, x)
-    if (isIterable(x)) return mapIterable(f, x) // for generators or custom iterators
-    if (isObject(x)) return mapObject(f, x)
-    if (isFunction(x)) return mapReducer(f, x)
-    throw new TypeError('map(...)(x); x invalid')
+  return isAsync ? promiseAll(result) : result
+}
+
+/**
+ * @name objectMap
+ *
+ * @synopsis
+ * any -> A; any -> B
+ *
+ * objectMap(object Object<A>, func A=>Promise|B) -> Promise|Object<B>
+ */
+const objectMap = function (object, mapperFunc) {
+  const result = {}
+  let isAsync = false
+  for (const key in object) {
+    const resultItem = mapperFunc(object[key])
+    if (isPromise(resultItem)) isAsync = true
+    result[key] = resultItem
   }
+  return isAsync ? promiseObjectAll(result) : result
+}
+
+/**
+ * @name generatorFunctionMap
+ *
+ * @synopsis
+ * any -> A; any -> B
+ *
+ * generatorFunctionMap(
+ *   generatorFunc GeneratorFunction<A>,
+ *   func A=>B,
+ * ) -> GeneratorFunction<B>
+ */
+const generatorFunctionMap = function (generatorFunc, func) {
+  return function* mappingGeneratorFunc(...args) {
+    for (const item of generatorFunc(...args)) {
+      yield func(item)
+    }
+  }
+}
+
+/**
+ * @name MappingIterator
+ *
+ * @synopsis
+ * new MappingIterator(iter Iterator, mappingFunc function) -> MappingIterator
+ */
+const MappingIterator = function (iter, mappingFunc) {
+  this.iter = iter
+  this.mappingFunc = mappingFunc
+}
+
+/**
+ * @name MappingIterator.prototype[Symbol.iterator]
+ *
+ * @synopsis
+ * new MappingIterator(
+ *   iter Iterator,
+ *   mappingFunc function,
+ * )[Symbol.iterator]() -> MappingIterator
+ */
+MappingIterator.prototype[symbolIterator] = function mappingValues() {
+  return this
+}
+
+/**
+ * @name MappingIterator.prototype.next
+ *
+ * @synopsis
+ * new MappingIterator(
+ *   iter Iterator,
+ *   mappingFunc function,
+ * ).next() -> { value: any, done: boolean }
+ */
+MappingIterator.prototype.next = function next() {
+  const { value, done } = this.iter.next()
+  return done ? { value, done } : { value: this.mappingFunc(value), done }
+}
+
+/**
+ * @name asyncGeneratorFunctionMap
+ *
+ * @synopsis
+ * any -> A; any -> B
+ *
+ * asyncGeneratorFunctionMap(
+ *   asyncGeneratorFunc AsyncGeneratorFunction<A>,
+ *   func A=>Promise|B,
+ * ) -> AsyncGeneratorFunction<B>
+ */
+const asyncGeneratorFunctionMap = function (asyncGeneratorFunc, func) {
+  return async function* mappingAsyncGeneratorFunc(...args) {
+    for await (const item of asyncGeneratorFunc(...args)) {
+      yield func(item)
+    }
+  }
+}
+
+/**
+ * @name MappingAsyncIterator
+ *
+ * @synopsis
+ * new MappingAsyncIterator(
+ *   asyncIter Iterator,
+ *   mappingFunc function,
+ * ) -> MappingAsyncIterator
+ */
+const MappingAsyncIterator = function (asyncIter, mappingFunc) {
+  this.asyncIter = asyncIter
+  this.mappingFunc = mappingFunc
+}
+
+/**
+ * @name MappingAsyncIterator.prototype[symbolAsyncIterator]
+ *
+ * @synopsis
+ * new MappingAsyncIterator(
+ *   asyncIter Iterator,
+ *   mappingFunc function,
+ * )[Symbol.asyncIterator]() -> MappingAsyncIterator
+ */
+MappingAsyncIterator.prototype[symbolAsyncIterator] = function mappingValues() {
+  return this
+}
+
+/**
+ * @name MappingAsyncIterator.prototype.next
+ *
+ * @synopsis
+ * new MappingAsyncIterator(
+ *   asyncIter Iterator,
+ *   mappingFunc function,
+ * ).next() -> Promise|{ value: any, done: boolean }
+ */
+MappingAsyncIterator.prototype.next = async function next() {
+  const { value, done } = await this.asyncIter.next()
+  if (done) return { value: undefined, done: true }
+  const resultItem = this.mappingFunc(value)
+  return isPromise(resultItem)
+    ? resultItem.then(res => ({ value: res, done: false }))
+    : ({ value: resultItem, done: false })
+}
+
+/**
+ * @name reducerMap
+ *
+ * @synopsis
+ * any -> A; any -> B
+ *
+ * reducerMap(
+ *   reducer (any, A)=>any,
+ *   func A=>B,
+ * ) -> mappingReducer (any, B)=>any
+ */
+const reducerMap = (reducer, func) => function mappingReducer(accum, value) {
+  const nextValue = func(value)
+  return isPromise(nextValue)
+    ? nextValue.then(res => reducer(accum, res))
+    : reducer(accum, nextValue)
+}
+
+/**
+ * @name map
+ *
+ * @catchphrase
+ * linearly transform data
+ *
+ * @synopsis
+ * any -> T
+ *
+ * (any, T)=>Promise|any -> Reducer<T>
+ *
+ * any -> A; any -> B
+ *
+ * { map: (A=>B)=>Mappable<B> } -> Mappable<A>
+ *
+ * map(func A=>Promise|B)(Array<A>) -> Promise|Array<B>
+ *
+ * map(func A=>Promise|B)(Object<A>) -> Promise|Object<B>
+ *
+ * map(func A=>B)(GeneratorFunction<A>) -> GeneratorFunction<B>
+ *
+ * map(func A=>B)(Iterator<A>) -> Iterator<B>
+ *
+ * map(func A=>Promise|B)(AsyncGeneratorFunction<A>) -> AsyncGeneratorFunction<B>
+ *
+ * map(func A=>Promise|B)(AsyncIterator<A>) -> AsyncIterator<B>
+ *
+ * map(func A=>Promise|B)(Reducer<A>) -> Reducer<B>
+ *
+ * map(func A=>B)(Mappable<A>) -> Mappable<B> // no async support at the moment
+ *
+ * map(func A=>Promise|B)(A) -> Promise|B
+ *
+ * @description
+ * **map** takes a function and applies it to each item of a collection, returning a collection of the same type with all resulting items. If a collection has an implicit order, e.g. an Array, the resulting collection will have the same order. If the input collection does not have an implicit order, the order of the result is not guaranteed.
+ *
+ * ```javascript
+ * const square = number => number ** 2
+ *
+ * console.log(
+ *   map(square)([1, 2, 3, 4, 5]),
+ * ) // [1, 4, 9, 16, 25]
+ *
+ * console.log(
+ *   map(square)({ a: 1, b: 2, c: 3 }),
+ * ) // { a: 1, b: 4, c: 9 }
+ * ```
+ *
+ * The generator function and its product, the generator, are more additions to the list of possible things to map over. The same goes for their async counterparts.
+ *
+ * ```javascript
+ * const capitalize = string => string.toUpperCase()
+ *
+ * const abc = function* () {
+ *   yield 'a'; yield 'b'; yield 'c'
+ * }
+ *
+ * const ABC = map(capitalize)(abc)
+ *
+ * const abcIter = abc()
+ *
+ * const ABCIter = map(capitalize)(abcIter)
+ *
+ * console.log([...ABC()]) // ['A', 'B', 'C']
+ *
+ * console.log([...ABCIter]) // ['A', 'B', 'C']
+ * ```
+ *
+ * Finally, **map** works with reducer functions to create transducers.
+ *
+ * ```
+ * any -> T
+ *
+ * (any, T)=>Promise|any -> Reducer<T>
+ *
+ * Reducer=>Reducer -> Transducer
+ * ```
+ *
+ * A reducer is a function that takes a generic of any type T, a given instance of type T, and returns possibly a Promise of a generic of type T. A transducer is a function that takes a reducer and returns another reducer.
+ *
+ * ```
+ * any -> A; any -> B
+ *
+ * map(func A=>Promise|B)(Reducer<A>) -> Reducer<B>
+ * ```
+ *
+ * When passed a reducer, a mapping function returns another reducer with each given item T transformed by the mapper function. For more information on this behavior, see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md)
+ *
+ * ```javascript
+ * const square = number => number ** 2
+ *
+ * const concat = (array, item) => array.concat(item)
+ *
+ * const squareConcatReducer = map(square)(concat)
+ *
+ * console.log(
+ *   [1, 2, 3, 4, 5].reduce(squareConcatReducer, []),
+ * ) // [1, 4, 9, 16, 25]
+ * ```
+ *
+ * By default, **map** looks for a `.map` property function on the input value, and if present, calls the `.map` property function with the provided mapper function. Otherwise, **map** returns the application of the mapper function with the input value.
+ *
+ * @execution concurrent
+ *
+ * @transducing
+ */
+const map = func => function mapping(value) {
+  if (isArray(value)) {
+    return arrayMap(value, func)
+  }
+  if (isFunction(value)) {
+    if (isGeneratorFunction(value)) {
+      return generatorFunctionMap(value, func)
+    }
+    if (isAsyncGeneratorFunction(value)) {
+      return asyncGeneratorFunctionMap(value, func)
+    }
+    return reducerMap(value, func)
+  }
+  if (value == null) {
+    return value
+  }
+  if (value.constructor == Object) {
+    return objectMap(value, func)
+  }
+  if (typeof value.next == 'function') {
+    return symbolIterator in value
+      ? new MappingIterator(value, func)
+      : new MappingAsyncIterator(value, func)
+  }
+  return typeof value.map == 'function' ? value.map(func) : func(value)
 }
 
 /*
@@ -1573,7 +1762,7 @@ const flatMapReducer = (func, reducer) => (aggregate, value) => (
  * @description
  * **flatMap** accepts a mapper function `func` and an Array or Set `value`, and returns a new flattened and mapped Array or Set `result`. Each item of `result` is the result of applying the mapper function `func` to a given item of the input Array or Set `value`. The final `result` Array or Set is flattened one depth level.
  *
- * When `value` is a reducer function, the output is another reducer function `transducedReducer` that represents a flatMap step in a transducer chain. A flatMap step involves the application of the mapper function `func` to a given element of a collecting being reduced, then flattening the result into the aggregate. For more information on this behavior, please see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
+ * When `value` is a reducer function, the result is another reducer function `transducedReducer` that represents a flatMap step in a transducer chain. A flatMap step involves the application of the mapper function `func` to a given element of a collecting being reduced, then flattening the result into the aggregate. For more information on this behavior, please see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
  *
  * @example
  * console.log(
