@@ -1,3 +1,6 @@
+## v1.5.7
+ * map rewrite + benchmarks
+
 ## v1.5.6
  * fork rewrite + benchmarks
  * fork.series rewrite + benchmarks
