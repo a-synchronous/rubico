@@ -1,3 +1,6 @@
+## v1.5.9
+ * map.series rewrite + benchmarks
+
 ## v1.5.7
  * map rewrite + benchmarks
 
