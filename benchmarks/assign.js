@@ -35,6 +35,18 @@ const funcObjectAll2 = funcs => function objectAllFuncs(...args) {
   return promises.length == 0 ? output : promiseAll(promises).then(() => output)
 }
 
+const funcObjectAll3 = funcs => function objectAllFuncs(...args) {
+  const result = {}
+  let isAsync = false
+  for (const key in funcs) {
+    const resultItem = funcs[key](...args)
+    if (isPromise(resultItem)) isAsync = true
+    result[key] = resultItem
+  }
+  return isAsync ? promiseObjectAll(result) : result
+}
+
+
 const vanilla1 = ({ number }) => ({
   number,
   a: number + 1,
@@ -76,30 +88,34 @@ const assign2 = function (funcs) {
   }
 }
 
+const assign3 = function (funcs) {
+  const allFuncs = funcObjectAll3(funcs)
+  return function assignment(input) {
+    const output = allFuncs(input)
+    return isPromise(output)
+      ? output.then(res => ({ ...input, ...res }))
+      : ({ ...input, ...output })
+  }
+}
+
 /**
  * @name assign
  *
  * @benchmark
- * vanilla1: 1e+6: 7.926ms
- * vanilla2: 1e+6: 180.122ms
- * assign1: 1e+6: 180.662ms
- * assign2: 1e+6: 180.294ms
+ * assign1: 1e+5: 66.807ms
+ * assign2: 1e+5: 59.898ms
+ * assign3: 1e+5: 57.537ms
  */
 
 {
 
-  const assignment = assign(funcs)
-
-  // console.log('vanilla1', vanilla1({ number: 2 }))
-  // console.log('vanilla2', vanilla2({ number: 2 }))
   // console.log('assign1', assign1(funcs)({ number: 2 }))
   // console.log('assign2', assign2(funcs)({ number: 2 }))
+  // console.log('assign3', assign3(funcs)({ number: 2 }))
 
-  // timeInLoop('vanilla1', 1e6, () => vanilla1({ number: 2 }))
+  // timeInLoop('assign1', 1e5, () => assign1(funcs)({ number: 2 }))
 
-  // timeInLoop('vanilla2', 1e6, () => vanilla2({ number: 2 }))
+  // timeInLoop('assign2', 1e5, () => assign2(funcs)({ number: 2 }))
 
-  // timeInLoop('assign1', 1e6, () => vanilla2({ number: 2 }))
-
-  // timeInLoop('assign2', 1e6, () => vanilla2({ number: 2 }))
+  // timeInLoop('assign3', 1e5, () => assign3(funcs)({ number: 2 }))
 }

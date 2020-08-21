@@ -275,8 +275,6 @@ const pipe = function (funcs) {
  * funcObjectAll(
  *   funcs Object<args=>Promise|any>
  * )(args ...any) -> objectAllFuncs args=>Promise|Object
- *
- * TODO: revisit
  */
 const funcObjectAll = funcs => function objectAllFuncs(...args) {
   const result = {}
@@ -398,11 +396,9 @@ const funcAllSeries = funcs => function allFuncsSeries(...args) {
  * fork in series
  *
  * @synopsis
- * ...any -> args
- *
  * fork.series(
  *   funcs Array<args=>Promise|any>,
- * )(args) -> Promise|Array
+ * )(args ...any) -> Promise|Array
  *
  * @description
  * **fork.series** is fork with serial execution instead of concurrent execution of functions. All functions of `funcs` are then executed in series.
@@ -453,9 +449,9 @@ fork.series = funcAllSeries
  * @execution concurrent
  */
 const assign = function (funcs) {
-  const allFuncs = funcObjectAll.call(null, funcs)
+  const allFuncs = funcObjectAll(funcs)
   return function assignment(object) {
-    const result = allFuncs.call(null, object)
+    const result = allFuncs(object)
     return isPromise(result)
       ? result.then(res => ({ ...object, ...res }))
       : ({ ...object, ...result })
