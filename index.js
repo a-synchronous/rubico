@@ -1,5 +1,5 @@
 /**
- * rubico v1.5.7
+ * rubico v1.5.8
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2020 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -161,7 +161,7 @@ const possiblePromiseAll = values => (values.some(isPromise)
  * @name funcConcat
  *
  * @synopsis
- * any -> A; any -> B; any -> C
+ * any -> A, any -> B, any -> C
  *
  * funcConcat(funcAB A=>B, funcBC B=>C) -> pipedFunction A=>C
  */
@@ -653,7 +653,7 @@ const mapSet = (f, x) => {
  * @name arrayMap
  *
  * @synopsis
- * any -> A; any -> B
+ * any -> A, any -> B
  *
  * arrayMap(array Array<A>, func A=>Promise|B) -> Promise|Array<B>
  */
@@ -673,7 +673,7 @@ const arrayMap = function (array, func) {
  * @name objectMap
  *
  * @synopsis
- * any -> A; any -> B
+ * any -> A, any -> B
  *
  * objectMap(object Object<A>, func A=>Promise|B) -> Promise|Object<B>
  */
@@ -692,7 +692,7 @@ const objectMap = function (object, mapperFunc) {
  * @name generatorFunctionMap
  *
  * @synopsis
- * any -> A; any -> B
+ * any -> A, any -> B
  *
  * generatorFunctionMap(
  *   generatorFunc GeneratorFunction<A>,
@@ -749,7 +749,7 @@ MappingIterator.prototype.next = function next() {
  * @name asyncGeneratorFunctionMap
  *
  * @synopsis
- * any -> A; any -> B
+ * any -> A, any -> B
  *
  * asyncGeneratorFunctionMap(
  *   asyncGeneratorFunc AsyncGeneratorFunction<A>,
@@ -813,7 +813,7 @@ MappingAsyncIterator.prototype.next = async function next() {
  * @name reducerMap
  *
  * @synopsis
- * any -> A; any -> B
+ * any -> A, any -> B
  *
  * reducerMap(
  *   reducer (any, A)=>any,
@@ -838,7 +838,7 @@ const reducerMap = (reducer, func) => function mappingReducer(accum, value) {
  *
  * (any, T)=>Promise|any -> Reducer<T>
  *
- * any -> A; any -> B
+ * any -> A, any -> B
  *
  * { map: (A=>B)=>Mappable<B> } -> Mappable<A>
  *
@@ -908,7 +908,7 @@ const reducerMap = (reducer, func) => function mappingReducer(accum, value) {
  * A reducer is a function that takes a generic of any type T, a given instance of type T, and returns possibly a Promise of a generic of type T. A transducer is a function that takes a reducer and returns another reducer.
  *
  * ```
- * any -> A; any -> B
+ * any -> A, any -> B
  *
  * map(func A=>Promise|B)(Reducer<A>) -> Reducer<B>
  * ```
@@ -960,34 +960,83 @@ const map = func => function mapping(value) {
   return typeof value.map == 'function' ? value.map(func) : func(value)
 }
 
-/*
- * @synopsis
- * mapSeriesArray(f function, x Array<any>, i number, y Array<any>)
- *   -> Array<any>|Promise<Array<any>>
+/**
+ * @name asyncArrayMapSeries
  *
- * @note
- * TODO: iterative implementation
+ * @synopsis
+ * asyncArrayMapSeries(
+ *   array Array,
+ *   func function,
+ *   result Array,
+ *   index number,
+ * ) -> result
  */
-const mapSeriesArray = (f, x, i, y) => {
-  if (i === x.length) return y
-  return possiblePromiseThen(
-    f(x[i]),
-    res => mapSeriesArray(f, x, i + 1, y.concat(res)),
-  )
+const asyncArrayMapSeries = async function (array, func, result, index) {
+  const arrayLength = array.length
+  while (++index < arrayLength) {
+    result[index] = await func(array[index])
+  }
+  return result
 }
 
-/*
+/**
+ * @name arrayMapSeries
+ *
  * @synopsis
- * map.series(f function)(x Array<any>) -> Array<any>|Promise<Array<any>>
+ * any -> A, any -> B
+ *
+ * arrayMapSeries(array Array<A>, func A=>B) -> result Array<B>
  */
-map.series = f => {
-  if (!isFunction(f)) {
-    throw new TypeError('map.series(f); f is not a function')
+const arrayMapSeries = function (array, func) {
+  const arrayLength = array.length,
+    result = Array(arrayLength)
+  let index = -1
+  while (++index < arrayLength) {
+    const resultItem = func(array[index])
+    if (isPromise(resultItem)) {
+      return resultItem.then(res => {
+        result[index] = res
+        return asyncArrayMapSeries(array, func, result, index)
+      })
+    }
+    result[index] = resultItem
   }
-  return x => {
-    if (isArray(x)) return mapSeriesArray(f, x, 0, [])
-    throw new TypeError('map.series(...)(x); x invalid')
+  return result
+}
+
+/**
+ * @name map.series
+ *
+ * @catchphrase
+ * map in series
+ *
+ * @synopsis
+ * A any, B any
+ *
+ * map.series(func A=>Promise|B)(Array<A>) -> Promise|Array<B>
+ *
+ * @description
+ * **map.series** is **map** but with serial instead of concurrent application of the mapping function to each item of the input value.
+ *
+ * ```javascript
+ * const delayedLog = x => new Promise(function (resolve) {
+ *   setTimeout(function () {
+ *     console.log(x)
+ *     resolve()
+ *   }, 1000)
+ * })
+ *
+ * console.log('start')
+ * map.series(delayedLog)([1, 2, 3, 4, 5])
+ * ```
+ *
+ * @execution series
+ */
+map.series = func => function serialMapping(value) {
+  if (isArray(value)) {
+    return arrayMapSeries(value, func)
   }
+  throw new TypeError(`${value} is not an Array`)
 }
 
 /*

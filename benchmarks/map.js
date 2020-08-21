@@ -665,3 +665,60 @@ const reducerMap10 = (reducer, func) => function mappingReducer(accum, value) {
 
   // timeInLoop('reducerMap10', 1e5, () => numbers.reduce(reducerMap10(arrayConcat, square), []))
 }
+
+const possiblePromiseThen = (value, func) => (
+  isPromise(value) ? value.then(func) : func(value))
+
+/**
+ * @name arrayMapSeries
+ *
+ * @benchmark
+ * arrayMapSeries1: 1e+5: 173.068ms
+ * arrayMapSeries2: 1e+5: 12.713ms
+ */
+
+const arrayMapSeries1 = (f, x, i, y) => {
+  if (i === x.length) return y
+  return possiblePromiseThen(
+    f(x[i]),
+    res => arrayMapSeries1(f, x, i + 1, y.concat(res)),
+  )
+}
+
+const asyncArrayMapSeries = async function (array, func, result, index) {
+  const arrayLength = array.length
+  while (++index < arrayLength) {
+    result[index] = await func(array[index])
+  }
+  return result
+}
+
+const arrayMapSeries2 = function (array, func) {
+  const arrayLength = array.length,
+    result = Array(arrayLength)
+  let index = -1
+  while (++index < arrayLength) {
+    const resultItem = func(array[index])
+    if (isPromise(resultItem)) {
+      return resultItem.then(res => {
+        result[index] = res
+        return asyncArrayMapSeries(array, func, result, index)
+      })
+    }
+    result[index] = resultItem
+  }
+  return result
+}
+
+{
+  const numbers = [1, 2, 3, 4, 5]
+
+  const square = number => number ** 2
+
+  // console.log(arrayMapSeries1(square, numbers, 0, []))
+  // console.log(arrayMapSeries2(numbers, square))
+
+  // timeInLoop('arrayMapSeries1', 1e5, () => arrayMapSeries1(square, numbers, 0, []))
+
+  // timeInLoop('arrayMapSeries2', 1e5, () => arrayMapSeries2(numbers, square))
+}

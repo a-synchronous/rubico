@@ -746,6 +746,36 @@ describe('rubico', () => {
   })
 
   describe('map.series', () => {
+    describe('map.series(func A=>Promise|B)(Array<A>) -> Promise|Array<B>', () => {
+      it('func A=>Promise<B>', async () => {
+        const createNumbersPromises = () => [
+          sleep(15).then(() => 1),
+          sleep(10).then(() => 2),
+          sleep(5).then(() => 3),
+        ]
+        {
+          const arr = []
+          await map(
+            p => p.then(number => arr.push(number))
+          )(createNumbersPromises())
+          assert.deepEqual(arr, [3, 2, 1])
+        }
+        {
+          const arr = []
+          await map.series(
+            p => p.then(number => arr.push(number))
+          )(createNumbersPromises())
+          assert.deepEqual(arr, [1, 2, 3])
+        }
+      })
+      it('func A=>B', async () => {
+        const square = number => number ** 2
+        assert.deepEqual(
+          map.series(square)([1, 2, 3, 4, 5]),
+          [1, 4, 9, 16, 25],
+        )
+      })
+    })
     it('syncly maps into array of functions', async () => {
       const arr = []
       ade(
@@ -756,14 +786,20 @@ describe('rubico', () => {
     })
     it('throws TypeError for non functions', async () => {
       assert.throws(
-        () => map.series('hey'),
-        new TypeError('map.series(f); f is not a function'),
+        () => map.series('hey')([1]),
+        new TypeError('func is not a function'),
+      )
+    })
+    it('throws TypeError for non functions', async () => {
+      assert.throws(
+        () => map.series('hey')(),
+        new TypeError('undefined is not an Array'),
       )
     })
     it('throws TypeError for non array input', async () => {
       assert.throws(
         () => map.series(() => 1)('hey'),
-        new TypeError('map.series(...)(x); x invalid'),
+        new TypeError('hey is not an Array'),
       )
     })
   })
