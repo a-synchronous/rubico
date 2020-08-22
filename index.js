@@ -1158,69 +1158,51 @@ map.pool = (concurrencyLimit, func) => function concurrentPoolMapping(value) {
   throw new TypeError(`${value} is not an Array`)
 }
 
-/*
+/**
+ * @name arrayMapWithIndex
+ *
  * @synopsis
- * <A any, B any>mapArrayWithIndex(
- *   f (xi A, i number, x Array<A>)=>B,
- *   x Array<A>,
- * ) -> Array<B>|Promise<Array<B>>
+ * A any, B any
+ *
+ * arrayMapWithIndex(
+ *   array Array<A>,
+ *   func (A, index number, array Array<A>)=>Promise|B
+ * ) -> Promise|Array<B>
  */
-const mapArrayWithIndex = (fn, x) => {
-  let isAsync = false
-  const y = x.map((xi, i) => {
-    const point = fn(xi, i, x)
-    if (isPromise(point)) isAsync = true
-    return point
-  })
-  return isAsync ? Promise.all(y) : y
+const arrayMapWithIndex = function (array, func) {
+  const arrayLength = array.length,
+    result = Array(arrayLength)
+  let index = -1, isAsync = false
+  while (++index < arrayLength) {
+    const resultItem = func(array[index], index, array)
+    if (isPromise(resultItem)) isAsync = true
+    result[index] = resultItem
+  }
+  return isAsync ? promiseAll(result) : result
 }
 
-/*
- * @synopsis
- * mapIterableWithIndexToArray(
- *   f (xi any, i number, x Iterable<any>)=>any,
- *   x Iterable<any>,
- * ) -> Array<any>|Promise<Array<any>>
- */
-const mapIterableWithIndexToArray = (fn, x) => {
-  let isAsync = false
-  const primer = []
-  let i = 0
-  for (const xi of x) {
-    const point = fn(xi, i, x)
-    if (isPromise(point)) isAsync = true
-    primer.push(point)
-    i += 1
-  }
-  return isAsync ? Promise.all(primer) : primer
-}
-
-/*
- * @synopsis
- * mapStringWithIndex(f any=>any, x string) -> string|Promise<string>
- */
-const mapStringWithIndex = (f, x) => possiblePromiseThen(
-  mapIterableWithIndexToArray(f, x),
-  res => res.join(''),
-)
-
-/*
- * @synopsis
- * Array<any>|string -> T
+/**
+ * @name map.withIndex
  *
- * map.withIndex(f any=>any)(x T) -> T|Promise<T>
+ * @catchphrase
+ * map with Index
  *
- * @TODO x can be an Object
+ * @synopsis
+ * A any, B any
+ *
+ * map.withIndex(
+ *   func (A, index number, Array<A>)=>Promise|B,
+ * )(Array<A>) -> Promise|Array<B>
+ *
+ * @description
+ *
+ * @execution concurrent
  */
-map.withIndex = fn => {
-  if (!isFunction(fn)) {
-    throw new TypeError('map.withIndex(x); x is not a function')
+map.withIndex = func => function mappingWithIndex(value) {
+  if (isArray(value)) {
+    return arrayMapWithIndex(value, func)
   }
-  return x => {
-    if (isArray(x)) return mapArrayWithIndex(fn, x)
-    if (isString(x)) return mapStringWithIndex(fn, x)
-    throw new TypeError('map.withIndex(...)(x); x invalid')
-  }
+  throw new TypeError(`${value} is not an Array`)
 }
 
 /*
