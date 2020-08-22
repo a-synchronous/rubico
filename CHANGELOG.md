@@ -1,7 +1,7 @@
 ## v1.5.9
  * map.series rewrite + benchmarks
  * map.pool rewrite + benchmarks
- * map.withIndex rewrite
+ * map.withIndex rewrite + benchmarks
 
 ## v1.5.7
  * map rewrite + benchmarks
