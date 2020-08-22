@@ -657,14 +657,14 @@ const mapSet = (f, x) => {
  * @synopsis
  * any -> A, any -> B
  *
- * arrayMap(array Array<A>, func A=>Promise|B) -> Promise|Array<B>
+ * arrayMap(array Array<A>, mapper A=>Promise|B) -> Promise|Array<B>
  */
-const arrayMap = function (array, func) {
+const arrayMap = function (array, mapper) {
   const arrayLength = array.length,
     result = Array(arrayLength)
   let index = -1, isAsync = false
   while (++index < arrayLength) {
-    const resultItem = func(array[index])
+    const resultItem = mapper(array[index])
     if (isPromise(resultItem)) isAsync = true
     result[index] = resultItem
   }
@@ -677,13 +677,13 @@ const arrayMap = function (array, func) {
  * @synopsis
  * any -> A, any -> B
  *
- * objectMap(object Object<A>, func A=>Promise|B) -> Promise|Object<B>
+ * objectMap(object Object<A>, mapper A=>Promise|B) -> Promise|Object<B>
  */
-const objectMap = function (object, mapperFunc) {
+const objectMap = function (object, mapper) {
   const result = {}
   let isAsync = false
   for (const key in object) {
-    const resultItem = mapperFunc(object[key])
+    const resultItem = mapper(object[key])
     if (isPromise(resultItem)) isAsync = true
     result[key] = resultItem
   }
@@ -698,13 +698,13 @@ const objectMap = function (object, mapperFunc) {
  *
  * generatorFunctionMap(
  *   generatorFunc GeneratorFunction<A>,
- *   func A=>B,
+ *   mapper A=>B,
  * ) -> GeneratorFunction<B>
  */
-const generatorFunctionMap = function (generatorFunc, func) {
+const generatorFunctionMap = function (generatorFunc, mapper) {
   return function* mappingGeneratorFunc(...args) {
     for (const item of generatorFunc(...args)) {
-      yield func(item)
+      yield mapper(item)
     }
   }
 }
@@ -713,11 +713,11 @@ const generatorFunctionMap = function (generatorFunc, func) {
  * @name MappingIterator
  *
  * @synopsis
- * new MappingIterator(iter Iterator, mappingFunc function) -> MappingIterator
+ * new MappingIterator(iter Iterator, mapper function) -> MappingIterator
  */
-const MappingIterator = function (iter, mappingFunc) {
+const MappingIterator = function (iter, mapper) {
   this.iter = iter
-  this.mappingFunc = mappingFunc
+  this.mapper = mapper
 }
 
 /**
@@ -726,7 +726,7 @@ const MappingIterator = function (iter, mappingFunc) {
  * @synopsis
  * new MappingIterator(
  *   iter Iterator,
- *   mappingFunc function,
+ *   mapper function,
  * )[Symbol.iterator]() -> MappingIterator
  */
 MappingIterator.prototype[symbolIterator] = function mappingValues() {
@@ -739,12 +739,12 @@ MappingIterator.prototype[symbolIterator] = function mappingValues() {
  * @synopsis
  * new MappingIterator(
  *   iter Iterator,
- *   mappingFunc function,
+ *   mapper function,
  * ).next() -> { value: any, done: boolean }
  */
 MappingIterator.prototype.next = function next() {
   const { value, done } = this.iter.next()
-  return done ? { value, done } : { value: this.mappingFunc(value), done }
+  return done ? { value, done } : { value: this.mapper(value), done }
 }
 
 /**
@@ -755,13 +755,13 @@ MappingIterator.prototype.next = function next() {
  *
  * asyncGeneratorFunctionMap(
  *   asyncGeneratorFunc AsyncGeneratorFunction<A>,
- *   func A=>Promise|B,
+ *   mapper A=>Promise|B,
  * ) -> AsyncGeneratorFunction<B>
  */
-const asyncGeneratorFunctionMap = function (asyncGeneratorFunc, func) {
+const asyncGeneratorFunctionMap = function (asyncGeneratorFunc, mapper) {
   return async function* mappingAsyncGeneratorFunc(...args) {
     for await (const item of asyncGeneratorFunc(...args)) {
-      yield func(item)
+      yield mapper(item)
     }
   }
 }
@@ -772,12 +772,12 @@ const asyncGeneratorFunctionMap = function (asyncGeneratorFunc, func) {
  * @synopsis
  * new MappingAsyncIterator(
  *   asyncIter Iterator,
- *   mappingFunc function,
+ *   mapper function,
  * ) -> MappingAsyncIterator
  */
-const MappingAsyncIterator = function (asyncIter, mappingFunc) {
+const MappingAsyncIterator = function (asyncIter, mapper) {
   this.asyncIter = asyncIter
-  this.mappingFunc = mappingFunc
+  this.mapper = mapper
 }
 
 /**
@@ -786,7 +786,7 @@ const MappingAsyncIterator = function (asyncIter, mappingFunc) {
  * @synopsis
  * new MappingAsyncIterator(
  *   asyncIter Iterator,
- *   mappingFunc function,
+ *   mapper function,
  * )[Symbol.asyncIterator]() -> MappingAsyncIterator
  */
 MappingAsyncIterator.prototype[symbolAsyncIterator] = function mappingValues() {
@@ -799,13 +799,13 @@ MappingAsyncIterator.prototype[symbolAsyncIterator] = function mappingValues() {
  * @synopsis
  * new MappingAsyncIterator(
  *   asyncIter Iterator,
- *   mappingFunc function,
+ *   mapper function,
  * ).next() -> Promise|{ value: any, done: boolean }
  */
 MappingAsyncIterator.prototype.next = async function next() {
   const { value, done } = await this.asyncIter.next()
   if (done) return { value: undefined, done: true }
-  const resultItem = this.mappingFunc(value)
+  const resultItem = this.mapper(value)
   return isPromise(resultItem)
     ? resultItem.then(res => ({ value: res, done: false }))
     : ({ value: resultItem, done: false })
@@ -819,11 +819,11 @@ MappingAsyncIterator.prototype.next = async function next() {
  *
  * reducerMap(
  *   reducer (any, A)=>any,
- *   func A=>B,
+ *   mapper A=>B,
  * ) -> mappingReducer (any, B)=>any
  */
-const reducerMap = (reducer, func) => function mappingReducer(accum, value) {
-  const nextValue = func(value)
+const reducerMap = (reducer, mapper) => function mappingReducer(accum, value) {
+  const nextValue = mapper(value)
   return isPromise(nextValue)
     ? nextValue.then(res => reducer(accum, res))
     : reducer(accum, nextValue)
@@ -836,31 +836,31 @@ const reducerMap = (reducer, func) => function mappingReducer(accum, value) {
  * linearly transform data
  *
  * @synopsis
- * any -> T
+ * T any
  *
- * (any, T)=>Promise|any -> Reducer<T>
+ * Reducer<T> (any, T)=>Promise|any
  *
- * any -> A, any -> B
+ * A any, B any
  *
- * { map: (A=>B)=>Mappable<B> } -> Mappable<A>
+ * Mappable<A> { map: (A=>B)=>Mappable<B> }
  *
- * map(func A=>Promise|B)(Array<A>) -> Promise|Array<B>
+ * map(A=>Promise|B)(Array<A>) -> Promise|Array<B>
  *
- * map(func A=>Promise|B)(Object<A>) -> Promise|Object<B>
+ * map(A=>Promise|B)(Object<A>) -> Promise|Object<B>
  *
- * map(func A=>B)(GeneratorFunction<A>) -> GeneratorFunction<B>
+ * map(A=>B)(GeneratorFunction<A>) -> GeneratorFunction<B>
  *
- * map(func A=>B)(Iterator<A>) -> Iterator<B>
+ * map(A=>B)(Iterator<A>) -> Iterator<B>
  *
- * map(func A=>Promise|B)(AsyncGeneratorFunction<A>) -> AsyncGeneratorFunction<B>
+ * map(A=>Promise|B)(AsyncGeneratorFunction<A>) -> AsyncGeneratorFunction<B>
  *
- * map(func A=>Promise|B)(AsyncIterator<A>) -> AsyncIterator<B>
+ * map(A=>Promise|B)(AsyncIterator<A>) -> AsyncIterator<B>
  *
- * map(func A=>Promise|B)(Reducer<A>) -> Reducer<B>
+ * map(A=>Promise|B)(Reducer<A>) -> Reducer<B>
  *
- * map(func A=>B)(Mappable<A>) -> Mappable<B> // no async support at the moment
+ * map(A=>B)(Mappable<A>) -> Mappable<B> // no async support at the moment
  *
- * map(func A=>Promise|B)(A) -> Promise|B
+ * map(A=>Promise|B)(A) -> Promise|B
  *
  * @description
  * **map** takes a function and applies it to each item of a collection, returning a collection of the same type with all resulting items. If a collection has an implicit order, e.g. an Array, the resulting collection will have the same order. If the input collection does not have an implicit order, the order of the result is not guaranteed.
@@ -935,31 +935,31 @@ const reducerMap = (reducer, func) => function mappingReducer(accum, value) {
  *
  * @transducing
  */
-const map = func => function mapping(value) {
+const map = mapper => function mapping(value) {
   if (isArray(value)) {
-    return arrayMap(value, func)
+    return arrayMap(value, mapper)
   }
   if (isFunction(value)) {
     if (isGeneratorFunction(value)) {
-      return generatorFunctionMap(value, func)
+      return generatorFunctionMap(value, mapper)
     }
     if (isAsyncGeneratorFunction(value)) {
-      return asyncGeneratorFunctionMap(value, func)
+      return asyncGeneratorFunctionMap(value, mapper)
     }
-    return reducerMap(value, func)
+    return reducerMap(value, mapper)
   }
   if (value == null) {
     return value
   }
   if (typeof value.next == 'function') {
     return symbolIterator in value
-      ? new MappingIterator(value, func)
-      : new MappingAsyncIterator(value, func)
+      ? new MappingIterator(value, mapper)
+      : new MappingAsyncIterator(value, mapper)
   }
   if (value.constructor == Object) {
-    return objectMap(value, func)
+    return objectMap(value, mapper)
   }
-  return typeof value.map == 'function' ? value.map(func) : func(value)
+  return typeof value.map == 'function' ? value.map(mapper) : mapper(value)
 }
 
 /**
@@ -1041,21 +1041,13 @@ map.series = func => function serialMapping(value) {
   throw new TypeError(`${value} is not an Array`)
 }
 
-const setProtoAdd = Set.prototype.add
-
-const setProtoDelete = Set.prototype.delete
-
-const setAdd = (set, item) => setProtoAdd.call(set, item)
-
-const setDelete = (set, item) => setProtoDelete.call(set, item)
-
 /**
  * @name asyncArrayMapPool
  *
  * @synopsis
  * asyncArrayMapPool(
  *   array Array<A>,
- *   mappingFunc A=>B,
+ *   mapper A=>B,
  *   concurrencyLimit number,
  *   result Array<B>,
  *   index number,
@@ -1063,14 +1055,14 @@ const setDelete = (set, item) => setProtoDelete.call(set, item)
  * ) -> result
  */
 const asyncArrayMapPool = async function (
-  array, mappingFunc, concurrencyLimit, result, index, promises,
+  array, mapper, concurrencyLimit, result, index, promises,
 ) {
   const arrayLength = array.length
   while (++index < arrayLength) {
     if (promises.size >= concurrencyLimit) {
       await promiseRace(promises)
     }
-    const resultItem = mappingFunc(array[index])
+    const resultItem = mapper(array[index])
     if (isPromise(resultItem)) {
       const selfDeletingPromise = resultItem.then(res => {
         promises.delete(selfDeletingPromise)
@@ -1094,16 +1086,16 @@ const asyncArrayMapPool = async function (
  *
  * arrayMapPool(
  *   array Array<A>,
- *   mappingFunc A=>B,
+ *   mapper A=>B,
  *   concurrentLimit number,
  * ) -> result Promise|Array<B>
  */
-const arrayMapPool = function (array, mappingFunc, concurrentLimit) {
+const arrayMapPool = function (array, mapper, concurrentLimit) {
   const arrayLength = array.length,
     result = Array(arrayLength)
   let index = -1
   while (++index < arrayLength) {
-    const resultItem = mappingFunc(array[index])
+    const resultItem = mapper(array[index])
     if (isPromise(resultItem)) {
       const promises = new Set()
       const selfDeletingPromise = resultItem.then(res => {
@@ -1113,7 +1105,7 @@ const arrayMapPool = function (array, mappingFunc, concurrentLimit) {
       promises.add(selfDeletingPromise)
       result[index] = selfDeletingPromise
       return asyncArrayMapPool(
-        array, mappingFunc, concurrentLimit, result, index, promises)
+        array, mapper, concurrentLimit, result, index, promises)
     }
     result[index] = resultItem
   }
@@ -1346,12 +1338,34 @@ const filterObject = (predicate, x) => {
 const filterReducer = (predicate, reducer) => (y, xi) => (
   possiblePromiseThen(predicate(xi), res => res ? reducer(y, xi) : y))
 
-/*
- * @synopsis
- * <T any>AsyncIterable<T>|Array<T>|string|Set<T>|Map<T>
- *   |TypedArray<T>|Iterable<T>|Object<T>|(any, T)=>any -> Filterable<T>
+/**
+ * @name filter
  *
- * filter(predicate any=>any)(x Filterable<any>) -> Filterable<any>
+ * @synopsis
+ *
+ * T any
+ *
+ * Reducer<T> (any, T)=>Promise|any
+ *
+ * Filterable<T> { filter: (T=>boolean)=>Filterable<T> }
+ *
+ * filter(func T=>Promise|boolean)(Array<T>) -> Promise|Array<T>
+ *
+ * filter(func T=>Promise|boolean)(Object<T>) -> Promise|Object<T>
+ *
+ * filter(func T=>boolean)(GeneratorFunction<T>) -> GeneratorFunction<T>
+ *
+ * filter(func T=>boolean)(Iterator<T>) -> Iterator<T>
+ *
+ * filter(func T=>Promise|boolean)(AsyncGeneratorFunction<T>) -> AsyncGeneratorFunction<T>
+ *
+ * filter(func T=>Promise|boolean)(AsyncIterator<T>) -> AsyncIterator<T>
+ *
+ * filter(func T=>Promise|boolean)(Reducer<T>) -> Reducer<T>
+ *
+ * filter(func T=>boolean)(Filterable<T>) -> Filterable<T> // no async support at the moment
+ *
+ * filter(func T=>Promise|boolean)(T) -> Promise|T
  */
 const filter = predicate => {
   if (!isFunction(predicate)) {
