@@ -9,6 +9,10 @@ const symbolAsyncIterator = Symbol.asyncIterator
 
 const objectKeys = Object.keys
 
+const promiseAll = Promise.all.bind(Promise)
+
+const promiseRace = Promise.race.bind(Promise)
+
 const isPromise = value => value != null && typeof value.then == 'function'
 
 const asyncIteratorToArray = async asyncIter => {
@@ -721,4 +725,124 @@ const arrayMapSeries2 = function (array, func) {
   // timeInLoop('arrayMapSeries1', 1e5, () => arrayMapSeries1(square, numbers, 0, []))
 
   // timeInLoop('arrayMapSeries2', 1e5, () => arrayMapSeries2(numbers, square))
+}
+
+/**
+ * @name arrayMapPool
+ *
+ * @benchmark
+ * arrayMapPool1: 1e+5: 342.172ms
+ * arrayMapPool2: 1e+5: 359.173ms
+ */
+
+const asyncArrayMapPool1 = async function (
+  array, mappingFunc, size, result, index, promises,
+) {
+  const arrayLength = array.length
+  while (++index < arrayLength) {
+    if (promises.size >= size) {
+      await promiseRace(promises)
+    }
+    const resultItem = mappingFunc(array[index])
+    if (isPromise(resultItem)) {
+      const selfDeletingPromise = resultItem.then(res => {
+        promises.delete(selfDeletingPromise)
+        return res
+      })
+      promises.add(selfDeletingPromise)
+      result[index] = selfDeletingPromise
+    } else {
+      result[index] = resultItem
+    }
+  }
+  return promiseAll(result)
+}
+
+const arrayMapPool1 = function (array, mappingFunc, size) {
+  const arrayLength = array.length,
+    result = Array(arrayLength)
+  let index = -1
+  while (++index < arrayLength) {
+    const resultItem = mappingFunc(array[index])
+    if (isPromise(resultItem)) {
+      const promises = new Set()
+      const selfDeletingPromise = resultItem.then(res => {
+        promises.delete(selfDeletingPromise)
+        return res
+      })
+      promises.add(selfDeletingPromise)
+      result[index] = selfDeletingPromise
+      return asyncArrayMapPool1(
+        array, mappingFunc, size, result, index, promises)
+    }
+    result[index] = resultItem
+  }
+  return result
+}
+
+const setProtoAdd = Set.prototype.add
+
+const setProtoDelete = Set.prototype.delete
+
+const setAdd = (set, item) => setProtoAdd.call(set, item)
+
+const setDelete = (set, item) => setProtoDelete.call(set, item)
+
+const asyncArrayMapPool2 = async function (
+  array, mappingFunc, size, result, index, promises,
+) {
+  const arrayLength = array.length
+  while (++index < arrayLength) {
+    if (promises.size >= size) {
+      await promiseRace(promises)
+    }
+    const resultItem = mappingFunc(array[index])
+    if (isPromise(resultItem)) {
+      const selfDeletingPromise = resultItem.then(res => {
+        setDelete(promises, selfDeletingPromise)
+        return res
+      })
+      setAdd(promises, selfDeletingPromise)
+      result[index] = selfDeletingPromise
+    } else {
+      result[index] = resultItem
+    }
+  }
+  return promiseAll(result)
+}
+
+const arrayMapPool2 = function (array, mappingFunc, size) {
+  const arrayLength = array.length,
+    result = Array(arrayLength)
+  let index = -1
+  while (++index < arrayLength) {
+    const resultItem = mappingFunc(array[index])
+    if (isPromise(resultItem)) {
+      const promises = new Set()
+      const selfDeletingPromise = resultItem.then(res => {
+        promises.delete(selfDeletingPromise)
+        return res
+      })
+      promises.add(selfDeletingPromise)
+      result[index] = selfDeletingPromise
+      return asyncArrayMapPool2(
+        array, mappingFunc, size, result, index, promises)
+    }
+    result[index] = resultItem
+  }
+  return result
+}
+
+{
+  const asyncSquare = async number => number ** 2
+
+  const range = length => Array.from({ length }, (_, i) => i + 1)
+
+  const promiseRange = length => Array.from({ length }, (_, i) => Promise.resolve(i))
+
+  // arrayMapPool1(range(5), asyncSquare, 100).then(console.log)
+  // arrayMapPool2(range(5), asyncSquare, 100).then(console.log)
+
+  // timeInLoop.async('arrayMapPool1', 1e5, () => arrayMapPool1(range(5), asyncSquare, 100))
+  // timeInLoop.async('arrayMapPool2', 1e5, () => arrayMapPool2(range(5), asyncSquare, 100))
 }

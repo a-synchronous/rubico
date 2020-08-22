@@ -39,6 +39,8 @@ const asyncGeneratorFunctionTag = '[object AsyncGeneratorFunction]'
 
 const promiseAll = Promise.all.bind(Promise)
 
+const promiseRace = Promise.race.bind(Promise)
+
 const isDefined = value => value != null
 
 const isUndefined = value => typeof value == 'undefined'
@@ -1039,50 +1041,82 @@ map.series = func => function serialMapping(value) {
   throw new TypeError(`${value} is not an Array`)
 }
 
-/*
- * @synopsis
- * mapPoolArray(size number, f function, x Array<any>) -> Promise<Array<any>>
+const setProtoAdd = Set.prototype.add
+
+const setProtoDelete = Set.prototype.delete
+
+const setAdd = (set, item) => setProtoAdd.call(set, item)
+
+const setDelete = (set, item) => setProtoDelete.call(set, item)
+
+/**
+ * @name asyncArrayMapPool
  *
- * @note
- * https://stackoverflow.com/questions/62037349/rubicos-map-pool-array-implementation
- * https://stackoverflow.com/questions/39195441/limited-parallelism-with-async-await-in-typescript-es7
+ * @synopsis
+ * asyncArrayMapPool(
+ *   array Array<A>,
+ *   mappingFunc A=>B,
+ *   size number,
+ *   result Array<B>,
+ *   index number,
+ *   promises Set<Promise>,
+ * ) -> result
  */
-const mapPoolArray = async (size, f, x) => {
-  const y = []
-  const promises = new Set()
-  for (const xi of x) {
+const asyncArrayMapPool = async function (
+  array, mappingFunc, size, result, index, promises,
+) {
+  const arrayLength = array.length
+  while (++index < arrayLength) {
     if (promises.size >= size) {
-      await Promise.race(promises)
+      await promiseRace(promises)
     }
-    const yi = f(xi)
-    if (isPromise(yi)) {
-      const p = yi.then(res => {
-        promises.delete(p)
+    const resultItem = mappingFunc(array[index])
+    if (isPromise(resultItem)) {
+      const selfDeletingPromise = resultItem.then(res => {
+        promises.delete(selfDeletingPromise)
         return res
       })
-      promises.add(p)
-      y.push(p)
+      promises.add(selfDeletingPromise)
+      result[index] = selfDeletingPromise
     } else {
-      y.push(yi)
+      result[index] = resultItem
     }
   }
-  return Promise.all(y)
+  return promiseAll(result)
 }
 
-/*
+/**
+ * @name
+ * arrayMapPool
+ *
  * @synopsis
- * mapPoolSet(size number, f function, x Set<any>) -> Promise<Set<any>>
+ * A any, B any
+ *
+ * arrayMapPool(
+ *   array Array<A>, mappingFunc A=>B, size number,
+ * ) -> result Promise|Array<B>
  */
-const mapPoolSet = (size, f, x) => (
-  mapPoolArray(size, f, x).then(res => new Set(res)))
-
-/*
- * @synopsis
- * mapPoolMap(size number, f function, x Map<any=>any>) -> Promise<Map<any=>any>>
- */
-const mapPoolMap = (size, f, x) => (
-  mapPoolArray(size, f, x).then(res => new Map(res))
-)
+const arrayMapPool = function (array, mappingFunc, size) {
+  const arrayLength = array.length,
+    result = Array(arrayLength)
+  let index = -1
+  while (++index < arrayLength) {
+    const resultItem = mappingFunc(array[index])
+    if (isPromise(resultItem)) {
+      const promises = new Set()
+      const selfDeletingPromise = resultItem.then(res => {
+        promises.delete(selfDeletingPromise)
+        return res
+      })
+      promises.add(selfDeletingPromise)
+      result[index] = selfDeletingPromise
+      return asyncArrayMapPool(
+        array, mappingFunc, size, result, index, promises)
+    }
+    result[index] = resultItem
+  }
+  return result
+}
 
 /*
  * @synopsis
@@ -1090,6 +1124,14 @@ const mapPoolMap = (size, f, x) => (
  *
  * <T MapPoolable>map.pool(size number, f function)(x T<any>) -> Promise<T<any>>
  */
+map.pool = (size, func) => function concurrentPoolMapping(value) {
+  if (isArray(value)) {
+    return arrayMapPool(value, func, size)
+  }
+  throw new TypeError(`${value} is not an Array`)
+}
+
+/*
 map.pool = (size, fn) => {
   if (!isNumber(size) || isNaN(size)) {
     throw new TypeError(`map.pool(size, f); invalid size ${size}`)
@@ -1107,6 +1149,7 @@ map.pool = (size, fn) => {
     throw new TypeError('map.pool(...)(x); x invalid')
   }
 }
+*/
 
 /*
  * @synopsis

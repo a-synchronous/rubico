@@ -805,38 +805,41 @@ describe('rubico', () => {
   })
 
   describe('map.pool', () => {
-    const square = x => x ** 2
     const asyncSquare = async x => x ** 2
+    const possiblyAsyncSquare = x => x % 2 == 1 ? Promise.resolve(x ** 2) : x ** 2
     it('maps with asynchronous limit for Arrays', async () => {
-      aok(map.pool(1, square)([1, 2, 3, 4, 5]) instanceof Promise)
-      ade(await map.pool(1, square)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
-      ade(await map.pool(9, square)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
-      ade(await map.pool(100, square)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
+      aok(map.pool(1, asyncSquare)([1, 2, 3, 4, 5]) instanceof Promise)
+      ade(await map.pool(1, asyncSquare)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
+      ade(await map.pool(9, asyncSquare)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
+      ade(await map.pool(100, asyncSquare)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
       ade(await map.pool(1, asyncSquare)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
       ade(await map.pool(9, asyncSquare)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
     })
+    it('alternating Promises', async () => {
+      ade(await map.pool(1, possiblyAsyncSquare)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
+      ade(await map.pool(9, possiblyAsyncSquare)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
+    })
     it('=> [] for empty array', async () => {
-      aok(map.pool(1, square)([]) instanceof Promise)
-      ade(await map.pool(1, square)([]), [])
+      assert.deepEqual(map.pool(1, asyncSquare)([]), [])
     })
     it('works for arrays of undefined values', async () => {
       ade(await map.pool(1, x => x)([,,,,,]), Array(5).fill(undefined))
       ade(await map.pool(1, x => x)(Array(5)), Array(5).fill(undefined))
       ade(await map.pool(1, x => x)(Array(5).fill(null)), Array(5).fill(null))
     })
-    it('maps with asynchronous limit for Sets', async () => {
+    xit('maps with asynchronous limit for Sets', async () => {
       const numbersSet = new Set([1, 2, 3, 4, 5])
       const squaresSet = new Set([1, 4, 9, 16, 25])
-      aok(map.pool(1, square)(numbersSet) instanceof Promise)
-      ade(await map.pool(1, square)(numbersSet), squaresSet)
-      ade(await map.pool(9, square)(numbersSet), squaresSet)
-      ade(await map.pool(100, square)(numbersSet), squaresSet)
+      aok(map.pool(1, asyncSquare)(numbersSet) instanceof Promise)
+      ade(await map.pool(1, asyncSquare)(numbersSet), squaresSet)
+      ade(await map.pool(9, asyncSquare)(numbersSet), squaresSet)
+      ade(await map.pool(100, asyncSquare)(numbersSet), squaresSet)
       ade(await map.pool(1, asyncSquare)(numbersSet), squaresSet)
       ade(await map.pool(9, asyncSquare)(numbersSet), squaresSet)
     })
-    it('maps with asynchronous limit for Maps', async () => {
-      const squareEntry = entry => entry.map(square)
-      const asyncSquareEntry = async entry => entry.map(square)
+    xit('maps with asynchronous limit for Maps', async () => {
+      const squareEntry = entry => entry.map(asyncSquare)
+      const asyncSquareEntry = async entry => entry.map(asyncSquare)
       const numbersMap = new Map([[1, 1], [2, 2], [3, 3], [4, 4], [5, 5]])
       const squaresMap = new Map([[1, 1], [4, 4], [9, 9], [16, 16], [25, 25]])
       aok(map.pool(1, squareEntry)(numbersMap) instanceof Promise)
@@ -864,35 +867,17 @@ describe('rubico', () => {
       assert.strictEqual(maxi, 3)
       assert.strictEqual(i, 0)
       maxi = 0
-      const x = await map.pool(2, plusSleepMinus)(new Set([1, 2, 3, 4, 5, 6]))
-      assert.strictEqual(maxi, 2)
-      assert.strictEqual(i, 0)
-      maxi = 0
-      await map.pool(3, plusSleepMinus)(new Set([1, 2, 3, 4, 5, 6]))
-      assert.strictEqual(maxi, 3)
     }).timeout(20000)
     it('throws TypeError on map.pool(NaN)', async () => {
       assert.throws(
-        () => map.pool(NaN),
-        new TypeError('map.pool(size, f); invalid size NaN'),
-      )
-    })
-    it('throws RangeError on map.pool(lessThan1)', async () => {
-      assert.throws(
-        () => map.pool(0),
-        new RangeError('map.pool(size, f); size must be 1 or more'),
-      )
-    })
-    it('throws TypeError on map.pool(lessThan1)', async () => {
-      assert.throws(
-        () => map.pool(1, 'hey'),
-        new TypeError('map.pool(size, f); f is not a function'),
+        () => map.pool(NaN)(NaN),
+        new TypeError('NaN is not an Array'),
       )
     })
     it('throws TypeError on map.pool(lessThan1)', async () => {
       assert.throws(
         () => map.pool(1, () => {})('yo'),
-        new TypeError('map.pool(...)(x); x invalid'),
+        new TypeError('yo is not an Array'),
       )
     })
     it('handles sync errors good', async () => {
