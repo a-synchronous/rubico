@@ -846,3 +846,47 @@ const arrayMapPool2 = function (array, mappingFunc, size) {
   // timeInLoop.async('arrayMapPool1', 1e5, () => arrayMapPool1(range(5), asyncSquare, 100))
   // timeInLoop.async('arrayMapPool2', 1e5, () => arrayMapPool2(range(5), asyncSquare, 100))
 }
+
+/**
+ * @name arrayMapWithIndex
+ *
+ * @benchmark
+ * arrayMapWithIndex1: 1e+6: 29.659ms
+ * arrayMapWithIndex2: 1e+6: 31.844ms
+ */
+
+const arrayMapWithIndex1 = function (array, func) {
+  const arrayLength = array.length,
+    result = Array(arrayLength)
+  let index = -1, isAsync = false
+  while (++index < arrayLength) {
+    const resultItem = func(array[index], index, array)
+    if (isPromise(resultItem)) isAsync = true
+    result[index] = resultItem
+  }
+  return isAsync ? promiseAll(result) : result
+}
+
+const arrayMapWithIndex2 = function (array, func) {
+  const arrayLength = array.length,
+    result = Array(arrayLength)
+  let index = -1, isAsync = false
+  while (++index < arrayLength) {
+    const resultItem = func.call(null, array[index], index, array)
+    if (isPromise(resultItem)) isAsync = true
+    result[index] = resultItem
+  }
+  return isAsync ? promiseAll(result) : result
+}
+
+{
+  const array = [1, 2, 3, 4, 5]
+
+  const identity = value => value
+
+  // console.log(arrayMapWithIndex1(array, identity))
+
+  // timeInLoop('arrayMapWithIndex1', 1e6, () => arrayMapWithIndex1(array, identity))
+
+  // timeInLoop('arrayMapWithIndex2', 1e6, () => arrayMapWithIndex2(array, identity))
+}
