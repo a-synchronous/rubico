@@ -1056,18 +1056,18 @@ const setDelete = (set, item) => setProtoDelete.call(set, item)
  * asyncArrayMapPool(
  *   array Array<A>,
  *   mappingFunc A=>B,
- *   size number,
+ *   concurrencyLimit number,
  *   result Array<B>,
  *   index number,
  *   promises Set<Promise>,
  * ) -> result
  */
 const asyncArrayMapPool = async function (
-  array, mappingFunc, size, result, index, promises,
+  array, mappingFunc, concurrencyLimit, result, index, promises,
 ) {
   const arrayLength = array.length
   while (++index < arrayLength) {
-    if (promises.size >= size) {
+    if (promises.size >= concurrencyLimit) {
       await promiseRace(promises)
     }
     const resultItem = mappingFunc(array[index])
@@ -1093,10 +1093,12 @@ const asyncArrayMapPool = async function (
  * A any, B any
  *
  * arrayMapPool(
- *   array Array<A>, mappingFunc A=>B, size number,
+ *   array Array<A>,
+ *   mappingFunc A=>B,
+ *   concurrentLimit number,
  * ) -> result Promise|Array<B>
  */
-const arrayMapPool = function (array, mappingFunc, size) {
+const arrayMapPool = function (array, mappingFunc, concurrentLimit) {
   const arrayLength = array.length,
     result = Array(arrayLength)
   let index = -1
@@ -1111,45 +1113,50 @@ const arrayMapPool = function (array, mappingFunc, size) {
       promises.add(selfDeletingPromise)
       result[index] = selfDeletingPromise
       return asyncArrayMapPool(
-        array, mappingFunc, size, result, index, promises)
+        array, mappingFunc, concurrentLimit, result, index, promises)
     }
     result[index] = resultItem
   }
   return result
 }
 
-/*
- * @synopsis
- * <T any>Array<T>|Set<T>|Map<T> -> MapPoolable<T>
+/**
+ * @name map.pool
  *
- * <T MapPoolable>map.pool(size number, f function)(x T<any>) -> Promise<T<any>>
+ * @catchphrase
+ * map with concurrent limit
+ *
+ * @synopsis
+ * A any, B any
+ *
+ * map.pool(
+ *   concurrentLimit number,
+ *   func A=>B,
+ * )(value Array<A>) -> Promise|Array<B>
+ *
+ * @description
+ * **map.pool** is **map** with a concurrency limit specified by `concurrencyLimit`. At any given moment, there will be a max of that number of promises in flight.
+ *
+ * ```javascript
+ * const delayedLog = x => new Promise(function (resolve) {
+ *   setTimeout(function () {
+ *     console.log(x)
+ *     resolve()
+ *   }, 1000)
+ * })
+ *
+ * console.log('start')
+ * map.pool(2, delayedLog)([1, 2, 3, 4, 5])
+ * ```
+ *
+ * @execution concurrent
  */
-map.pool = (size, func) => function concurrentPoolMapping(value) {
+map.pool = (concurrencyLimit, func) => function concurrentPoolMapping(value) {
   if (isArray(value)) {
-    return arrayMapPool(value, func, size)
+    return arrayMapPool(value, func, concurrencyLimit)
   }
   throw new TypeError(`${value} is not an Array`)
 }
-
-/*
-map.pool = (size, fn) => {
-  if (!isNumber(size) || isNaN(size)) {
-    throw new TypeError(`map.pool(size, f); invalid size ${size}`)
-  }
-  if (size < 1) {
-    throw new RangeError('map.pool(size, f); size must be 1 or more')
-  }
-  if (!isFunction(fn)) {
-    throw new TypeError('map.pool(size, f); f is not a function')
-  }
-  return x => {
-    if (isArray(x)) return mapPoolArray(size, fn, x)
-    if (isSet(x)) return mapPoolSet(size, fn, x)
-    if (isMap(x)) return mapPoolMap(size, fn, x)
-    throw new TypeError('map.pool(...)(x); x invalid')
-  }
-}
-*/
 
 /*
  * @synopsis
