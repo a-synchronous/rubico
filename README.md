@@ -44,7 +44,7 @@ Here are my recommendations for getting started.
  4. at your leisure, [peruse the awesome resources](#awesome-resources)
  5. [help with rubico](https://github.com/a-synchronous/rubico/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
 
-# API
+# Core API
 ```javascript
 const {
   pipe, fork, assign,
