@@ -787,7 +787,7 @@ describe('rubico', () => {
     it('throws TypeError for non functions', async () => {
       assert.throws(
         () => map.series('hey')([1]),
-        new TypeError('func is not a function'),
+        new TypeError('mapper is not a function'),
       )
     })
     it('throws TypeError for non functions', async () => {
@@ -928,7 +928,7 @@ describe('rubico', () => {
     it('throws a TypeError on map.withIndex(nonFunction)', async () => {
       assert.throws(
         () => map.withIndex({})([1, 2, 3]),
-        new TypeError('func is not a function'),
+        new TypeError('mapper is not a function'),
       )
     })
     it('throws a TypeError on map.withIndex(...)(null)', async () => {
@@ -940,183 +940,182 @@ describe('rubico', () => {
   })
 
   describe('filter', () => {
-    it('lazily filters values from an async iterable based on an async predicate', async () => {
-      aok(!(filter(async x => x <= 3)(makeAsyncNumbers()) instanceof Promise))
-      aok(filter(async x => x <= 3)(makeAsyncNumbers())[Symbol.asyncIterator])
-      aok(asyncIteratorToArray(
-        filter(async x => x <= 3)(makeAsyncNumbers()),
-      ) instanceof Promise)
-      ade(
-        await asyncIteratorToArray(
-          filter(async x => x <= 3)(makeAsyncNumbers()),
-        ),
-        [1, 2, 3],
-      )
-    })
-    it('lazily filters values from an async iterable based on a sync predicate', async () => {
-      aok(!(filter(x => x <= 3)(makeAsyncNumbers()) instanceof Promise))
-      aok(filter(x => x <= 3)(makeAsyncNumbers())[Symbol.asyncIterator])
-      aok(asyncIteratorToArray(
-        filter(x => x <= 3)(makeAsyncNumbers()),
-      ) instanceof Promise)
-      ade(
-        await asyncIteratorToArray(
-          filter(x => x <= 3)(makeAsyncNumbers()),
-        ),
-        [1, 2, 3],
-      )
-    })
-    it('throws TypeError on filter(asyncFunction)(sync generator iterable)', async () => {
-      assert.throws(
-        () => iteratorToArray(
-          filter(async x => x <= 3)(makeNumbers()),
-        ),
-        new TypeError([
-          'filter(f)(x); xi is an element of x; ',
-          'if x if the resulting iterator of a sync generator, ',
-          'f(xi) cannot return a Promise',
-        ].join('')),
-      )
-    })
-    it('lazily filters elements of a sync generator iterable based on a sync predicate', async () => {
-      aok(map(x => x + 1)(makeNumbers())[Symbol.iterator])
-      ade(
-        iteratorToArray(
-          filter(x => x <= 3)(makeNumbers()),
-        ),
-        [1, 2, 3],
-      )
-    })
-    it('filters characters from a string based on an async predicate', async () => {
-      aok(filter(async x => x !== 'o')('heyoheyohey') instanceof Promise)
-      ase(await filter(async x => x !== 'o')('heyoheyohey'), 'heyheyhey')
-    })
-    it('filters characters from a string based on a sync predicate', async () => {
-      ase(filter(x => x !== 'o')('heyoheyohey'), 'heyheyhey')
-    })
-    it('filters values from a set based on an async predicate', async () => {
-      aok(filter(async x => x <= 3)(new Set([1, 2, 3, 4, 5])) instanceof Promise)
-      ade(
-        await filter(async x => x <= 3)(new Set([1, 2, 3, 4, 5])),
-        new Set([1, 2, 3]),
-      )
-    })
-    it('filters values from a set based on a sync predicate', async () => {
-      ade(
-        filter(x => x <= 3)(new Set([1, 2, 3, 4, 5])),
-        new Set([1, 2, 3]),
-      )
-    })
-    it('filters entries from a map based on an async predicate', async () => {
-      const numsMap = new Map([[1, 1], [2, 2], [3, 3], [4, 4], [5, 5]])
-      aok(filter(async ([k, v]) => k <= 3 && v <= 3)(numsMap) instanceof Promise)
-      ade(
-        await filter(async ([k, v]) => k <= 3 && v <= 3)(numsMap),
-        new Map([[1, 1], [2, 2], [3, 3]]),
-      )
-    })
-    it('filters entries from a map based on a sync predicate', async () => {
-      const numsMap = new Map([[1, 1], [2, 2], [3, 3], [4, 4], [5, 5]])
-      ade(
-        filter(([k, v]) => k <= 3 && v <= 3)(numsMap),
-        new Map([[1, 1], [2, 2], [3, 3]]),
-      )
-    })
-    it('filters bytes from a number typed array based on an async predicate', async () => {
-      for (const constructor of numberTypedArrayConstructors) {
-        aok(filter(async x => x <= 3)(new constructor([1, 2, 3, 4, 5])) instanceof Promise)
-        ade(
-          await filter(async x => x <= 3)(new constructor([1, 2, 3, 4, 5])),
-          new constructor([1, 2, 3]),
+    describe('filter(predicate T=>Promise|boolean)(Array<T>) -> Promise|Array<T>', () => {
+      it('predicate T=>boolean', async () => {
+        const isOdd = number => number % 2 == 1
+        assert.deepEqual(
+          filter(isOdd)([1, 2, 3, 4, 5]),
+          [1, 3, 5],
         )
-      }
-    })
-    it('filters bytes from a number typed array based on a sync predicate', async () => {
-      for (const constructor of numberTypedArrayConstructors) {
-        ade(
-          filter(x => x <= 3)(new constructor([1, 2, 3, 4, 5])),
-          new constructor([1, 2, 3]),
+      })
+      it('predicate T=>Promise<boolean>', async () => {
+        const asyncIsOdd = async number => number % 2 == 1
+        assert.deepEqual(
+          await filter(asyncIsOdd)([1, 2, 3, 4, 5]),
+          [1, 3, 5],
         )
-      }
-    })
-    it('filters bytes from a bigint typed array based on an async predicate', async () => {
-      for (const constructor of bigIntTypedArrayConstructors) {
-        aok(filter(async x => x <= 3n)(new constructor([1n, 2n, 3n, 4n, 5n])) instanceof Promise)
-        ade(
-          await filter(async x => x <= 3)(new constructor([1n, 2n, 3n, 4n, 5n])),
-          new constructor([1n, 2n, 3n]),
+      })
+      it('predicate T=>Promise|boolean', async () => {
+        const variadicAsyncIsOdd = number => number % 2 == 1 ? Promise.resolve(true) : false
+        assert.deepEqual(
+          await filter(variadicAsyncIsOdd)([1, 2, 3, 4, 5]),
+          [1, 3, 5],
         )
-      }
-    })
-    it('filters bytes from a bigint typed array based on a sync predicate', async () => {
-      for (const constructor of bigIntTypedArrayConstructors) {
-        ade(
-          filter(x => x <= 3n)(new constructor([1n, 2n, 3n, 4n, 5n])),
-          new constructor([1n, 2n, 3n]),
+        assert.deepEqual(
+          await filter(variadicAsyncIsOdd)([2, 3, 4, 5, 6]),
+          [3, 5],
         )
-      }
+      })
     })
-    it('filters elements from an array with an async predicate', async () => {
-      const evens = filter(asyncIsEven)([1, 2, 3, 4, 5])
-      aok(evens instanceof Promise)
-      ade(await evens, [2, 4])
+    describe('filter(predicate T=>Promise|boolean)(Object<T>) -> Promise|Object<T>', () => {
+      it('predicate T=>boolean', async () => {
+        const isOdd = number => number % 2 == 1
+        assert.deepEqual(
+          filter(isOdd)({ a: 1, b: 2, c: 3, d: 4, e: 5 }),
+          { a: 1, c: 3, e: 5 },
+        )
+      })
+      it('predicate T=>Promise<boolean>', async () => {
+        const asyncIsOdd = async number => number % 2 == 1
+        assert.deepEqual(
+          await filter(asyncIsOdd)({ a: 1, b: 2, c: 3, d: 4, e: 5 }),
+          { a: 1, c: 3, e: 5 },
+        )
+      })
+      it('predicate T=>Promise|boolean', async () => {
+        const variadicAsyncIsOdd = number => number % 2 == 1 ? Promise.resolve(true) : false
+        assert.deepEqual(
+          await filter(variadicAsyncIsOdd)({ a: 1, b: 2, c: 3, d: 4, e: 5 }),
+          { a: 1, c: 3, e: 5 },
+        )
+        assert.deepEqual(
+          await filter(variadicAsyncIsOdd)({ b: 2, c: 3, d: 4, e: 5, f: 6 }),
+          { c: 3, e: 5 },
+        )
+      })
     })
-    it('filters elements from an array with a sync predicate', async () => {
-      ade(
-        filter(isOdd)([1, 2, 3, 4, 5]),
-        [1, 3, 5],
-      )
+    describe('filter(predicate T=>boolean)(GeneratorFunction<args, T>) -> GeneratorFunction<args, T>', () => {
+      it('predicate T=>boolean', async () => {
+        const numbers = function* () { let i = 0; while (++i < 6) yield i }
+        const isOdd = number => number % 2 == 1
+        const oddNumbers = filter(isOdd)(numbers)
+        assert.equal(objectToString(oddNumbers), '[object GeneratorFunction]')
+        assert.deepEqual([...oddNumbers()], [1, 3, 5])
+      })
     })
-    it('filters entries from an object with an async predicate', async () => {
-      const evens = filter(asyncIsEven)({ a: 1, b: 2, c: 3, d: 4, e: 5 })
-      aok(evens instanceof Promise)
-      ade(await evens, { b: 2, d: 4 })
+    describe('filter(predicate T=>boolean)(Iterator<T>) -> Iterator<T>', () => {
+      it('predicate T=>boolean', async () => {
+        const numbers = function* () { let i = 0; while (++i < 6) yield i }
+        const isOdd = number => number % 2 == 1
+        const oddNumbersIterator = filter(isOdd)(numbers())
+        assert.equal(objectToString(oddNumbersIterator), '[object Object]')
+        assert.deepEqual([...oddNumbersIterator], [1, 3, 5])
+      })
     })
-    it('filters entries from an object with a sync predicate', async () => {
-      ade(
-        filter(isOdd)({ a: 1, b: 2, c: 3, d: 4, e: 5 }),
-        { a: 1, c: 3, e: 5 },
-      )
+    describe('filter(predicate T=>Promise|boolean)(AsyncGeneratorFunction<args, T>) -> AsyncGeneratorFunction<args, T>', () => {
+      const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
+      it('predicate T=>boolean', async () => {
+        const isOdd = number => number % 2 == 1
+        const asyncOddNumbers = filter(isOdd)(asyncNumbers)
+        assert.equal(objectToString(asyncOddNumbers), '[object AsyncGeneratorFunction]')
+        const oddNumbersArray = []
+        for await (const number of asyncOddNumbers()) oddNumbersArray.push(number)
+        assert.deepEqual(oddNumbersArray, [1, 3, 5])
+      })
+      it('predicate T=>Promise<boolean>', async () => {
+        const asyncIsOdd = async number => number % 2 == 1
+        const asyncOddNumbers = filter(asyncIsOdd)(asyncNumbers)
+        assert.equal(objectToString(asyncOddNumbers), '[object AsyncGeneratorFunction]')
+        const oddNumbersArray = []
+        for await (const number of asyncOddNumbers()) oddNumbersArray.push(number)
+        assert.deepEqual(oddNumbersArray, [1, 3, 5])
+      })
+      it('predicate T=>Promise|boolean', async () => {
+        const variadicAsyncIsOdd = number => number % 2 == 1 ? Promise.resolve(true) : false
+        const asyncOddNumbers = filter(variadicAsyncIsOdd)(asyncNumbers)
+        assert.equal(objectToString(asyncOddNumbers), '[object AsyncGeneratorFunction]')
+        const oddNumbersArray = []
+        for await (const number of asyncOddNumbers()) oddNumbersArray.push(number)
+        assert.deepEqual(oddNumbersArray, [1, 3, 5])
+      })
     })
-    it('acts as a filter transducer: binary function => reducer', async () => {
-      const addOddsReducer = filter(isOdd)((y, xi) => y + xi)
-      ase(typeof addOddsReducer, 'function')
-      ase(addOddsReducer.length, 2)
-      const addEvensReducer = filter(asyncIsEven)((y, xi) => y + xi)
-      ase(typeof addEvensReducer, 'function')
-      ase(addEvensReducer.length, 2)
+    describe('filter(predicate T=>Promise|boolean)(AsyncIterator<T>) -> AsyncIterator<T>', () => {
+      const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
+      it('predicate T=>boolean', async () => {
+        const isOdd = number => number % 2 == 1
+        const asyncOddNumbersIterator = filter(isOdd)(asyncNumbers())
+        assert.equal(objectToString(asyncOddNumbersIterator), '[object Object]')
+        const oddNumbersArray = []
+        for await (const number of asyncOddNumbersIterator) oddNumbersArray.push(number)
+        assert.deepEqual(oddNumbersArray, [1, 3, 5])
+      })
+      it('predicate T=>Promise<boolean>', async () => {
+        const asyncIsOdd = async number => number % 2 == 1
+        const asyncOddNumbers = filter(asyncIsOdd)(asyncNumbers)
+        assert.equal(objectToString(asyncOddNumbers), '[object AsyncGeneratorFunction]')
+        const oddNumbersArray = []
+        for await (const number of asyncOddNumbers()) oddNumbersArray.push(number)
+        assert.deepEqual(oddNumbersArray, [1, 3, 5])
+      })
+      it('predicate T=>Promise|boolean', async () => {
+        const variadicAsyncIsOdd = number => number % 2 == 1 ? Promise.resolve(true) : false
+        const asyncOddNumbers = filter(variadicAsyncIsOdd)(asyncNumbers)
+        assert.equal(objectToString(asyncOddNumbers), '[object AsyncGeneratorFunction]')
+        const oddNumbersArray = []
+        for await (const number of asyncOddNumbers()) oddNumbersArray.push(number)
+        assert.deepEqual(oddNumbersArray, [1, 3, 5])
+      })
     })
-    it('transducer handles async predicates', async () => {
-      const addEvensReducer = filter(asyncIsEven)((y, xi) => y + xi)
-      ase(await asyncArrayReduce(addEvensReducer, 0)([1, 2, 3, 4, 5, 6], 0), 12)
+    describe('filter(predicate T=>Promise|boolean)(Reducer<T>) -> Reducer<T>', () => {
+      const concat = (array, values) => array.concat(values)
+      it('predicate T=>boolean', async () => {
+        const isOdd = number => number % 2 == 1
+        const concatOdds = filter(isOdd)(concat)
+        assert.deepEqual([1, 2, 3, 4, 5].reduce(concatOdds, []), [1, 3, 5])
+      })
+      it('predicate T=>Promise<boolean>', async () => {
+        const asyncIsOdd = async number => number % 2 == 1
+        const concatOdds = filter(asyncIsOdd)(concat)
+        let oddNumbers = []
+        for (const number of [1, 2, 3, 4, 5]) {
+          oddNumbers = await concatOdds(oddNumbers, number)
+        }
+        assert.deepEqual(oddNumbers, [1, 3, 5])
+      })
+      it('predicate T=>Promise|boolean', async () => {
+        const variadicAsyncIsOdd = number => number % 2 == 1 ? Promise.resolve(true) : false
+        const concatOdds = filter(variadicAsyncIsOdd)(concat)
+        let oddNumbers = []
+        for (const number of [1, 2, 3, 4, 5]) {
+          oddNumbers = await concatOdds(oddNumbers, number)
+        }
+        assert.deepEqual(oddNumbers, [1, 3, 5])
+      })
     })
-    it('transducer handles sync predicates', async () => {
-      const addOddsReducer = filter(isOdd)((y, xi) => y + xi)
-      ase([1, 2, 3, 4, 5].reduce(addOddsReducer, 0), 9)
+    describe('filter(predicate T=>boolean)(Filterable<T>) -> Filterable<T>', () => {
+      it('predicate T=>boolean', async () => {
+        const isOdd = number => number % 2 == 1
+        const Filterable = function (value) {
+          this.value = value
+        }
+        Filterable.prototype.filter = function (func) {
+          return new Filterable(this.value.filter(func))
+        }
+        assert.deepEqual(
+          filter(isOdd)(new Filterable([1, 2, 3, 4, 5])),
+          new Filterable([1, 3, 5]),
+        )
+      })
     })
-    it('throws a TypeError on filter({})', async () => {
-      assert.throws(
-        () => filter({}),
-        new TypeError('filter(predicate); predicate is not a function'),
-      )
+    describe('filter(predicate T=>boolean)(null) -> null', () => {
+      it('predicate T=>boolean', async () => {
+        assert.strictEqual(filter(() => true)(null), null)
+      })
     })
-    it('throws a TypeError on filter(...)(string)', async () => {
-      assert.throws(
-        () => filter(hi)(null),
-        new TypeError('filter(...)(x); x invalid')
-      )
-    })
-    it('handles sync errors good', async () => {
-      assert.throws(
-        () => filter(x => { throw new Error(`throwing ${x}`) })(['yo']),
-        new Error('throwing yo')
-      )
-    })
-    it('handles async errors good', async () => {
-      assert.rejects(
-        () => filter(async x => { throw new Error(`throwing ${x}`) })(['yo']),
-        new Error('throwing yo'),
-      )
+    describe('filter(predicate T=>boolean)(undefined) -> undefined', () => {
+      it('predicate T=>boolean', async () => {
+        assert.strictEqual(filter(() => true)(undefined), undefined)
+      })
     })
   })
 

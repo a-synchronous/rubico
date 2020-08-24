@@ -836,13 +836,13 @@ const reducerMap = (reducer, mapper) => function mappingReducer(accum, value) {
  * linearly transform data
  *
  * @synopsis
- * T any
+ * any -> T
  *
- * Reducer<T> (any, T)=>Promise|any
+ * (any, T)=>Promise|any -> Reducer<T>
  *
- * A any, B any
+ * any -> A; any -> B
  *
- * Mappable<A> { map: (A=>B)=>Mappable<B> }
+ * { map: (A=>B)=>Mappable<B> } -> Mappable<A>
  *
  * map(A=>Promise|B)(Array<A>) -> Promise|Array<B>
  *
@@ -858,7 +858,7 @@ const reducerMap = (reducer, mapper) => function mappingReducer(accum, value) {
  *
  * map(A=>Promise|B)(Reducer<A>) -> Reducer<B>
  *
- * map(A=>B)(Mappable<A>) -> Mappable<B> // no async support at the moment
+ * map(A=>B)(Mappable<A>) -> Mappable<B>
  *
  * map(A=>Promise|B)(A) -> Promise|B
  *
@@ -912,7 +912,7 @@ const reducerMap = (reducer, mapper) => function mappingReducer(accum, value) {
  * ```
  * any -> A, any -> B
  *
- * map(func A=>Promise|B)(Reducer<A>) -> Reducer<B>
+ * map(mapper A=>Promise|B)(Reducer<A>) -> Reducer<B>
  * ```
  *
  * When passed a reducer, a mapping function returns another reducer with each given item T transformed by the mapper function. For more information on this behavior, see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md)
@@ -968,15 +968,15 @@ const map = mapper => function mapping(value) {
  * @synopsis
  * asyncArrayMapSeries(
  *   array Array,
- *   func function,
+ *   mapper function,
  *   result Array,
  *   index number,
  * ) -> result
  */
-const asyncArrayMapSeries = async function (array, func, result, index) {
+const asyncArrayMapSeries = async function (array, mapper, result, index) {
   const arrayLength = array.length
   while (++index < arrayLength) {
-    result[index] = await func(array[index])
+    result[index] = await mapper(array[index])
   }
   return result
 }
@@ -987,18 +987,18 @@ const asyncArrayMapSeries = async function (array, func, result, index) {
  * @synopsis
  * any -> A, any -> B
  *
- * arrayMapSeries(array Array<A>, func A=>B) -> result Array<B>
+ * arrayMapSeries(array Array<A>, mapper A=>B) -> result Array<B>
  */
-const arrayMapSeries = function (array, func) {
+const arrayMapSeries = function (array, mapper) {
   const arrayLength = array.length,
     result = Array(arrayLength)
   let index = -1
   while (++index < arrayLength) {
-    const resultItem = func(array[index])
+    const resultItem = mapper(array[index])
     if (isPromise(resultItem)) {
       return resultItem.then(res => {
         result[index] = res
-        return asyncArrayMapSeries(array, func, result, index)
+        return asyncArrayMapSeries(array, mapper, result, index)
       })
     }
     result[index] = resultItem
@@ -1013,9 +1013,9 @@ const arrayMapSeries = function (array, func) {
  * map in series
  *
  * @synopsis
- * A any, B any
+ * any -> A; any -> B
  *
- * map.series(func A=>Promise|B)(Array<A>) -> Promise|Array<B>
+ * map.series(mapper A=>Promise|B)(Array<A>) -> Promise|Array<B>
  *
  * @description
  * **map.series** is **map** but with serial instead of concurrent application of the mapping function to each item of the input value.
@@ -1034,9 +1034,9 @@ const arrayMapSeries = function (array, func) {
  *
  * @execution series
  */
-map.series = func => function serialMapping(value) {
+map.series = mapper => function serialMapping(value) {
   if (isArray(value)) {
-    return arrayMapSeries(value, func)
+    return arrayMapSeries(value, mapper)
   }
   throw new TypeError(`${value} is not an Array`)
 }
@@ -1082,7 +1082,7 @@ const asyncArrayMapPool = async function (
  * arrayMapPool
  *
  * @synopsis
- * A any, B any
+ * any -> A; any -> B
  *
  * arrayMapPool(
  *   array Array<A>,
@@ -1119,15 +1119,15 @@ const arrayMapPool = function (array, mapper, concurrentLimit) {
  * map with concurrent limit
  *
  * @synopsis
- * A any, B any
+ * any -> A; any -> B
  *
  * map.pool(
  *   concurrentLimit number,
- *   func A=>B,
+ *   mapper A=>B,
  * )(value Array<A>) -> Promise|Array<B>
  *
  * @description
- * **map.pool** is **map** with a concurrency limit specified by `concurrencyLimit`. At any given moment, there will be a max of that number of promises in flight.
+ * **map.pool** is **map** with a concurrency limit that specifies the maximum number of promises in flight in a given moment for an asynchronous mapping operation.
  *
  * ```javascript
  * const delayedLog = x => new Promise(function (resolve) {
@@ -1143,9 +1143,9 @@ const arrayMapPool = function (array, mapper, concurrentLimit) {
  *
  * @execution concurrent
  */
-map.pool = (concurrencyLimit, func) => function concurrentPoolMapping(value) {
+map.pool = (concurrencyLimit, mapper) => function concurrentPoolMapping(value) {
   if (isArray(value)) {
-    return arrayMapPool(value, func, concurrencyLimit)
+    return arrayMapPool(value, mapper, concurrencyLimit)
   }
   throw new TypeError(`${value} is not an Array`)
 }
@@ -1154,19 +1154,19 @@ map.pool = (concurrencyLimit, func) => function concurrentPoolMapping(value) {
  * @name arrayMapWithIndex
  *
  * @synopsis
- * A any, B any
+ * any -> A; any -> B
  *
  * arrayMapWithIndex(
  *   array Array<A>,
- *   func (A, index number, array Array<A>)=>Promise|B
+ *   mapper (A, index number, array Array<A>)=>Promise|B
  * ) -> Promise|Array<B>
  */
-const arrayMapWithIndex = function (array, func) {
+const arrayMapWithIndex = function (array, mapper) {
   const arrayLength = array.length,
     result = Array(arrayLength)
   let index = -1, isAsync = false
   while (++index < arrayLength) {
-    const resultItem = func(array[index], index, array)
+    const resultItem = mapper(array[index], index, array)
     if (isPromise(resultItem)) isAsync = true
     result[index] = resultItem
   }
@@ -1180,79 +1180,64 @@ const arrayMapWithIndex = function (array, func) {
  * map with Index
  *
  * @synopsis
- * A any, B any
+ * any -> A; any -> B
  *
  * map.withIndex(
- *   func (A, index number, Array<A>)=>Promise|B,
+ *   mapper (A, index number, Array<A>)=>Promise|B,
  * )(Array<A>) -> Promise|Array<B>
  *
  * @description
  *
  * @execution concurrent
  */
-map.withIndex = func => function mappingWithIndex(value) {
+map.withIndex = mapper => function mappingWithIndex(value) {
   if (isArray(value)) {
-    return arrayMapWithIndex(value, func)
+    return arrayMapWithIndex(value, mapper)
   }
   throw new TypeError(`${value} is not an Array`)
 }
 
-/*
- * @synopsis
- * filterAsyncIterable(predicate any=>any, x AsyncIterable)
- *   -> AsyncIterable<any>
+/**
+ * @name map.own
  *
- * @TODO refactor for proper generator syntax
- */
-const filterAsyncIterable = (predicate, x) => (async function*() {
-  for await (const xi of x) { if (await predicate(xi)) yield xi }
-})()
-
-/*
- * @synopsis
- * filterIterable(predicate any=>any, x Iterable<any>) -> Iterable<any>
- *
- * @TODO refactor for proper generator syntax
- */
-const filterIterable = (predicate, x) => (function*() {
-  for (const xi of x) {
-    const ok = predicate(xi)
-    if (isPromise(ok)) {
-      throw new TypeError([
-        'filter(f)(x); xi is an element of x;',
-        'if x if the resulting iterator of a sync generator,',
-        'f(xi) cannot return a Promise',
-      ].join(' '))
-    }
-    if (ok) yield xi
-  }
-})()
-
-/*
- * @synopsis
- * createFilterIndex(predicate any=>any, x Iterable<any>)
- *   -> filterIndex Array<any>|Promise<Array<any>>
- */
-const createFilterIndex = (predicate, x) => {
-  let isAsync = false
-  const filterIndex = []
-  for (const xi of x) {
-    const ok = predicate(xi)
-    if (isPromise(ok)) isAsync = true
-    filterIndex.push(ok)
-  }
-  return isAsync ? Promise.all(filterIndex) : filterIndex
+const Person = function (name) {
+  this.name = name
 }
 
-/*
- * @synopsis
- * filterArray(predicate any=>any, x Array<any>)
- *   -> Array<any>|Promise<Array<any>>
+Person.prototype.greet = function () {
+  console.log(`Hello, my name is ${this.name}`)
+}
+
+const david = new Person('david')
+
+david.greet() // Hello, my name is david
+
+david.a = 1
+david.b = 2
+david.c = 3
+
+const square = number => number ** 2
+
+const nativeHasOwnProperty = Object.prototype.hasOwnProperty
+
+const objectHasOwnProperty = (object, property) => nativeHasOwnProperty.call(object, property)
+
+map.own = mapper => function mappingOwnProperties(object) {
+  const result = {}
+  for (const key in object) {
+    if (objectHasOwnProperty(object, key)) {
+      result[key] = mapper(object[key]) // TODO promise support
+    }
+  }
+  return result
+}
+
+console.log(
+  map.own(square)(david),
+) // { name: NaN, a: 1, b: 4, c: 9 }
+ *
+ *
  */
-const filterArray = (predicate, x) => possiblePromiseThen(
-  createFilterIndex(predicate, x),
-  res => x.filter((_, i) => res[i]),
-)
 
 /*
  * @synopsis
@@ -1264,125 +1249,448 @@ const filterStringFromIndex = (index, x) => {
   return y
 }
 
-/*
+/**
+ * @name arrayExtend
+ *
  * @synopsis
- * filterString(predicate any=>any, x string) -> string|Promise<string>
+ * arrayExtend(array Array, values Array) -> array
  */
-const filterString = (predicate, x) => possiblePromiseThen(
-  createFilterIndex(predicate, x),
-  res => filterStringFromIndex(res, x),
-)
-
-/*
- * @synopsis
- * filterSet(predicate any=>any, x Set<any>) -> Set<any>|Promise<Set<any>>
- */
-const filterSet = (predicate, x) => {
-  const y = new Set(), promises = []
-  for (const xi of x) {
-    const ok = predicate(xi)
-    if (isPromise(ok)) {
-      promises.push(ok.then(res => res && y.add(xi)))
-    } else if (ok) { y.add(xi) }
+const arrayExtend = (array, values) => {
+  const arrayLength = array.length,
+    valuesLength = values.length
+  let valuesIndex = -1
+  while (++valuesIndex < valuesLength) {
+    array[arrayLength + valuesIndex] = values[valuesIndex]
   }
-  return promises.length > 0 ? Promise.all(promises).then(() => y) : y
+  return array
 }
 
-/*
+/**
+ * @name asyncArrayFilter
+ *
  * @synopsis
- * filterMap(predicate any=>any, x Map<any=>any>)
- *   -> Map<any=>any>|Promise<Map<any=>any>>
+ * any -> value
+ *
+ * asyncArrayFilter(
+ *   array Array<value>,
+ *   predicate,
+ *   index number,
+ * ) -> result Array<value>
  */
-const filterMap = (predicate, x) => {
-  const y = new Map(), promises = []
-  for (const xi of x) {
-    const ok = predicate(xi)
-    if (isPromise(ok)) {
-      promises.push(ok.then(res => res && y.set(...xi)))
-    } else if (ok) { y.set(...xi) }
+const asyncArrayFilter = async function (array, predicate) {
+  const arrayLength = array.length,
+    result = [],
+    shouldIncludeItemAtIndex = await arrayMap(array, predicate)
+  let index = -1,
+    resultIndex = -1
+  while (++index < arrayLength) {
+    if (shouldIncludeItemAtIndex[index]) {
+      result[++resultIndex] = array[index]
+    }
   }
-  return promises.length > 0 ? Promise.all(promises).then(() => y) : y
+  return result
 }
 
-/*
+/**
+ * @name asyncArrayFilterInterlude
+ *
  * @synopsis
- * filterTypedArray(predicate any=>any, x TypedArray<any>) -> TypedArray<any>
+ * any -> T
+ *
+ * asyncArrayFilterInterlude(
+ *   array Array<T>,
+ *   predicate T=>boolean,
+ *   result Array<T>,
+ *   index number,
+ *   shouldIncludeFirstItemPromise Promise<boolean>,
+ * ) -> result
  */
-const filterTypedArray = (predicate, x) => possiblePromiseThen(
-  filterArray(predicate, x),
-  res => new x.constructor(res),
-)
-
-/*
- * @synopsis
- * filterObject(predicate any=>any, x Object<any>) -> Object<any>
- */
-const filterObject = (predicate, x) => {
-  const y = {}, promises = []
-  for (const k in x) {
-    const ok = predicate(x[k])
-    if (isPromise(ok)) {
-      promises.push(ok.then(res => { if (res) { y[k] = x[k] } }))
-    } else if (ok) { y[k] = x[k] }
+const asyncArrayFilterInterlude = async function (
+  array, predicate, result, index, shouldIncludeFirstItemPromise,
+) {
+  const [
+    shouldIncludeFirstItem,
+    filteredRemainingItems,
+  ] = await promiseAll([
+    shouldIncludeFirstItemPromise,
+    asyncArrayFilter(array.slice(index + 1), predicate),
+  ])
+  if (shouldIncludeFirstItem) {
+    result[result.length] = array[index]
   }
-  return promises.length > 0 ? Promise.all(promises).then(() => y) : y
+  return arrayExtend(result, filteredRemainingItems)
 }
 
-/*
+/**
+ * @name arrayFilter
+ *
  * @synopsis
- * filterReducer(
- *   predicate any=>any,
- *   reducer (any, any)=>any,
- * ) -> (y any, xi any)=>Promise|any
+ * any -> T
+ *
+ * arrayFilter(
+ *   array Array<T>,
+ *   predicate T=>Promise|boolean,
+ * ) -> result Promise|Array<T>
  */
-const filterReducer = (predicate, reducer) => (y, xi) => (
-  possiblePromiseThen(predicate(xi), res => res ? reducer(y, xi) : y))
+const arrayFilter = function (array, predicate) {
+  const arrayLength = array.length,
+    result = []
+  let index = -1,
+    resultIndex = -1
+  while (++index < arrayLength) {
+    const item = array[index]
+    const shouldIncludeItem = predicate(item)
+    if (isPromise(shouldIncludeItem)) {
+      return asyncArrayFilterInterlude(
+        array, predicate, result, index, shouldIncludeItem)
+    }
+    if (shouldIncludeItem) {
+      result[++resultIndex] = item
+    }
+  }
+  return result
+}
+
+/**
+ * @name _setValueIfTruthy
+ *
+ * @synopsis
+ * any -> T
+ *
+ * _setValueIfTruthy(
+ *   object Object<T>,
+ *   result Object<T>,
+ *   key string,
+ * ) -> settingValueIfTruthy (shouldIncludeItem boolean)=>()
+ */
+const _setValueIfTruthy = (
+  object, result, key,
+) => function settingValueIfTruthy(shouldIncludeItem) {
+  if (shouldIncludeItem) {
+    result[key] = object[key]
+  }
+}
+
+/**
+ * @name _pushSetIfShouldIncludeItemPromise
+ *
+ * @synopsis
+ * any -> T
+ *
+ * _asyncSetIfShouldIncludeItem(
+ *   object Object<T>,
+ *   result Object<T>,
+ *   promises Array<Promise>,
+ *   key string,
+ *   shouldIncludeItemPromise Promise<boolean>,
+ * ) -> ()
+ */
+const _pushSetIfShouldIncludeItemPromise = function (
+  object, result, promises, key, shouldIncludeItemPromise,
+) {
+  promises[promises.length] = shouldIncludeItemPromise.then(
+    _setValueIfTruthy(object, result, key))
+}
+
+/**
+ * @name _tapPossiblePromiseAllThenResolve
+ *
+ * @synopsis
+ * _tapPossiblePromiseAllThenResolve(
+ *   promises Array<Promise>,
+ *   value any,
+ * ) -> Promise|value
+ */
+const _tapPossiblePromiseAllThenResolve = (promises, value) => promises.length == 0
+  ? value
+  : promiseAll(promises).then(() => value)
+
+/**
+ * @name objectFilter
+ *
+ * @synopsis
+ * any -> T
+ *
+ * objectFilter(
+ *   object Object<T>,
+ *   predicate T=>boolean,
+ * ) -> result Object<T>
+ */
+const objectFilter = function (object, predicate) {
+  const result = {},
+    promises = []
+  for (const key in object) {
+    const item = object[key]
+    const shouldIncludeItem = predicate(item)
+    if (isPromise(shouldIncludeItem)) {
+      _pushSetIfShouldIncludeItemPromise(
+        object, result, promises, key, shouldIncludeItem)
+    } else if (shouldIncludeItem) {
+      result[key] = item
+    }
+  }
+  return _tapPossiblePromiseAllThenResolve(promises, result)
+}
+
+/**
+ * @name generatorFunctionFilter
+ *
+ * @synopsis
+ * any -> T
+ *
+ * (args ...any)=>Generator<T> -> GeneratorFunction<args, T>
+ *
+ * generatorFunctionFilter(
+ *   generatorFunction GeneratorFunction<args, T>
+ *   predicate T=>boolean,
+ * ) -> filteringGeneratorFunction GeneratorFunction<args, T>
+ */
+const generatorFunctionFilter = function (generatorFunction, predicate) {
+  return function* filteringGeneratorFunction(...args) {
+    for (const item of generatorFunction(...args)) {
+      if (predicate(item)) {
+        yield item
+      }
+    }
+  }
+}
+
+/**
+ * @name FilteringIterator
+ *
+ * @synopsis
+ * any -> T
+ *
+ * new FilteringIterator(
+ *   iter Iterator<T>,
+ *   predicate T=>boolean,
+ * ) -> FilteringIterator<T>
+ */
+const FilteringIterator = function (iter, predicate) {
+  this.iter = iter
+  this.predicate = predicate
+}
+
+/**
+ * @name FilteringIterator.prototype[Symbol.iterator]
+ *
+ * @synopsis
+ * new FilteringIterator(
+ *   iter Iterator,
+ *   predicate function,
+ * )[Symbol.iterator]() -> FilteringIterator
+ */
+FilteringIterator.prototype[symbolIterator] = function filteringValues() {
+  return this
+}
+
+/**
+ * @name FilteringIterator.prototype.next
+ *
+ * @synopsis
+ * new FilteringIterator(
+ *   iter Iterator,
+ *   predicate function,
+ * ).next() -> { value: any, done: boolean }
+ */
+FilteringIterator.prototype.next = function next() {
+  const thisIterNext = this.iter.next.bind(this.iter),
+    thisPredicate = this.predicate
+  let iteration = this.iter.next()
+  while (!iteration.done) {
+    const { value } = iteration
+    if (thisPredicate(value)) {
+      return { value, done: false }
+    }
+    iteration = thisIterNext()
+  }
+  return { value: undefined, done: true }
+}
+
+/**
+ * @name asyncGeneratorFunctionFilter
+ *
+ * @synopsis
+ * any -> T
+ *
+ * (args ...any)=>AsyncGenerator<T> -> AsyncGeneratorFunction<args, T>
+ *
+ * asyncGeneratorFunctionFilter(
+ *   asyncGeneratorFunction AsyncGeneratorFunction<args, T>,
+ *   predicate T=>boolean,
+ * ) -> filteringAsyncGeneratorFunction AsyncGeneratorFunction<args, T>
+ */
+const asyncGeneratorFunctionFilter = function (asyncGeneratorFunction, predicate) {
+  return async function* filteringAsyncGeneratorFunction(...args) {
+    for await (const item of asyncGeneratorFunction(...args)) {
+      const shouldIncludeItem = predicate(item)
+      if (
+        isPromise(shouldIncludeItem)
+          ? await shouldIncludeItem
+          : shouldIncludeItem
+      ) {
+        yield item
+      }
+    }
+  }
+}
+
+/**
+ * @name FilteringAsyncIterator
+ *
+ * @synopsis
+ * any -> T
+ *
+ * new FilteringAsyncIterator(
+ *   asyncIter AsyncIterator<T>,
+ *   predicate T=>boolean,
+ * ) -> FilteringAsyncIterator<T>
+ */
+const FilteringAsyncIterator = function (asyncIter, predicate) {
+  this.asyncIter = asyncIter
+  this.predicate = predicate
+}
+
+/**
+ * @name FilteringAsyncIterator.prototype[Symbol.asyncIterator]
+ *
+ * @synopsis
+ * new FilteringAsyncIterator(
+ *   asyncIter AsyncIterator,
+ *   predicate function,
+ * )[Symbol.asyncIterator]() -> FilteringAsyncIterator
+ */
+FilteringAsyncIterator.prototype[symbolAsyncIterator] = function filteringValues() {
+  return this
+}
+
+/**
+ * @name FilteringAsyncIterator.prototype.next
+ *
+ * @synopsis
+ * new FilteringAsyncIterator(
+ *   asyncIter AsyncIterator,
+ *   predicate function,
+ * ).next() -> { value: any, done: boolean }
+ */
+FilteringAsyncIterator.prototype.next = async function next() {
+  const thisIterNext = this.asyncIter.next.bind(this.asyncIter),
+    thisPredicate = this.predicate
+  let iteration = await thisIterNext()
+  while (!iteration.done) {
+    const { value } = iteration
+    const shouldIncludeItem = thisPredicate(value)
+    if (
+      isPromise(shouldIncludeItem)
+        ? await shouldIncludeItem
+        : shouldIncludeItem
+    ) {
+      return { value, done: false }
+    }
+    iteration = await thisIterNext()
+  }
+  return { value: undefined, done: true }
+}
+
+/**
+ * @name _asyncReducerFiltration
+ *
+ * @synopsis
+ * any -> T
+ *
+ * _asyncReducerFiltration(
+ *   reducer (any, T)=>Promise|any,
+ *   accumulator any,
+ *   item T,
+ *   shouldIncludeItemPromise Promise<boolean>,
+ * ) -> Promise
+ */
+const _asyncReducerFiltration = (
+  reducer, accumulator, item, shouldIncludeItemPromise,
+) => shouldIncludeItemPromise.then(
+  res => res ? reducer(accumulator, item) : accumulator)
+
+/**
+ * @name reducerFilter
+ *
+ * @synopsis
+ * any -> T
+ *
+ * reducerFilter(
+ *   reducer (any, T)=>Promise|any,
+ *   predicate T=>Promise|boolean,
+ * ) -> filteringReducer (accumulator any, item T)=>Promise|any
+ */
+const reducerFilter = (
+  reducer, predicate,
+) => function filteringReducer(accumulator, item) {
+  const shouldIncludeItem = predicate(item)
+  if (isPromise(shouldIncludeItem)) {
+    return _asyncReducerFiltration(
+      reducer, accumulator, item, shouldIncludeItem)
+  }
+  return shouldIncludeItem ? reducer(accumulator, item) : accumulator
+}
 
 /**
  * @name filter
  *
  * @synopsis
+ * any -> T
  *
- * T any
+ * (any, T)=>Promise|any -> Reducer<T>
  *
- * Reducer<T> (any, T)=>Promise|any
+ * (args ...any)=>Generator<T> -> GeneratorFunction<args, T>
  *
- * Filterable<T> { filter: (T=>boolean)=>Filterable<T> }
+ * (args ...any)=>AsyncGenerator<T> -> AsyncGeneratorFunction<args, T>
  *
- * filter(func T=>Promise|boolean)(Array<T>) -> Promise|Array<T>
+ * { filter: (T=>boolean)=>Filterable<T> } -> Filterable<T>
  *
- * filter(func T=>Promise|boolean)(Object<T>) -> Promise|Object<T>
+ * filter(predicate T=>Promise|boolean)(Array<T>) -> Promise|Array<T>
  *
- * filter(func T=>boolean)(GeneratorFunction<T>) -> GeneratorFunction<T>
+ * filter(predicate T=>Promise|boolean)(Object<T>) -> Promise|Object<T>
  *
- * filter(func T=>boolean)(Iterator<T>) -> Iterator<T>
+ * filter(predicate T=>boolean)(GeneratorFunction<args, T>)
+ *   -> GeneratorFunction<args, T>
  *
- * filter(func T=>Promise|boolean)(AsyncGeneratorFunction<T>) -> AsyncGeneratorFunction<T>
+ * filter(predicate T=>boolean)(Iterator<T>) -> Iterator<T>
  *
- * filter(func T=>Promise|boolean)(AsyncIterator<T>) -> AsyncIterator<T>
+ * filter(predicate T=>Promise|boolean)(AsyncGeneratorFunction<args, T>)
+ *   -> AsyncGeneratorFunction<args, T>
  *
- * filter(func T=>Promise|boolean)(Reducer<T>) -> Reducer<T>
+ * filter(predicate T=>Promise|boolean)(AsyncIterator<T>) -> AsyncIterator<T>
  *
- * filter(func T=>boolean)(Filterable<T>) -> Filterable<T> // no async support at the moment
+ * filter(predicate T=>Promise|boolean)(Reducer<T>) -> Reducer<T>
  *
- * filter(func T=>Promise|boolean)(T) -> Promise|T
+ * filter(predicate T=>boolean)(Filterable<T>) -> Filterable<T>
+ *
+ * filter(predicate T=>Promise|boolean)(T) -> Promise|T
  */
-const filter = predicate => {
-  if (!isFunction(predicate)) {
-    throw new TypeError('filter(predicate); predicate is not a function')
+const filter = predicate => function filtering(value) {
+  if (isArray(value)) {
+    return arrayFilter(value, predicate)
   }
-  return x => {
-    if (isAsyncIterable(x)) return filterAsyncIterable(predicate, x)
-    if (isArray(x)) return filterArray(predicate, x)
-    if (isString(x)) return filterString(predicate, x)
-    if (isSet(x)) return filterSet(predicate, x)
-    if (isMap(x)) return filterMap(predicate, x)
-    if (isTypedArray(x)) return filterTypedArray(predicate, x)
-    if (isIterable(x)) return filterIterable(predicate, x) // for generators or custom iterators
-    if (isObject(x)) return filterObject(predicate, x)
-    if (isFunction(x)) return filterReducer(predicate, x)
-    throw new TypeError('filter(...)(x); x invalid')
+  if (isFunction(value)) {
+    if (isGeneratorFunction(value)) {
+      return generatorFunctionFilter(value, predicate)
+    }
+    if (isAsyncGeneratorFunction(value)) {
+      return asyncGeneratorFunctionFilter(value, predicate)
+    }
+    return reducerFilter(value, predicate)
   }
+  if (value == null) {
+    return value
+  }
+  if (typeof value.next == 'function') {
+    return symbolIterator in value
+      ? new FilteringIterator(value, predicate)
+      : new FilteringAsyncIterator(value, predicate)
+  }
+  if (value.constructor == Object) {
+    return objectFilter(value, predicate)
+  }
+  return typeof value.filter == 'function' ? value.filter(predicate) : value
 }
 
 /*
