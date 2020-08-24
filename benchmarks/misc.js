@@ -252,3 +252,15 @@ const mapFromForLoopDestructuring = x => {
 
   // timeInLoop.async('async-add-return-await', 1e6, async () => await add(1, 2))
 }
+
+/**
+ * @name functionCreation
+ *
+ * @benchmarks
+ * () => {}: 1e+8: 102.585ms
+ * function hey() {}: 1e+8: 100.069ms
+ */
+
+// timeInLoop('() => {}', 1e8, () => { () => {} })
+
+// timeInLoop('function hey() {}', 1e8, () => { function hey() {} })
