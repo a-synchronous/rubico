@@ -490,7 +490,7 @@ const tap = func => function tapping(value) {
  * @name tap.if
  *
  * @catchphrase
- * Conditional tap
+ * conditional tap
  *
  * @synopsis
  * tap.if(
@@ -1177,7 +1177,7 @@ const arrayMapWithIndex = function (array, mapper) {
  * @name map.withIndex
  *
  * @catchphrase
- * map with Index
+ * map with index
  *
  * @synopsis
  * any -> A; any -> B
@@ -1635,36 +1635,144 @@ const reducerFilter = (
 /**
  * @name filter
  *
+ * @catchphrase
+ * exclude data by predicate
+ *
  * @synopsis
  * any -> T
  *
  * (any, T)=>Promise|any -> Reducer<T>
  *
- * (args ...any)=>Generator<T> -> GeneratorFunction<args, T>
+ * { filter: (T=>boolean)=>this<T> } -> Filterable<T>
  *
- * (args ...any)=>AsyncGenerator<T> -> AsyncGeneratorFunction<args, T>
+ * filter(predicate T=>Promise|boolean)(
+ *   value Array<T>,
+ * ) -> Promise|Array<T>
  *
- * { filter: (T=>boolean)=>Filterable<T> } -> Filterable<T>
+ * filter(predicate T=>Promise|boolean)(
+ *   value Object<T>,
+ * ) -> Promise|Object<T>
  *
- * filter(predicate T=>Promise|boolean)(Array<T>) -> Promise|Array<T>
+ * filter(predicate T=>boolean)(
+ *   value GeneratorFunction<(args ...any)=>Generator<T>>,
+ * ) -> GeneratorFunction<args=>Generator<T>>
  *
- * filter(predicate T=>Promise|boolean)(Object<T>) -> Promise|Object<T>
+ * filter(predicate T=>boolean)(
+ *   value Iterator<T>,
+ * ) -> Iterator<T>
  *
- * filter(predicate T=>boolean)(GeneratorFunction<args, T>)
- *   -> GeneratorFunction<args, T>
+ * filter(predicate T=>Promise|boolean)(
+ *   AsyncGeneratorFunction<(args ...any)=>AsyncGenerator<T>>
+ * ) -> AsyncGeneratorFunction<args=>AsyncGenerator<T>>
  *
- * filter(predicate T=>boolean)(Iterator<T>) -> Iterator<T>
+ * filter(predicate T=>Promise|boolean)(
+ *   value AsyncIterator<T>,
+ * ) -> AsyncIterator<T>
  *
- * filter(predicate T=>Promise|boolean)(AsyncGeneratorFunction<args, T>)
- *   -> AsyncGeneratorFunction<args, T>
+ * filter(predicate T=>Promise|boolean)(
+ *   value Reducer<T>,
+ * ) -> Reducer<T>
  *
- * filter(predicate T=>Promise|boolean)(AsyncIterator<T>) -> AsyncIterator<T>
+ * filter(predicate T=>boolean)(
+ *   value Filterable<T>,
+ * ) -> Filterable<T>
  *
- * filter(predicate T=>Promise|boolean)(Reducer<T>) -> Reducer<T>
+ * filter(predicate T=>Promise|boolean)(
+ *   value T,
+ * ) -> Promise|T
  *
- * filter(predicate T=>boolean)(Filterable<T>) -> Filterable<T>
+ * @description
+ * **filter** accepts a predicate function and a value of any type and returns the same type with elements excluded by the provided predicate function.
  *
- * filter(predicate T=>Promise|boolean)(T) -> Promise|T
+ * ```javascript
+ * const isOdd = number => number % 2 == 1
+ *
+ * console.log(
+ *   filter(isOdd)([1, 2, 3, 4, 5]),
+ * ) // [1, 3, 5]
+ *
+ * console.log(
+ *   filter(isOdd)({ a: 1, b: 2, c: 3, d: 4, e: 5 }),
+ * ) // { a: 1, c: 3, e: 5 }
+ * ```
+ * 
+ * `filter` filters arrays and objects. Arrays are filtered by supplying a given item of the array to the predicate function and only including the item if the evaluation is truthy. For objects, `filter` iterates over all keys, including those inherited from the prototype. Objects are filtered by supplying the value associated with a given key to the predicate.
+ *
+ * When filtering on arrays and objects, the predicate supplied to `filter` can be asynchronous.
+ *
+ * ```javascript
+ * const isOdd = number => number % 2 == 1
+ *
+ * const numbers = function* () {
+ *   yield 1; yield 2; yield 3; yield 4; yield 5
+ * }
+ *
+ * const oddNumbers = filter(isOdd)(numbers)
+ *
+ * for (const number of oddNumbers()) {
+ *   console.log(number) // 1
+ *                       // 3
+ *                       // 5
+ * }
+ *
+ * const oddNumbersGenerator = filter(isOdd)(numbers())
+ *
+ * for (const number of oddNumbersGenerator) {
+ *   console.log(number) // 1
+ *                       // 3
+ *                       // 5
+ * }
+ * ```
+ *
+ * Passing a generator function to `filter` returns a filtering generator function; all values that are normally yielded by a generator function that test falsy with the predicate are skipped by the returned filtering generator function. Passing any iterator, including a generator, to `filter` returns a filtering iterator; all `.next` calls with values that test falsy with the predicate are skipped by the returned filtering iterator.
+ *
+ * **Warning**: usage of an async predicate with generator functions or iterators may lead to undesirable behavior.
+ *
+ * ```javascript
+ * const asyncIsOdd = async number => number % 2 == 1
+ *
+ * const asyncNumbers = async function* () {
+ *   yield 1; yield 2; yield 3; yield 4; yield 5
+ * }
+ *
+ * const asyncOddNumbers = filter(asyncIsOdd)(asyncNumbers)
+ *
+ * for await (const number of asyncOddNumbers()) {
+ *   console.log(number) // 1
+ *                       // 3
+ *                       // 5
+ * }
+ *
+ * const asyncOddNumbersGenerator = filter(asyncIsOdd)(asyncNumbers())
+ *
+ * for await (const number of asyncOddNumbersGenerator) {
+ *   console.log(number) // 1
+ *                       // 3
+ *                       // 5
+ * }
+ * ```
+ *
+ * In a similar vein to iterators and generator functions, `filter` filters elements from async generator functions and async iterators. All elements normally yielded by an async generator function that test falsy with the predicate are skipped by a filtering async generator function. All values normally returned by an async iterator's `.next` that test falsy under the predicate are also skipped by a filtering async iterator.
+ *
+ * The predicate can be asynchronous when filtering async iterators or async generator functions.
+ *
+ * ```javascript
+ * const isOdd = number => number % 2 == 1
+ *
+ * const concat = (array, item) => array.concat(item)
+ *
+ * const concatOddNumbers = filter(isOdd)(concat)
+ *
+ * console.log(
+ *   [1, 2, 3, 4, 5].reduce(concatOddNumbers, []),
+ * ) // [1, 3, 5]
+ * ```
+ *
+ * Finally, `filter` returns a filtering reducer when acting on a reducer. A filtering reducer skips items of a reducing operation if they test falsy under the predicate. In the example above, the filtering reducer `concatOddNumbers` only concatenates the odd numbers of `[1, 2, 3, 4, 5]` onto the result array by testing them against the predicate `isOdd`.
+ *
+ * It is possible to use an asynchronous predicate when filtering a reducer, however the implementation of `reduce` must support asynchronous operations. rubico provides such an implementation as `reduce`.
+ *
+ * @execution concurrent
  */
 const filter = predicate => function filtering(value) {
   if (isArray(value)) {
