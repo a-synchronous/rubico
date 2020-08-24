@@ -1,9 +1,10 @@
-## v1.5.9 - Next Release
+## v1.5.9 - Latest
+ * filter rewrite + benchmarks
  * map.series rewrite + benchmarks
  * map.pool rewrite + benchmarks
  * map.withIndex rewrite + benchmarks
 
-## v1.5.8 - Latest
+## v1.5.8
  * fix a failing test; node10 AsyncIterator constructors were Objects
 
 ## v1.5.7
