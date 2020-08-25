@@ -1,4 +1,7 @@
-## v1.5.9 - Latest
+## v1.5.10 - next release
+ * filter.withIndex rewrite + benchmarks
+
+## v1.5.9 - latest
  * filter rewrite + benchmarks
  * map.series rewrite + benchmarks
  * map.pool rewrite + benchmarks
