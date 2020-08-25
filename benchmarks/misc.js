@@ -259,8 +259,14 @@ const mapFromForLoopDestructuring = x => {
  * @benchmarks
  * () => {}: 1e+8: 102.585ms
  * function hey() {}: 1e+8: 100.069ms
+ * Function(): 1e+6: 557.682ms
+ * new Function(): 1e+6: 566.321ms
  */
 
 // timeInLoop('() => {}', 1e8, () => { () => {} })
 
 // timeInLoop('function hey() {}', 1e8, () => { function hey() {} })
+
+// timeInLoop('Function()', 1e6, () => { Function() })
+
+// timeInLoop('new Function()', 1e6, () => { new Function() })
