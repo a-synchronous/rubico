@@ -966,6 +966,11 @@ describe('rubico', () => {
           [3, 5],
         )
       })
+      it('does not provide index or reference to original array', async () => {
+        let total = 0
+        filter((...args) => args.forEach(arg => (total += arg)))([1, 2, 3])
+        assert.equal(total, 6)
+      })
     })
     describe('filter(predicate T=>Promise|boolean)(Object<T>) -> Promise|Object<T>', () => {
       it('predicate T=>boolean', async () => {
@@ -1120,31 +1125,65 @@ describe('rubico', () => {
   })
 
   describe('filter.withIndex', () => {
-    it('filters characters from a string based on an async predicate', async () => {
-      aok(filter.withIndex(async (x, i) => x !== `${i}`)('01234555') instanceof Promise)
-      ase(await filter.withIndex(async (x, i) => x !== `${i}`)('01234555'), '55')
+    describe('filter.withIndex(predicate T=>Promise|boolean)(value Array<T>) -> Array<T>', () => {
+      it('predicate T=>boolean', async () => {
+        const shellUniq = filter.withIndex(
+          (item, index, array) => item !== array[index + 1])
+        assert.deepEqual(
+          shellUniq([1, 1, 1, 2, 2, 3, 3, 3, 4, 5, 5, 5]),
+          [1, 2, 3, 4, 5])
+      })
+      it('predicate T=>Promise<boolean>', async () => {
+        const asyncShellUniq = filter.withIndex(
+          async (item, index, array) => item !== array[index + 1])
+        assert.deepEqual(
+          await asyncShellUniq([1, 1, 1, 2, 2, 3, 3, 3, 4, 5, 5, 5]),
+          [1, 2, 3, 4, 5])
+      })
+      it('predicate T=>Promise|boolean', async () => {
+        const variadicAsyncShellUniq = filter.withIndex(
+          (item, index, array) =>
+            item !== array[index + 1] ? Promise.resolve(true) : false)
+        assert.deepEqual(
+          await variadicAsyncShellUniq([1, 1, 1, 2, 2, 3, 3, 3, 4, 5, 5, 5]),
+          [1, 2, 3, 4, 5])
+        assert.deepEqual(
+          await variadicAsyncShellUniq([2, 2, 3, 3, 3, 4, 5, 5, 5, 6]),
+          [2, 3, 4, 5, 6])
+      })
     })
-    it('filters characters from a string based on a sync predicate', async () => {
-      ase(filter.withIndex((x, i) => x !== `${i}`)('01234555'), '55')
-    })
-    it('filters characters from an array based on an async predicate', async () => {
-      aok(filter.withIndex(async (x, i) => x !== i)([0, 1, 2, 3, 4, 5, 5, 5]) instanceof Promise)
-      ade(await filter.withIndex(async (x, i) => x !== i)([0, 1, 2, 3, 4, 5, 5, 5]), [5, 5])
-    })
-    it('filters characters from an array based on a sync predicate', async () => {
-      ade(filter.withIndex((x, i) => x !== i)([0, 1, 2, 3, 4, 5, 5, 5]), [5, 5])
-    })
-    it('throws TypeError on filter.withIndex(nonFunction)', async () => {
-      assert.throws(
-        () => filter.withIndex('yo'),
-        new TypeError('filter.withIndex(f); f is not a function'),
-      )
-    })
-    it('throws TypeError on filter.withIndex(...)(invalid)', async () => {
-      assert.throws(
-        () => filter.withIndex(x => x)(0),
-        new TypeError('filter.withIndex(...)(x); x invalid'),
-      )
+
+    describe('filter.withIndex(predicate T=>Promise|boolean)(value !Array)', () => {
+      it('value Object', async () => {
+        assert.throws(
+          () => filter.withIndex(() => true)({}),
+          new TypeError('[object Object] is not an Array'),
+        )
+      })
+      it('value string', async () => {
+        assert.throws(
+          () => filter.withIndex(() => true)('hey'),
+          new TypeError('hey is not an Array'),
+        )
+      })
+      it('value function', async () => {
+        assert.throws(
+          () => filter.withIndex(() => true)(() => false),
+          new TypeError('() => false is not an Array'),
+        )
+      })
+      it('value null', async () => {
+        assert.throws(
+          () => filter.withIndex(() => true)(null),
+          new TypeError('null is not an Array'),
+        )
+      })
+      it('value undefined', async () => {
+        assert.throws(
+          () => filter.withIndex(() => true)(undefined),
+          new TypeError('undefined is not an Array'),
+        )
+      })
     })
   })
 

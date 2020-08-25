@@ -21,6 +21,7 @@
  * no special types; use built-in types
  * no currying; write new functions
  * avoid variadic functions; use lists
+ * avoid anonymous function creation; use names and factory functions
  */
 
 const symbolIterator = Symbol.iterator
@@ -253,6 +254,9 @@ const funcConcat = (funcAB, funcBC) => function pipedFunction(...args) {
  * @execution series
  *
  * @transducing
+ *
+ * @TODO benchmark regular calls over .apply
+ * @TODO use ...args
  */
 const pipe = function (funcs) {
   const functionPipeline = funcs.reduce(funcConcat),
@@ -356,6 +360,8 @@ const fork = funcs => isArray(funcs) ? funcAll(funcs) : funcObjectAll(funcs)
  *   result Array,
  *   funcsIndex number,
  * ) -> result
+ *
+ * @TODO benchmark vs regular promise handling
  */
 const asyncFuncAllSeries = async function (funcs, args, result, funcsIndex) {
   const funcsLength = funcs.length
@@ -374,6 +380,8 @@ const asyncFuncAllSeries = async function (funcs, args, result, funcsIndex) {
  * funcAllSeries(
  *   funcs Array<args=>any>,
  * ) -> allFuncsSeries args=>Promise|Array
+ *
+ * @TODO .then quickscope
  */
 const funcAllSeries = funcs => function allFuncsSeries(...args) {
   const funcsLength = funcs.length, result = []
@@ -449,6 +457,8 @@ fork.series = funcAllSeries
  * ```
  *
  * @execution concurrent
+ *
+ * @TODO .then quickscope
  */
 const assign = function (funcs) {
   const allFuncs = funcObjectAll(funcs)
@@ -549,6 +559,8 @@ tap.if = (cond, func) => {}
  * console.log(errorThrower('hello')) // Error: hello
  *                                    // hello from catcher
  * ```
+ *
+ * @TODO offload result.catch to its own function
  */
 const tryCatch = (tryer, catcher) => function tryCatcher(...args) {
   try {
@@ -570,6 +582,9 @@ const tryCatch = (tryer, catcher) => function tryCatcher(...args) {
  *   args Array,
  *   funcsIndex number,
  * ) -> Promise|any
+ *
+ * @TODO isPromise conditional await
+ * @TODO benchmark vs regular promise handling
  */
 const asyncFuncSwitch = async function (funcs, args, funcsIndex) {
   const lastIndex = funcs.length - 1
@@ -588,6 +603,8 @@ const asyncFuncSwitch = async function (funcs, args, funcsIndex) {
  * funcConditional(
  *   funcs Array<args=>Promise|any>,
  * )(args ...any) -> Promise|any
+ *
+ * @TODO .then quickscope
  */
 const funcConditional = funcs => function funcSwitching(...args) {
   const lastIndex = funcs.length - 1
@@ -988,6 +1005,8 @@ const asyncArrayMapSeries = async function (array, mapper, result, index) {
  * any -> A, any -> B
  *
  * arrayMapSeries(array Array<A>, mapper A=>B) -> result Array<B>
+ *
+ * @TODO .then quickscope
  */
 const arrayMapSeries = function (array, mapper) {
   const arrayLength = array.length,
@@ -1239,22 +1258,11 @@ console.log(
  *
  */
 
-/*
- * @synopsis
- * filterStringFromIndex(index Array<any>, x string) -> string
- */
-const filterStringFromIndex = (index, x) => {
-  let y = ''
-  for (let i = 0; i < x.length; i++) { if (index[i]) y += x[i] }
-  return y
-}
-
 /**
  * @name arrayExtend
  *
  * @synopsis
  * arrayExtend(array Array, values Array) -> array
- */
 const arrayExtend = (array, values) => {
   const arrayLength = array.length,
     valuesLength = values.length
@@ -1263,28 +1271,60 @@ const arrayExtend = (array, values) => {
     array[arrayLength + valuesIndex] = values[valuesIndex]
   }
   return array
+} */
+
+/**
+ * @name _arrayExtendMap
+ *
+ * @catchphrase
+ * internal extend while mapping
+ *
+ * @synopsis
+ * any -> value; any -> mapped
+ *
+ * _arrayExtendMap(
+ *   array Array<mapped>,
+ *   values Array<value>,
+ *   valuesIndex number,
+ *   valuesMapper value=>mapped,
+ * ) -> array
+ */
+const _arrayExtendMap = function (
+  array, values, valuesMapper, valuesIndex,
+) {
+  const valuesLength = values.length
+  let arrayIndex = array.length - 1
+  while (++valuesIndex < valuesLength) {
+    array[++arrayIndex] = valuesMapper(values[valuesIndex])
+  }
+  return array
 }
 
 /**
- * @name asyncArrayFilter
+ * @name _shouldIncludeItemsResolver
  *
  * @synopsis
- * any -> value
+ * any -> T
  *
- * asyncArrayFilter(
- *   array Array<value>,
- *   predicate,
+ * _shouldIncludeItemsResolver(
+ *   array Array<T>,
+ *   result Array<T>,
  *   index number,
- * ) -> result Array<value>
+ * ) -> resolvingShouldIncludeItems(
+ *   shouldIncludeItem Array<boolean>,
+ * )=>result
+ *
+ * @description
+ * For quickscoping filter* .then handlers. index should already be processed.
  */
-const asyncArrayFilter = async function (array, predicate) {
-  const arrayLength = array.length,
-    result = [],
-    shouldIncludeItemAtIndex = await arrayMap(array, predicate)
-  let index = -1,
-    resultIndex = -1
+const _shouldIncludeItemsResolver = (
+  array, result, index,
+) => function resolvingShouldIncludeItems(shouldIncludeItems) {
+  const arrayLength = array.length
+  let resultIndex = result.length - 1,
+    shouldIncludeItemsIndex = -1
   while (++index < arrayLength) {
-    if (shouldIncludeItemAtIndex[index]) {
+    if (shouldIncludeItems[++shouldIncludeItemsIndex]) {
       result[++resultIndex] = array[index]
     }
   }
@@ -1292,34 +1332,23 @@ const asyncArrayFilter = async function (array, predicate) {
 }
 
 /**
- * @name asyncArrayFilterInterlude
+ * @name _asyncArrayFilter
  *
  * @synopsis
- * any -> T
- *
- * asyncArrayFilterInterlude(
- *   array Array<T>,
+ * _asyncArrayFilter(
+ *   array Array,
  *   predicate T=>boolean,
- *   result Array<T>,
+ *   result Array,
  *   index number,
- *   shouldIncludeFirstItemPromise Promise<boolean>,
- * ) -> result
+ *   shouldIncludeItemPromises Array<Promise<boolean>>,
+ * ) -> Promise<result>
  */
-const asyncArrayFilterInterlude = async function (
-  array, predicate, result, index, shouldIncludeFirstItemPromise,
-) {
-  const [
-    shouldIncludeFirstItem,
-    filteredRemainingItems,
-  ] = await promiseAll([
-    shouldIncludeFirstItemPromise,
-    asyncArrayFilter(array.slice(index + 1), predicate),
-  ])
-  if (shouldIncludeFirstItem) {
-    result[result.length] = array[index]
-  }
-  return arrayExtend(result, filteredRemainingItems)
-}
+const _asyncArrayFilter = (
+  array, predicate, result, index, shouldIncludeItemPromises,
+) => promiseAll(
+  _arrayExtendMap(
+    shouldIncludeItemPromises, array, predicate, index)).then(
+      _shouldIncludeItemsResolver(array, result, index - 1))
 
 /**
  * @name arrayFilter
@@ -1341,8 +1370,8 @@ const arrayFilter = function (array, predicate) {
     const item = array[index]
     const shouldIncludeItem = predicate(item)
     if (isPromise(shouldIncludeItem)) {
-      return asyncArrayFilterInterlude(
-        array, predicate, result, index, shouldIncludeItem)
+      return _asyncArrayFilter(
+        array, predicate, result, index, [shouldIncludeItem])
     }
     if (shouldIncludeItem) {
       result[++resultIndex] = item
@@ -1801,57 +1830,104 @@ const filter = predicate => function filtering(value) {
   return typeof value.filter == 'function' ? value.filter(predicate) : value
 }
 
-/*
+/**
+ * @name _arrayExtendMapWithIndex
+ *
+ * @catchphrase
+ * internal extend while mapping with index
+ *
  * @synopsis
- * createFilterWithIndexIndex(
- *   predicate (xi any, i number, x Iterable<any>)=>any,
- *   x Iterable<any>,
- * ) -> Array<any>|Promise<Array<any>>
+ * _arrayExtendMapWithIndex(
+ *   array Array<B>,
+ *   values Array<A>,
+ *   valuesMapper (A, valuesIndex number, values)=>B,
+ *   valuesIndex number,
+ * ) -> array
  */
-const createFilterWithIndexIndex = (predicate, x) => {
-  let isAsync = false, i = 0
-  const filterIndex = []
-  for (const xi of x) {
-    const ok = predicate(xi, i, x)
-    if (isPromise(ok)) isAsync = true
-    filterIndex.push(ok)
-    i += 1
+const _arrayExtendMapWithIndex = function (
+  array, values, valuesMapper, valuesIndex,
+) {
+  const valuesLength = values.length
+  let arrayIndex = array.length - 1
+  while (++valuesIndex < valuesLength) {
+    array[++arrayIndex] = valuesMapper(
+      values[valuesIndex], valuesIndex, values)
   }
-  return isAsync ? Promise.all(filterIndex) : filterIndex
+  return array
 }
 
-/*
+/**
+ * @name _asyncArrayFilterWithIndex
+ *
  * @synopsis
- * filterArrayWithIndex(predicate function, x Array<any>) -> Array<any>|Promise<Array<any>>
+ * _asyncArrayFilterWithIndex(
+ *   array Array,
+ *   predicate T=>boolean,
+ *   result Array,
+ *   index number,
+ *   shouldIncludeItemPromises Array<Promise<boolean>>,
+ * ) -> result
  */
-const filterArrayWithIndex = (predicate, x) => possiblePromiseThen(
-  createFilterWithIndexIndex(predicate, x),
-  res => x.filter((_, i) => res[i]),
-)
+const _asyncArrayFilterWithIndex = (
+  array, predicate, result, index, shouldIncludeItemPromises,
+) => promiseAll(
+  _arrayExtendMapWithIndex(
+    shouldIncludeItemPromises, array, predicate, index)).then(
+      _shouldIncludeItemsResolver(array, result, index - 1))
 
-/*
+/**
+ * @name arrayFilterWithIndex
+ *
  * @synopsis
- * filterArrayWithIndex(predicate function, x string) -> string|Promise<string>
+ * any -> T
+ *
+ * arrayFilterWithIndex(
+ *   array Array<T>,
+ *   predicate (T, index number, array)=>Promise|boolean,
+ * ) -> result Promise|Array<T>
  */
-const filterStringWithIndex = (predicate, x) => possiblePromiseThen(
-  createFilterWithIndexIndex(predicate, x),
-  res => filterStringFromIndex(res, x),
-)
+const arrayFilterWithIndex = function (array, predicate) {
+  const arrayLength = array.length,
+    result = []
+  let index = -1,
+    resultIndex = -1
+  while (++index < arrayLength) {
+    const item = array[index]
+    const shouldIncludeItem = predicate(item, index, array)
+    if (isPromise(shouldIncludeItem)) {
+      return _asyncArrayFilterWithIndex(
+        array, predicate, result, index, [shouldIncludeItem])
+    }
+    if (shouldIncludeItem) {
+      result[++resultIndex] = item
+    }
+  }
+  return result
+}
 
-/*
+/**
+ * @name filter.withIndex
+ *
+ * @catchphrase
+ * filter with index
+ *
  * @synopsis
- * filter.withIndex(predicate function)(x Array<any>|string)
- *   -> Array<any>|Promise<Array<any>>|string|Promise<string>
+ * any -> T
+ *
+ * filter.withIndex(predicate T=>Promise|boolean)(
+ *   value Array<T>,
+ * ) -> Array<T>
+ *
+ * @description
+ * **filter.withIndex** is `filter` but every call of the predicate is supplemented with the additional index and reference to the array being filtered.
+ *
+ * @execution concurrent
  */
-filter.withIndex = fn => {
-  if (!isFunction(fn)) {
-    throw new TypeError('filter.withIndex(f); f is not a function')
+filter.withIndex = predicate => function filteringWithIndex(value) {
+  if (isArray(value)) {
+    return arrayFilterWithIndex(value, predicate)
   }
-  return x => {
-    if (isArray(x)) return filterArrayWithIndex(fn, x)
-    if (isString(x)) return filterStringWithIndex(fn, x)
-    throw new TypeError('filter.withIndex(...)(x); x invalid')
-  }
+  throw new TypeError(`${value} is not an Array`)
 }
 
 /*
