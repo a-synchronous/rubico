@@ -1724,7 +1724,7 @@ const reducerFilter = (
  *   filter(isOdd)({ a: 1, b: 2, c: 3, d: 4, e: 5 }),
  * ) // { a: 1, c: 3, e: 5 }
  * ```
- * 
+ *
  * `filter` filters arrays and objects. Arrays are filtered by supplying a given item of the array to the predicate function and only including the item if the evaluation is truthy. For objects, `filter` iterates over all keys, including those inherited from the prototype. Objects are filtered by supplying the value associated with a given key to the predicate.
  *
  * When filtering on arrays and objects, the predicate supplied to `filter` can be asynchronous.
