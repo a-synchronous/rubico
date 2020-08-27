@@ -1,9 +1,43 @@
 const timeInLoop = require('../x/timeInLoop')
 
 /**
+ * @name checkNullOrUndefined
+ *
+ * @benchmark
+ * 'foo' == null: 1e+7: 12.223ms
+ * 'foo' === undefined || 'foo' === null: 1e+7: 12.475ms
+ * typeof 'foo' === 'undefined' || 'foo' === null: 1e+7: 12.456ms
+ */
+
+{
+  const timeInLoop = (desc, loopCount, fn) => {
+    const d = `${desc}: ${loopCount.toExponential()}`
+    console.time(d)
+    for (let i = 0; i < loopCount; i++) {
+      fn()
+    }
+    console.timeEnd(d)
+  }
+
+  // console.log('null == null', null == null)
+  // console.log('undefined == null', undefined == null)
+  // console.log('1 == null', 1 == null)
+  // console.log('0 == null', 0 == null)
+  // console.log('true == null', true == null)
+  // console.log('false == null', false == null)
+  // console.log('\'foo\' == null', 'foo' == null)
+
+  // timeInLoop('\'foo\' == null', 1e7, () => 'foo' == null)
+
+  // timeInLoop('\'foo\' === undefined || \'foo\' === null', 1e7, () => 'foo' === undefined || 'foo' === null)
+
+  // timeInLoop('typeof \'foo\' === \'undefined\' || \'foo\' === null', 1e7, () => typeof 'foo' === 'undefined' || 'foo' === null)
+}
+
+/**
  * @name typeofNumber
  *
- * @benchmarks
+ * @benchmark
  * typeof (1) == 'number': 1e+7: 12.459ms
  * (1).constructor == Number: 1e+7: 12.729ms
  */
@@ -15,7 +49,7 @@ const timeInLoop = require('../x/timeInLoop')
 /**
  * @name copyArray
  *
- * @benchmarks
+ * @benchmark
  * arr.slice(0): 1e+6: 16.683ms
  * arr.slice(): 1e+6: 16.358ms
  * arr.concat(): 1e+6: 176.57ms
@@ -47,7 +81,7 @@ const arrayFromForLoopPush = x => {
 /**
  * @name copyObject
  *
- * @benchmarks
+ * @benchmark
  * Object.assign({}, obj): 1e+6: 163.58ms
  * objectFromForLoop(obj): 1e+6: 179.523ms
  * { ...obj }: 1e+6: 46.614ms
@@ -70,7 +104,7 @@ const objectFromForLoop = x => {
 /**
  * @name copySet
  *
- * @benchmarks
+ * @benchmark
  * new Set(set): 1e+5: 91.358ms
  * setFromForLoop(set): 1e+5: 66.598ms
  */
@@ -90,7 +124,7 @@ const setFromForLoop = x => {
 /**
  * @name copyMap
  *
- * @benchmarks
+ * @benchmark
  * new Map(map): 1e+5: 65.702ms
  * mapFromForLoopSpreadOperator(set): 1e+5: 53.743ms
  * mapFromForLoopDestructuring(set): 1e+5: 55.4ms
@@ -119,7 +153,7 @@ const mapFromForLoopDestructuring = x => {
 /**
  * @name conditionalPropertyAccess
  *
- * @benchmarks
+ * @benchmark
  * obj.a.b.c: 1e+7: 12.715ms
  * obj.a && obj.a.b && obj.a.b.c: 1e+7: 13.014ms
  * obj.a?.b?.c: 1e+7: 12.885ms
@@ -138,7 +172,7 @@ const mapFromForLoopDestructuring = x => {
 /**
  * @name objectIteration
  *
- * @benchmarks
+ * @benchmark
  * forKeyInObj: 1e+6: 20.02ms
  * forOwnKeyInObj: 1e+6: 21.986ms
  * objectKeysReduce: 1e+6: 225.397ms
@@ -198,7 +232,7 @@ const mapFromForLoopDestructuring = x => {
 /**
  * @name functionCalls
  *
- * @benchmarks
+ * @benchmark
  * regularCall: 1e+7: 13.045ms
  * protoCall: 1e+7: 13.261ms
  * boundProtoCall: 1e+7: 13.025ms
@@ -240,7 +274,7 @@ const mapFromForLoopDestructuring = x => {
 /**
  * @name async-await
  *
- * @benchmarks
+ * @benchmark
  * async-add: 1e+6: 111.432ms
  * async-add-return-await: 1e+6: 238.221ms
  */
@@ -256,7 +290,7 @@ const mapFromForLoopDestructuring = x => {
 /**
  * @name functionCreation
  *
- * @benchmarks
+ * @benchmark
  * () => {}: 1e+8: 102.585ms
  * function hey() {}: 1e+8: 100.069ms
  * Function(): 1e+6: 557.682ms
@@ -270,3 +304,30 @@ const mapFromForLoopDestructuring = x => {
 // timeInLoop('Function()', 1e6, () => { Function() })
 
 // timeInLoop('new Function()', 1e6, () => { new Function() })
+
+/**
+ * @name isArray
+ *
+ * @benchmark
+ * nativeArrayIsArray: 1e+7: 14.438ms
+ * preES5IsArray: 1e+7: 174.324ms
+ */
+
+{
+  const nativeArrayIsArray = Array.isArray
+
+  var str = {}.toString;
+
+  const preES5IsArray = function (obj) {
+    try {
+      return str.call(obj) === "[object Array]";
+    }
+    catch(e) {
+      return false;
+    }
+  };
+
+  // timeInLoop('nativeArrayIsArray', 1e7, () => nativeArrayIsArray([]))
+
+  // timeInLoop('preES5IsArray', 1e7, () => preES5IsArray([]))
+}
