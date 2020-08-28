@@ -8,8 +8,8 @@
 (function (root, rubico) {
   if (typeof module == 'object') (module.exports = rubico) // CommonJS
   else if (typeof define == 'function') define(() => rubico) // AMD
-  else (root = root || self, root.rubico = rubico) // Browser
-}(this, (function () { 'use strict'
+  else (root.rubico = rubico) // Browser
+}(globalThis, (function () { 'use strict'
 
 /**
  * design principles
