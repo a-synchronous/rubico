@@ -9,15 +9,19 @@ const { isStruct, size: structSize } = Struct
  * @name isEmpty
  *
  * @synopsis
- * isEmpty(x string|Array|Object|Set|Map) -> boolean
+ * isEmpty(x string|Array|Object) -> boolean
  *
  * @catchphrase
  * Check if a struct or string is empty
  */
-const isEmpty = x => {
-  if (isString(x)) return x.length == 0
-  if (isStruct(x)) return structSize(x) == 0
-  throw new TypeError('isEmpty(x); x invalid')
+const isEmpty = function (value) {
+  if (isString(value)) {
+    return value.length == 0
+  }
+  if (isStruct(value)) {
+    return structSize(value) == 0
+  }
+  return false
 }
 
 module.exports = isEmpty
