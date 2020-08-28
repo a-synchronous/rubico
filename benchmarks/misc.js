@@ -177,6 +177,7 @@ const mapFromForLoopDestructuring = x => {
  * forOwnKeyInObj: 1e+6: 21.986ms
  * objectKeysReduce: 1e+6: 225.397ms
  * objectValuesIterate: 1e+6: 261.689ms
+ * objectEntriesIterate: 1e+6: 505.486ms
  */
 
 {
@@ -220,10 +221,17 @@ const mapFromForLoopDestructuring = x => {
     return total
   }
 
+  const objectEntriesIterate = () => {
+    let total = 0
+    for (const [key, value] of Object.entries(obj)) total += value
+    return total
+  }
+
   // const func = forKeyInObj
   // const func = forOwnKeyInObj
   // const func = objectKeysReduce
-  const func = objectValuesIterate
+  // const func = objectValuesIterate
+  // const func = objectEntriesIterate
 
   // console.log(func())
   // timeInLoop(func.name, 1e6, func)
