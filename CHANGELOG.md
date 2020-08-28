@@ -1,9 +1,9 @@
-## v1.5.10 - next release
+## v1.5.10 - latest
  * filter.withIndex rewrite + benchmarks
  * monad/BrokenPromise - a Promise that never comes back
  * isEmpty stops throwing TypeErrors
 
-## v1.5.9 - latest
+## v1.5.9
  * filter rewrite + benchmarks
  * map.series rewrite + benchmarks
  * map.pool rewrite + benchmarks
