@@ -5,10 +5,37 @@
   <title></title>
 </head>
 <body>
-  
+  <h2>rubico methods</h2>
+  <div id="rubico"></div>
 </body>
 <script src="./index.js"></script>
 <script>
-  console.log('rubico', rubico)
+
+const {
+  pipe, fork, assign,
+  tap, tryCatch, switchCase,
+  map, filter, reduce, transform, flatMap,
+  any, all, and, or, not,
+  eq, gt, lt, gte, lte,
+  get, pick, omit,
+} = rubico
+
+const join = delimiter => array => array.join(delimiter)
+
+/**
+ * @name moduleToHTML
+ *
+ * @synopsis
+ * moduleToHTML(myModule object) -> html string
+ */
+const moduleToHTML = pipe([
+  Object.keys,
+  join('<br/>'),
+  tap(console.log),
+])
+
+console.log('rubico', rubico)
+document.getElementById('rubico').innerHTML = moduleToHTML(rubico)
+
 </script>
 </html>
