@@ -25,7 +25,7 @@ const BrokenPromise = function () {
  * @name BrokenPromise.prototype.then
  *
  * @catchphrase
- * Register an unreachable resolver
+ * register an unreachable resolver
  *
  * @synopsis
  * new BrokenPromise().then(unreachableResolver function)
@@ -45,7 +45,7 @@ BrokenPromise.prototype.then = function then(unreachableResolver) {
  * @name BrokenPromise.prototype.resolve
  *
  * @catchphrase
- * Manually resolve a broken promise
+ * manually resolve a broken promise
  *
  * @synopsis
  * const brokenPromise = new BrokenPromise().then(
