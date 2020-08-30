@@ -31,8 +31,8 @@ heapUsedInLoop.async.skip('Cancellable(() => new BrokenPromise())().cancel(Error
 
 heapUsedInLoop.async.skip('Cancellable(() => new BrokenPromise())().cancel(Error).catch', 5e5, async function () {
   const cancellablePromise = Cancellable(() => new BrokenPromise())()
-  await cancellablePromise.cancel(new Error('cancelled'))
-    .catch(err => clearTimeout(cancellablePromise.value.timeout))
+  await cancellablePromise.cancel(new Error('cancelled')).catch(
+    () => clearTimeout(cancellablePromise.value.timeout))
 })
 
 const indexTimeoutMap = new Map()
