@@ -1,5 +1,6 @@
 ## v1.5.11 - next release
  * x/heapUsedInLoop - max and avg heap used in loop
+ * monad/Cancellable - make a function return cancellable Promises
 
 ## v1.5.10 - latest
  * filter.withIndex rewrite + benchmarks
