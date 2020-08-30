@@ -71,7 +71,7 @@ map(pipe([
 
 For semantically related functionality, rubico provides variations for some of the operators as property functions; for example, `map.pool` is a property function and variation of the `map` operator.
 
-```
+```javascript
 const sleep = ms => value => new Promise(
   resolve => { setTimeout(() => resolve(value), ms) })
 
