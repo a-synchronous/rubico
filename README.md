@@ -35,16 +35,8 @@ rubico's value resides at the intersection of the following principles:
 When you use this library, you obtain the freedom that comes only from having those three points fulfilled. The result is something you may enjoy.
 
 # Introduction
-rubico is a robust, performance-optimized, and thoroughly benchmarked module of 24 higher order functions for async agnostic functional programming in JavaScript. The style and naming conventions of rubico are idiomatic across languages and other libraries - using this library should feel second nature. Just like vanilla JavaScript operators, rubico operators act sensibly on sync or async JavaScript functions to create declarative, highly extensible, and async-enabled function compositions. For semantically related functionality, rubico provides variations for some of the operators as property functions; for examle, `map.pool` is a property function and variation of the `map` operator. When something goes wrong, rubico throws meaningful and ergonomic errors with reasonable stack traces. You would benefit from this library if you aspire to become a more effective programmer, write cleaner and more concise code, or harness the expressive power of functional programming in production.
+rubico is a robust, performance-optimized, and thoroughly benchmarked module of 24 higher order functions for async agnostic functional programming in JavaScript.
 
-# Getting Started
- 1. [check out the docs](https://doc.rubico.land)
- 2. [take the tour](https://tour.rubico.land)
- 3. use rubico in a project
- 4. at your leisure, [peruse the awesome resources](#awesome-resources)
- 5. [help with rubico](https://github.com/a-synchronous/rubico/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
-
-# Core API
 ```javascript
 const {
   pipe, fork, assign,
@@ -55,6 +47,56 @@ const {
   get, pick, omit,
 } = rubico
 ```
+
+The style and naming conventions of rubico are idiomatic across languages and other libraries - using this library should feel second nature. Just like vanilla JavaScript operators, rubico operators act sensibly on sync or async JavaScript functions to create declarative, highly extensible, and async-enabled function compositions.
+
+```javascript
+const todoIDs = [1, 2, 3, 4, 5]
+
+const toTodosUrl = id => https://jsonplaceholder.typicode.com/todos/ + id
+
+const callProperty = property => value => value[property]()
+
+map(pipe([
+  toTodosUrl,
+  fetch,
+  callProperty('json'),
+  console.log,
+]))(todoIDs) // { userId: 1, id: 4, title: 'et porro tempora', completed: true }
+             // { userId: 1, id: 1, title: 'delectus aut autem', completed: false }
+             // { userId: 1, id: 3, title: 'fugiat veniam minus', completed: false }
+             // { userId: 1, id: 2, title: 'quis ut nam facilis...', completed: false }
+             // { userId: 1, id: 5, title: 'laboriosam mollitia...', completed: false }
+```
+
+For semantically related functionality, rubico provides variations for some of the operators as property functions; for example, `map.pool` is a property function and variation of the `map` operator.
+
+```
+const sleep = ms => value => new Promise(
+  resolve => { setTimeout(() => resolve(value), ms) })
+
+map.pool(2, pipe([
+  fetchTodo,
+  json,
+  trace,
+  sleep(1000),
+]))(todoIDs) // { userId: 1, id: 4, title: 'et porro tempora', completed: true }
+             // { userId: 1, id: 1, title: 'delectus aut autem', completed: false }
+             // **slight pause**
+             // { userId: 1, id: 3, title: 'fugiat veniam minus', completed: false }
+             // { userId: 1, id: 2, title: 'quis ut nam facilis...', completed: false }
+             // **slight pause**
+             // { userId: 1, id: 5, title: 'laboriosam mollitia...', completed: false }
+```
+
+Finally, when something goes wrong, rubico throws meaningful and ergonomic errors with human readable stack traces. You should get started with rubico if you aspire to be a more effective programmer, write cleaner and more concise code, or harness the expressive power of functional programming in production.
+
+# Getting Started
+ 1. [check out the docs](https://doc.rubico.land)
+ 2. [take the tour](https://tour.rubico.land)
+ 3. use rubico in a project
+ 4. at your leisure, [peruse the awesome resources](#awesome-resources)
+ 5. [help with rubico](https://github.com/a-synchronous/rubico/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
 
 # Installation
 with `npm`
