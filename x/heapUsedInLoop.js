@@ -12,7 +12,7 @@ const bytesToMiB = bytes => `${(bytes / 1024 / 1024).toFixed(2)} MiB`
  * @name heapUsedInLoop
  *
  * @catchphrase
- * get max and avg heap used in loop
+ * max and avg heap used in loop
  *
  * @synopsis
  * heapUsedInLoop(
@@ -22,10 +22,10 @@ const bytesToMiB = bytes => `${(bytes / 1024 / 1024).toFixed(2)} MiB`
  * ) -> ()
  *
  * @description
- * **heapUsedInLoop** is a memory benchmarking function. Supply a description, loopCount, and function for average and max heap used per loop.
+ * **heapUsedInLoop** is a memory usage measurement function. Supply a description, loopCount, and function for average and max heap used per loop.
  *
  * ```javascript
- * heapUsedInLoop('myFunc', 1e5, function () {
+ * heapUsedInLoop('my-description', 1e5, function () {
  *   return 1 + 1
  * }) /*
  * 0 5.88 MiB
@@ -34,7 +34,7 @@ const bytesToMiB = bytes => `${(bytes / 1024 / 1024).toFixed(2)} MiB`
  * 99997 7.34 MiB
  * 99998 7.34 MiB
  * 99999 7.35 MiB
- * myFunc: 1e+5: {
+ * my-description: 1e+5: {
  *   "max": "7.15 MiB",
  *   "avg": "5.50 MiB"
  * }
