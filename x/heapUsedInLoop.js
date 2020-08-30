@@ -51,7 +51,7 @@ const heapUsedInLoop = function (desc, loopCount, func) {
     func(loop)
     const { heapUsed } = memoryUsage()
     console.log(loop, bytesToMiB(heapUsed))
-    maxHeapUsed = heapUsed > maxHeapUsed ? heapUsed : maxHeapUsed
+    maxHeapUsed = Math.max(maxHeapUsed, heapUsed)
     totalHeapUsed += heapUsed
   }
   console.log(d, JSON.stringify({
@@ -84,7 +84,7 @@ heapUsedInLoop.async = async function heapUsedInLoopAsync(
     await func(loop)
     const { heapUsed } = memoryUsage()
     console.log(loop, bytesToMiB(heapUsed))
-    maxHeapUsed = heapUsed > maxHeapUsed ? heapUsed : maxHeapUsed
+    maxHeapUsed = Math.max(maxHeapUsed, heapUsed)
     totalHeapUsed += heapUsed
   }
   console.log(d, JSON.stringify({
