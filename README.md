@@ -69,7 +69,7 @@ map(pipe([
              // { userId: 1, id: 5, title: 'laboriosam mollitia...', completed: false }
 ```
 
-For semantically related functionality, rubico provides variations for some of the operators as property functions; for example, `map.pool` is a property function and variation of the `map` operator. Finally, when something goes wrong, rubico throws meaningful and ergonomic errors with human readable stack traces. You should get started with rubico if you aspire to be a more effective programmer, write cleaner and more concise code, or harness the expressive power of functional programming in production.
+For semantically related functionality, rubico provides variations for some of the operators as property functions, e.g. `map.pool` or `map.series`. When something goes wrong, rubico throws meaningful and ergonomic errors to aid in the debugging process. You should get started with rubico if you aspire to be a more effective programmer, write cleaner and more concise code, or harness the expressive power of functional programming in production.
 
 # Getting Started
  1. [check out the docs](https://doc.rubico.land)
