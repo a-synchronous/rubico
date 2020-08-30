@@ -171,10 +171,10 @@ const possiblePromiseAll = values => (values.some(isPromise)
  * funcConcat(funcA A=>B, funcB B=>C) -> pipedFunction A=>C
  */
 const funcConcat = (funcA, funcB) => function pipedFunction(...args) {
-  const intermediate = funcA.apply(this, args)
+  const intermediate = funcA.apply(null, args)
   return isPromise(intermediate)
-    ? intermediate.then(res => funcB.call(this, res))
-    : funcB.call(this, intermediate)
+    ? intermediate.then(res => funcB.call(null, res))
+    : funcB.call(null, intermediate)
 }
 
 /**
@@ -270,9 +270,9 @@ const pipe = function (funcs) {
         && !isGeneratorFunction(firstArg)
         && !isAsyncGeneratorFunction(firstArg)
     ) {
-      return functionComposition.apply(this, arguments)
+      return functionComposition.apply(null, arguments)
     }
-    return functionPipeline.apply(this, arguments)
+    return functionPipeline.apply(null, arguments)
   }
 }
 
