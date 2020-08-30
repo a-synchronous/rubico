@@ -1,3 +1,6 @@
+## v1.5.11 - next release
+ * x/heapUsedInLoop - max and avg heap used in loop
+
 ## v1.5.10 - latest
  * filter.withIndex rewrite + benchmarks
  * monad/BrokenPromise - a Promise that never comes back
