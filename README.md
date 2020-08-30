@@ -53,7 +53,7 @@ The style and naming conventions of rubico are idiomatic across languages and ot
 ```javascript
 const todoIDs = [1, 2, 3, 4, 5]
 
-const toTodosUrl = id => https://jsonplaceholder.typicode.com/todos/ + id
+const toTodosUrl = id => 'https://jsonplaceholder.typicode.com/todos/' + id
 
 const callProperty = property => value => value[property]()
 
@@ -72,13 +72,20 @@ map(pipe([
 For semantically related functionality, rubico provides variations for some of the operators as property functions; for example, `map.pool` is a property function and variation of the `map` operator.
 
 ```javascript
+const todoIDs = [1, 2, 3, 4, 5]
+
+const toTodosUrl = id => 'https://jsonplaceholder.typicode.com/todos/' + id
+
+const callProperty = property => value => value[property]()
+
 const sleep = ms => value => new Promise(
   resolve => { setTimeout(() => resolve(value), ms) })
 
 map.pool(2, pipe([
-  fetchTodo,
-  json,
-  trace,
+  toTodosUrl,
+  fetch,
+  callProperty('json'),
+  console.log,
   sleep(1000),
 ]))(todoIDs) // { userId: 1, id: 4, title: 'et porro tempora', completed: true }
              // { userId: 1, id: 1, title: 'delectus aut autem', completed: false }
