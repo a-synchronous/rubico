@@ -73,7 +73,7 @@ module.exports = {
         'eol-last': 'error',
         'eqeqeq': 'off',
         'func-call-spacing': 'error',
-        'func-name-matching': 'error',
+        'func-name-matching': 'off',
         'func-names': 'off',
         'func-style': [
             'error',
