@@ -1254,17 +1254,6 @@ describe('rubico', () => {
         15,
       )
     })
-    it('returns a cancellable Promise for async iterables', async () => {
-      const infiniteAsyncIterable = async function*() {
-        await Promise.race([]),
-        yield 'unreachable'
-      }
-      const add = (a, b) => a + b
-      const p = reduce(add, 0)(infiniteAsyncIterable())
-      aok(p instanceof Promise)
-      p.cancel()
-      assert.rejects(p, new Error('cancelled'))
-    })
     it('initial value can be a function', async () => {
       ade(
         reduce((a, b) => a + b, () => 0)([1, 2, 3, 4, 5]),

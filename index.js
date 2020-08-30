@@ -2026,15 +2026,8 @@ const reduce = (fn, init) => {
       res => reduceIterable(fn, res, x),
     )
     if (isAsyncIterable(x)) {
-      const state = { cancel: () => {} }
-      const cancelToken = new Promise((_, reject) => { state.cancel = reject })
-      const p = Promise.race([
-        possiblePromiseThen(
-          x0, res => reduceAsyncIterable(fn, res, x)),
-        cancelToken,
-      ])
-      p.cancel = () => { state.cancel(new Error('cancelled')) }
-      return p
+      return possiblePromiseThen(
+        x0, res => reduceAsyncIterable(fn, res, x))
     }
     if (isObject(x)) return possiblePromiseThen(
       x0,
