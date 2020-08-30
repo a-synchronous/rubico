@@ -48,7 +48,7 @@ const {
 } = rubico
 ```
 
-The style and naming conventions of rubico are idiomatic across languages and other libraries - using this library should feel second nature. Just like vanilla JavaScript operators, rubico operators act sensibly on sync or async JavaScript functions to create declarative, highly extensible, and async-enabled function compositions.
+The style and naming conventions of rubico are idiomatic across languages and other libraries - using this library should feel second nature. Just like vanilla JavaScript operators, rubico operators act sensibly on sync or async JavaScript functions to create declarative, highly extensible, and async-enabled compositions.
 
 ```javascript
 const todoIDs = [1, 2, 3, 4, 5]
@@ -69,34 +69,7 @@ map(pipe([
              // { userId: 1, id: 5, title: 'laboriosam mollitia...', completed: false }
 ```
 
-For semantically related functionality, rubico provides variations for some of the operators as property functions; for example, `map.pool` is a property function and variation of the `map` operator.
-
-```javascript
-const todoIDs = [1, 2, 3, 4, 5]
-
-const toTodosUrl = id => 'https://jsonplaceholder.typicode.com/todos/' + id
-
-const callProperty = property => value => value[property]()
-
-const sleep = ms => value => new Promise(
-  resolve => { setTimeout(() => resolve(value), ms) })
-
-map.pool(2, pipe([
-  toTodosUrl,
-  fetch,
-  callProperty('json'),
-  console.log,
-  sleep(1000),
-]))(todoIDs) // { userId: 1, id: 4, title: 'et porro tempora', completed: true }
-             // { userId: 1, id: 1, title: 'delectus aut autem', completed: false }
-             // **slight pause**
-             // { userId: 1, id: 3, title: 'fugiat veniam minus', completed: false }
-             // { userId: 1, id: 2, title: 'quis ut nam facilis...', completed: false }
-             // **slight pause**
-             // { userId: 1, id: 5, title: 'laboriosam mollitia...', completed: false }
-```
-
-Finally, when something goes wrong, rubico throws meaningful and ergonomic errors with human readable stack traces. You should get started with rubico if you aspire to be a more effective programmer, write cleaner and more concise code, or harness the expressive power of functional programming in production.
+For semantically related functionality, rubico provides variations for some of the operators as property functions; for example, `map.pool` is a property function and variation of the `map` operator. Finally, when something goes wrong, rubico throws meaningful and ergonomic errors with human readable stack traces. You should get started with rubico if you aspire to be a more effective programmer, write cleaner and more concise code, or harness the expressive power of functional programming in production.
 
 # Getting Started
  1. [check out the docs](https://doc.rubico.land)
