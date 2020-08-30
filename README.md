@@ -37,7 +37,7 @@ When you use this library, you obtain the freedom that comes only from having th
 # Introduction
 rubico is a robust, performance-optimized, and thoroughly benchmarked module of 24 higher order functions for async agnostic functional programming in JavaScript. The style and naming conventions of rubico are idiomatic across languages and other libraries - using this library should feel second nature. Just like vanilla JavaScript operators, rubico operators act sensibly on sync or async JavaScript functions to create declarative, highly extensible, and async-enabled function compositions. For semantically related functionality, rubico provides variations for some of the operators as property functions; for examle, `map.pool` is a property function and variation of the `map` operator. When something goes wrong, rubico throws meaningful and ergonomic errors with reasonable stack traces. You would benefit from this library if you aspire to become a more effective programmer, write cleaner and more concise code, or harness the expressive power of functional programming in production.
 
-Here are my recommendations for getting started.
+# Getting Started
  1. [check out the docs](https://doc.rubico.land)
  2. [take the tour](https://tour.rubico.land)
  3. use rubico in a project
