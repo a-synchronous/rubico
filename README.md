@@ -35,7 +35,7 @@ rubico's value resides at the intersection of the following principles:
 When you use this library, you obtain the freedom that comes only from having those three points fulfilled. The result is something you may enjoy.
 
 # Introduction
-rubico is a robust, performance-optimized, and thoroughly benchmarked module of 24 higher order functions for async agnostic functional programming in JavaScript.
+rubico is a robust, optimized, and thoroughly benchmarked module of 24 higher order functions for async agnostic functional programming in JavaScript.
 
 ```javascript
 const {
