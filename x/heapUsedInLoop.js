@@ -22,7 +22,7 @@ const bytesToMiB = bytes => `${(bytes / 1024 / 1024).toFixed(2)} MiB`
  * ) -> ()
  *
  * @description
- * **heapUsedInLoop** is a memory usage measurement function. Supply a description, loopCount, and function for average and max heap used per loop.
+ * **heapUsedInLoop** is a memory usage measurement function. Supply `description`, `loopCount`, and a function `func` for that function to be run `loopCount` times, finally logging average and max heap used per loop in terms of megabytes MiB.
  *
  * ```javascript
  * heapUsedInLoop('my-description', 1e5, function () {
