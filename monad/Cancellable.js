@@ -4,10 +4,6 @@ const isPromise = value => value != null && typeof value.then == 'function'
 
 const promiseRace = Promise.race.bind(Promise)
 
-const isFunction = value => typeof value == 'function'
-
-const noop = function noop() {}
-
 /**
  * @name CancelToken
  *
@@ -33,14 +29,16 @@ CancelToken.prototype.cancel = function cancel(value) {
  * @name CancellablePromise
  *
  * @synopsis
- * CancellablePromise(value Promise|any) -> result Promise { cancel: function }
+ * CancellablePromise(value Promise|any)
+ *   -> result Promise { cancel: Error|any=>this }
  */
 const CancellablePromise = function (value) {
   const cancelToken = new CancelToken()
   const result = promiseRace([value, cancelToken.promise])
   result.cancel = function cancel(err) {
     cancelToken.cancel(err)
-    result.cancel = noop
+    result.cancel = function getter() { return result }
+    return result
   }
   result.value = value
   return result
@@ -48,6 +46,9 @@ const CancellablePromise = function (value) {
 
 /**
  * @name Cancellable
+ *
+ * @catchphrase
+ * make a function return cancellable Promises
  *
  * @synopsis
  * Promise { cancel: any=>() } -> CancellablePromise
@@ -66,13 +67,9 @@ const CancellablePromise = function (value) {
  *
  * const cancellablePromise = createCancellablePromise()
  *
- * cancellablePromise.cancel(new Error('cancelled'))
- *
- * try {
- *   await cancellablePromise
- * } catch (err) {
- *   console.error(err) // Error: cancelled
- * }
+ * cancellablePromise
+ *   .cancel(new Error('cancelled'))
+ *   .catch(err => console.error(err)) // Error: cancelled
  * ```
  */
 const Cancellable = func => function cancellablePromiseFactory(

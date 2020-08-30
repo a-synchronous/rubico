@@ -8,14 +8,9 @@ describe('Cancellable', () => {
       const createCancellablePromise = Cancellable(createInfinitePromise)
       const cancellablePromise = createCancellablePromise()
       assert.strictEqual(cancellablePromise.cancel.name, 'cancel')
-      cancellablePromise.cancel(new Error('cancelled'))
-      assert.strictEqual(cancellablePromise.cancel.name, 'noop')
-      try {
-        await cancellablePromise
-        throw new Error('unreachable')
-      } catch (err) {
-        assert.strictEqual(err.message, 'cancelled')
-      }
+      const cancellablePromise2 = cancellablePromise.cancel(new Error('cancelled'))
+      assert.strictEqual(cancellablePromise, cancellablePromise2)
+      assert.rejects(() => cancellablePromise2, new Error('cancelled'))
     })
     it('func any=>any', async () => {
       const identity = Cancellable(value => value)

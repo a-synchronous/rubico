@@ -10,7 +10,8 @@ const sleep = millis => new Promise(resolve => { setTimeout(resolve, millis) })
  *
  * @memoryUsage
  * new BrokenPromise(): 5e+5: { "max": "86.89 MiB", "avg": "46.11 MiB" }
- * Cancellable(() => new BrokenPromise())().cancel(): 5e+5: { "max": "20.18 MiB", "avg": "11.64 MiB" }
+ * Cancellable(() => new BrokenPromise())().cancel(Error): 5e+5: { "max": "20.18 MiB", "avg": "11.64 MiB" }
+ * Cancellable(() => new BrokenPromise())().cancel(Error).catch: 5e+5: { "max": "19.93 MiB", "avg": "11.90 MiB" }
  * Cancellable(reduce(add, 0)).cancel(Error): 5e+5: { "max": "12.11 MiB", "avg": "6.55 MiB" }
  */
 
@@ -18,7 +19,7 @@ heapUsedInLoop.async.skip('new BrokenPromise()', 5e5, async function () {
   const brokenPromise = new BrokenPromise()
 })
 
-heapUsedInLoop.async('Cancellable(() => new BrokenPromise())().cancel(Error)', 5e5, async function () {
+heapUsedInLoop.async.skip('Cancellable(() => new BrokenPromise())().cancel(Error)', 5e5, async function () {
   const cancellablePromise = Cancellable(() => new BrokenPromise())()
   cancellablePromise.cancel(new Error('cancelled'))
   try {
@@ -26,6 +27,12 @@ heapUsedInLoop.async('Cancellable(() => new BrokenPromise())().cancel(Error)', 5
   } catch (err) {
     clearTimeout(cancellablePromise.value.timeout)
   }
+})
+
+heapUsedInLoop.async.skip('Cancellable(() => new BrokenPromise())().cancel(Error).catch', 5e5, async function () {
+  const cancellablePromise = Cancellable(() => new BrokenPromise())()
+  await cancellablePromise.cancel(new Error('cancelled'))
+    .catch(err => clearTimeout(cancellablePromise.value.timeout))
 })
 
 const indexTimeoutMap = new Map()
