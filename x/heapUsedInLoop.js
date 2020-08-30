@@ -1,5 +1,7 @@
 'use strict'
 
+const memoryUsage = process.memoryUsage.bind(process)
+
 /**
  * @name bytesToMiB
  *
@@ -61,8 +63,6 @@ const heapUsedInLoop = function (desc, loopCount, func) {
 }
 
 heapUsedInLoop.skip = function noop() {}
-
-const memoryUsage = process.memoryUsage.bind(process)
 
 /**
  * @name heapUsedInLoop.async

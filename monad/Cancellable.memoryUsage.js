@@ -15,7 +15,7 @@ const sleep = millis => new Promise(resolve => { setTimeout(resolve, millis) })
  */
 
 heapUsedInLoop.async.skip('new BrokenPromise()', 5e5, async function () {
-  new BrokenPromise()
+  const brokenPromise = new BrokenPromise()
 })
 
 heapUsedInLoop.async('Cancellable(() => new BrokenPromise())().cancel(Error)', 5e5, async function () {
