@@ -67,9 +67,8 @@ const CancellablePromise = function (value) {
  *
  * const cancellablePromise = createCancellablePromise()
  *
- * cancellablePromise
- *   .cancel(new Error('cancelled'))
- *   .catch(err => console.error(err)) // Error: cancelled
+ * cancellablePromise.cancel(new Error('cancelled')).catch(
+ *   err => console.error(err)) // Error: cancelled
  * ```
  */
 const Cancellable = func => function cancellablePromiseFactory(
