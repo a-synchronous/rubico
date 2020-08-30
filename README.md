@@ -35,7 +35,7 @@ rubico's value resides at the intersection of the following principles:
 When you use this library, you obtain the freedom that comes only from having those three points fulfilled. The result is something you may enjoy.
 
 # Introduction
-rubico is a robust, highly optimized collection of methods for async agnostic functional programming in JavaScript. The style and naming conventions of rubico are idiomatic across languages and other libraries; using this library should feel second nature. Just like regular vanilla JavaScript syntax and operators, rubico operates predictably on vanilla JavaScript types. When you use this library, you can stop worrying about the complex fluff of Promise management. When something goes wrong, rubico throws meaningful and ergonomic errors. You should use this library if you want to become a more effective programmer, write cleaner and more concise code, or harness the expressive power of functional programming in production.
+rubico is a robust, performance-optimized, and thoroughly benchmarked module of 24 higher order functions for async agnostic functional programming in JavaScript. The style and naming conventions of rubico are idiomatic across languages and other libraries - using this library should feel second nature. Just like vanilla JavaScript operators, rubico operators act sensibly on sync or async JavaScript functions to create declarative, highly extensible, and async-enabled function compositions. For semantically related functionality, rubico provides variations for some of the operators as property functions, e.g. `map.pool` - an asynchronous variant of the `map` operator. When something goes wrong, rubico throws meaningful and ergonomic errors. You would benefit from this library if you aspire to become a more effective programmer, write cleaner and more concise code, or harness the expressive power of functional programming in production.
 
 Here are my recommendations for getting started.
  1. [check out the docs](https://doc.rubico.land)
@@ -90,16 +90,9 @@ import rubico from 'https://unpkg.com/rubico/es.js'
  * [Transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md)
 
 # Contributing
-Your feedback and contributions are welcome. If you have a suggestion, please raise an issue. Prior to that, make sure to search through the issues first in case your suggestion has been made already. If you decide to work on an issue, please announce on the issue thread that you will work on it.
+Your feedback and contributions are welcome. If you have a suggestion, please raise an issue. Prior to that, please search through the issues first in case your suggestion has been made already. If you decide to work on an issue, please announce on the issue thread that you will work on it.
 
-Enhancements should follow the principles of the library:
- * asynchronous code should be simple
- * functional style should not care about async
- * functional transformations should be composable, performant, and simple to express
-
-Pull requests should provide some basic context and link the relevant issue. My intention is that progress on the library follow an issue -> pull request format. See this [pull request](https://github.com/a-synchronous/rubico/pull/12) for an example.
-
-If you are interested in contributing, the [help wanted](https://github.com/a-synchronous/rubico/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) tag is a good place to start.
+Pull requests should provide some basic context and link the relevant issue. Here is an [example pull request](https://github.com/a-synchronous/rubico/pull/12). If you are interested in contributing, the [help wanted](https://github.com/a-synchronous/rubico/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) tag is a good place to start.
 
 # License
 rubico is [MIT Licensed](https://github.com/a-synchronous/rubico/blob/master/LICENSE).
