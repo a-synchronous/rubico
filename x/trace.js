@@ -23,10 +23,10 @@ const funcConcat = (funcA, funcB) => function piped(...args) {
  * @name _trace
  *
  * @synopsis
- * _trace(value, args ...any) -> value
+ * _trace(value any) -> value
  */
-const _trace = function (value, ...args) {
-  consoleLog(value, ...args)
+const _trace = function (value) {
+  consoleLog(value)
   return value
 }
 
@@ -34,12 +34,15 @@ const _trace = function (value, ...args) {
  * @name trace
  *
  * @synopsis
+ * trace(value function) -> traceResolver (deferredValue any)=>Promise|deferredValue
+ *
+ * trace(value !function) -> value
  */
-const trace = function (value, ...args) {
+const trace = function (value) {
   if (typeof value == 'function') {
     return funcConcat(value, _trace)
   }
-  return _trace(value, ...args)
+  return _trace(value)
 }
 
 module.exports = trace
