@@ -224,7 +224,7 @@ module.exports = {
         'no-unreachable-loop': 'error',
         'no-unused-expressions': 'off',
         'no-unused-vars': 'off',
-        'no-use-before-define': 'error',
+        'no-use-before-define': 'off',
         'no-useless-backreference': 'error',
         'no-useless-call': 'off',
         'no-useless-computed-key': 'error',
@@ -232,7 +232,7 @@ module.exports = {
         'no-useless-constructor': 'error',
         'no-useless-rename': 'error',
         'no-useless-return': 'error',
-        'no-var': 'error',
+        'no-var': 'off',
         'no-void': 'error',
         'no-warning-comments': 'off',
         'no-whitespace-before-property': 'error',
@@ -313,7 +313,7 @@ module.exports = {
             'never'
         ],
         'valid-jsdoc': 'off',
-        'vars-on-top': 'error',
+        'vars-on-top': 'off',
         'wrap-iife': [
             'error',
             'any'
