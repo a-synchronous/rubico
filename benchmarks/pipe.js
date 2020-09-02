@@ -12,10 +12,14 @@ const isPromise = value => value != null && typeof value.then == 'function'
  * funcConcat1: 1e+6: 25.164ms
  * funcConcat2: 1e+6: 26.097ms
  * funcConcat20: 1e+6: 25.276ms
+ * funcConcat30: 1e+6: 24.74ms
+ * funcConcat31: 1e+6: 15.768ms
  *
  * funcConcat1 - async: 1e+6: 302.914ms
  * funcConcat2 - async: 1e+6: 302.83ms
  * funcConcat20 - async: 1e+6: 297.492ms
+ * funcConcat30 - async: 1e+6: 250.784ms
+ * funcConcat31 - async: 1e+6: 244.547ms
  */
 
 const funcConcat1 = (funcA, funcB) => function pipedFunction(...args) {
@@ -46,6 +50,20 @@ const funcConcat20 = (funcA, funcB) => function pipedFunction(...args) {
     : funcB.call(null, intermediate)
 }
 
+const funcConcat30 = (funcA, funcB) => function pipedFunction(...args) {
+  const intermediate = funcA.apply(null, args)
+  return isPromise(intermediate)
+    ? intermediate.then(funcB)
+    : funcB.call(null, intermediate)
+}
+
+const funcConcat31 = (funcA, funcB) => function pipedFunction(...args) {
+  const intermediate = funcA(...args)
+  return isPromise(intermediate)
+    ? intermediate.then(funcB)
+    : funcB(intermediate)
+}
+
 {
   const funcA = number => number + 1
 
@@ -58,9 +76,13 @@ const funcConcat20 = (funcA, funcB) => function pipedFunction(...args) {
   // console.log(funcConcat1(funcA, funcB)(2))
   // console.log(funcConcat2(funcA, funcB)(2))
   // console.log(funcConcat20(funcA, funcB)(2))
+  // console.log(funcConcat30(funcA, funcB)(2))
+  // console.log(funcConcat31(funcA, funcB)(2))
   // funcConcat1(asyncFuncA, asyncFuncB)(2).then(console.log)
   // funcConcat2(asyncFuncA, asyncFuncB)(2).then(console.log)
   // funcConcat20(asyncFuncA, asyncFuncB)(2).then(console.log)
+  // funcConcat30(asyncFuncA, asyncFuncB)(2).then(console.log)
+  // funcConcat31(asyncFuncA, asyncFuncB)(2).then(console.log)
 
   // timeInLoop('funcConcat1', 1e6, () => funcConcat1(funcA, funcB)(2))
 
@@ -68,20 +90,28 @@ const funcConcat20 = (funcA, funcB) => function pipedFunction(...args) {
 
   // timeInLoop('funcConcat20', 1e6, () => funcConcat20(funcA, funcB)(2))
 
+  // timeInLoop('funcConcat30', 1e6, () => funcConcat30(funcA, funcB)(2))
+
+  // timeInLoop('funcConcat31', 1e6, () => funcConcat31(funcA, funcB)(2))
+
   // timeInLoop.async('funcConcat1 - async', 1e6, () => funcConcat1(asyncFuncA, asyncFuncB)(2))
 
   // timeInLoop.async('funcConcat2 - async', 1e6, () => funcConcat2(asyncFuncA, asyncFuncB)(2))
 
   // timeInLoop.async('funcConcat20 - async', 1e6, () => funcConcat20(asyncFuncA, asyncFuncB)(2))
+
+  // timeInLoop.async('funcConcat30 - async', 1e6, () => funcConcat30(asyncFuncA, asyncFuncB)(2))
+
+  // timeInLoop.async('funcConcat31 - async', 1e6, () => funcConcat31(asyncFuncA, asyncFuncB)(2))
 }
 
 /**
  * @name pipe
  *
  * @benchmark
- * rubicoPipeline(2): 1e+6: 46.3ms
- * lodashPipeline(2): 1e+6: 41.381ms
- * ramdaPipeline(2): 1e+6: 39.743ms
+ * rubicoPipeline(2): 1e+6: 41.507ms
+ * lodashPipeline(2): 1e+6: 41.679ms
+ * ramdaPipeline(2): 1e+6: 39.722ms
  */
 
 
