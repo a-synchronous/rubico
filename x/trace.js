@@ -25,24 +25,38 @@ const funcConcat = (funcA, funcB) => function piped(...args) {
  * @synopsis
  * _trace(value any) -> value
  */
-const _trace = function (value) {
-  consoleLog(value)
+const _trace = function (value, ...args) {
+  consoleLog(value, ...args)
   return value
 }
 
 /**
  * @name trace
  *
+ * @catchphrase
+ * console.log as a side effect
+ *
  * @synopsis
  * trace(value function) -> traceResolver (deferredValue any)=>Promise|deferredValue
  *
  * trace(value !function) -> value
+ *
+ * @description
+ * **trace** is essentially `tap(console.log)` but with the extended feature of behaving lazily when called with a function.
+ *
+ * ```javascript
+ * pipe([
+ *   trace,
+ *   trace(value => value.toUpperCase()),
+ * ])('hey') // hey
+ *           // HEY
+ * ```
  */
-const trace = function (value) {
+const trace = function (value, ...args) {
   if (typeof value == 'function') {
     return funcConcat(value, _trace)
   }
-  return _trace(value)
+  return _trace(value, ...args)
 }
 
 module.exports = trace

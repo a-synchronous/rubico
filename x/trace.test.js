@@ -6,14 +6,14 @@ describe('trace', () => {
     assert.strictEqual(trace('hey'), 'hey')
   })
   it('lazy trace', async () => {
-    let logged
+    let logged = ''
     const lazyTrace = trace(value => (logged = `hello ${value}`))
     assert.equal(typeof lazyTrace, 'function')
     lazyTrace('world')
     assert.strictEqual(logged, 'hello world')
   })
   it('lazy trace async', async () => {
-    let logged
+    let logged = ''
     const lazyTrace = trace(async value => (logged = `hello ${value}`))
     assert.equal(typeof lazyTrace, 'function')
     const p = lazyTrace('world')
