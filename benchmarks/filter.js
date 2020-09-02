@@ -125,12 +125,14 @@ const asyncArrayFilter2 = async function (array, predicate) {
  * arrayFilter3: 1e+6: 74.412ms
  * arrayFilter30: 1e+6: 74.442ms
  * arrayFilter5: 1e+6: 73.663ms
+ * arrayFilter6: 1e+6: 73.266ms
  *
  * arrayFilter1 - async: 1e+5: 222.846ms
  * arrayFilter2 - async: 1e+5: 144.018ms
  * arrayFilter3 - async: 1e+5: 235.657ms
  * arrayFilter30 - async: 1e+5: 245.06ms
- * arrayFilter5 - async: 1e+5: 140.995ms
+ * arrayFilter5 - async: 1e+5: 138.895ms
+ * arrayFilter6 - async: 1e+5: 133.806ms
  *
  * @NOTE Bo5
  */
@@ -322,6 +324,52 @@ const arrayFilter5 = function (array, predicate) {
   return result
 }
 
+const arrayExtendMap = function (
+  array, values, valuesMapper, valuesIndex,
+) {
+  const valuesLength = values.length
+  let arrayIndex = array.length - 1
+  while (++valuesIndex < valuesLength) {
+    array[++arrayIndex] = valuesMapper(values[valuesIndex])
+  }
+  return array
+}
+
+const arrayFilterConditionsResolver = (
+  array, result, index,
+) => function resolvingShouldIncludeItems(shouldIncludeItems) {
+  const arrayLength = array.length
+  let resultIndex = result.length - 1,
+    shouldIncludeItemsIndex = -1
+  while (++index < arrayLength) {
+    if (shouldIncludeItems[++shouldIncludeItemsIndex]) {
+      result[++resultIndex] = array[index]
+    }
+  }
+  return result
+}
+
+const arrayFilter6 = function (array, predicate) {
+  const arrayLength = array.length,
+    result = []
+  let index = -1,
+    resultIndex = -1
+  while (++index < arrayLength) {
+    const item = array[index]
+    const shouldIncludeItem = predicate(item)
+    if (isPromise(shouldIncludeItem)) {
+      return promiseAll(
+        arrayExtendMap(
+          [shouldIncludeItem], array, predicate, index)).then(
+            arrayFilterConditionsResolver(array, result, index - 1))
+    }
+    if (shouldIncludeItem) {
+      result[++resultIndex] = item
+    }
+  }
+  return result
+}
+
 {
   const array = [1, 2, 3, 4, 5]
 
@@ -337,9 +385,11 @@ const arrayFilter5 = function (array, predicate) {
   // console.log(arrayFilter2(array, isOdd))
   // console.log(arrayFilter3(array, isOdd))
   // console.log(arrayFilter5(array, isOdd))
+  // console.log(arrayFilter6(array, isOdd))
   // arrayFilter3(array, asyncIsOdd).then(console.log)
   // arrayFilter30(array, asyncIsOdd).then(console.log)
   // arrayFilter5(array, asyncIsOdd).then(console.log)
+  // arrayFilter6(array, asyncIsOdd).then(console.log)
 
   // timeInLoop('nativeArrayFilter', 1e6, () => nativeArrayFilter(array, isOdd))
 
@@ -359,6 +409,8 @@ const arrayFilter5 = function (array, predicate) {
 
   // timeInLoop('arrayFilter5', 1e6, () => arrayFilter5(array, isOdd))
 
+  // timeInLoop('arrayFilter6', 1e6, () => arrayFilter6(array, isOdd))
+
   // timeInLoop.async('arrayFilter1 - async', 1e5, () => arrayFilter1(array, asyncIsOdd))
 
   // timeInLoop.async('arrayFilter2 - async', 1e5, () => arrayFilter2(array, asyncIsOdd))
@@ -368,6 +420,8 @@ const arrayFilter5 = function (array, predicate) {
   // timeInLoop.async('arrayFilter30 - async', 1e5, () => arrayFilter30(array, asyncIsOdd))
 
   // timeInLoop.async('arrayFilter5 - async', 1e5, () => arrayFilter5(array, asyncIsOdd))
+
+  // timeInLoop.async('arrayFilter6 - async', 1e5, () => arrayFilter6(array, asyncIsOdd))
 }
 
 /**
@@ -561,7 +615,7 @@ const objectFilter5 = function (object, predicate) {
 
   // timeInLoop.async('objectFilter3: async', 1e5, () => objectFilter3(object, asyncIsOdd))
 
-  timeInLoop.async('objectFilter5: async', 1e5, () => objectFilter5(object, asyncIsOdd))
+  // timeInLoop.async('objectFilter5: async', 1e5, () => objectFilter5(object, asyncIsOdd))
 }
 
 /**
@@ -856,17 +910,19 @@ const reducerFilter2 = (
  * arrayFilterWithIndex1: 1e+6: 73.923ms
  * arrayFilterWithIndex2: 1e+6: 75.2ms
  * arrayFilterWithIndex3: 1e+6: 73.448ms
- * arrayFilterWithIndex30: 1e+6: 73.385ms
- * arrayFilterWithIndex31: 1e+6: 74.129ms
- * arrayFilterWithIndex32: 1e+6: 72.7ms
+ * arrayFilterWithIndex30: 1e+6: 74.345ms
+ * arrayFilterWithIndex31: 1e+6: 76.641ms
+ * arrayFilterWithIndex32: 1e+6: 74.355ms
+ * arrayFilterWithIndex33: 1e+6: 73.379ms
  *
  * arrayFilterWithIndex0 - async: 1e+5: 129.733ms
  * arrayFilterWithIndex1 - async: 1e+5: 249.433ms
  * arrayFilterWithIndex2 - async: 1e+5: 279.556ms
  * arrayFilterWithIndex3 - async: 1e+5: 153.114ms
  * arrayFilterWithIndex30 - async: 1e+5: 154.646ms
- * arrayFilterWithIndex31 - async: 1e+5: 142.897ms
- * arrayFilterWithIndex32 - async: 1e+5: 142.375ms
+ * arrayFilterWithIndex31 - async: 1e+5: 139.632ms
+ * arrayFilterWithIndex32 - async: 1e+5: 136.089ms
+ * arrayFilterWithIndex33 - async: 1e+5: 135.066ms
  */
 
 const arrayFilterWithIndex0 = function (array, predicate) {
@@ -1161,6 +1217,53 @@ const arrayFilterWithIndex32 = function (array, predicate) {
   return result
 }
 
+const shouldIncludeItemsResolver = (
+  array, result, index,
+) => function resolvingShouldIncludeItems(shouldIncludeItems) {
+  const arrayLength = array.length
+  let resultIndex = result.length - 1,
+    shouldIncludeItemsIndex = -1
+  while (++index < arrayLength) {
+    if (shouldIncludeItems[++shouldIncludeItemsIndex]) {
+      result[++resultIndex] = array[index]
+    }
+  }
+  return result
+}
+
+const arrayExtendMapWithIndex = function (
+  array, values, valuesMapper, valuesIndex,
+) {
+  const valuesLength = values.length
+  let arrayIndex = array.length - 1
+  while (++valuesIndex < valuesLength) {
+    array[++arrayIndex] = valuesMapper(
+      values[valuesIndex], valuesIndex, values)
+  }
+  return array
+}
+
+const arrayFilterWithIndex33 = function (array, predicate) {
+  const arrayLength = array.length,
+    result = []
+  let index = -1,
+    resultIndex = -1
+  while (++index < arrayLength) {
+    const item = array[index]
+    const shouldIncludeItem = predicate(item, index, array)
+    if (isPromise(shouldIncludeItem)) {
+      return promiseAll(
+        arrayExtendMapWithIndex(
+          [shouldIncludeItem], array, predicate, index)).then(
+            shouldIncludeItemsResolver(array, result, index - 1))
+    }
+    if (shouldIncludeItem) {
+      result[++resultIndex] = item
+    }
+  }
+  return result
+}
+
 {
   const array = [1, 2, 3, 4, 5]
 
@@ -1175,6 +1278,7 @@ const arrayFilterWithIndex32 = function (array, predicate) {
   // console.log(arrayFilterWithIndex30(array, isOdd))
   // console.log(arrayFilterWithIndex31(array, isOdd))
   // console.log(arrayFilterWithIndex32(array, isOdd))
+  // console.log(arrayFilterWithIndex33(array, isOdd))
   // arrayFilterWithIndex0(array, asyncIsOdd).then(console.log)
   // arrayFilterWithIndex1(array, asyncIsOdd).then(console.log)
   // arrayFilterWithIndex2(array, asyncIsOdd).then(console.log)
@@ -1182,6 +1286,7 @@ const arrayFilterWithIndex32 = function (array, predicate) {
   // arrayFilterWithIndex30(array, asyncIsOdd).then(console.log)
   // arrayFilterWithIndex31(array, asyncIsOdd).then(console.log)
   // arrayFilterWithIndex32(array, asyncIsOdd).then(console.log)
+  // arrayFilterWithIndex33(array, asyncIsOdd).then(console.log)
 
   // timeInLoop('arrayFilterWithIndex0', 1e6, () => arrayFilterWithIndex0(array, isOdd))
 
@@ -1197,6 +1302,8 @@ const arrayFilterWithIndex32 = function (array, predicate) {
 
   // timeInLoop('arrayFilterWithIndex32', 1e6, () => arrayFilterWithIndex32(array, isOdd))
 
+  // timeInLoop('arrayFilterWithIndex33', 1e6, () => arrayFilterWithIndex33(array, isOdd))
+
   // timeInLoop.async('arrayFilterWithIndex0 - async', 1e5, () => arrayFilterWithIndex0(array, asyncIsOdd))
 
   // timeInLoop.async('arrayFilterWithIndex1 - async', 1e5, () => arrayFilterWithIndex1(array, asyncIsOdd))
@@ -1210,4 +1317,6 @@ const arrayFilterWithIndex32 = function (array, predicate) {
   // timeInLoop.async('arrayFilterWithIndex31 - async', 1e5, () => arrayFilterWithIndex31(array, asyncIsOdd))
 
   // timeInLoop.async('arrayFilterWithIndex32 - async', 1e5, () => arrayFilterWithIndex32(array, asyncIsOdd))
+
+  // timeInLoop.async('arrayFilterWithIndex33 - async', 1e5, () => arrayFilterWithIndex33(array, asyncIsOdd))
 }
