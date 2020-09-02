@@ -378,11 +378,13 @@ const arrayFilter5 = function (array, predicate) {
  * objectFilter1: 1e+6: 138.815ms
  * objectFilter2: 1e+6: 136.23ms
  * objectFilter3: 1e+6: 136.15ms
+ * objectFilter5: 1e+6: 137.69ms
  *
  * objectFilter0: async: 1e+5: 209.209ms
  * objectFilter1: async: 1e+5: 192.017ms
  * objectFilter2: async: 1e+5: 186.799ms
  * objectFilter3: async: 1e+5: 198.939ms
+ * objectFilter5: async: 1e+5: 190.143ms
  */
 
 
@@ -498,6 +500,34 @@ const objectFilter3 = function (object, predicate) {
   return _tapPossiblePromiseAllThenResolve(promises, result)
 }
 
+const objectSetConditionalResolver = (
+  object, result, key,
+) => function settingValueIfTruthy(shouldIncludeItem) {
+  if (shouldIncludeItem) {
+    result[key] = object[key]
+  }
+}
+
+const always = value => function getter() { return value }
+
+const objectFilter5 = function (object, predicate) {
+  const result = {},
+    promises = []
+  for (const key in object) {
+    const item = object[key]
+    const shouldIncludeItem = predicate(item)
+    if (isPromise(shouldIncludeItem)) {
+      promises[promises.length] = shouldIncludeItem.then(
+        objectSetConditionalResolver(object, result, key))
+    } else if (shouldIncludeItem) {
+      result[key] = item
+    }
+  }
+  return promises.length == 0
+    ? result
+    : promiseAll(promises).then(always(result))
+}
+
 {
   const object = { a: 1, b: 2, c: 3, d: 4, e: 5 }
 
@@ -509,7 +539,9 @@ const objectFilter3 = function (object, predicate) {
   // console.log(objectFilter1(object, isOdd))
   // console.log(objectFilter2(object, isOdd))
   // console.log(objectFilter3(object, isOdd))
+  // console.log(objectFilter5(object, isOdd))
   // objectFilter3(object, asyncIsOdd).then(console.log)
+  // objectFilter5(object, asyncIsOdd).then(console.log)
 
   // timeInLoop('objectFilter0', 1e6, () => objectFilter0(object, isOdd))
 
@@ -519,6 +551,8 @@ const objectFilter3 = function (object, predicate) {
 
   // timeInLoop('objectFilter3', 1e6, () => objectFilter3(object, isOdd))
 
+  // timeInLoop('objectFilter5', 1e6, () => objectFilter5(object, isOdd))
+
   // timeInLoop.async('objectFilter0: async', 1e5, () => objectFilter0(object, asyncIsOdd))
 
   // timeInLoop.async('objectFilter1: async', 1e5, () => objectFilter1(object, asyncIsOdd))
@@ -526,6 +560,8 @@ const objectFilter3 = function (object, predicate) {
   // timeInLoop.async('objectFilter2: async', 1e5, () => objectFilter2(object, asyncIsOdd))
 
   // timeInLoop.async('objectFilter3: async', 1e5, () => objectFilter3(object, asyncIsOdd))
+
+  timeInLoop.async('objectFilter5: async', 1e5, () => objectFilter5(object, asyncIsOdd))
 }
 
 /**
