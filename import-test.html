@@ -5,8 +5,11 @@
   <title></title>
 </head>
 <body>
-  <h2>rubico methods</h2>
+  <h2>rubico methods - global</h2>
   <div id="rubico"></div>
+
+  <h2>rubico methods - esm</h2>
+  <div id="rubico-es"></div>
 </body>
 <script src="./index.js"></script>
 <script>
@@ -38,4 +41,29 @@ console.log('rubico', rubico)
 document.getElementById('rubico').innerHTML = moduleToHTML(rubico)
 
 </script>
+
+<script type="module">
+import rubico from './es.js'
+
+const {
+  pipe, fork, assign,
+  tap, tryCatch, switchCase,
+  map, filter, reduce, transform, flatMap,
+  any, all, and, or, not,
+  eq, gt, lt, gte, lte,
+  get, pick, omit,
+} = rubico
+
+const join = delimiter => array => array.join(delimiter)
+
+const moduleToHTML = pipe([
+  Object.keys,
+  join('<br/>'),
+  tap(console.log),
+])
+
+console.log('rubico-es', rubico)
+document.getElementById('rubico-es').innerHTML = moduleToHTML(rubico)
+</script>
+
 </html>
