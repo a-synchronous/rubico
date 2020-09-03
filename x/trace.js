@@ -2,6 +2,8 @@ const { tap } = require('..')
 
 const consoleLog = console.log
 
+const tapConsoleLog = tap(consoleLog)
+
 const isPromise = value => value != null && typeof value.then == 'function'
 
 /**
@@ -10,24 +12,16 @@ const isPromise = value => value != null && typeof value.then == 'function'
  * @synopsis
  * any -> A, any -> B, any -> C
  *
- * funcConcat(funcA A=>B, funcB B=>C) -> pipedFunction A=>C
+ * funcConcat(
+ *   funcA (args ...any)=>(intermediate any),
+ *   funcB intermediate=>(result any)
+ * ) -> pipedFunction ...args=>result
  */
-const funcConcat = (funcA, funcB) => function piped(...args) {
-  const intermediate = funcA.apply(null, args)
+const funcConcat = (funcA, funcB) => function pipedFunction(...args) {
+  const intermediate = funcA(...args)
   return isPromise(intermediate)
-    ? intermediate.then(res => funcB.call(null, res))
-    : funcB.call(null, intermediate)
-}
-
-/**
- * @name _trace
- *
- * @synopsis
- * _trace(value any) -> value
- */
-const _trace = function (value, ...args) {
-  consoleLog(value, ...args)
-  return value
+    ? intermediate.then(funcB)
+    : funcB(intermediate)
 }
 
 /**
@@ -37,12 +31,16 @@ const _trace = function (value, ...args) {
  * console.log as a side effect
  *
  * @synopsis
- * trace(value function) -> traceResolver (deferredValue any)=>Promise|deferredValue
+ * any -> T
  *
- * trace(value !function) -> value
+ * trace(
+ *   reducer (any, ...any)=>Promise|any
+ * ) -> tracingReducer (any, ...any)=>Promise|any,
+ *
+ * trace(point !function, ...restArgs) -> point
  *
  * @description
- * **trace** is essentially `tap(console.log)` but with the extended feature of behaving lazily when called with a function.
+ * **trace** is essentially `tap(console.log)` but with the extended functionality of lazy evaluation when called with a function.
  *
  * ```javascript
  * pipe([
@@ -51,12 +49,15 @@ const _trace = function (value, ...args) {
  * ])('hey') // hey
  *           // HEY
  * ```
+ *
+ * Additionally, lazy trace
  */
-const trace = function (value, ...args) {
-  if (typeof value == 'function') {
-    return funcConcat(value, _trace)
+const trace = function (...args) {
+  const point = args[0]
+  if (typeof point == 'function') {
+    return funcConcat(point, tapConsoleLog)
   }
-  return _trace(value, ...args)
+  return tapConsoleLog(...args)
 }
 
 module.exports = trace
