@@ -2201,21 +2201,30 @@ const reducerConcat = function (reducerA, reducerB) {
 }
 
 /**
- * @name reduceReducerPipe
+ * @name reducerEmpty
  *
  * @synopsis
- * reduceReducerPipe(
- *   reducerA (any, T)=>(intermediate any),
- *   reducerB (intermediate, T)=>any,
- *   result any,
- * ) -> reducing (collection <T>)=>any
+ * reducerEmpty(result any) -> result
+const reducerEmpty = result => result
  */
-const reduceReducerPipe = function (reducerA, reducerB, result) {
-  return function reducing(collection) {
-    return genericReduce(
-      collection, reducerConcat(reducerA, reducerB), result)
-  }
+
+/**
+ * @name tacitGenericReduce
+ *
+ * @synopsis
+ * any -> T
+ *
+ * tacitGenericReduce(
+ *   reducer (any, T)=>any,
+ *   result any,
+ * ) -> reducing ...any=>result
+ */
+const tacitGenericReduce = (
+  reducer, result,
+) => function reducing(...args) {
+  return genericReduce(args, reducer, result)
 }
+
 
 /**
  * @name genericReduce
@@ -2231,7 +2240,8 @@ const reduceReducerPipe = function (reducerA, reducerB, result) {
  *   result undefined|any,
  * ) -> result
  */
-var genericReduce = function (collection, reducer, result) {
+var genericReduce = function (args, reducer, result) {
+  const collection = args[0]
   if (isArray(collection)) {
     return arrayReduce(collection, reducer, result)
   }
@@ -2258,7 +2268,8 @@ var genericReduce = function (collection, reducer, result) {
     if (isAsyncGeneratorFunction(collection)) {
       return asyncGeneratorFunctionReduce(collection, reducer, result)
     }
-    return reduceReducerPipe(collection, reducer, result)
+    return tacitGenericReduce(
+      args.length == 0 ? reducer : args.reduce(reducerConcat, reducer), result)
   }
   if (typeof collection.reduce == 'function') {
     return collection.reduce(reducer, result)
@@ -2434,30 +2445,35 @@ const curriedGenericReduce = (
  *   reducedState => console.log('finalState', reducedState))
  * ```
  *
- * Finally, as a matter of consistency and correctness, a reducing function created by `reduce` reduces other reducers by returning another reducing function that executes the concatenation of the original reducer passed to `reduce` with the reducer passed as the collection. Generally, prefer the `Reducer`
+ * If the first argument to a reducing function is a reducer, `reduce` concatenates any reducers in argument position onto the initial reducer, producing a combined reducer that performs a chained operation per each item in a reducing operation. For more reducer combinators, see rubico's Reducer monad.
  *
  * ```javascript
  * const reducerA = (state, action) => {
- *   if (action.type == 'A') return { value: 'A' }
+ *   if (action.type == 'A') return { ...state, A: true }
  *   return state
  * }
  *
  * const reducerB = (state, action) => {
- *   if (action.type == 'B') return 'B'
+ *   if (action.type == 'B') return { ...state, B: true }
  *   return state
  * }
  *
- * const state = {}
+ * const reducerC = (state, action) => {
+ *   if (action.type == 'C') return { ...state, C: true }
+ *   return state
+ * }
  *
- * reduce(reducerA, state)(reducerB)({ type: 'A' }) // { value: 'A' }
+ * const emptyReducer = result => result
  *
- * reduce(reducerA, state)(reducerB)({ type: 'B' }) // { value: 'B' }
+ * const reducingABC = reduce(
+ *   emptyReducer, () => ({}),
+ * )(reducerA, reducerB, reducerC)
  *
- * const add = (a, b) => a + b
+ * const actions = [{ type: 'A' }, { type: 'B' }, { type: 'C' }]
  *
- * const multiply = (a, b) => a * b
- *
- * reduce(add, 0)(multiply)([1, 2, 3, 4, 5])
+ * console.log(
+ *   reducingABC(actions),
+ * ) // { A: true, B: true, C: true }
  * ```
  *
  * @execution series
@@ -2469,14 +2485,13 @@ const curriedGenericReduce = (
 const reduce = function (reducer, init) {
   if (isFunction(init)) {
     return function reducing(...args) {
-      const collection = args[0]
       return then(
         init(...args),
-        curriedGenericReduce(collection, reducer))
+        curriedGenericReduce(args, reducer))
     }
   }
-  return function reducing(collection) {
-    return genericReduce(collection, reducer, init)
+  return function reducing(...args) {
+    return genericReduce(args, reducer, init)
   }
 }
 
