@@ -2,7 +2,9 @@
  * x/heapUsedInLoop - max and avg heap used in loop
  * monad/Cancellable - make a function return cancellable Promises
  * deprecated x/tracef
- * x/trace(resolver) - lazy trace, good for adding custom formatting
+ * x/trace(reducer) - lazy trace, good for adding custom formatting
+ * reduce rewrite + benchmarks
+ * tap accepts multiple arguments + more benchmarks
 
 ## v1.5.10 - latest
  * filter.withIndex rewrite + benchmarks
