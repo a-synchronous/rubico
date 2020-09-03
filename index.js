@@ -30,6 +30,8 @@ const symbolIterator = Symbol.iterator
 
 const symbolAsyncIterator = Symbol.asyncIterator
 
+const objectAssign = Object.assign
+
 const objectProto = Object.prototype
 
 const nativeObjectToString = objectProto.toString
@@ -101,6 +103,26 @@ const range = (start, end) => Array.from({ length: end - start }, (x, i) => i + 
 const arrayOf = (item, length) => Array.from({ length }, () => item)
 
 /**
+ * @name arrayPush
+ *
+ * @synopsis
+ * arrayPush(array Array, value any, index undefined|number) => array
+const arrayPush = function (
+  array, value, index = array.length,
+) {
+  array[index] = value
+  return array
+} */
+
+/**
+ * @name then
+ *
+ * @synopsis
+ * then(value any, func value=>(result any)) -> result
+ */
+const then = (value, func) => isPromise(value) ? value.then(func) : func(value)
+
+/**
  * @name promiseObjectAll
  *
  * @synopsis
@@ -168,13 +190,16 @@ const possiblePromiseAll = values => (values.some(isPromise)
  * @synopsis
  * any -> A, any -> B, any -> C
  *
- * funcConcat(funcA A=>B, funcB B=>C) -> pipedFunction A=>C
+ * funcConcat(
+ *   funcA (args ...any)=>(intermediate any),
+ *   funcB intermediate=>(result any)
+ * ) -> pipedFunction ...args=>result
  */
 const funcConcat = (funcA, funcB) => function pipedFunction(...args) {
-  const intermediate = funcA.apply(null, args)
+  const intermediate = funcA(...args)
   return isPromise(intermediate)
-    ? intermediate.then(res => funcB.call(null, res))
-    : funcB.call(null, intermediate)
+    ? intermediate.then(funcB)
+    : funcB(intermediate)
 }
 
 /**
@@ -256,23 +281,20 @@ const funcConcat = (funcA, funcB) => function pipedFunction(...args) {
  * @execution series
  *
  * @transducing
- *
- * @TODO benchmark regular calls over .apply
- * @TODO use ...args
  */
 const pipe = function (funcs) {
   const functionPipeline = funcs.reduce(funcConcat),
     functionComposition = funcs.reduceRight(funcConcat)
-  return function pipeline() {
-    const firstArg = arguments[0]
+  return function pipeline(...args) {
+    const firstArg = args[0]
     if (
-      isFunction(firstArg)
+      typeof firstArg == 'function'
         && !isGeneratorFunction(firstArg)
         && !isAsyncGeneratorFunction(firstArg)
     ) {
-      return functionComposition.apply(null, arguments)
+      return functionComposition(...args)
     }
-    return functionPipeline.apply(null, arguments)
+    return functionPipeline(...args)
   }
 }
 
@@ -831,6 +853,21 @@ MappingAsyncIterator.prototype.next = async function next() {
 }
 
 /**
+ * @name curriedReducer
+ *
+ * @synopsis
+ * any -> T
+ *
+ * curriedReducer(
+ *   reducer (any, T)=>any,
+ *   result any,
+ * ) -> curried (value T)=>any
+ */
+const curriedReducer = (reducer, result) => function curried(value) {
+  return reducer(result, value)
+}
+
+/**
  * @name reducerMap
  *
  * @synopsis
@@ -841,12 +878,37 @@ MappingAsyncIterator.prototype.next = async function next() {
  *   mapper A=>B,
  * ) -> mappingReducer (any, B)=>any
  */
-const reducerMap = (reducer, mapper) => function mappingReducer(accum, value) {
-  const nextValue = mapper(value)
-  return isPromise(nextValue)
-    ? nextValue.then(res => reducer(accum, res))
-    : reducer(accum, nextValue)
+const reducerMap = (reducer, mapper) => function mappingReducer(result, value) {
+  const mapped = mapper(value)
+  return isPromise(mapped)
+    ? mapped.then(curriedReducer(reducer, result))
+    : reducer(result, mapped)
 }
+
+/**
+ * @name resolverMap
+ *
+ * @synopsis
+ * any -> A; any -> B
+ *
+ * resolverMap(
+ *   resolver ...args=>A,
+ *   mapper A=>B,
+ * ) -> (args ...any)=>B
+const resolverMap = (resolver, mapper) => funcConcat(resolver, map(mapper))
+ */
+
+/**
+ * @name map.resolver
+ *
+ * @catchphrase
+ * lazy map
+map.resolver = function resolverMap(mapper) {
+  return function mapping(resolver) {
+    return resolverMap(resolver, mapper)
+  }
+}
+ */
 
 /**
  * @name map
@@ -859,13 +921,17 @@ const reducerMap = (reducer, mapper) => function mappingReducer(accum, value) {
  *
  * (any, T)=>Promise|any -> Reducer<T>
  *
- * any -> A; any -> B
+ * any -> A; any -> B; any -> C
  *
  * { map: (A=>B)=>Mappable<B> } -> Mappable<A>
  *
- * map(A=>Promise|B)(Array<A>) -> Promise|Array<B>
+ * map(
+ *   A=>Promise|B,
+ * )(Array<A>) -> Promise|Array<B>
  *
- * map(A=>Promise|B)(Object<A>) -> Promise|Object<B>
+ * map(
+ *   A=>Promise|B,
+ * )(Object<A>) -> Promise|Object<B>
  *
  * map(A=>B)(GeneratorFunction<A>) -> GeneratorFunction<B>
  *
@@ -1276,7 +1342,7 @@ const arrayExtend = (array, values) => {
 } */
 
 /**
- * @name _arrayExtendMap
+ * @name arrayExtendMap
  *
  * @catchphrase
  * internal extend while mapping
@@ -1284,14 +1350,14 @@ const arrayExtend = (array, values) => {
  * @synopsis
  * any -> value; any -> mapped
  *
- * _arrayExtendMap(
+ * arrayExtendMap(
  *   array Array<mapped>,
  *   values Array<value>,
  *   valuesIndex number,
  *   valuesMapper value=>mapped,
  * ) -> array
  */
-const _arrayExtendMap = function (
+const arrayExtendMap = function (
   array, values, valuesMapper, valuesIndex,
 ) {
   const valuesLength = values.length
@@ -1303,12 +1369,12 @@ const _arrayExtendMap = function (
 }
 
 /**
- * @name _shouldIncludeItemsResolver
+ * @name arrayFilterConditionsResolver
  *
  * @synopsis
  * any -> T
  *
- * _shouldIncludeItemsResolver(
+ * arrayFilterConditionsResolver(
  *   array Array<T>,
  *   result Array<T>,
  *   index number,
@@ -1319,7 +1385,7 @@ const _arrayExtendMap = function (
  * @description
  * For quickscoping filter* .then handlers. index should already be processed.
  */
-const _shouldIncludeItemsResolver = (
+const arrayFilterConditionsResolver = (
   array, result, index,
 ) => function resolvingShouldIncludeItems(shouldIncludeItems) {
   const arrayLength = array.length
@@ -1332,25 +1398,6 @@ const _shouldIncludeItemsResolver = (
   }
   return result
 }
-
-/**
- * @name _asyncArrayFilter
- *
- * @synopsis
- * _asyncArrayFilter(
- *   array Array,
- *   predicate T=>boolean,
- *   result Array,
- *   index number,
- *   shouldIncludeItemPromises Array<Promise<boolean>>,
- * ) -> Promise<result>
- */
-const _asyncArrayFilter = (
-  array, predicate, result, index, shouldIncludeItemPromises,
-) => promiseAll(
-  _arrayExtendMap(
-    shouldIncludeItemPromises, array, predicate, index)).then(
-      _shouldIncludeItemsResolver(array, result, index - 1))
 
 /**
  * @name arrayFilter
@@ -1372,8 +1419,10 @@ const arrayFilter = function (array, predicate) {
     const item = array[index]
     const shouldIncludeItem = predicate(item)
     if (isPromise(shouldIncludeItem)) {
-      return _asyncArrayFilter(
-        array, predicate, result, index, [shouldIncludeItem])
+      return promiseAll(
+        arrayExtendMap(
+          [shouldIncludeItem], array, predicate, index)).then(
+            arrayFilterConditionsResolver(array, result, index - 1))
     }
     if (shouldIncludeItem) {
       result[++resultIndex] = item
@@ -1383,18 +1432,18 @@ const arrayFilter = function (array, predicate) {
 }
 
 /**
- * @name _setValueIfTruthy
+ * @name objectSetConditionResolver
  *
  * @synopsis
  * any -> T
  *
- * _setValueIfTruthy(
+ * objectSetConditionResolver(
  *   object Object<T>,
  *   result Object<T>,
  *   key string,
  * ) -> settingValueIfTruthy (shouldIncludeItem boolean)=>()
  */
-const _setValueIfTruthy = (
+const objectSetConditionResolver = (
   object, result, key,
 ) => function settingValueIfTruthy(shouldIncludeItem) {
   if (shouldIncludeItem) {
@@ -1403,38 +1452,12 @@ const _setValueIfTruthy = (
 }
 
 /**
- * @name _pushSetIfShouldIncludeItemPromise
+ * @name always
  *
  * @synopsis
- * any -> T
- *
- * _asyncSetIfShouldIncludeItem(
- *   object Object<T>,
- *   result Object<T>,
- *   promises Array<Promise>,
- *   key string,
- *   shouldIncludeItemPromise Promise<boolean>,
- * ) -> ()
+ * always(value any) -> getter ()=>value
  */
-const _pushSetIfShouldIncludeItemPromise = function (
-  object, result, promises, key, shouldIncludeItemPromise,
-) {
-  promises[promises.length] = shouldIncludeItemPromise.then(
-    _setValueIfTruthy(object, result, key))
-}
-
-/**
- * @name _tapPossiblePromiseAllThenResolve
- *
- * @synopsis
- * _tapPossiblePromiseAllThenResolve(
- *   promises Array<Promise>,
- *   value any,
- * ) -> Promise|value
- */
-const _tapPossiblePromiseAllThenResolve = (promises, value) => promises.length == 0
-  ? value
-  : promiseAll(promises).then(() => value)
+const always = value => function getter() { return value }
 
 /**
  * @name objectFilter
@@ -1454,13 +1477,15 @@ const objectFilter = function (object, predicate) {
     const item = object[key]
     const shouldIncludeItem = predicate(item)
     if (isPromise(shouldIncludeItem)) {
-      _pushSetIfShouldIncludeItemPromise(
-        object, result, promises, key, shouldIncludeItem)
+      promises[promises.length] = shouldIncludeItem.then(
+        objectSetConditionResolver(object, result, key))
     } else if (shouldIncludeItem) {
       result[key] = item
     }
   }
-  return _tapPossiblePromiseAllThenResolve(promises, result)
+  return promises.length == 0
+    ? result
+    : promiseAll(promises).then(always(result))
 }
 
 /**
@@ -1624,22 +1649,22 @@ FilteringAsyncIterator.prototype.next = async function next() {
 }
 
 /**
- * @name _asyncReducerFiltration
+ * @name reducerFilterConditionResolver
  *
  * @synopsis
  * any -> T
  *
- * _asyncReducerFiltration(
+ * reducerFilterConditionResolver(
  *   reducer (any, T)=>Promise|any,
- *   accumulator any,
+ *   result any,
  *   item T,
- *   shouldIncludeItemPromise Promise<boolean>,
- * ) -> Promise
+ * ) -> (shouldIncludeItem boolean)=>result
  */
-const _asyncReducerFiltration = (
-  reducer, accumulator, item, shouldIncludeItemPromise,
-) => shouldIncludeItemPromise.then(
-  res => res ? reducer(accumulator, item) : accumulator)
+const reducerFilterConditionResolver = (
+  reducer, result, item,
+) => function conditionResolver(shouldIncludeItem) {
+  return shouldIncludeItem ? reducer(result, item) : result
+}
 
 /**
  * @name reducerFilter
@@ -1650,17 +1675,17 @@ const _asyncReducerFiltration = (
  * reducerFilter(
  *   reducer (any, T)=>Promise|any,
  *   predicate T=>Promise|boolean,
- * ) -> filteringReducer (accumulator any, item T)=>Promise|any
+ * ) -> filteringReducer (result any, item T)=>Promise|any
  */
 const reducerFilter = (
   reducer, predicate,
-) => function filteringReducer(accumulator, item) {
+) => function filteringReducer(result, item) {
   const shouldIncludeItem = predicate(item)
   if (isPromise(shouldIncludeItem)) {
-    return _asyncReducerFiltration(
-      reducer, accumulator, item, shouldIncludeItem)
+    return shouldIncludeItem.then(
+      reducerFilterConditionResolver(reducer, result, item))
   }
-  return shouldIncludeItem ? reducer(accumulator, item) : accumulator
+  return shouldIncludeItem ? reducer(result, item) : result
 }
 
 /**
@@ -1804,6 +1829,8 @@ const reducerFilter = (
  * It is possible to use an asynchronous predicate when filtering a reducer, however the implementation of `reduce` must support asynchronous operations. rubico provides such an implementation as `reduce`.
  *
  * @execution concurrent
+ *
+ * @transducing
  */
 const filter = predicate => function filtering(value) {
   if (isArray(value)) {
@@ -1833,20 +1860,20 @@ const filter = predicate => function filtering(value) {
 }
 
 /**
- * @name _arrayExtendMapWithIndex
+ * @name arrayExtendMapWithIndex
  *
  * @catchphrase
  * internal extend while mapping with index
  *
  * @synopsis
- * _arrayExtendMapWithIndex(
+ * arrayExtendMapWithIndex(
  *   array Array<B>,
  *   values Array<A>,
  *   valuesMapper (A, valuesIndex number, values)=>B,
  *   valuesIndex number,
  * ) -> array
  */
-const _arrayExtendMapWithIndex = function (
+const arrayExtendMapWithIndex = function (
   array, values, valuesMapper, valuesIndex,
 ) {
   const valuesLength = values.length
@@ -1857,25 +1884,6 @@ const _arrayExtendMapWithIndex = function (
   }
   return array
 }
-
-/**
- * @name _asyncArrayFilterWithIndex
- *
- * @synopsis
- * _asyncArrayFilterWithIndex(
- *   array Array,
- *   predicate T=>boolean,
- *   result Array,
- *   index number,
- *   shouldIncludeItemPromises Array<Promise<boolean>>,
- * ) -> result
- */
-const _asyncArrayFilterWithIndex = (
-  array, predicate, result, index, shouldIncludeItemPromises,
-) => promiseAll(
-  _arrayExtendMapWithIndex(
-    shouldIncludeItemPromises, array, predicate, index)).then(
-      _shouldIncludeItemsResolver(array, result, index - 1))
 
 /**
  * @name arrayFilterWithIndex
@@ -1897,8 +1905,10 @@ const arrayFilterWithIndex = function (array, predicate) {
     const item = array[index]
     const shouldIncludeItem = predicate(item, index, array)
     if (isPromise(shouldIncludeItem)) {
-      return _asyncArrayFilterWithIndex(
-        array, predicate, result, index, [shouldIncludeItem])
+      return promiseAll(
+        arrayExtendMapWithIndex(
+          [shouldIncludeItem], array, predicate, index)).then(
+            arrayFilterConditionsResolver(array, result, index - 1))
     }
     if (shouldIncludeItem) {
       result[++resultIndex] = item
@@ -1932,91 +1942,555 @@ filter.withIndex = predicate => function filteringWithIndex(value) {
   throw new TypeError(`${value} is not an Array`)
 }
 
-/*
+/**
+ * @name asyncArrayReduce
+ *
  * @synopsis
- * asyncReduceIterator(f function, x0 any, iter Iterable<any>) -> Promise<any>
+ * asyncArrayReduce(
+ *   array Array,
+ *   reducer function,
+ *   result any,
+ *   index number,
+ * ) -> result
  */
-const asyncReduceIterator = async (f, x0, iter) => {
-  let y = x0
-  for (const xi of iter) {
-    y = await f(y, xi)
+const asyncArrayReduce = async function (array, reducer, result, index) {
+  const arrayLength = array.length
+  while (++index < arrayLength) {
+    result = await reducer(result, array[index])
   }
-  return y
+  return result
 }
 
-/*
- * @synopsis
- * reduceIterable(f function, possiblyX0 any, x Iterable<any>)
- *   -> Promise|any
+/**
+ * @name asyncArrayReduceResultResolver
  *
- * @note
- * There's an issue chaining too many synchronous .thens
- * https://stackoverflow.com/questions/62112863/what-are-the-performance-implications-if-any-of-chaining-too-many-thens-on
+ * @synopsis
+ * asyncArrayReduceResultResolver(
+ *   array Array,
+ *   reducer function,
+ *   index number,
+ * ) -> resolver result=>any
  */
-const reduceIterable = (fn, possiblyX0, x) => {
-  const iter = x[Symbol.iterator]()
-  const y0 = isUndefined(possiblyX0) ? iter.next().value : possiblyX0
-  if (isUndefined(y0)) {
-    throw new TypeError('reduce(...)(x); x cannot be empty')
+const asyncArrayReduceResultResolver = (
+  array, reducer, index,
+) => function resolver(result) {
+  return asyncArrayReduce(array, reducer, result, index)
+}
+
+/**
+ * @name arrayReduce
+ *
+ * @synopsis
+ * any -> T
+ *
+ * arrayReduce(
+ *   array Array<T>,
+ *   reducer (any, T)=>Promise|any,
+ *   result any,
+ * ) -> result
+ */
+const arrayReduce = function (array, reducer, result) {
+  const arrayLength = array.length
+  let index = -1
+  if (result === undefined) {
+    result = array[++index]
   }
-  const { value, done } = iter.next()
-  if (done) return y0
-  let y = fn(y0, value)
-  if (isPromise(y)) {
-    return y.then(res => asyncReduceIterator(fn, res, iter))
-  }
-  for (const xi of iter) {
-    y = fn(y, xi)
-    if (isPromise(y)) {
-      return y.then(res => asyncReduceIterator(fn, res, iter))
+  while (++index < arrayLength) {
+    result = reducer(result, array[index])
+    if (isPromise(result)) {
+      return result.then(
+        asyncArrayReduceResultResolver(array, reducer, index))
     }
   }
-  return y
+  return result
 }
 
-/*
- * @synopsis
- * reduceAsyncIterable(f function, possiblyX0 any, x AsyncIterable<any>)
- *   -> Promise<any>
- */
-const reduceAsyncIterable = async (fn, possiblyY0, x) => {
-  const iter = x[Symbol.asyncIterator]()
-  const y0 = isUndefined(possiblyY0) ? (await iter.next()).value : possiblyY0
-  if (isUndefined(y0)) {
-    throw new TypeError('reduce(...)(x); x cannot be empty')
-  }
-  const { value, done } = await iter.next()
-  if (done) return y0
-  let y = await fn(y0, value)
-  for await (const xi of iter) {
-    y = await fn(y, xi)
-  }
-  return y
-}
-
-/*
- * @synopsis
- * reduceObject(f function, x0 any, x Object<any>) -> Promise|any
- */
-const reduceObject = (fn, x0, x) => reduceIterable(
-  fn,
-  x0,
-  (function* () { for (const k in x) yield x[k] })(),
-)
-
-/*
- * @synopsis
- * Iterable|AsyncIterable|Object -> Reducible
+/**
+ * @name asyncIteratorReduce
  *
- * <T any>reduce(
- *   f (aggregate any, xi T)=>any,
- *   init ((x Reducible<T>)=>any)|any,
- * )(x Reducible<T>) -> reduced any
+ * @synopsis
+ * any -> T
+ *
+ * asyncIteratorReduce(
+ *   asyncIterator AsyncIterator<T>,
+ *   reducer (any, T)=>Promise|any,
+ *   result any,
+ * ) -> result any
+ */
+const asyncIteratorReduce = async function (asyncIterator, reducer, result) {
+  let iteration = await asyncIterator.next()
+  if (iteration.done) {
+    return result
+  }
+  if (result === undefined) {
+    result = iteration.value
+    iteration = await asyncIterator.next()
+  }
+  while (!iteration.done) {
+    result = await reducer(result, iteration.value)
+    iteration = await asyncIterator.next()
+  }
+  return result
+}
+
+/**
+ * @name tacitAsyncIteratorReduce
+ *
+ * @synopsis
+ * any -> T
+ *
+ * tacitAsyncIteratorReduce(
+ *   reducer (any, T)=>Promise|any,
+ *   result any,
+ * ) -> resolver (asyncIterator AsyncIterator<T>)=>any
+ */
+const tacitAsyncIteratorReduce = (
+  reducer, result,
+) => function resolver(asyncIterator) {
+  return asyncIteratorReduce(asyncIterator, reducer, result)
+}
+
+/**
+ * @name asyncIteratorReduceResultResolver
+ *
+ * @synopsis
+ * any -> T
+ *
+ * asyncIteratorReduceResultResolver(
+ *   asyncIterator AsyncIterator<T>,
+ *   reducer (any, T)=>Promise|any,
+ * ) -> resolver (result any)=>any
+ */
+const asyncIteratorReduceResultResolver = (
+  asyncIterator, reducer,
+) => function resolver(result) {
+  return asyncIteratorReduce(asyncIterator, reducer, result)
+}
+
+/**
+ * @name asyncGeneratorFunctionReduce
+ *
+ * @synopsis
+ * any -> T
+ *
+ * asyncGeneratorFunctionReduce(
+ *   asyncGeneratorFunc ...args=>AsyncGenerator<T>,
+ *   reducer (any, T)=>any,
+ *   result any,
+ * ) -> (...any args)=>any
+ */
+const asyncGeneratorFunctionReduce = (
+  asyncGeneratorFunc, reducer, result,
+) => funcConcat(
+  asyncGeneratorFunc, tacitAsyncIteratorReduce(reducer, result))
+
+/**
+ * @name iteratorReduce
+ *
+ * @synopsis
+ * any -> T
+ *
+ * iteratorReduce(
+ *   iterator Iterator<T>,
+ *   reducer (any, T)=>Promise|any,
+ *   result any,
+ * ) -> result
+ */
+const iteratorReduce = function (iterator, reducer, result) {
+  let iteration = iterator.next()
+  if (iteration.done) {
+    return result
+  }
+  if (result === undefined) {
+    result = iteration.value
+    iteration = iterator.next()
+  }
+  while (!iteration.done) {
+    result = reducer(result, iteration.value)
+    if (isPromise(result)) {
+      return result.then(
+        asyncIteratorReduceResultResolver(iterator, reducer))
+    }
+    iteration = iterator.next()
+  }
+  return result
+}
+
+/**
+ * @name tacitIteratorReduce
+ *
+ * @synopsis
+ * any -> T
+ *
+ * tacitIteratorReduce(
+ *   reducer (any, T)=>Promise|any,
+ *   result any,
+ * ) -> resolver (iterator Iterator<T>)=>Promise|any
+ */
+const tacitIteratorReduce = (
+  reducer, result,
+) => function resolver(iterator) {
+  return iteratorReduce(iterator, reducer, result)
+}
+
+/**
+ * @name generatorFunctionReduce
+ *
+ * @synopsis
+ * any -> T
+ *
+ * generatorFunctionReduce(
+ *   generatorFunc ...args=>AsyncGenerator<T>,
+ *   reducer (any, T)=>Promise|any,
+ *   result any,
+ * ) -> (...any args)=>any
+ */
+const generatorFunctionReduce = (
+  generatorFunc, reducer, result,
+) => funcConcat(generatorFunc, tacitIteratorReduce(reducer, result))
+
+/**
+ * @name objectValuesIterator
+ *
+ * @synopsis
+ * any -> T
+ *
+ * objectValuesIterator(Object<T>) -> Generator<T>
+ */
+const objectValuesIterator = function* (object) {
+  for (const key in object) {
+    yield object[key]
+  }
+}
+
+/**
+ * @name reducerResultResolver
+ *
+ * @synopsis
+ * any -> T
+ *
+ * reducerResultResolver(
+ *   reducer (result, T)=>result,
+ *   item T,
+ * )(result any) -> result
+ */
+const reducerResultResolver = (
+  reducer, item,
+) => function reducing(result) {
+  return reducer(result, item)
+}
+
+/**
+ * @name reducerConcat
+ *
+ * @synopsis
+ * any -> T
+ *
+ * reducerConcat(
+ *   reducerA (any, T)=>(intermediate any),
+ *   reducerB (intermediate, T)=>any,
+ * ) -> pipedReducer (any, T)=>any
+ */
+const reducerConcat = function (reducerA, reducerB) {
+  return function pipedReducer(result, item) {
+    const intermediate = reducerA(result, item)
+    return isPromise(intermediate)
+      ? intermediate.then(reducerResultResolver(reducerB, item))
+      : reducerB(intermediate, item)
+  }
+}
+
+/**
+ * @name reduceReducerPipe
+ *
+ * @synopsis
+ * reduceReducerPipe(
+ *   reducerA (any, T)=>(intermediate any),
+ *   reducerB (intermediate, T)=>any,
+ *   result any,
+ * ) -> reducing (collection <T>)=>any
+ */
+const reduceReducerPipe = function (reducerA, reducerB, result) {
+  return function reducing(collection) {
+    return genericReduce(
+      collection, reducerConcat(reducerA, reducerB), result)
+  }
+}
+
+/**
+ * @name genericReduce
+ *
+ * @synopsis
+ * any -> T
+ *
+ * (any, T)=>any -> Reducer<T>
+ *
+ * genericReduce(
+ *   args [collection <T>, ...any],
+ *   reducer (any, T)=>any,
+ *   result undefined|any,
+ * ) -> result
+ */
+var genericReduce = function (collection, reducer, result) {
+  if (isArray(collection)) {
+    return arrayReduce(collection, reducer, result)
+  }
+  if (collection == null) {
+    return result
+  }
+  if (typeof collection.next == 'function') {
+    return symbolIterator in collection
+      ? iteratorReduce(collection, reducer, result)
+      : asyncIteratorReduce(collection, reducer, result)
+  }
+  if (typeof collection[symbolIterator] == 'function') {
+    return iteratorReduce(
+      collection[symbolIterator](), reducer, result)
+  }
+  if (typeof collection[symbolAsyncIterator] == 'function') {
+    return asyncIteratorReduce(
+      collection[symbolAsyncIterator](), reducer, result)
+  }
+  if (isFunction(collection)) {
+    if (isGeneratorFunction(collection)) {
+      return generatorFunctionReduce(collection, reducer, result)
+    }
+    if (isAsyncGeneratorFunction(collection)) {
+      return asyncGeneratorFunctionReduce(collection, reducer, result)
+    }
+    return reduceReducerPipe(collection, reducer, result)
+  }
+  if (typeof collection.reduce == 'function') {
+    return collection.reduce(reducer, result)
+  }
+  if (collection.constructor == Object) {
+    return iteratorReduce(objectValuesIterator(collection), reducer, result)
+  }
+  return result === undefined
+    ? reducer(collection)
+    : reducer(result, collection)
+}
+
+/**
+ * @name curriedGenericReduce
+ *
+ * @synopsis
+ * curriedGenericReduce(
+ *   collection any,
+ *   reducer function,
+ * ) -> resolver (result any)=>any
+ */
+const curriedGenericReduce = (
+  collection, reducer,
+) => function resolver(result) {
+  return genericReduce(collection, reducer, result)
+}
+
+/**
+ * @name reduce
+ *
+ * @catchphrase
+ * execute data transformation by reducer
+ *
+ * @synopsis
+ * any -> T
+ *
+ * Iterable|GeneratorFunction
+ *   |AsyncIterable|AsyncGeneratorFunction -> Sequence
+ *
+ * {
+ *   reduce: (reducer (any, T)=>any, initialValue any)=>any,
+ * } -> Reducible<T>
+ *
+ * reduce(
+ *   reducer (any, T)=>Promise|any,
+ *   init undefined
+ *     |((collection, ...restArgs)=>Promise|any)
+ *     |any,
+ * )(collection Sequence<T>|Reducible<T>|Object<T>, restArgs ...any) -> Promise|any
+ *
+ * @description
+ * **reduce** constructs a reducing function that executes a data transformation defined by a reducer function and an optional init value. When called with a collection, a given reducing function applies its reducer function in series to an accumulator with initial value `init` and each item of the collection, returning the result of calling the reducer with the accumulator and the last item of the collection.
+ *
+ * ```javascript
+ * const add = (a, b) => a + b
+ *
+ * console.log(
+ *   reduce(add, 0)([1, 2, 3, 4, 5]),
+ * ) // 15
+ * ```
+ *
+ * If `init` is undefined, the first item of the input collection is used as the initial value for the accumulator.
+ *
+ * ```javascript
+ * const max = (a, b) => a > b ? a : b
+ *
+ * console.log(
+ *   reduce(max)([1, 3, 5, 4, 2]),
+ * ) // 5
+ * ```
+ *
+ * If `init` is a function, it is treated as a resolver and called with the input arguments to resolve an initial value for the accumulator. Unless care is exercised when handling references for this initial value, a function `init` is the recommended way to use reduce for transformations on non-primitive initial values.
+ *
+ * ```javascript
+ * const concatSquares = (array, value) => array.concat(value ** 2)
+ *
+ * const initEmptyArray = () => []
+ *
+ * console.log(
+ *   reduce(concatSquares, initEmptyArray)([1, 2, 3, 4, 5]),
+ * ) // [1, 4, 9, 16, 25]
+ * ```
+ *
+ * `reduce` elevates the concept of transformation beyond synchronous operations on arrays. The `reducer` function can be asynchronous, while the input value can be an asynchronous stream.
+ *
+ * ```javascript
+ * const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+ *
+ * // asyncAppReducer(
+ * //   state { todos: Array },
+ * //   action { type: string, todoID: string },
+ * // ) -> state
+ * const asyncAppReducer = async function (state, action) {
+ *   if (action.type == 'FETCH_TODO') {
+ *     const todo = await fetch(
+ *       'https://jsonplaceholder.typicode.com/todos/' + action.todoID,
+ *     ).then(response => response.json())
+ *     console.log('fetched', todo)
+ *     state.todos.push(todo)
+ *     return state
+ *   }
+ *   return state
+ * }
+ *
+ * const asyncFetchActions = async function* (count) {
+ *   let idCount = 0
+ *   while (++idCount <= count) {
+ *     await sleep(1000)
+ *     yield { type: 'FETCH_TODO', todoID: idCount }
+ *   }
+ * }
+ *
+ * const state = { todos: [] }
+ *
+ * reduce(asyncAppReducer, state)(asyncFetchActions(5)).then(
+ *   reducedState => console.log('finalState', reducedState))
+ *
+ * // fetched { userId: 1, id: 1, title: 'delectus aut autem', completed: false }
+ * // fetched { userId: 1, id: 2, title: 'quis ut nam facilis...', completed: false }
+ * // fetched { userId: 1, id: 3, title: 'fugiat veniam minus', completed: false }
+ * // fetched { userId: 1, id: 4, title: 'et porro tempora', completed: true }
+ * // fetched { userId: 1, id: 5, title: 'laboriosam mollitia...', completed: false }
+ * // finalState {
+ * //   todos: [
+ * //     { userId: 1, id: 1, title: 'delectus aut autem', completed: false },
+ * //     { userId: 1, id: 2, title: 'quis ut nam facilis...', completed: false },
+ * //     { userId: 1, id: 3, title: 'fugiat veniam minus', completed: false },
+ * //     { userId: 1, id: 4, title: 'et porro tempora', completed: true },
+ * //     { userId: 1, id: 5, title: 'laboriosam mollitia...', completed: false },
+ * //   ],
+ * // }
+ * ```
+ *
+ * rubico's async capable [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md) API is useful for chaining operations on items of large or even infinite streams of data. A combination with async capable `reduce` enables a compositional refactor of `asyncAppReducer` above.
+ *
+ * ```javascript
+ * const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+ *
+ * const isActionTypeFetchTodo = action => action.type == 'FETCH_TODO'
+ *
+ * const fetchTodoByAction = action => fetch(
+ *   'https://jsonplaceholder.typicode.com/todos/' + action.todoID,
+ * ).then(response => response.json())
+ *
+ * const stateAddTodo = function (state, todo) {
+ *   state.todos.push(todo)
+ *   return state
+ * }
+ *
+ * // asyncAppReducer(
+ * //   state { todos: Array },
+ * //   action { type: string, todoID: string },
+ * // ) -> state
+ * const asyncAppReducer = pipe([
+ *   filter(isActionTypeFetchTodo),
+ *   map(fetchTodoByAction),
+ *   map(tap(function (todo) {
+ *     console.log('fetched', todo)
+ *   })),
+ * ])(stateAddTodo)
+ *
+ * const asyncFetchActions = async function* (count) {
+ *   let idCount = 0
+ *   while (++idCount <= count) {
+ *     await sleep(1000)
+ *     yield { type: 'FETCH_TODO', todoID: idCount }
+ *   }
+ * }
+ *
+ * const state = { todos: [] }
+ *
+ * reduce(asyncAppReducer, state)(asyncFetchActions(5)).then(
+ *   reducedState => console.log('finalState', reducedState))
+ * ```
+ *
+ * Finally, as a matter of consistency and correctness, a reducing function created by `reduce` reduces other reducers by returning another reducing function that executes the concatenation of the original reducer passed to `reduce` with the reducer passed as the collection. Generally, prefer the `Reducer`
+ *
+ * ```javascript
+ * const reducerA = (state, action) => {
+ *   if (action.type == 'A') return { value: 'A' }
+ *   return state
+ * }
+ *
+ * const reducerB = (state, action) => {
+ *   if (action.type == 'B') return 'B'
+ *   return state
+ * }
+ *
+ * const state = {}
+ *
+ * reduce(reducerA, state)(reducerB)({ type: 'A' }) // { value: 'A' }
+ *
+ * reduce(reducerA, state)(reducerB)({ type: 'B' }) // { value: 'B' }
+ *
+ * const add = (a, b) => a + b
+ *
+ * const multiply = (a, b) => a * b
+ *
+ * reduce(add, 0)(multiply)([1, 2, 3, 4, 5])
+ * ```
+ *
+ * @execution series
  *
  * @note
  * https://stackoverflow.com/questions/30233302/promise-is-it-possible-to-force-cancel-a-promise/30235261#30235261
  * https://stackoverflow.com/questions/62336381/is-this-promise-cancellation-implementation-for-reducing-an-async-iterable-on-th
  */
+const reduce = function (reducer, init) {
+  if (isFunction(init)) {
+    return function reducing(...args) {
+      const collection = args[0]
+      return then(
+        init(...args),
+        curriedGenericReduce(collection, reducer))
+    }
+  }
+  return function reducing(collection) {
+    return genericReduce(collection, reducer, init)
+  }
+}
+
+/**
+ * @description
+ * concurrent reduce. Maybe obsolete by reduce(...)(Mux.race(...))
+ *
+ * @execution concurrent
+ *
+ * @maybe
+ */
+// reduce.mux = (reducer, init) => function muxReducing(...args) {}
+
+/*
 const reduce = (fn, init) => {
   if (!isFunction(fn)) {
     throw new TypeError('reduce(x, y); x is not a function')
@@ -2038,6 +2512,7 @@ const reduce = (fn, init) => {
     throw new TypeError('reduce(...)(x); x invalid')
   }
 }
+*/
 
 /*
  * @synopsis
@@ -2195,9 +2670,31 @@ const _transformBranch = (fn, x0, x) => {
   throw new TypeError('transform(x, y); x invalid')
 }
 
-/*
+/**
+ * @name transform
+ *
+ * @catchphrase
+ * execute data transformation by transducer + concatenation
+ *
  * @synopsis
- * TODO
+ * any -> T
+ *
+ * (any, T)=>any -> Reducer<T>
+ *
+ * { reduce: function } -> ReducibleMonoid
+ *
+ * { concat: function } -> Monoid
+ *
+ * transform(
+ *   transducer Reducer=>Reducer,
+ *   init ((collection, ...args)=>Promise|Monoid)|Monoid,
+ * )(collection Sequence<T>|Reducible<T>|Object<T>, args ...any) -> Promise|any
+ *
+ * @description
+ * **transform** executes a data transformation defined by a transducer and initial value
+ *
+ * ```javascript
+ * ```
  */
 const transform = (fn, init) => {
   if (!isFunction(fn)) {
@@ -2213,13 +2710,13 @@ const transform = (fn, init) => {
  * @name arrayPushArray
  *
  * @synopsis
- * arrayPushArray(x Array, array Array) -> undefined
+ * arrayPushArray(arrayA Array, arrayB Array) -> undefined
  */
-const arrayPushArray = (x, array) => {
-  const offset = x.length, length = array.length
+const arrayPushArray = (arrayA, arrayB) => {
+  const offset = arrayA.length, length = arrayB.length
   let i = -1
   while (++i < length) {
-    x[offset + i] = array[i]
+    arrayA[offset + i] = arrayB[i]
   }
 }
 

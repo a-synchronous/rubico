@@ -3,6 +3,7 @@ const stream = require('stream')
 const path = require('path')
 const fs = require('fs')
 const rubico = require('.')
+const isDeepEqual = require('./x/isDeepEqual')
 
 const {
   pipe, fork, assign,
@@ -127,6 +128,35 @@ const bigIntTypedArrayConstructors = [
   BigUint64Array, BigInt64Array,
 ]
 
+const AssertionError = function (message) {
+  this.message = message
+  this.stack = new Error().stack
+}
+
+/* Assertion.test(reduce(add, 0), {
+  args: { 0: [1, 2, 3, 4, 5] },
+  result: 15,
+}) */
+
+const prettify = value => JSON.stringify(value, null, 2)
+
+const Assertion = (func, result, ...args) => async function test() {
+  const evaluatedResult = await func(...args)
+  if (isDeepEqual(result, evaluatedResult)) {
+    return undefined
+  }
+  throw new AssertionError(`
+${func.toString()}
+
+args - ${prettify(args)}
+
+expected - ${prettify(result)}
+
+actual - ${prettify(evaluatedResult)}
+`)
+}
+
+
 describe('rubico', () => {
   describe('pipe', () => {
     it('chains async and regular functions together', async () => {
@@ -204,7 +234,7 @@ describe('rubico', () => {
         () => {
           pipe([() => 1, undefined, () => 2])()
         },
-        new TypeError('Cannot read property \'call\' of undefined'),
+        new TypeError('funcB is not a function'),
       )
     })
     it('handles sync errors good', async () => {
@@ -1188,6 +1218,305 @@ describe('rubico', () => {
   })
 
   describe('reduce', () => {
+    describe(`
+any -> T
+
+{
+  reduce: (reducer (any, T)=>any, initialValue any)=>any
+} -> Reducible<T>
+
+reduce(
+  reducer (any, T)=>Promise|any,
+  init undefined
+    |(collection=>Promise|any)
+    |any,
+)(
+  collection Iterable<T>|Iterator<T>
+    |AsyncIterable<T>|AsyncIterator<T>
+    |Reducible<T>|Object<T>
+) -> Promise|any
+
+reduce(
+  reducer (any, T)=>Promise|any,
+  init undefined
+    |(collection=>Promise|any)
+    |any,
+)(
+  collection (...args=>Iterator<T>)
+    |(...args=>AsyncIterator<T>)
+    |((any, T)=>Promise|any)
+) -> (args ...any)=>Promise|any
+
+reduce(
+  reducer function,
+  init undefined
+    |(...args=>Promise|any)
+    |any
+)(args ...any)
+`, () => {
+  describe('reducer (any, T)=>Promise|any', () => {
+    const add = (a, b) => a + b
+    const asyncAdd = async (a, b) => a + b
+    const variadicAsyncAdd = (a, b) => b % 2 == 1 ? Promise.resolve(a + b) : a + b
+    it('collection Array<number>', async () => {
+      assert.strictEqual(
+        reduce(add, 0)([1, 2, 3, 4, 5]), 15)
+      assert.strictEqual(
+        await reduce(asyncAdd, 0)([1, 2, 3, 4, 5]), 15)
+      assert.strictEqual(
+        await reduce(variadicAsyncAdd, 0)([1, 2, 3, 4, 5]), 15)
+    })
+    it('collection Array<>', async () => {
+      assert.strictEqual(
+        reduce(add, 0)([]), 0)
+      assert.strictEqual(
+        reduce(asyncAdd, 0)([]), 0)
+      assert.strictEqual(
+        reduce(variadicAsyncAdd, 0)([]), 0)
+    })
+    it('collection Generator<number>', async () => {
+      const numbers = function* () { yield 1; yield 2; yield 3; yield 4; yield 5 }
+      assert.strictEqual(
+        reduce(add, 0)(numbers()), 15)
+      assert.strictEqual(
+        await reduce(asyncAdd, 0)(numbers()), 15)
+      assert.strictEqual(
+        await reduce(variadicAsyncAdd, 0)(numbers()), 15)
+    })
+    it('collection Generator<>', async () => {
+      const numbers = function* () {}
+      assert.strictEqual(
+        reduce(add, 0)(numbers()), 0)
+      assert.strictEqual(
+        await reduce(asyncAdd, 0)(numbers()), 0)
+      assert.strictEqual(
+        await reduce(variadicAsyncAdd, 0)(numbers()), 0)
+    })
+    it('collection ()=>Generator<number>', async () => {
+      const numbers = function* () { yield 1; yield 2; yield 3; yield 4; yield 5 }
+      assert.strictEqual(
+        reduce(add, 0)(numbers)(), 15)
+      assert.strictEqual(
+        await reduce(asyncAdd, 0)(numbers)(), 15)
+      assert.strictEqual(
+        await reduce(variadicAsyncAdd, 0)(numbers)(), 15)
+    })
+    it('collection ()=>Generator<>', async () => {
+      const numbers = function* () {}
+      assert.strictEqual(
+        reduce(add, 0)(numbers)(), 0)
+      assert.strictEqual(
+        reduce(asyncAdd, 0)(numbers)(), 0)
+      assert.strictEqual(
+        reduce(variadicAsyncAdd, 0)(numbers)(), 0)
+    })
+    it('collection AsyncGenerator<number>', async () => {
+      const numbers = async function* () { yield 1; yield 2; yield 3; yield 4; yield 5 }
+      assert.strictEqual(
+        await reduce(add, 0)(numbers()), 15)
+      assert.strictEqual(
+        await reduce(asyncAdd, 0)(numbers()), 15)
+      assert.strictEqual(
+        await reduce(variadicAsyncAdd, 0)(numbers()), 15)
+    })
+    it('collection AsyncGenerator<>', async () => {
+      const numbers = async function* () {}
+      assert.equal(typeof reduce(add, 0)(numbers()).then, 'function')
+      assert.strictEqual(
+        await reduce(add, 0)(numbers()), 0)
+      assert.strictEqual(
+        await reduce(asyncAdd, 0)(numbers()), 0)
+      assert.strictEqual(
+        await reduce(variadicAsyncAdd, 0)(numbers()), 0)
+    })
+    it('collection ()=>AsyncGenerator<number>', async () => {
+      const numbers = async function* () { yield 1; yield 2; yield 3; yield 4; yield 5 }
+      assert.strictEqual(
+        await reduce(add, 0)(numbers)(), 15)
+      assert.strictEqual(
+        await reduce(asyncAdd, 0)(numbers)(), 15)
+      assert.strictEqual(
+        await reduce(variadicAsyncAdd, 0)(numbers)(), 15)
+    })
+    it('collection ()=>AsyncGenerator<>', async () => {
+      const numbers = async function* () {}
+      assert.strictEqual(
+        await reduce(add, 0)(numbers)(), 0)
+      assert.strictEqual(
+        await reduce(asyncAdd, 0)(numbers)(), 0)
+      assert.strictEqual(
+        await reduce(variadicAsyncAdd, 0)(numbers)(), 0)
+    })
+    it('collection Reducible<number>', async () => {
+      const reducible = {
+        reduce(reducer, init) {
+          return [1, 2, 3, 4, 5].reduce(reducer, init)
+        },
+      }
+      assert.strictEqual(
+        reduce(add, 0)(reducible), 15)
+    })
+    it('collection Object<number>', async () => {
+      const numbers = { a: 1, b: 2, c: 3, d: 4, e: 5 }
+      assert.strictEqual(
+        reduce(add, 0)(numbers), 15)
+      assert.strictEqual(
+        reduce(add, () => 0)(numbers), 15)
+      assert.strictEqual(
+        reduce(add)(numbers), 15)
+      assert.strictEqual(
+        await reduce(asyncAdd, 0)(numbers), 15)
+      assert.strictEqual(
+        await reduce(variadicAsyncAdd, 0)(numbers), 15)
+    })
+    it('collection Object<>', async () => {
+      const numbers = {}
+      assert.strictEqual(
+        reduce(add, 0)(numbers), 0)
+      assert.strictEqual(
+        reduce(add, () => 0)(numbers), 0)
+      assert.strictEqual(
+        await reduce(asyncAdd, 0)(numbers), 0)
+      assert.strictEqual(
+        await reduce(variadicAsyncAdd, 0)(numbers), 0)
+    })
+    it('collection Reducer<number>', async () => {
+      const reducers = [
+        (a, b) => a + b,
+      ]
+      const combinedReducingFunction = reduce(
+        (reducingFunc, reducer) => reducingFunc(reducer),
+        () => reduce(result => result, 0),
+      )(reducers)
+      assert.strictEqual(combinedReducingFunction.name, 'reducing')
+      assert.strictEqual(combinedReducingFunction([1, 2, 3, 4, 5]), 15)
+    })
+    it('collection (<object>, object)=>object', async () => {
+      const reducers = [
+        (state, action) => action.type == 'A' ? { ...state, A: true } : state,
+        (state, action) => action.type == 'B' ? { ...state, B: true } : state,
+        (state, action) => action.type == 'C' ? { ...state, C: true } : state,
+      ]
+      const combinedReducingFunction = reduce(
+        (reducingFunc, reducer) => reducingFunc(reducer),
+        () => reduce(result => result, () => ({})),
+      )(reducers)
+      assert.deepEqual(combinedReducingFunction([
+        { type: 'A' }, { type: 'B' }, { type: 'C' },
+      ]), { A: true, B: true, C: true })
+      assert.deepEqual(combinedReducingFunction([
+        { type: 'A' }, { type: 'B' },
+      ]), { A: true, B: true })
+      assert.deepEqual(combinedReducingFunction([
+        { type: 'A' },
+      ]), { A: true })
+      assert.deepEqual(combinedReducingFunction([
+      ]), {})
+      assert.deepEqual(combinedReducingFunction([
+        { type: 'A' }, { type: 'C' },
+      ]), { A: true, C: true })
+    })
+    it('collection (<object>, object)=>Promise<object>', async () => {
+      const reducers = [
+        async (state, action) => action.type == 'A' ? { ...state, A: true } : state,
+        async (state, action) => action.type == 'B' ? { ...state, B: true } : state,
+        async (state, action) => action.type == 'C' ? { ...state, C: true } : state,
+      ]
+      const combinedReducingFunction = reduce(
+        (reducingFunc, reducer) => reducingFunc(reducer),
+        () => reduce(result => result, () => ({})),
+      )(reducers)
+      assert.deepEqual(await combinedReducingFunction([
+        { type: 'A' }, { type: 'B' }, { type: 'C' },
+      ]), { A: true, B: true, C: true })
+      assert.deepEqual(await combinedReducingFunction([
+        { type: 'A' }, { type: 'B' },
+      ]), { A: true, B: true })
+      assert.deepEqual(await combinedReducingFunction([
+        { type: 'A' },
+      ]), { A: true })
+      assert.deepEqual(await combinedReducingFunction([
+      ]), {})
+      assert.deepEqual(await combinedReducingFunction([
+        { type: 'A' }, { type: 'C' },
+      ]), { A: true, C: true })
+    })
+    it('collection (<object>, object)=>Promise|object', async () => {
+      const reducers = [
+        (state, action) => action.type == 'A' ? { ...state, A: true } : state,
+        async (state, action) => action.type == 'B' ? { ...state, B: true } : state,
+        async (state, action) => action.type == 'C' ? { ...state, C: true } : state,
+      ]
+      const combinedReducingFunction = reduce(
+        (reducingFunc, reducer) => reducingFunc(reducer),
+        () => reduce(result => result, () => ({})),
+      )(reducers)
+      assert.deepEqual(await combinedReducingFunction([
+        { type: 'A' }, { type: 'B' }, { type: 'C' },
+      ]), { A: true, B: true, C: true })
+      assert.deepEqual(await combinedReducingFunction([
+        { type: 'A' }, { type: 'B' },
+      ]), { A: true, B: true })
+      assert.deepEqual(await combinedReducingFunction([
+        { type: 'A' },
+      ]), { A: true })
+      assert.deepEqual(await combinedReducingFunction([
+      ]), {})
+      assert.deepEqual(await combinedReducingFunction([
+        { type: 'A' }, { type: 'C' },
+      ]), { A: true, C: true })
+      assert(typeof combinedReducingFunction([
+        { type: 'A' },
+      ]).then == 'function')
+      assert.deepEqual(await combinedReducingFunction([
+        { type: 'A' },
+      ]), { A: true })
+      assert(typeof combinedReducingFunction([
+        { type: 'B' },
+      ]).then == 'function')
+      assert.deepEqual(await combinedReducingFunction([
+        { type: 'B' },
+      ]), { B: true })
+    })
+    it('collection atomic', async () => {
+      assert.strictEqual(
+        reduce((a, b) => a + b, 0)(10),
+        10,
+      )
+      assert.strictEqual(
+        reduce(number => number)(10),
+        10,
+      )
+      assert.strictEqual(
+        reduce(number => number, 0)(10),
+        0,
+      )
+    })
+    it('collection null', async () => {
+      assert.strictEqual(
+        reduce(value => value, 'hey')(null),
+        'hey',
+      )
+    })
+    it('collection undefined', async () => {
+      assert.strictEqual(
+        reduce(value => value, () => 'hey')(undefined),
+        'hey',
+      )
+      assert.strictEqual(
+        await reduce(value => value, async () => 'hey')(undefined),
+        'hey',
+      )
+      assert.strictEqual(
+        reduce(value => value, 'hey')(),
+        'hey',
+      )
+    })
+  })
+})
+  })
+
+  describe('reduce - v1.5.10 regression', () => {
     const iterables = [
       [1, 2, 3, 4, 5],
       { a: 1, b: 2, c: 3, d: 4, e: 5 },
@@ -1319,30 +1648,6 @@ describe('rubico', () => {
       ade(
         await reduce(map(square)((a, b) => (a.push(b), a)), () => [])(emptyAsyncIterator),
         [],
-      )
-    })
-    it('throws a TypeError on reduce(nonFunction)', async () => {
-      assert.throws(
-        () => reduce({}),
-        new TypeError('reduce(x, y); x is not a function'),
-      )
-    })
-    it('throws a TypeError on reduce(...)(number)', async () => {
-      assert.throws(
-        () => reduce((y, xi) => y + xi)(1),
-        new TypeError('reduce(...)(x); x invalid'),
-      )
-    })
-    it('throws a TypeError on reduce(...)(emptyIterator)', async () => {
-      assert.throws(
-        () => reduce((y, xi) => y + xi)([]),
-        new TypeError('reduce(...)(x); x cannot be empty'),
-      )
-    })
-    it('throws a TypeError on reduce(...)(emptyAsyncIterator)', async () => {
-      assert.rejects(
-        () => reduce((y, xi) => y + xi)((async function* () {})()),
-        new TypeError('reduce(...)(x); x cannot be empty'),
       )
     })
   })
@@ -1750,24 +2055,6 @@ describe('rubico', () => {
           [],
         )([1, 2, 3]),
         [1, 1, 4, 8, 9, 27],
-      )
-    })
-    it('throws TypeError on non iterable elements [1, 2, 3]', async () => {
-      // TODO: better error message here
-      const square = x => x ** 2
-      assert.throws(
-        () => transform(
-          flatMap(square),
-          [],
-        )([1, 2, 3]),
-        new TypeError('reduce(...)(x); x invalid'),
-      )
-      assert.rejects(
-        () => transform(
-          flatMap(async x => square(x)),
-          [],
-        )([1, 2, 3]),
-        new TypeError('reduce(...)(x); x invalid'),
       )
     })
     it('throws a TypeError on flatMap(nonFunction)', async () => {
