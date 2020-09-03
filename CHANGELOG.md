@@ -1,4 +1,4 @@
-## v1.5.11 - next release
+## v1.5.11 - latest
  * x/heapUsedInLoop - max and avg heap used in loop
  * monad/Cancellable - make a function return cancellable Promises
  * deprecated x/tracef
@@ -6,7 +6,7 @@
  * reduce rewrite + benchmarks
  * tap accepts multiple arguments + more benchmarks
 
-## v1.5.10 - latest
+## v1.5.10
  * filter.withIndex rewrite + benchmarks
  * monad/BrokenPromise - a Promise that never comes back
  * isEmpty stops throwing TypeErrors
