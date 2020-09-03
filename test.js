@@ -1391,7 +1391,7 @@ reduce(
       assert.strictEqual(combinedReducingFunction.name, 'reducing')
       assert.strictEqual(combinedReducingFunction([1, 2, 3, 4, 5]), 15)
     })
-    it('collection (<object>, object)=>object', async () => {
+    it('reduce meta concatenation', async () => {
       const reducers = [
         (state, action) => action.type == 'A' ? { ...state, A: true } : state,
         (state, action) => action.type == 'B' ? { ...state, B: true } : state,
@@ -1401,6 +1401,30 @@ reduce(
         (reducingFunc, reducer) => reducingFunc(reducer),
         () => reduce(result => result, () => ({})),
       )(reducers)
+      assert.deepEqual(combinedReducingFunction([
+        { type: 'A' }, { type: 'B' }, { type: 'C' },
+      ]), { A: true, B: true, C: true })
+      assert.deepEqual(combinedReducingFunction([
+        { type: 'A' }, { type: 'B' },
+      ]), { A: true, B: true })
+      assert.deepEqual(combinedReducingFunction([
+        { type: 'A' },
+      ]), { A: true })
+      assert.deepEqual(combinedReducingFunction([
+      ]), {})
+      assert.deepEqual(combinedReducingFunction([
+        { type: 'A' }, { type: 'C' },
+      ]), { A: true, C: true })
+    })
+    it('multiple reducers as arguments', async () => {
+      const reducers = [
+        (state, action) => action.type == 'A' ? { ...state, A: true } : state,
+        (state, action) => action.type == 'B' ? { ...state, B: true } : state,
+        (state, action) => action.type == 'C' ? { ...state, C: true } : state,
+      ]
+      const combinedReducingFunction = reduce(
+        result => result, () => ({}),
+      )(...reducers)
       assert.deepEqual(combinedReducingFunction([
         { type: 'A' }, { type: 'B' }, { type: 'C' },
       ]), { A: true, B: true, C: true })

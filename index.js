@@ -30,6 +30,8 @@ const symbolIterator = Symbol.iterator
 
 const symbolAsyncIterator = Symbol.asyncIterator
 
+const objectValues = Object.values
+
 const objectAssign = Object.assign
 
 const objectProto = Object.prototype
@@ -2150,20 +2152,6 @@ const generatorFunctionReduce = (
 ) => funcConcat(generatorFunc, tacitIteratorReduce(reducer, result))
 
 /**
- * @name objectValuesIterator
- *
- * @synopsis
- * any -> T
- *
- * objectValuesIterator(Object<T>) -> Generator<T>
- */
-const objectValuesIterator = function* (object) {
-  for (const key in object) {
-    yield object[key]
-  }
-}
-
-/**
  * @name reducerResultResolver
  *
  * @synopsis
@@ -2275,7 +2263,7 @@ var genericReduce = function (args, reducer, result) {
     return collection.reduce(reducer, result)
   }
   if (collection.constructor == Object) {
-    return iteratorReduce(objectValuesIterator(collection), reducer, result)
+    return arrayReduce(objectValues(collection), reducer, result)
   }
   return result === undefined
     ? reducer(collection)
