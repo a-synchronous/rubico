@@ -405,6 +405,12 @@ describe('rubico', () => {
       aok(tap(async x => x + 1)(1) instanceof Promise)
       ase(await tap(async x => x + 1)(1), 1)
     })
+    it('multiple arguments', async () => {
+      const array = []
+      const point = tap((...args) => (array.push(...args)))(1, 2, 3, 4, 5)
+      assert.strictEqual(point, 1)
+      assert.deepEqual(array, [1, 2, 3, 4, 5])
+    })
     it('throws a TypeError if passed a non function', async () => {
       assert.throws(
         () => tap('hey')(),

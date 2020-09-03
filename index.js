@@ -105,6 +105,14 @@ const range = (start, end) => Array.from({ length: end - start }, (x, i) => i + 
 const arrayOf = (item, length) => Array.from({ length }, () => item)
 
 /**
+ * @name always
+ *
+ * @synopsis
+ * always(value any) -> getter ()=>value
+ */
+const always = value => function getter() { return value }
+
+/**
  * @name arrayPush
  *
  * @synopsis
@@ -517,9 +525,10 @@ const assign = function (funcs) {
  *           // 'foobar'
  * ```
  */
-const tap = func => function tapping(value) {
-  const call = func(value)
-  return isPromise(call) ? call.then(() => value) : value
+const tap = func => function tapping(...args) {
+  const point = args[0],
+    call = func(...args)
+  return isPromise(call) ? call.then(always(point)) : point
 }
 
 /**
@@ -1452,14 +1461,6 @@ const objectSetConditionResolver = (
     result[key] = object[key]
   }
 }
-
-/**
- * @name always
- *
- * @synopsis
- * always(value any) -> getter ()=>value
- */
-const always = value => function getter() { return value }
 
 /**
  * @name objectFilter

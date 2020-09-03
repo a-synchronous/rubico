@@ -3,8 +3,10 @@ const _ = require('lodash/fp')
 const { tap } = require('..')
 const R = require('ramda')
 
+const isPromise = value => value != null && typeof value.then == 'function'
+
 /**
- * @name pipe
+ * @name tap
  *
  * @benchmark
  * tapNoopThunk: 1e+6: 4.242ms
@@ -13,35 +15,69 @@ const R = require('ramda')
  * RTapNoopThunk: 1e+6: 291.025ms
  */
 
-const noop = () => {}
+{
+  const noop = () => {}
 
-const tapNoop = tap(noop)
+  const tapNoop = tap(noop)
 
-const tapNoopThunk = () => tapNoop('yo')
+  const tapNoopThunk = () => tapNoop('yo')
 
-tap.regularCall = func => function tapping(input) {
-  const call = func(input)
-  return isPromise(call) ? call.then(() => input) : input
+  tap.regularCall = func => function tapping(input) {
+    const call = func(input)
+    return isPromise(call) ? call.then(() => input) : input
+  }
+
+  const tapRegularCallNoop = tap.regularCall(noop)
+
+  const tapRegularCallNoopThunk = () => tapRegularCallNoop('yo')
+
+  const _tapNoop = _.tap(noop)
+
+  const _tapNoopThunk = () => _tapNoop('yo')
+
+  const RTapNoop = R.tap(noop)
+
+  const RTapNoopThunk = () => RTapNoop('yo')
+
+  // const func = tapNoopThunk
+  // const func = tapRegularCallNoopThunk
+  // const func = tapNoopThunk
+  // const func = _tapNoopThunk
+  // const func = RTapNoopThunk
+
+  // console.log(func())
+
+  // timeInLoop(func.name, 1e6, func)
 }
 
-const tapRegularCallNoop = tap.regularCall(noop)
+const tap0 = func => function tapping(...args) {
+  const point = args[0],
+    call = func(...args)
+  return isPromise(call) ? call.then(() => point) : point
+}
 
-const tapRegularCallNoopThunk = () => tapRegularCallNoop('yo')
+const always = value => function getter() { return value }
 
-const _tapNoop = _.tap(noop)
+const tap1 = func => function tapping(...args) {
+  const point = args[0],
+    call = func(...args)
+  return isPromise(call) ? call.then(always(point)) : point
+}
 
-const _tapNoopThunk = () => _tapNoop('yo')
+/**
+ * @name tap
+ *
+ * @benchmark
+ * tap0: 1e+7: 141.116ms
+ * tap1: 1e+7: 141.007ms
+ */
 
-const RTapNoop = R.tap(noop)
+{
+  const array = []
 
-const RTapNoopThunk = () => RTapNoop('yo')
+  const noop = function () {}
 
-// const func = tapNoopThunk
-// const func = tapRegularCallNoopThunk
-// const func = tapNoopThunk
-// const func = _tapNoopThunk
-// const func = RTapNoopThunk
+  // timeInLoop('tap0', 1e7, () => tap0(noop)(0))
 
-console.log(func())
-
-timeInLoop(func.name, 1e6, func)
+  // timeInLoop('tap1', 1e7, () => tap1(noop)(0))
+}
