@@ -72,7 +72,9 @@ reduce(
   [],
 )([1, 2, 3, 4, 5]) // => [1, 9, 25]
 ```
+
 The following transformations `isOdd`, `square`, and `squaredOdds` are not used as transducers
+
 ```javascript
 const isOdd = filter(x => x % 2 === 1)
 
@@ -87,3 +89,5 @@ const squaredOdds = pipe([isOdd, square])
 squaredOdds([1, 2, 3, 4, 5]) // => [1, 9, 25]
 ```
 
+Further reading:
+ * https://tgvashworth.com/2014/08/31/csp-and-transducers.html
