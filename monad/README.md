@@ -1,6 +1,6 @@
 # rubico/monad
 
-This is a place for JavaScript monads.
+This is a place for JavaScript monads. Warning: this entire directory is experimental; APIs here are subject to change.
 
 # Specification
 
