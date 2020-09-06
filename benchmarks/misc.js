@@ -388,5 +388,27 @@ const arrayPushOptionalIndex = function (
 
   // timeInLoop('arrayPushNoReturn(array, 1)', 1e7, () => arrayPushNoReturn(array, 1))
 
-  timeInLoop('arrayPushOptionalIndex(array, 1)', 1e7, () => arrayPushOptionalIndex(array, 1))
+  // timeInLoop('arrayPushOptionalIndex(array, 1)', 1e7, () => arrayPushOptionalIndex(array, 1))
+}
+
+const objectAssign1 = Object.assign
+
+const objectAssign2 = (a, b) => ({ ...a, ...b })
+
+/**
+ * @name objectAssign
+ *
+ * @benchmark
+ * objectAssign1: 1e+6: 55.65ms
+ * objectAssign2: 1e+6: 113.392ms
+ */
+
+{
+  const objectA = { a: 1, b: 2, c: 3 }
+
+  const objectB = { d: 4, e: 5 }
+
+  // timeInLoop('objectAssign1', 1e6, () => objectAssign1(objectA, objectB))
+
+  // timeInLoop('objectAssign2', 1e6, () => objectAssign2(objectA, objectB))
 }
