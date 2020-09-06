@@ -1225,40 +1225,40 @@ describe('rubico', () => {
 
   describe('reduce', () => {
     describe(`
-any -> T
+Reducer<T> (any, T)=>Promise|any
 
-{
-  reduce: (reducer (any, T)=>any, initialValue any)=>any
-} -> Reducible<T>
+Reducible<T> {
+  reduce: (reducer Reducer<T>, init any)=>(result any),
+}
 
 reduce(
-  reducer (any, T)=>Promise|any,
+  reducer Reducer,
+  init undefined|function|any,
+) -> ...any=>function|Promise|any
+
+reduce(
+  reducer Reducer<T>,
   init undefined
-    |(collection=>Promise|any)
+    |((collection, ...restArgs)=>Promise|any)
     |any,
 )(
   collection Iterable<T>|Iterator<T>
     |AsyncIterable<T>|AsyncIterator<T>
-    |Reducible<T>|Object<T>
+    |Reducible<T>|Object<T>,
+  restArgs ...any,
 ) -> Promise|any
 
 reduce(
-  reducer (any, T)=>Promise|any,
+  reducer Reducer<T>,
   init undefined
-    |(collection=>Promise|any)
+    |((collectionFactory, ...restArgs)=>Promise|any)
     |any,
 )(
-  collection (...args=>Iterator<T>)
-    |(...args=>AsyncIterator<T>)
-    |((any, T)=>Promise|any)
-) -> (args ...any)=>Promise|any
-
-reduce(
-  reducer function,
-  init undefined
-    |(...args=>Promise|any)
-    |any
-)(args ...any)
+  collectionFactory (...any=>Iterator<T>)
+    |(...any=>AsyncIterator<T>)
+    |Reducer<T>,
+  restArgs ...any,
+) -> reducingFunction ...any=>Promise|any
 `, () => {
   describe('reducer (any, T)=>Promise|any', () => {
     const add = (a, b) => a + b
@@ -1731,23 +1731,14 @@ reduce(
     })
   })
 
-  describe('transform', () => {
-    const isBigOdd = x => (x % 2n === 1n)
-    const asyncIsBigEven = async x => (x % 2n === 0n)
-    const bigSquare = x => x ** 2n
+  describe('transform - v1.5.10 regression', () => {
     const squareOdds = pipe([filter(isOdd), map(square)])
+    const asyncEvens = filter(asyncIsEven)
+    const bigNumbers = [1n, 2n, 3n, 4n, 5n]
     const squareOddsToString = pipe([
       filter(isOdd),
       map(pipe([square, x => `${x}`])),
     ])
-    const squareBigOdds = pipe([filter(isBigOdd), map(bigSquare)])
-    const asyncEvens = filter(asyncIsEven)
-    const asyncEvensToString = pipe([
-      filter(asyncIsEven),
-      map(x => `${x}`)
-    ])
-    const asyncBigEvens = filter(asyncIsBigEven)
-    const bigNumbers = [1n, 2n, 3n, 4n, 5n]
     it('sync transforms iterable to null', async () => {
       let y = ''
       ase(transform(map(tap(x => { y += x })), null)([1, 2, 3, 4, 5]), null)
@@ -1783,49 +1774,25 @@ reduce(
         new Set([99, 2, 4]),
       )
     })
-    it('sync transforms iterable to map', async () => {
-      ade(
-        transform(map(
-          x => [x, x.charCodeAt(0)],
-        ), new Map())('abc'),
-        new Map([['a', 97], ['b', 98], ['c', 99]]),
-      )
-    })
-    it('async transforms iterable to map', async () => {
-      aok(
-        transform(map(
-          async x => [x, x.charCodeAt(0)],
-        ), new Map())('abc') instanceof Promise
-      )
-      ade(
-        await transform(map(
-          async x => [x, x.charCodeAt(0)],
-        ), new Map())('abc'),
-        new Map([['a', 97], ['b', 98], ['c', 99]]),
-      )
-    })
-    it('strings are encoded into arrays of character codes for number TypedArrays', async () => {
+    it('strings are converted to numbers', async () => {
       for (const constructor of numberTypedArrayConstructors) {
         ade(
           transform(squareOddsToString, new constructor(0))([1, 2, 3, 4, 5]),
-          new constructor([49, 57, 50, 53]),
+          new constructor([1, 9, 25]),
         )
-        ase(String.fromCharCode(...(new constructor([49, 57, 50, 53]))), '1925')
       }
     })
-    it('throws TypeError for uncoercible items', async () => {
+    it('coerces booleans to 0 and 1', async () => {
       for (const constructor of numberTypedArrayConstructors) {
-        assert.throws(
-          () => transform(map(x => x), new constructor(0))([true, false, false]),
-          new TypeError('toTypedArray(typedArray, y); cannot convert y to typedArray'),
+        assert.deepEqual(
+          transform(map(x => x), new constructor(0))([true, false, false]),
+          new constructor([1, 0, 0])
         )
       }
-    })
-    it('throws TypeError for uncoercible items', async () => {
       for (const constructor of bigIntTypedArrayConstructors) {
-        assert.throws(
-          () => transform(map(x => x), new constructor(0))([true, false, false]),
-          new TypeError('toTypedArray(typedArray, y); cannot convert y to typedArray'),
+        assert.deepEqual(
+          transform(map(x => x), new constructor(0))([true, false, false]),
+          new constructor([1n, 0n, 0n])
         )
       }
     })
@@ -1838,6 +1805,9 @@ reduce(
       }
     })
     it('sync transforms iterable to a bigint TypedArray', async () => {
+      const isBigOdd = x => (x % 2n === 1n)
+      const bigSquare = x => x ** 2n
+      const squareBigOdds = pipe([filter(isBigOdd), map(bigSquare)])
       for (const constructor of bigIntTypedArrayConstructors) {
         ade(
           transform(squareBigOdds, new constructor(0))(bigNumbers),
@@ -1846,6 +1816,8 @@ reduce(
       }
     })
     it('async transforms iterable to a bigint TypedArray', async () => {
+      const asyncIsBigEven = async x => (x % 2n === 0n)
+      const asyncBigEvens = filter(asyncIsBigEven)
       for (const constructor of bigIntTypedArrayConstructors) {
         const buffer99 = new constructor([9n, 9n])
         const buffer9924 = transform(asyncBigEvens, buffer99)(bigNumbers)
@@ -1865,6 +1837,10 @@ reduce(
       await fs.promises.unlink('./tmp')
     })
     it('async transforms iterable to writeable stream', async () => {
+      const asyncEvensToString = pipe([
+        filter(asyncIsEven),
+        map(x => `${x}`)
+      ])
       const tmpWriter = fs.createWriteStream(path.join(__dirname, './tmp'))
       tmpWriter.write('99')
       const writeEvens = transform(asyncEvensToString, tmpWriter)([1, 2, 3, 4, 5])
@@ -1880,10 +1856,6 @@ reduce(
     })
     it('sync transforms an iterable to an object', async () => {
       ade(
-        transform(map(n => [n, n]), {})([1, 2, 3, 4, 5]),
-        { '1': 1, '2': 2, '3': 3, '4': 4, '5': 5 },
-      )
-      ade(
         transform(map(n => ({ [n]: n })), {})([1, 2, 3, 4, 5]),
         { '1': 1, '2': 2, '3': 3, '4': 4, '5': 5 },
       )
@@ -1894,10 +1866,6 @@ reduce(
       )
       aok(
         transform(map(async n => ({ [n]: n })), {})([1, 2, 3, 4, 5]) instanceof Promise,
-      )
-      ade(
-        await transform(map(async n => [n, n]), {})([1, 2, 3, 4, 5]),
-        { '1': 1, '2': 2, '3': 3, '4': 4, '5': 5 },
       )
       ade(
         await transform(map(async n => ({ [n]: n })), {})([1, 2, 3, 4, 5]),
@@ -1952,18 +1920,6 @@ reduce(
       ade(
         await transform(map(square), () => [])(emptyAsyncIterator),
         [],
-      )
-    })
-    it('throws a TypeError for transform(Object, () => {})', async () => {
-      assert.throws(
-        () => transform(() => {}, undefined)('hey'),
-        new TypeError('transform(x, y); x invalid'),
-      )
-    })
-    it('throws a TypeError for non function transducer', async () => {
-      assert.throws(
-        () => transform('yo', 'hey'),
-        new TypeError('transform(x, y); y is not a function'),
       )
     })
   })

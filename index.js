@@ -24,6 +24,7 @@
  * no currying; write new functions
  * avoid variadic functions; use lists
  * avoid anonymous function creation; use names and factory functions
+ * avoid creating functions inside functions
  */
 
 const symbolIterator = Symbol.iterator
@@ -72,6 +73,8 @@ const isIterable = value => value != null
 const isAsyncIterable = value => value != null
   && typeof value[symbolAsyncIterator] == 'function'
 
+const isNodeReadStream = value => value != null && typeof value.pipe == 'function'
+
 const isWritable = value => value != null && typeof value.write == 'function'
 
 const isFunction = value => typeof value == 'function'
@@ -100,6 +103,10 @@ const isString = value => typeof value == 'string'
 
 const isPromise = value => value != null && typeof value.then == 'function'
 
+const identity = value => value
+
+const add = (a, b) => a + b
+
 const range = (start, end) => Array.from({ length: end - start }, (x, i) => i + start)
 
 const arrayOf = (item, length) => Array.from({ length }, () => item)
@@ -117,12 +124,77 @@ const always = value => function getter() { return value }
  *
  * @synopsis
  * arrayPush(array Array, value any, index undefined|number) => array
+ */
 const arrayPush = function (
   array, value, index = array.length,
 ) {
   array[index] = value
   return array
-} */
+}
+
+/**
+ * @name arrayExtend
+ *
+ * @synopsis
+ * arrayExtend(array Array, values Array) -> array
+ */
+const arrayExtend = (array, values) => {
+  const arrayLength = array.length,
+    valuesLength = values.length
+  let valuesIndex = -1
+  while (++valuesIndex < valuesLength) {
+    array[arrayLength + valuesIndex] = values[valuesIndex]
+  }
+  return array
+}
+
+/**
+ * @name arrayExtendMap
+ *
+ * @catchphrase
+ * internal extend while mapping
+ *
+ * @synopsis
+ * any -> value; any -> mapped
+ *
+ * arrayExtendMap(
+ *   array Array<mapped>,
+ *   values Array<value>,
+ *   valuesIndex number,
+ *   valuesMapper value=>mapped,
+ * ) -> array
+ */
+const arrayExtendMap = function (
+  array, values, valuesMapper, valuesIndex,
+) {
+  const valuesLength = values.length
+  let arrayIndex = array.length - 1
+  while (++valuesIndex < valuesLength) {
+    array[++arrayIndex] = valuesMapper(values[valuesIndex])
+  }
+  return array
+}
+
+/**
+ * @name setAdd
+ *
+ * @synopsis
+ * setAdd(set Set, item any) -> set
+ */
+const setAdd = (set, item) => set.add(item)
+
+/**
+ * @name setExtend
+ *
+ * @synopsis
+ * setExtend(set, values Set) -> set
+ */
+const setExtend = (set, values) => {
+  for (const item of values) {
+    set.add(item)
+  }
+  return set
+}
 
 /**
  * @name then
@@ -237,7 +309,7 @@ const funcConcat = (funcA, funcB) => function pipedFunction(...args) {
  * @description
  * **pipe** takes an array of functions and chains them together, each function passing its return value to the next function until all functions have been called. The final output for a given pipe is the output of the last function in the pipe.
  *
- * ```javascript
+ * ```javascript-playground
  * console.log(
  *   pipe([
  *     number => number + 1,
@@ -267,7 +339,7 @@ const funcConcat = (funcA, funcB) => function pipedFunction(...args) {
  *
  * **pipe** supports transducer composition. When passed a reducer function, a pipe of functions returns a new reducer function that applies the transducers of the functions array in series, ending the chain with the passed in reducer. `compositeReducer` must be used in transducer position in conjunction with **reduce** or any implementation of reduce to have a transducing effect. For more information on this behavior, see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
  *
- * ```javascript
+ * ```javascript-playground
  * const isOdd = number => number % 2 == 1
  *
  * const square = number => number ** 2
@@ -290,7 +362,7 @@ const funcConcat = (funcA, funcB) => function pipedFunction(...args) {
  *
  * @execution series
  *
- * @transducing
+ * @transducers
  */
 const pipe = function (funcs) {
   const functionPipeline = funcs.reduce(funcConcat),
@@ -369,7 +441,7 @@ const funcAll = funcs => function allFuncs(...args) {
  *
  * All functions of `funcs`, including additional forks, are executed concurrently.
  *
- * ```javascript
+ * ```javascript-playground
  * console.log(
  *   fork({
  *     greetings: fork([
@@ -447,7 +519,7 @@ const funcAllSeries = funcs => function allFuncsSeries(...args) {
  * @description
  * **fork.series** is fork with serial execution instead of concurrent execution of functions. All functions of `funcs` are then executed in series.
  *
- * ```javascript
+ * ```javascript-playground
  * const sleep = ms => () => new Promise(resolve => setTimeout(resolve, ms))
  *
  * fork.series([
@@ -481,7 +553,7 @@ fork.series = funcAllSeries
  *
  * All functions of `funcs`, including additional forks, are executed concurrently.
  *
- * ```javascript
+ * ```javascript-playground
  * console.log(
  *   assign({
  *     squared: ({ number }) => number ** 2,
@@ -516,7 +588,7 @@ const assign = function (funcs) {
  * @description
  * **tap** accepts a function and any value, calls the function with the value, and returns the original value. This is useful for running side effects in function pipelines, e.g. logging out data in a pipeline to the console.
  *
- * ```javascript
+ * ```javascript-playground
  * pipe([
  *   tap(console.log),
  *   value => value + 'bar'
@@ -546,7 +618,7 @@ const tap = func => function tapping(...args) {
  * @description
  * **tap.if** takes a condition `cond`, a function `func`, and an input `value`, returning the `result` as the unchanged `value`. If `cond` applied with `value` is falsy, `func` is not called; otherwise, `func` is called with `value`. `result` is a Promise if either `func` or `cond` is asynchronous.
  *
- * ```javascript
+ * ```javascript-playground
  * const isOdd = number => number % 2 == 1
  *
  * pipe([
@@ -580,7 +652,7 @@ tap.if = (cond, func) => {}
  * @description
  * **tryCatch** takes two functions, a tryer and a catcher, and returns a tryCatcher function that, when called, calls the tryer with the arguments. If the tryer throws an Error or returns a Promise that rejects, tryCatch calls the catcher with the thrown value and the arguments. If the tryer called with the arguments does not throw, the tryCatcher returns the result of that call.
  *
- * ```javascript
+ * ```javascript-playground
  * const errorThrower = tryCatch(
  *   message => {
  *     throw new Error(message)
@@ -961,7 +1033,7 @@ map.resolver = function resolverMap(mapper) {
  * @description
  * **map** takes a function and applies it to each item of a collection, returning a collection of the same type with all resulting items. If a collection has an implicit order, e.g. an Array, the resulting collection will have the same order. If the input collection does not have an implicit order, the order of the result is not guaranteed.
  *
- * ```javascript
+ * ```javascript-playground
  * const square = number => number ** 2
  *
  * console.log(
@@ -975,7 +1047,7 @@ map.resolver = function resolverMap(mapper) {
  *
  * The generator function and its product, the generator, are more additions to the list of possible things to map over. The same goes for their async counterparts.
  *
- * ```javascript
+ * ```javascript-playground
  * const capitalize = string => string.toUpperCase()
  *
  * const abc = function* () {
@@ -1013,7 +1085,7 @@ map.resolver = function resolverMap(mapper) {
  *
  * When passed a reducer, a mapping function returns another reducer with each given item T transformed by the mapper function. For more information on this behavior, see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md)
  *
- * ```javascript
+ * ```javascript-playground
  * const square = number => number ** 2
  *
  * const concat = (array, item) => array.concat(item)
@@ -1029,7 +1101,7 @@ map.resolver = function resolverMap(mapper) {
  *
  * @execution concurrent
  *
- * @transducing
+ * @transducers
  */
 const map = mapper => function mapping(value) {
   if (isArray(value)) {
@@ -1118,7 +1190,7 @@ const arrayMapSeries = function (array, mapper) {
  * @description
  * **map.series** is **map** but with serial instead of concurrent application of the mapping function to each item of the input value.
  *
- * ```javascript
+ * ```javascript-playground
  * const delayedLog = x => new Promise(function (resolve) {
  *   setTimeout(function () {
  *     console.log(x)
@@ -1227,7 +1299,7 @@ const arrayMapPool = function (array, mapper, concurrentLimit) {
  * @description
  * **map.pool** is **map** with a concurrency limit that specifies the maximum number of promises in flight in a given moment for an asynchronous mapping operation.
  *
- * ```javascript
+ * ```javascript-playground
  * const delayedLog = x => new Promise(function (resolve) {
  *   setTimeout(function () {
  *     console.log(x)
@@ -1336,48 +1408,6 @@ console.log(
  *
  *
  */
-
-/**
- * @name arrayExtend
- *
- * @synopsis
- * arrayExtend(array Array, values Array) -> array
-const arrayExtend = (array, values) => {
-  const arrayLength = array.length,
-    valuesLength = values.length
-  let valuesIndex = -1
-  while (++valuesIndex < valuesLength) {
-    array[arrayLength + valuesIndex] = values[valuesIndex]
-  }
-  return array
-} */
-
-/**
- * @name arrayExtendMap
- *
- * @catchphrase
- * internal extend while mapping
- *
- * @synopsis
- * any -> value; any -> mapped
- *
- * arrayExtendMap(
- *   array Array<mapped>,
- *   values Array<value>,
- *   valuesIndex number,
- *   valuesMapper value=>mapped,
- * ) -> array
- */
-const arrayExtendMap = function (
-  array, values, valuesMapper, valuesIndex,
-) {
-  const valuesLength = values.length
-  let arrayIndex = array.length - 1
-  while (++valuesIndex < valuesLength) {
-    array[++arrayIndex] = valuesMapper(values[valuesIndex])
-  }
-  return array
-}
 
 /**
  * @name arrayFilterConditionsResolver
@@ -1743,7 +1773,7 @@ const reducerFilter = (
  * @description
  * **filter** accepts a predicate function and a value of any type and returns the same type with elements excluded by the provided predicate function.
  *
- * ```javascript
+ * ```javascript-playground
  * const isOdd = number => number % 2 == 1
  *
  * console.log(
@@ -1759,7 +1789,7 @@ const reducerFilter = (
  *
  * When filtering on arrays and objects, the predicate supplied to `filter` can be asynchronous.
  *
- * ```javascript
+ * ```javascript-playground
  * const isOdd = number => number % 2 == 1
  *
  * const numbers = function* () {
@@ -1787,7 +1817,7 @@ const reducerFilter = (
  *
  * **Warning**: usage of an async predicate with generator functions or iterators may lead to undesirable behavior.
  *
- * ```javascript
+ * ```javascript-playground
  * const asyncIsOdd = async number => number % 2 == 1
  *
  * const asyncNumbers = async function* () {
@@ -1815,7 +1845,7 @@ const reducerFilter = (
  *
  * The predicate can be asynchronous when filtering async iterators or async generator functions.
  *
- * ```javascript
+ * ```javascript-playground
  * const isOdd = number => number % 2 == 1
  *
  * const concat = (array, item) => array.concat(item)
@@ -1833,7 +1863,7 @@ const reducerFilter = (
  *
  * @execution concurrent
  *
- * @transducing
+ * @transducers
  */
 const filter = predicate => function filtering(value) {
   if (isArray(value)) {
@@ -2276,14 +2306,14 @@ var genericReduce = function (args, reducer, result) {
  *
  * @synopsis
  * curriedGenericReduce(
- *   collection any,
+ *   args Array,
  *   reducer function,
  * ) -> resolver (result any)=>any
  */
 const curriedGenericReduce = (
-  collection, reducer,
+  args, reducer,
 ) => function resolver(result) {
-  return genericReduce(collection, reducer, result)
+  return genericReduce(args, reducer, result)
 }
 
 /**
@@ -2293,26 +2323,47 @@ const curriedGenericReduce = (
  * execute data transformation by reducer
  *
  * @synopsis
- * any -> T
+ * reduce(
+ *   reducer function,
+ *   init undefined|function|any,
+ * )(...any) -> Promise|any
  *
- * Iterable|GeneratorFunction
- *   |AsyncIterable|AsyncGeneratorFunction -> Sequence
- *
- * {
- *   reduce: (reducer (any, T)=>any, initialValue any)=>any,
- * } -> Reducible<T>
+ * Reducer<T> (any, T)=>Promise|any
  *
  * reduce(
- *   reducer (any, T)=>Promise|any,
+ *   reducer Reducer,
  *   init undefined
  *     |((collection, ...restArgs)=>Promise|any)
  *     |any,
- * )(collection Sequence<T>|Reducible<T>|Object<T>, restArgs ...any) -> Promise|any
+ * )(
+ *   collection Iterable|Iterator
+ *     |AsyncIterable|AsyncIterator
+ *     |{ reduce: function }|Object|any,
+ *   restArgs ...any
+ * ) -> Promise|any
+ *
+ * reduce(
+ *   reducer Reducer,
+ *   init undefined
+ *     |(...args=>Promise|any)
+ *     |any,
+ * )(
+ *   generatorFunction (...args=>Generator)|(...args=>AsyncGenerator),
+ * ) -> reducingFunction (args ...any)=>Promise|any
+ *
+ * reduce(
+ *   reducer Reducer,
+ *   init undefined
+ *     |(...args=>Promise|any)
+ *     |any,
+ * )(
+ *   anotherReducer Reducer, moreReducers ...Reducer
+ * ) -> chainedReducingFunction (args ...any)=>Promise|any
  *
  * @description
  * **reduce** constructs a reducing function that executes a data transformation defined by a reducer function and an optional init value. When called with a collection, a given reducing function applies its reducer function in series to an accumulator with initial value `init` and each item of the collection, returning the result of calling the reducer with the accumulator and the last item of the collection.
  *
- * ```javascript
+ * ```javascript-playground
  * const add = (a, b) => a + b
  *
  * console.log(
@@ -2322,7 +2373,7 @@ const curriedGenericReduce = (
  *
  * If `init` is undefined, the first item of the input collection is used as the initial value for the accumulator.
  *
- * ```javascript
+ * ```javascript-playground
  * const max = (a, b) => a > b ? a : b
  *
  * console.log(
@@ -2332,7 +2383,7 @@ const curriedGenericReduce = (
  *
  * If `init` is a function, it is treated as a resolver and called with the input arguments to resolve an initial value for the accumulator. Unless care is exercised when handling references for this initial value, a function `init` is the recommended way to use reduce for transformations on non-primitive initial values.
  *
- * ```javascript
+ * ```javascript-playground
  * const concatSquares = (array, value) => array.concat(value ** 2)
  *
  * const initEmptyArray = () => []
@@ -2344,7 +2395,7 @@ const curriedGenericReduce = (
  *
  * `reduce` elevates the concept of transformation beyond synchronous operations on arrays. The `reducer` function can be asynchronous, while the input value can be an asynchronous stream.
  *
- * ```javascript
+ * ```javascript-playground
  * const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
  *
  * // asyncAppReducer(
@@ -2394,7 +2445,7 @@ const curriedGenericReduce = (
  *
  * rubico's async capable [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md) API is useful for chaining operations on items of large or even infinite streams of data. A combination with async capable `reduce` enables a compositional refactor of `asyncAppReducer` above.
  *
- * ```javascript
+ * ```javascript-playground
  * const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
  *
  * const isActionTypeFetchTodo = action => action.type == 'FETCH_TODO'
@@ -2436,7 +2487,7 @@ const curriedGenericReduce = (
  *
  * If the first argument to a reducing function is a reducer, `reduce` concatenates any reducers in argument position onto the initial reducer, producing a combined reducer that performs a chained operation per each item in a reducing operation. For more reducer combinators, see rubico's Reducer monad.
  *
- * ```javascript
+ * ```javascript-playground
  * const reducerA = (state, action) => {
  *   if (action.type == 'A') return { ...state, A: true }
  *   return state
@@ -2467,9 +2518,13 @@ const curriedGenericReduce = (
  *
  * @execution series
  *
+ * @transducers
+ *
  * @note
  * https://stackoverflow.com/questions/30233302/promise-is-it-possible-to-force-cancel-a-promise/30235261#30235261
  * https://stackoverflow.com/questions/62336381/is-this-promise-cancellation-implementation-for-reducing-an-async-iterable-on-th
+ *
+ * @TODO readerReduce
  */
 const reduce = function (reducer, init) {
   if (isFunction(init)) {
@@ -2493,30 +2548,6 @@ const reduce = function (reducer, init) {
  * @maybe
  */
 // reduce.mux = (reducer, init) => function muxReducing(...args) {}
-
-/*
-const reduce = (fn, init) => {
-  if (!isFunction(fn)) {
-    throw new TypeError('reduce(x, y); x is not a function')
-  }
-  return x => {
-    const x0 = isFunction(init) ? init(x) : init
-    if (isIterable(x)) return possiblePromiseThen(
-      x0,
-      res => reduceIterable(fn, res, x),
-    )
-    if (isAsyncIterable(x)) {
-      return possiblePromiseThen(
-        x0, res => reduceAsyncIterable(fn, res, x))
-    }
-    if (isObject(x)) return possiblePromiseThen(
-      x0,
-      res => reduceObject(fn, res, x),
-    )
-    throw new TypeError('reduce(...)(x); x invalid')
-  }
-}
-*/
 
 /*
  * @synopsis
@@ -2675,32 +2706,373 @@ const _transformBranch = (fn, x0, x) => {
 }
 
 /**
+ * @name emptyTransform
+ *
+ * @synopsis
+ * Reducer<T> = (any, T)=>any
+ *
+ * Transducer = Reducer=>Reducer
+ *
+ * emptyTransform(
+ *   args Array,
+ *   transducer Transducer,
+ *   result any,
+ * ) -> result
+ */
+const emptyTransform = (args, transducer, result) => then(
+  genericReduce(args, transducer(identity), null),
+  always(result))
+
+/**
+ * @name arrayConcat
+ *
+ * @synopsis
+ * arrayConcat(
+ *   array Array,
+ *   values Array|any,
+ * ) -> array
+ */
+const arrayConcat = (array, values) => isArray(values)
+  ? arrayExtend(array, values)
+  : arrayPush(array, values)
+
+/**
+ * @name typedArrayExtend
+ *
+ * @synopsis
+ * typedArrayExtend(
+ *   typedArray TypedArray,
+ *   array Array|TypedArray|any,
+ * ) -> concatenatedTypedArray
+ */
+const typedArrayExtend = function (typedArray, array) {
+  const offset = typedArray.length
+  const result = new typedArray.constructor(offset + array.length)
+  result.set(typedArray)
+  result.set(array, offset)
+  return result
+}
+
+/**
+ * @name curriedTypedArrayExtend
+ *
+ * @synopsis
+ * curriedTypedArrayExtend(
+ *   typedArray TypedArray,
+ * )(array Array|TypedArray) -> extended TypedArray
+ */
+const curriedTypedArrayExtend = typedArray => function curried(array) {
+  return typedArrayExtend(typedArray, array)
+}
+
+/**
+ * @name setConcat
+ *
+ * @synopsis
+ * setConcat(
+ *   set Set,
+ *   values Set|any
+ * ) -> set
+ */
+const setConcat = (set, values) => isSet(values)
+  ? setExtend(set, values)
+  : setAdd(set, values)
+
+/**
+ * @name writableStreamConcat
+ *
+ * @synopsis
+ * Writable = { write: function }
+ *
+ * Readable = { pipe: function }
+ *
+ * writableStreamConcat(
+ *   stream Writable,
+ *   values Readable|any,
+ * ) -> stream
+ *
+ * @note support `.read` maybe
+ */
+const writableStreamConcat = function (stream, values) {
+  if (isNodeReadStream(values)) {
+    return values.pipe(stream)
+  }
+  stream.write(values)
+  return stream
+}
+
+/**
+ * @name callConcat
+ *
+ * @synopsis
+ * callConcat(object Object, values any) -> object
+ */
+const callConcat = function (object, values) {
+  return object.concat(values)
+}
+
+/**
+ * @name genericTransform
+ *
+ * @synopsis
+ * Reducer<T> = (any, T)=>any
+ *
+ * Transducer = Reducer=>Reducer
+ *
+ * Semigroup = Array|string|Set|TypedArray
+ *   |{ concat: function }|{ write: function }|Object
+ *
+ * genericTransform(
+ *   args Array,
+ *   transducer Transducer,
+ *   result Semigroup|any,
+ * ) -> result
+ */
+const genericTransform = function (args, transducer, result) {
+  if (isArray(result)) {
+    return genericReduce(args, transducer(arrayConcat), result)
+  }
+  if (isTypedArray(result)) {
+    return then(
+      genericReduce(args, transducer(arrayConcat), []),
+      curriedTypedArrayExtend(result))
+  }
+  if (result == null) {
+    return emptyTransform(args, transducer, result)
+  }
+  const resultConstructor = result.constructor
+  if (typeof result == 'string' || resultConstructor == String) {
+    return genericReduce(args, transducer(add), result)
+  }
+  if (typeof result.concat == 'function') {
+    return genericReduce(args, transducer(callConcat), result)
+  }
+  if (typeof result.write == 'function') {
+    return genericReduce(args, transducer(writableStreamConcat), result)
+  }
+  if (resultConstructor == Set) {
+    return genericReduce(args, transducer(setConcat), result)
+  }
+  if (resultConstructor == Object) {
+    return genericReduce(args, transducer(objectAssign), result)
+  }
+  return emptyTransform(args, transducer, result)
+}
+
+/**
+ * @name curriedGenericTransform
+ *
+ * @synopsis
+ * Semigroup = Array|string|Set|TypedArray
+ *   |{ concat: function }|{ write: function }|Object
+ *
+ * curriedGenericTransform(
+ *   collection any,
+ *   transducer function,
+ * ) -> resolver (result Semigroup|any)=>any
+ */
+const curriedGenericTransform = (
+  args, transducer,
+) => function resolver(result) {
+  return genericTransform(args, transducer, result)
+}
+
+/**
  * @name transform
  *
  * @catchphrase
  * execute data transformation by transducer + concatenation
  *
  * @synopsis
- * any -> T
+ * transform(
+ *   transducer function,
+ *   init function|any,
+ * )(...any) -> Promise|any
  *
- * (any, T)=>any -> Reducer<T>
+ * Reducer<T> = (any, T)=>Promise|any
  *
- * { reduce: function } -> ReducibleMonoid
+ * Transducer = Reducer=>Reducer
  *
- * { concat: function } -> Monoid
+ * Semigroup = Array|string|Set|TypedArray
+ *   |{ concat: function }|{ write: function }|Object
  *
  * transform(
- *   transducer Reducer=>Reducer,
- *   init ((collection, ...args)=>Promise|Monoid)|Monoid,
- * )(collection Sequence<T>|Reducible<T>|Object<T>, args ...any) -> Promise|any
+ *   transducer Transducer,
+ *   init ((collection, ...restArgs)=>Promise|Semigroup|any)
+ *     |Semigroup
+ *     |any,
+ * )(
+ *   collection Iterable|Iterator
+ *     |AsyncIterable|AsyncIterator
+ *     |{ reduce: function }|Object|any,
+ *   restArgs ...any
+ * ) -> Semigroup Promise|any
+ *
+ * transform(
+ *   transducer Transducer,
+ *   init (...args=>Promise|Semigroup|any)
+ *     |Semigroup
+ *     |any,
+ * )(
+ *   generatorFunction (...args=>Generator)|(...args=>AsyncGenerator),
+ * ) -> reducingFunction (args ...any)=>Promise|Semigroup|any
+ *
+ * transform(
+ *   transducer Transducer,
+ *   init (...args=>Promise|Semigroup|any)
+ *     |Semigroup
+ *     |any,
+ * )(
+ *   anotherReducer Reducer, moreReducers ...Reducer
+ * ) -> chainedReducingFunction (args ...any)=>Promise|any
  *
  * @description
- * **transform** executes a data transformation defined by a transducer and initial value
+ * Before reading further, make sure to have a decent understanding of [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
+ *
+ * **transform** executes a reducing operation defined by a transducer, initial value or resolver of value, and a concatenation operation `.concat` specific to the type of the resolved initial value.
+ *
+ * ```javascript-playground
+ * const square = number => number ** 2
+ *
+ * const isOdd = number => number % 2 == 1
+ *
+ * const squaredOdds = pipe([
+ *   filter(isOdd),
+ *   map(square),
+ * ])
+ *
+ * console.log(
+ *   transform(squaredOdds, () => [])([1, 2, 3, 4, 5]),
+ * ) // [1, 9, 25]
+ *
+ * console.log(
+ *   transform(squaredOdds, '')([1, 2, 3, 4, 5]),
+ * ) // '1925'
+ *
+ * console.log(
+ *   transform(squaredOdds, () => new Uint8Array())([1, 2, 3, 4, 5]),
+ * ) // Uint8Array(3) [ 1, 9, 25 ]
+ * ```
+ *
+ * `transform` is effectively `reduce` paired with a transduced reducer with a type specific `.concat` operation for merging pipeline items into the aggregate result. `transform` is a specialized application of `reduce` towards transformations between domains. For example, the above `squaredOdds` transducer is capable of transforming an array of numbers to another array, a string, or a slice of bytes based on the initial value of the accumulator.
+ *
+ * The full spectrum of types that `transform` recognizes as domains is defined by the `Semigroup` type and category. If concatenation makes sense for objects of a certain type, it could be considered a `Semigroup` ([fantasyland spec](https://github.com/fantasyland/fantasy-land#semigroup)).
+ *
+ * rubico defines several built-in types as part of `Semigroup`, including ones that do not necessarily implement `.concat` but where concatenation is sensible. For example, `transform` can operate on instances of `TypedArray` even when they do not officially implement `.concat`. This happens via a library algorithm that manages the size of the buffer.
+ *
+ * ```
+ * Semigroup = Array|string|Set|TypedArray
+ *   |{ concat: function }|{ write: function }|Object
+ * ```
+ *
+ * Concatenation varies by aggregate result and pipeline item. Generally, if an item is of the same type as the aggregate result, it is flattened into the result. Otherwise, the item is appended.
+ *
+ *  * `Array` - concatenation resembles `result.concat(item)`. Non-arrays are concatenated as items, while arrays are flattened.
+ *  * `string` - concatenation is `result + item`
+ *  * `Set` - concatenation resembles `result.add(item)` for individual items; other sets are flattened.
+ *  * `TypedArray` - concatenation is managing ArrayBuffers while appending items. Careful about the types here - a `Uint8Array` should only concatenate 8-bit unsigned numbers if not concatenating other `Uint8Array`s
+ *  * { concat: function } - an object that implements concat. Concatenation calls the `.concat` method in `result.concat(item)`. Flattening is left to the implementation.
+ *  * { write: function } - an object that implements write; these are for Node.js streams. Concatenation calls the method `.write` in `result.write(item)` or `item.pipe(result)` if the `item` is readable.
+ *  * Object - a regular object, this could be state. Concatenation is a shallow merge `{ ...object, ...item }` or identity for null and undefined.
+ *
+ * When an object implements `.concat`, it can be transformed as a Semigroup. This is to be able to support transformations of any custom object that could be considered a semigroup.
+ *
+ * ```javascript-playground
+ * const Max = function (number) {
+ *   this.number = number
+ * }
+ *
+ * Max.prototype.concat = function (otherMax) {
+ *   return new Max(Math.max(
+ *     this.number,
+ *     otherMax.constructor == Max ? otherMax.number : otherMax,
+ *   ))
+ * }
+ *
+ * transform(
+ *   map(Math.abs), new Max(-Infinity),
+ * )([-1, -2, -3, -4, -5]) // Max { 5 }
+ * ```
+ *
+ * With `transform`, it is possible to pipe together streams and async streams, e.g. Node.js Streams with async iterables. This is made possible by rubico's internal promise handling.
  *
  * ```javascript
+ * // this example is duplicated in rubico/examples/transformStreamRandomInts.js
+ *
+ * const { pipe, map, transform } = require('rubico')
+ *
+ * const square = number => number ** 2
+ *
+ * const toString = value => value.toString()
+ *
+ * const randomInt = () => Math.ceil(Math.random() * 100)
+ *
+ * const streamRandomInts = async function* () {
+ *   while (true) {
+ *     yield randomInt()
+ *   }
+ * }
+ *
+ * transform(
+ *   map(pipe([square, toString])), process.stdout,
+ * )(streamRandomInts()) // 9216576529289484980147613249169774446246768649...
  * ```
+ *
+ * Finally, a regular object initial value is shallowly merged with incoming items, while all else is returned as is. This behavior combined with reducer combinators supports application state management with async reducers similar to `reduce`.
+ *
+ * ```javascript-playground
+ * const reducerA = async (state, action) => {
+ *   if (action.type == 'A') return { ...state, A: true }
+ *   return state
+ * }
+ *
+ * const reducerB = async (state, action) => {
+ *   if (action.type == 'B') return { ...state, B: true }
+ *   return state
+ * }
+ *
+ * const reducerC = async (state, action) => {
+ *   if (action.type == 'C') return { ...state, C: true }
+ *   return state
+ * }
+ *
+ * const logAction = function (action) {
+ *   console.log('action', action)
+ *   return action
+ * }
+ *
+ * const reducingABC = transform(
+ *   map(logAction), () => ({}),
+ * )(reducerA, reducerB, reducerC)
+ *
+ * const actions = [{ type: 'A' }, { type: 'B' }, { type: 'C' }]
+ *
+ * reducingABC(actions).then(
+ *   state => console.log('state', state)) // action { type: 'A' }
+ *                                         // action { type: 'B' }
+ *                                         // action { type: 'C' }
+ *                                         // state { A: true, B: true, C: true }
+ * ```
+ *
+ * @execution series
+ *
+ * @transducers
  */
-const transform = (fn, init) => {
+const transform = function (transducer, init) {
+  if (isFunction(init)) {
+    return function reducing(...args) {
+      return then(
+        init(...args),
+        curriedGenericTransform(args, transducer))
+    }
+  }
+  return function reducing(...args) {
+    return genericTransform(args, transducer, init)
+  }
+}
+
+  /*
+var transform = (fn, init) => {
   if (!isFunction(fn)) {
     throw new TypeError('transform(x, y); y is not a function')
   }
@@ -2709,6 +3081,10 @@ const transform = (fn, init) => {
     res => _transformBranch(fn, res, x),
   )
 }
+*/
+
+// concat is (result, item, index, collection) => result
+// transform.withIndex = (transducer, init) => {}
 
 /**
  * @name arrayPushArray
