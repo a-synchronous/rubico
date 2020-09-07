@@ -87,7 +87,7 @@ const isSet = value => value != null && value.constructor == Set
 
 const isMap = value => value != null && value.constructor == Map
 
-const isTypedArray = ArrayBuffer.isView
+const isBinary = ArrayBuffer.isView
 
 const isNumber = function (value) {
   return typeof value == 'number'
@@ -118,6 +118,14 @@ const arrayOf = (item, length) => Array.from({ length }, () => item)
  * always(value any) -> getter ()=>value
  */
 const always = value => function getter() { return value }
+
+/**
+ * @name thunkifyCallUnary
+ *
+ * @synopsis
+ * thunkifyCallUnary(func function, args Array) -> ()=>func(...args)
+ */
+const thunkifyCallUnary = (func, argument) => () => func(argument)
 
 /**
  * @name arrayPush
@@ -2540,172 +2548,6 @@ const reduce = function (reducer, init) {
 }
 
 /**
- * @description
- * concurrent reduce. Maybe obsolete by reduce(...)(Mux.race(...))
- *
- * @execution concurrent
- *
- * @maybe
- */
-// reduce.mux = (reducer, init) => function muxReducing(...args) {}
-
-/*
- * @synopsis
- * TODO
- */
-const nullTransform = (fn, x0) => reduce(
-  fn(() => x0),
-  x0,
-)
-
-/*
- * @synopsis
- * TODO
- */
-const arrayTransform = (fn, x0) => x => reduce(
-  fn((y, xi) => { y.push(xi); return y }),
-  x0,
-)(x)
-
-/*
- * @synopsis
- * TODO
- */
-const stringTransform = (fn, x0) => reduce(
-  fn((y, xi) => `${y}${xi}`),
-  x0,
-)
-
-/*
- * @synopsis
- * TODO
- */
-const setTransform = (fn, x0) => reduce(
-  fn((y, xi) => y.add(xi)),
-  x0,
-)
-
-/*
- * @synopsis
- * TODO
- */
-const mapTransform = (fn, x0) => reduce(
-  fn((y, xi) => y.set(xi[0], xi[1])),
-  x0,
-)
-
-/*
- * @synopsis
- * TODO
- */
-const stringToCharCodes = x => {
-  const y = []
-  for (let i = 0; i < x.length; i++) {
-    y.push(x.charCodeAt(i))
-  }
-  return y
-}
-
-/*
- * @synopsis
- * TODO
- */
-const toTypedArray = (constructor, x) => {
-  if (isNumber(x) || isBigInt(x)) return constructor.of(x)
-  if (isString(x)) return new constructor(stringToCharCodes(x))
-  throw new TypeError([
-    'toTypedArray(typedArray, y)',
-    'cannot convert y to typedArray',
-  ].join('; '))
-}
-
-/*
- * @synopsis
- * TODO
- */
-const firstPowerOf2After = x => {
-  let y = 2
-  while (y < x + 1) {
-    y = y << 1
-  }
-  return y
-}
-
-/*
- * @synopsis
- * TODO
- */
-const typedArrayConcat = (y, chunk, offset) => {
-  const nextLength = offset + chunk.length
-  const buf = nextLength > y.length ? (() => {
-    const newBuf = new y.constructor(firstPowerOf2After(nextLength))
-    newBuf.set(y, 0)
-    return newBuf
-  })() : y
-  buf.set(chunk, offset)
-  return buf
-}
-
-/*
- * @synopsis
- * Iterable|GeneratorFunction
- *   |AsyncIterable|AsyncGeneratorFunction -> Sequence
- *
- * <T TypedArray>typedArrayTransform(fn function, x0 T)(x Sequence) -> T
- */
-const typedArrayTransform = (fn, x0) => x => possiblePromiseThen(
-  reduce(
-    fn(({ y, offset }, xi) => {
-      const chunk = toTypedArray(x0.constructor, xi)
-      const buf = typedArrayConcat(y, chunk, offset)
-      return { y: buf, offset: offset + chunk.length }
-    }),
-    { y: x0.constructor.from(x0), offset: x0.length },
-  )(x),
-  ({ y, offset }) => y.slice(0, offset),
-)
-
-/*
- * @synopsis
- * TODO
- */
-const writableTransform = (fn, x0) => reduce(
-  fn((y, xi) => { y.write(xi); return y }),
-  x0,
-)
-
-/*
- * @synopsis
- * TODO
- */
-const objectTransform = (fn, x0) => reduce(
-  fn((y, xi) => {
-    if (isArray(xi)) { y[xi[0]] = xi[1]; return y }
-    return Object.assign(y, xi)
-    // TODO: implement
-    // if (isObject(xi)) Object.assign(y, xi)
-    // else throw new TypeError('...')
-  }),
-  x0,
-)
-
-/*
- * @synopsis
- * TODO
- */
-const _transformBranch = (fn, x0, x) => {
-  if (isNull(x0)) return nullTransform(fn, x0)(x)
-  if (isArray(x0)) return arrayTransform(fn, x0)(x)
-  if (isString(x0)) return stringTransform(fn, x0)(x)
-  if (isSet(x0)) return setTransform(fn, x0)(x)
-  if (isMap(x0)) return mapTransform(fn, x0)(x)
-  if (isTypedArray(x0)) return typedArrayTransform(fn, x0)(x)
-  if (isWritable(x0)) return writableTransform(fn, x0)(x)
-  if (isObject(x0)) return objectTransform(fn, x0)(x)
-  throw new TypeError('transform(x, y); x invalid')
-}
-
-/**
  * @name emptyTransform
  *
  * @synopsis
@@ -2779,6 +2621,61 @@ const setConcat = (set, values) => isSet(values)
   : setAdd(set, values)
 
 /**
+ * @name curriedStreamExtend
+ *
+ * @synopsis
+ * curriedStreamExtend(stream Writable)(
+ *   chunk string|Buffer|Uint8Array|any,
+ *   encoding string|undefined,
+ *   callback function|undefined,
+ * ) -> stream
+ */
+const curriedStreamExtend = stream => function concat(
+  chunk, encoding, callback,
+) {
+  if (isBinary(chunk) || isString(chunk)) {
+    const chunkLength = chunk.length
+    let index = -1
+    while (++index < chunkLength) {
+      stream.write(chunk[index], encoding, callback)
+    }
+  } else { // objectMode
+    stream.write(chunk, encoding, callback)
+  }
+  return stream
+}
+
+/**
+ * @name streamFlatExtendExecutor
+ *
+ * @synopsis
+ * streamFlatExtendExecutor(
+ *   resultStream Writable, stream Readable,
+ * ) -> executor (resolve function, reject function)=>()
+ *
+ * @note optimizes function creation within streamExtend
+ */
+const streamFlatExtendExecutor = (
+  resultStream, stream,
+) => function executor(resolve, reject) {
+  stream.on('data', curriedStreamExtend(resultStream))
+  stream.on('end', thunkifyCallUnary(resolve, resultStream))
+  stream.on('error', reject)
+}
+
+/**
+ * @name streamFlatExtend
+ *
+ * @synopsis
+ * streamFlatExtend(
+ *   resultStream Writable, stream Readable,
+ * ) -> writableStream
+ */
+const streamFlatExtend = (
+  resultStream, stream,
+) => new Promise(streamFlatExtendExecutor(resultStream, stream))
+
+/**
  * @name writableStreamConcat
  *
  * @synopsis
@@ -2795,7 +2692,7 @@ const setConcat = (set, values) => isSet(values)
  */
 const writableStreamConcat = function (stream, values) {
   if (isNodeReadStream(values)) {
-    return values.pipe(stream)
+    return streamFlatExtend(stream, values)
   }
   stream.write(values)
   return stream
@@ -2832,7 +2729,7 @@ const genericTransform = function (args, transducer, result) {
   if (isArray(result)) {
     return genericReduce(args, transducer(arrayConcat), result)
   }
-  if (isTypedArray(result)) {
+  if (isBinary(result)) {
     return then(
       genericReduce(args, transducer(arrayConcat), []),
       curriedTypedArrayExtend(result))
@@ -3018,7 +2915,7 @@ const curriedGenericTransform = (
  * )(streamRandomInts()) // 9216576529289484980147613249169774446246768649...
  * ```
  *
- * Finally, a regular object initial value is shallowly merged with incoming items, while all else is returned as is. This behavior combined with reducer combinators supports application state management with async reducers similar to `reduce`.
+ * For an aggregate object, incoming items are assigned. This behavior combined with reducer combinators supports application state management with async reducers similar to `reduce`.
  *
  * ```javascript-playground
  * const reducerA = async (state, action) => {
