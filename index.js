@@ -1008,38 +1008,44 @@ map.resolver = function resolverMap(mapper) {
  * linearly transform data
  *
  * @synopsis
- * any -> T
+ * map(
+ *   mapper function,
+ * )(value any) -> result any
  *
- * (any, T)=>Promise|any -> Reducer<T>
- *
- * any -> A; any -> B; any -> C
- *
- * { map: (A=>B)=>Mappable<B> } -> Mappable<A>
+ * Functor<T> = Array<T>|Object<T>
+ *   |Iterator<T>|AsyncIterator<T>
+ *   |{ map: (T=>any)=>this }
  *
  * map(
- *   A=>Promise|B,
- * )(Array<A>) -> Promise|Array<B>
+ *   mapper any=>Promise|any,
+ * )(Functor|any) -> Promise|Functor|any
  *
  * map(
- *   A=>Promise|B,
- * )(Object<A>) -> Promise|Object<B>
+ *   mapper (item any)=>any,
+ * )(...any=>Iterator<item>) -> ...any=>Iterator<mapper(item)>
  *
- * map(A=>B)(GeneratorFunction<A>) -> GeneratorFunction<B>
+ * map(
+ *   mapper (item any)=>Promise|any,
+ * )(...any=>AsyncIterator<item>) -> ...any=>AsyncIterator<mapper(item)>
  *
- * map(A=>B)(Iterator<A>) -> Iterator<B>
+ * Reducer<T> = (any, T)=>Promise|any
  *
- * map(A=>Promise|B)(AsyncGeneratorFunction<A>) -> AsyncGeneratorFunction<B>
- *
- * map(A=>Promise|B)(AsyncIterator<A>) -> AsyncIterator<B>
- *
- * map(A=>Promise|B)(Reducer<A>) -> Reducer<B>
- *
- * map(A=>B)(Mappable<A>) -> Mappable<B>
- *
- * map(A=>Promise|B)(A) -> Promise|B
+ * map(
+ *   mapper item=>Promise|any,
+ * )(Reducer<item>) -> Reducer<mapper(item)>
  *
  * @description
- * **map** takes a function and applies it to each item of a collection, returning a collection of the same type with all resulting items. If a collection has an implicit order, e.g. an Array, the resulting collection will have the same order. If the input collection does not have an implicit order, the order of the result is not guaranteed.
+ * **map** takes an [a]synchronous mapper function and applies it to each item of a functor, returning a functor of the same type with all resulting items. Since multiple vanilla JavaScript types can be considered functors, `map` is polymorphic and predefines the required `map` operation for values of the following types:
+ *
+ *  * `Array`
+ *  * `Object` - just the values are iterated
+ *  * `Iterator` or `Generator`
+ *  * `AsyncIterator` or `AsyncGenerator`
+ *  * `{ map: (T=>any)=>this }` - an object that implements map
+ *
+ * If the first value supplied to a mapping function is not one of the above, the result of the mapping operation is a direct application of the mapper function to the first value. This defines behavior for any type supplied to a mapping function - a mapping function created with `map` will not throw unless the error originates from the mapper.
+ *
+ * If the input functor has an implicit order, e.g. an Array, the resulting functor will have the same order. If the input collection does not have an implicit order, the order of the result is not guaranteed.
  *
  * ```javascript-playground
  * const square = number => number ** 2
@@ -1053,7 +1059,13 @@ map.resolver = function resolverMap(mapper) {
  * ) // { a: 1, b: 4, c: 9 }
  * ```
  *
- * The generator function and its product, the generator, are more additions to the list of possible things to map over. The same goes for their async counterparts.
+ * In general, a mapping function will always return a result that is the same type as the first provided argument. Each of the following function types, when passed as the first value to a mapping function, create a function of the same type with all items of the return value transformed by the mapper.
+ *
+ *  * `...any=>Iterator` or `GeneratorFunction` - items of the iterator are mapped into a new iterator. Warning: using an async mapper in a synchronous generator function is not recommended and could lead to unexpected behavior.
+ *  * `...any=>AsyncIterator` or `AsyncGeneratorFunction` - items of the async iterator are mapped into a new async iterator. Async result items are awaited in a new async iterator. Async mapper functions are okay here.
+ *  * `Reducer<T> = (any, T)=>Promise|any` - when combined with `reduce` or any implementation thereof, items of the reducing operation are transformed by the mapper function. If an async mapper function is desired here, it is possible with rubico `reduce`.
+ *
+ * With mapping generator functions and mapping async generator functions, transformations on iterators and their async counterparts are simple to compose.
  *
  * ```javascript-playground
  * const capitalize = string => string.toUpperCase()
@@ -1073,7 +1085,7 @@ map.resolver = function resolverMap(mapper) {
  * console.log([...ABCIter]) // ['A', 'B', 'C']
  * ```
  *
- * Finally, **map** works with reducer functions to create transducers.
+ * The above concept is extended to reducer functions as [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
  *
  * ```
  * any -> T
@@ -1083,29 +1095,27 @@ map.resolver = function resolverMap(mapper) {
  * Reducer=>Reducer -> Transducer
  * ```
  *
- * A reducer is a function that takes a generic of any type T, a given instance of type T, and returns possibly a Promise of a generic of type T. A transducer is a function that takes a reducer and returns another reducer.
- *
- * ```
- * any -> A, any -> B
- *
- * map(mapper A=>Promise|B)(Reducer<A>) -> Reducer<B>
- * ```
- *
- * When passed a reducer, a mapping function returns another reducer with each given item T transformed by the mapper function. For more information on this behavior, see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md)
+ * A **reducer** is a variadic function like the one supplied to `Array.prototype.reduce`, but without the index and reference to the accumulated result per call. A **transducer** is a function that accepts a reducer function as an argument and returns another reducer function, which enables chaining functionality at the reducer level. `map` is core to this mechanism, and provides a seamless way to create transducers with mapper functions.
  *
  * ```javascript-playground
  * const square = number => number ** 2
  *
  * const concat = (array, item) => array.concat(item)
  *
- * const squareConcatReducer = map(square)(concat)
+ * const mapSquare = map(square)
+ * // mapSquare could potentially be a transducer, but at this point, it is
+ * // undifferentiated and not necessarily locked in to transducer behavior.
+ * // For example, mapSquare([1, 2, 3, 4, 5]) would produce [1, 9, 25]
+ *
+ * const squareConcatReducer = mapSquare(concat)
+ * // now mapSquare is passed the function concat, so it assumes transducer
+ * // position. squareConcatReducer is a reducer with chained functionality -
+ * // square and concat.
  *
  * console.log(
  *   [1, 2, 3, 4, 5].reduce(squareConcatReducer, []),
  * ) // [1, 4, 9, 16, 25]
  * ```
- *
- * By default, **map** looks for a `.map` property function on the input value, and if present, calls the `.map` property function with the provided mapper function. Otherwise, **map** returns the application of the mapper function with the input value.
  *
  * @execution concurrent
  *
@@ -3090,7 +3100,25 @@ const flatMapReducer = (func, reducer) => (aggregate, value) => (
 /**
  * @name flatMap
  *
+ * @catchphrase
+ * map then flatten
+ *
  * @synopsis
+ * Monad = { chain: function }
+ *
+ * FlatMappable = { flatMap: function }
+ *
+ * Semigroup = Array|string|Set|TypedArray
+ *   |{ concat: function }|{ write: function }|Object
+ *
+ * Collection = Iterable|Iterator
+ *   |AsyncIterable|AsyncIterator
+ *   |{ reduce: function }|Object|any,
+ *
+ * flatMap(
+ *   flatMapper item=>Collection|Monad|FlatMappable|any,
+ * )(value Semigroup<item any>) -> result Semigroup
+ *
  * <A any, B any>flatMap(
  *   func A=>Iterable<B>|B
  * )(value Array<Array<A>|A>) -> result Array<B>
@@ -3102,9 +3130,6 @@ const flatMapReducer = (func, reducer) => (aggregate, value) => (
  * <A any, B any>flatMap(
  *   func A=>Iterable<B>|B
  * )(value (any, any)=>any) -> transducedReducer (any, any)=>any
- *
- * @catchphrase
- * map then flatten
  *
  * @description
  * **flatMap** accepts a mapper function `func` and an Array or Set `value`, and returns a new flattened and mapped Array or Set `result`. Each item of `result` is the result of applying the mapper function `func` to a given item of the input Array or Set `value`. The final `result` Array or Set is flattened one depth level.
