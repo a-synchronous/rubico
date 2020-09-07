@@ -27,6 +27,15 @@ const squaredOdds = pipe([
 console.log(
   squaredOdds([1, 2, 3, 4, 5]),
 ) // [1, 9, 25]
+
+const asyncSquare = async number => number ** 2
+
+const asyncSquaredOdds = pipe([
+  filter(isOdd),
+  map(asyncSquare),
+])
+
+asyncSquaredOdds([1, 2, 3, 4, 5]).then(console.log) // [1, 9, 25]
 ```
 
 # Motivation
