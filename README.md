@@ -2,7 +2,6 @@
 ![rubico](https://raw.githubusercontent.com/a-synchronous/assets/master/rubico-logo-192x192.png) &nbsp; &nbsp; a shallow river in northeastern Italy, just south of Ravenna
 
 <br />
-<br />
 
 ![Node.js CI](https://github.com/a-synchronous/rubico/workflows/Node.js%20CI/badge.svg?branch=master)
 [![codecov](https://codecov.io/gh/a-synchronous/rubico/branch/master/graph/badge.svg)](https://codecov.io/gh/a-synchronous/rubico)
