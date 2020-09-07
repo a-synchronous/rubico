@@ -10,6 +10,8 @@
 
 ### [a]synchronous functional programming
 
+<br />
+
 ```javascript
 import { pipe, map, filter } from 'rubico'
 
