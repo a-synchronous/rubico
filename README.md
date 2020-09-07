@@ -8,7 +8,7 @@
 ![Node.js CI](https://github.com/a-synchronous/rubico/workflows/Node.js%20CI/badge.svg?branch=master)
 [![codecov](https://codecov.io/gh/a-synchronous/rubico/branch/master/graph/badge.svg)](https://codecov.io/gh/a-synchronous/rubico)
 
-[a]synchronous functional programming
+### [a]synchronous functional programming
 
 ```javascript
 import { pipe, map, filter } from 'rubico'
