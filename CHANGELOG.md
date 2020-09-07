@@ -1,7 +1,7 @@
-## v1.5.12 - next release
+## v1.5.12 - latest
  * transform rewrite + benchmarks
 
-## v1.5.11 - latest
+## v1.5.11
  * x/heapUsedInLoop - max and avg heap used in loop
  * monad/Cancellable - make a function return cancellable Promises
  * deprecated x/tracef
