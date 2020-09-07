@@ -9,12 +9,12 @@ Warning: this entire directory is experimental; APIs here are subject to change.
 Each rubico monad must be constructable via the `new` keyword and implement `.chain` on its prototype, while having some notion of `.map` and `.concat`. Similarly, `empty` is not strictly required, though there should be some notion of an empty instance of a Monad. For example, `[]` is `empty` for Arrays. All of these methods as well as any others are free to implement; only the constructor and `.chain` are required. Monads should throw TypeErrors from the constructor for invalid types of arguments.
 
 ## Monad constructor - required
-```coffeescript but-not-really
+```coffeescript:placeholder
 new Monad(...any) -> Monad {...}
 ```
 
 ## Monad.prototype.chain - required
-```coffeescript but-not-really
+```coffeescript:placeholder
 new Monad(value any).chain(
   flatMapper value=>(result Monad|any)) -> result
 ```
