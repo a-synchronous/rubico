@@ -161,9 +161,9 @@ const todoIDsRange = function* (from, to) {
 }
 
 // transform numbers of todoIDsRange to Stdout by fetchTodo
-const logTodosRange = transform(map(fetchTodo), Stdout)(todoIDsRange)
+const transformTodosToStdoutRange = transform(map(fetchTodo), Stdout)(todoIDsRange)
 
-logTodosRange(1, 100)
+transformTodosToStdoutRange(1, 100)
 // { userId: 1, id: 4, title: 'et porro tempora', completed: true }
 // { userId: 1, id: 1, title: 'delectus aut autem', completed: false }
 // ...
