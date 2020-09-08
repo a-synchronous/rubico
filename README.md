@@ -66,22 +66,56 @@ const {
 The style and naming conventions of rubico are idiomatic across languages and other libraries - using this library should feel second nature. Just like vanilla JavaScript operators, rubico operators act sensibly on sync or async JavaScript functions to create declarative, highly extensible, and async-enabled compositions.
 
 ```javascript
-const todoIDs = [1, 2, 3, 4, 5]
+import { pipe, map } from 'rubico'
 
 const toTodosUrl = id => 'https://jsonplaceholder.typicode.com/todos/' + id
 
-const callProperty = property => value => value[property]()
+const fetchedToJson = fetched => fetched.json()
+
+const todoIDs = [1, 2, 3, 4, 5]
 
 map(pipe([
   toTodosUrl,
   fetch,
-  callProperty('json'),
+  fetchedToJson,
   console.log,
-]))(todoIDs) // { userId: 1, id: 4, title: 'et porro tempora', completed: true }
-             // { userId: 1, id: 1, title: 'delectus aut autem', completed: false }
-             // { userId: 1, id: 3, title: 'fugiat veniam minus', completed: false }
-             // { userId: 1, id: 2, title: 'quis ut nam facilis...', completed: false }
-             // { userId: 1, id: 5, title: 'laboriosam mollitia...', completed: false }
+]))(todoIDs) // here, we map an array
+// { userId: 1, id: 4, title: 'et porro tempora', completed: true }
+// { userId: 1, id: 1, title: 'delectus aut autem', completed: false }
+// { userId: 1, id: 3, title: 'fugiat veniam minus', completed: false }
+// { userId: 1, id: 2, title: 'quis ut nam facilis...', completed: false }
+// { userId: 1, id: 5, title: 'laboriosam mollitia...', completed: false }
+```
+
+Flexibility means sensible, easily extensible code for various inputs and situations. This flexibility is enabled in part by rubico's theoretical roots in traditional functional programming.
+
+```javascript
+const { pipe, map } = require('rubico')
+
+const toTodosUrl = id => 'https://jsonplaceholder.typicode.com/todos/' + id
+
+const fetchedToJson = fetched => fetched.json()
+
+const todoIDsRange = function* (from, to) {
+  for (let id = from; id <= to; id++) {
+    yield id
+  }
+}
+
+const logTodosRange = map(pipe([
+  toTodosUrl,
+  fetch,
+  fetchedToJson,
+  console.log,
+]))(todoIDsRange) // here, map is applied to a generator function,
+                  // returning a function that logs todos in a range
+
+;[...logTodosRange(1, 100)]
+// { userId: 1, id: 4, title: 'et porro tempora', completed: true }
+// { userId: 1, id: 1, title: 'delectus aut autem', completed: false }
+// ...
+// ...
+// { userId: 1, id: 100, title: 'hello world', completed: false }
 ```
 
 For semantically related functionality, rubico provides variations for some of the operators as property functions, e.g. `map.pool` or `map.series`. When something goes wrong, rubico throws meaningful and ergonomic errors to aid in the debugging process. You should get started with rubico if you aspire to be a more effective programmer, write cleaner and more concise code, or harness the expressive power of functional programming in production.
