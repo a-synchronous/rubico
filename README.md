@@ -160,7 +160,7 @@ const todoIDsRange = function* (from, to) {
   }
 }
 
-// transform numbers of todoIDsRange to Stdout by fetchTodo
+// transform todoIDs to todos by fetchTodo, then concatenate to Stdout
 const transformTodosToStdoutRange = transform(map(fetchTodo), Stdout)(todoIDsRange)
 
 transformTodosToStdoutRange(1, 100)
