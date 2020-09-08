@@ -143,7 +143,7 @@ const fetchTodo = pipe([
   fetchedToJson,
 ])
 
-const Stdout = { // Stdout is a Semigroup
+const Stdout = {
   concat(...args) {
     console.log(...args)
     return this
