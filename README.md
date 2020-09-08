@@ -52,6 +52,8 @@ When you use this library, you obtain the freedom that comes only from having th
 # Introduction
 **rubico** is a powerful, flexible, and thoroughly benchmarked module of 24 higher order operators for async agnostic functional programming in JavaScript.
 
+<br />
+
 ```javascript
 const {
   pipe, fork, assign,
@@ -64,6 +66,8 @@ const {
 ```
 
 The style and naming conventions of rubico are idiomatic across languages and other libraries - using this library should feel second nature. Just like vanilla JavaScript operators, rubico operators act sensibly on sync or async JavaScript functions to create declarative, highly extensible, and async-enabled compositions.
+
+<br />
 
 ```javascript
 import { pipe, map } from 'rubico'
@@ -121,6 +125,8 @@ const logTodosRange = map(pipe([
 // ...
 // { userId: 1, id: 100, title: 'hello world', completed: false }
 ```
+
+<br />
 
 For semantically related functionality, rubico provides variations for some of the operators as property functions, e.g. `map.pool` or `map.series`. When something goes wrong, rubico throws meaningful and ergonomic errors to aid in the debugging process. You should get started with rubico if you aspire to be a more effective programmer, write cleaner and more concise code, or harness the expressive power of functional programming in production.
 
