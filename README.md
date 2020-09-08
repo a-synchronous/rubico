@@ -128,7 +128,7 @@ const logTodosRange = map(pipe([
 // { userId: 5, id: 100, title: 'excepturi a et neque...', completed: false }
 ```
 
-The same principle of code reuse by mathematics causes a modal context shift in rubico when applied to reducers.
+The same principle of code reuse by mathematics causes a modal contextual shift in rubico when applied to reducers. The following example employs a Semigroup `Stdout` to accomplish the same transformation as above with purer functional programming.
 
 ```javascript
 import { pipe, map, transform } from 'rubico'
