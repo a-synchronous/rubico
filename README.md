@@ -87,7 +87,11 @@ map(pipe([
 // { userId: 1, id: 5, title: 'laboriosam mollitia...', completed: false }
 ```
 
+<br />
+
 Flexibility means sensible, easily extensible code for various inputs and situations. This flexibility is enabled in part by rubico's theoretical roots in traditional functional programming.
+
+<br />
 
 ```javascript
 const { pipe, map } = require('rubico')
