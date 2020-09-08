@@ -65,6 +65,8 @@ const {
 } = rubico
 ```
 
+<br />
+
 The style and naming conventions of rubico are idiomatic across languages and other libraries - using this library should feel second nature. Just like vanilla JavaScript operators, rubico operators act sensibly on sync or async JavaScript functions to create declarative, highly extensible, and async-enabled compositions.
 
 <br />
