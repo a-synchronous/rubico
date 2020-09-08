@@ -95,7 +95,7 @@ map(pipe([
 
 <br />
 
-rubico's compositions are flexible, and apply sensibly to a wide range of vanilla JavaScript types. This kind of flexibility is enabled in part by rubico's theoretical roots in traditional functional programming.
+Functional compositions with rubico are flexible, and apply sensibly to a wide range of vanilla JavaScript types. This kind of flexibility is enabled in part by rubico's theoretical roots in traditional functional programming.
 
 <br />
 
