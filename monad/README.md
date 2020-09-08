@@ -20,12 +20,12 @@ new Monad(value any).chain(
 ```
 
 ## Monad.prototype.map
-```coffeescript
+```coffeescript [specscript]
 new Monad(value).map(mapper value=>Monad)
 ```
 
 ## Monad.prototype.concat
-```coffeescript
+```coffeescript [specscript]
 new Monad(value any).concat(anotherMonad Monad) -> combinedMonad Monad
 ```
 
