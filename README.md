@@ -95,12 +95,12 @@ map(pipe([
 
 <br />
 
-Functional compositions with rubico are flexible, and apply sensibly to a wide range of vanilla JavaScript types. This kind of flexibility is enabled in part by rubico's theoretical roots in traditional functional programming.
+Functional compositions with rubico are flexible, and apply sensibly to a wide range of vanilla JavaScript types. This kind of flexibility is enabled in part by rubico's theoretical roots in mathematics.
 
 <br />
 
 ```javascript
-const { pipe, map } = require('rubico')
+import { pipe, map } from 'rubico'
 
 const toTodosUrl = id => 'https://jsonplaceholder.typicode.com/todos/' + id
 
@@ -125,7 +125,48 @@ const logTodosRange = map(pipe([
 // { userId: 1, id: 1, title: 'delectus aut autem', completed: false }
 // ...
 // ...
-// { userId: 1, id: 100, title: 'hello world', completed: false }
+// { userId: 5, id: 100, title: 'excepturi a et neque...', completed: false }
+```
+
+The same principle of code reuse by mathematics causes a modal context shift in rubico when applied to reducers.
+
+```javascript
+import { pipe, map, transform } from 'rubico'
+
+const toTodosUrl = id => 'https://jsonplaceholder.typicode.com/todos/' + id
+
+const fetchedToJson = fetched => fetched.json()
+
+const fetchTodo = pipe([
+  toTodosUrl,
+  fetch,
+  fetchedToJson,
+])
+
+const Stdout = { // Stdout is a Semigroup
+  concat(...args) {
+    console.log(...args)
+    return this
+  }
+}
+
+const todoIDsRange = function* (from, to) {
+  for (let id = from; id <= to; id++) {
+    yield id
+  }
+}
+
+// transform numbers of todoIDsRange to Stdout by fetchTodo
+const logTodosRange = transform(
+  map(fetchTodo), Stdout,
+)(todoIDsRange)
+
+logTodosRange(1, 100)
+// { userId: 1, id: 4, title: 'et porro tempora', completed: true }
+// { userId: 1, id: 1, title: 'delectus aut autem', completed: false }
+// ...
+// ...
+// { userId: 1, id: 100, title: 'excepturi a et neque...', completed: false }
 ```
 
 <br />
