@@ -134,7 +134,7 @@ squaredOdds([1, 2, 3, 4, 5]) // [1, 9, 25]
 
 <br />
 
-By default, `concat` is the last step of a transforming operation. If functionality for this step is required beyond the default, `reduce` is another viable catalyst for rubico's transducer API. The only difference between `reduce` and `transform` is you must provide the final concatenation step for `reduce`, while concatenation is inferred by `transform`.
+By default, `concat` is the last step of a transforming operation. If functionality for this step is required beyond the default, `reduce` is another viable provider of rubico's transducer API. The only difference between `reduce` and `transform` is you must provide the final concatenation step for `reduce`, while concatenation is inferred by `transform`.
 
 Further reading:
  * https://tgvashworth.com/2014/08/31/csp-and-transducers.html
