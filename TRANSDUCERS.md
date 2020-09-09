@@ -1,5 +1,5 @@
 # Transducers
-Transducers enable wrangling of very large or infinite streams of data in a composable and memory efficient way. Say you had `veryBigData` in an array
+Transducers enable composable and memory efficient wrangling of very large or infinite streams of data. Say you had `veryBigData` in an array:
 
 ```javascript
 const veryBigData = [/* many items in here */]
@@ -15,7 +15,7 @@ console.log(veryBigProcessedData) // massive console.log
 
 The above is not very memory efficient because of the intermediate arrays `veryBigFilteredData` and `veryBigProcessedData`. We're also logging out a large quantity of data at once to the console.
 
-With rubico, you could express the above transformation as a single pass without incurring a memory penalty
+With rubico, you could express the above transformation as a single pass without incurring a memory penalty.
 
 <br />
 
@@ -42,7 +42,7 @@ transform(
 
 <br />
 
-`pipe([filter(...), map(...)])` understands it is in transducer position, and behaves as a transducer, writing each data point to the console via `Stdout.concat`. By defining a self-referencing `.concat`, `Stdout` is regarded by `transform` as a Semigroup ([fantasy-land](https://github.com/fantasyland/fantasy-land#semigroup)). In general, `transform` acts on any vanilla JavaScript type with a notion of concatenation.
+The pipeline expressed by `pipe(...)` understands it is in transducer position, and behaves as a transducer, writing each data point to the console via `Stdout.concat`. By defining a self-referencing `.concat`, `Stdout` is regarded by `transform` as a Semigroup ([fantasy-land](https://github.com/fantasyland/fantasy-land#semigroup)). In general, `transform` acts on any vanilla JavaScript type with a notion of concatenation.
 
 <br />
 
