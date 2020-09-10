@@ -21,7 +21,6 @@
  * exported methods are time and space optimal
  * memory used by exported methods is properly garbage collected
  * no special types; use built-in types
- * no currying; write new functions
  * avoid variadic functions; use lists
  * avoid anonymous function creation; use names and factory functions
  * avoid creating functions inside functions
@@ -115,6 +114,139 @@ const range = (start, end) => Array.from({ length: end - start }, (x, i) => i + 
 
 const arrayOf = (item, length) => Array.from({ length }, () => item)
 
+const __ = Symbol('placeholder')
+
+// argument resolver for curry2
+const curry2ResolveArg0 = (
+  baseFunc, arg1,
+) => function arg0Resolver(arg0) {
+  return baseFunc(arg0, arg1)
+}
+
+// argument resolver for curry2
+const curry2ResolveArg1 = (
+  baseFunc, arg0,
+) => function arg1Resolver(arg1) {
+  return baseFunc(arg0, arg1)
+}
+
+/**
+ * @name curry2
+ *
+ * @synopsis
+ * __ = Symbol('placeholder')
+ *
+ * curry2(
+ *   baseFunc function,
+ *   arg0 __|any,
+ *   arg1 __|any,
+ * ) -> function
+ */
+const curry2 = function (baseFunc, arg0, arg1) {
+  return arg0 == __
+    ? curry2ResolveArg0(baseFunc, arg1)
+    : curry2ResolveArg1(baseFunc, arg0)
+}
+
+// argument resolver for curry3
+const curry3ResolveArg0 = (
+  baseFunc, arg1, arg2,
+) => function arg0Resolver(arg0) {
+  return baseFunc(arg0, arg1, arg2)
+}
+
+// argument resolver for curry3
+const curry3ResolveArg1 = (
+  baseFunc, arg0, arg2,
+) => function arg1Resolver(arg1) {
+  return baseFunc(arg0, arg1, arg2)
+}
+
+// argument resolver for curry3
+const curry3ResolveArg2 = (
+  baseFunc, arg0, arg1,
+) => function arg2Resolver(arg2) {
+  return baseFunc(arg0, arg1, arg2)
+}
+
+/**
+ * @name curry3
+ *
+ * @synopsis
+ * __ = Symbol('placeholder')
+ *
+ * curry3(
+ *   baseFunc function,
+ *   arg0 __|any,
+ *   arg1 __|any,
+ *   arg2 __|any
+ * ) -> function
+ */
+const curry3 = function (baseFunc, arg0, arg1, arg2) {
+  if (arg0 == __) {
+    return curry3ResolveArg0(baseFunc, arg1, arg2)
+  }
+  if (arg1 == __) {
+    return curry3ResolveArg1(baseFunc, arg0, arg2)
+  }
+  return curry3ResolveArg2(baseFunc, arg0, arg1)
+}
+
+// argument resolver for curry4
+const curry4ResolveArg0 = (
+  baseFunc, arg1, arg2, arg3,
+) => function arg0Resolver(arg0) {
+  return baseFunc(arg0, arg1, arg2, arg3)
+}
+
+// argument resolver for curry4
+const curry4ResolveArg1 = (
+  baseFunc, arg0, arg2, arg3,
+) => function arg1Resolver(arg1) {
+  return baseFunc(arg0, arg1, arg2, arg3)
+}
+
+// argument resolver for curry4
+const curry4ResolveArg2 = (
+  baseFunc, arg0, arg1, arg3,
+) => function arg2Resolver(arg2) {
+  return baseFunc(arg0, arg1, arg2, arg3)
+}
+
+// argument resolver for curry4
+const curry4ResolveArg3 = (
+  baseFunc, arg0, arg1, arg2,
+) => function arg3Resolver(arg3) {
+  return baseFunc(arg0, arg1, arg2, arg3)
+}
+
+/**
+ * @name curry4
+ *
+ * @synopsis
+ * __ = Symbol('placeholder')
+ *
+ * curry4(
+ *   baseFunc function,
+ *   arg0 __|any,
+ *   arg1 __|any,
+ *   arg2 __|any,
+ *   arg3 __|any,
+ * ) -> function
+ */
+const curry4 = function (baseFunc, arg0, arg1, arg2, arg3) {
+  if (arg0 == __) {
+    return curry4ResolveArg0(baseFunc, arg1, arg2, arg3)
+  }
+  if (arg1 == __) {
+    return curry4ResolveArg1(baseFunc, arg0, arg2, arg3)
+  }
+  if (arg2 == __) {
+    return curry4ResolveArg2(baseFunc, arg0, arg1, arg3)
+  }
+  return curry4ResolveArg3(baseFunc, arg0, arg1, arg2)
+}
+
 /**
  * @name always
  *
@@ -124,25 +256,12 @@ const arrayOf = (item, length) => Array.from({ length }, () => item)
 const always = value => function getter() { return value }
 
 /**
- * @name thunkifyCallUnary
+ * @name thunkify1
  *
  * @synopsis
- * thunkifyCallUnary(func function, args Array) -> ()=>func(...args)
+ * thunkify1(func function, argument Array) -> ()=>func(argument)
  */
-const thunkifyCallUnary = (func, argument) => () => func(argument)
-
-/**
- * @name arrayPush
- *
- * @synopsis
- * arrayPush(array Array, value any, index undefined|number) => array
- */
-const arrayPush = function (
-  array, value, index = array.length,
-) {
-  array[index] = value
-  return array
-}
+const thunkify1 = (func, argument) => () => func(argument)
 
 /**
  * @name _arrayExtend
@@ -210,16 +329,6 @@ const arrayExtendMap = function (
 const setAdd = (set, item) => set.add(item)
 
 /**
- * @name curriedSetAdd
- *
- * @synopsis
- * curriedSetAdd(set Set)(item any) -> set
- */
-const curriedSetAdd = set => function curried(item) {
-  return setAdd(set, item)
-}
-
-/**
  * @name setExtend
  *
  * @synopsis
@@ -246,12 +355,11 @@ const setExtend = (set, values) => {
  */
 const setMap = function (set, mapper) {
   const result = new Set(),
-    curriedSetAddResult = curriedSetAdd(result),
     promises = []
   for (const item of set) {
     const resultItem = mapper(item)
     if (isPromise(resultItem)) {
-      promises.push(resultItem.then(curriedSetAddResult))
+      promises.push(resultItem.then(curry2(setAdd, result, __)))
     } else {
       result.add(resultItem)
     }
@@ -342,7 +450,9 @@ const possiblePromiseAll = values => (values.some(isPromise)
  *   funcB intermediate=>(result any)
  * ) -> pipedFunction ...args=>result
  */
-const funcConcat = (funcA, funcB) => function pipedFunction(...args) {
+const funcConcat = (
+  funcA, funcB,
+) => function pipedFunction(...args) {
   const intermediate = funcA(...args)
   return isPromise(intermediate)
     ? intermediate.then(funcB)
@@ -902,38 +1012,27 @@ const generatorFunctionMap = function (generatorFunc, mapper) {
  * @name MappingIterator
  *
  * @synopsis
- * new MappingIterator(iter Iterator, mapper function) -> MappingIterator
+ * const mappingIterator = new MappingIterator(
+ *   iter Iterator, mapper function,
+ * ) -> MappingIterator
+ *
+ * mappingIterator.next() -> { value: any, done: boolean }
  */
 const MappingIterator = function (iter, mapper) {
   this.iter = iter
   this.mapper = mapper
 }
 
-/**
- * @name MappingIterator.prototype[Symbol.iterator]
- *
- * @synopsis
- * new MappingIterator(
- *   iter Iterator,
- *   mapper function,
- * )[Symbol.iterator]() -> MappingIterator
- */
-MappingIterator.prototype[symbolIterator] = function mappingValues() {
-  return this
-}
-
-/**
- * @name MappingIterator.prototype.next
- *
- * @synopsis
- * new MappingIterator(
- *   iter Iterator,
- *   mapper function,
- * ).next() -> { value: any, done: boolean }
- */
-MappingIterator.prototype.next = function next() {
-  const { value, done } = this.iter.next()
-  return done ? { value, done } : { value: this.mapper(value), done }
+MappingIterator.prototype = {
+  [symbolIterator]() {
+    return this
+  },
+  next() {
+    const iteration = this.iter.next()
+    return iteration.done
+      ? iteration
+      : { value: this.mapper(iteration.value), done: false }
+  },
 }
 
 /**
@@ -956,63 +1055,41 @@ const asyncGeneratorFunctionMap = function (asyncGeneratorFunc, mapper) {
 }
 
 /**
+ * @name toIteration
+ *
+ * @synopsis
+ * toIteration(value any) -> { value, done: false }
+ */
+const toIteration = value => ({ value, done: false })
+
+/**
  * @name MappingAsyncIterator
  *
  * @synopsis
- * new MappingAsyncIterator(
- *   asyncIter Iterator,
+ * mappingAsyncIterator = new MappingAsyncIterator(
+ *   iter AsyncIterator,
  *   mapper function,
  * ) -> MappingAsyncIterator
+ *
+ * mappingAsyncIterator.next() -> Promise<{ value: any, done: boolean }>
  */
-const MappingAsyncIterator = function (asyncIter, mapper) {
-  this.asyncIter = asyncIter
+const MappingAsyncIterator = function (iter, mapper) {
+  this.iter = iter
   this.mapper = mapper
 }
 
-/**
- * @name MappingAsyncIterator.prototype[symbolAsyncIterator]
- *
- * @synopsis
- * new MappingAsyncIterator(
- *   asyncIter Iterator,
- *   mapper function,
- * )[Symbol.asyncIterator]() -> MappingAsyncIterator
- */
-MappingAsyncIterator.prototype[symbolAsyncIterator] = function mappingValues() {
-  return this
-}
-
-/**
- * @name MappingAsyncIterator.prototype.next
- *
- * @synopsis
- * new MappingAsyncIterator(
- *   asyncIter Iterator,
- *   mapper function,
- * ).next() -> Promise|{ value: any, done: boolean }
- */
-MappingAsyncIterator.prototype.next = async function next() {
-  const { value, done } = await this.asyncIter.next()
-  if (done) return { value: undefined, done: true }
-  const resultItem = this.mapper(value)
-  return isPromise(resultItem)
-    ? resultItem.then(res => ({ value: res, done: false }))
-    : ({ value: resultItem, done: false })
-}
-
-/**
- * @name curriedReducer
- *
- * @synopsis
- * any -> T
- *
- * curriedReducer(
- *   reducer (any, T)=>any,
- *   result any,
- * ) -> curried (value T)=>any
- */
-const curriedReducer = (reducer, result) => function curried(value) {
-  return reducer(result, value)
+MappingAsyncIterator.prototype = {
+  [symbolAsyncIterator]() {
+    return this
+  },
+  async next() {
+    const iteration = await this.iter.next()
+    if (iteration.done) {
+      return iteration
+    }
+    return then(
+      this.mapper(iteration.value), toIteration)
+  }
 }
 
 /**
@@ -1029,34 +1106,9 @@ const curriedReducer = (reducer, result) => function curried(value) {
 const reducerMap = (reducer, mapper) => function mappingReducer(result, value) {
   const mapped = mapper(value)
   return isPromise(mapped)
-    ? mapped.then(curriedReducer(reducer, result))
+    ? mapped.then(curry2(reducer, result, __))
     : reducer(result, mapped)
 }
-
-/**
- * @name resolverMap
- *
- * @synopsis
- * any -> A; any -> B
- *
- * resolverMap(
- *   resolver ...args=>A,
- *   mapper A=>B,
- * ) -> (args ...any)=>B
-const resolverMap = (resolver, mapper) => funcConcat(resolver, map(mapper))
- */
-
-/**
- * @name map.resolver
- *
- * @catchphrase
- * lazy map
-map.resolver = function resolverMap(mapper) {
-  return function mapping(resolver) {
-    return resolverMap(resolver, mapper)
-  }
-}
- */
 
 /**
  * @name map
@@ -1412,7 +1464,9 @@ const arrayMapWithIndex = function (array, mapper) {
   let index = -1, isAsync = false
   while (++index < arrayLength) {
     const resultItem = mapper(array[index], index, array)
-    if (isPromise(resultItem)) isAsync = true
+    if (isPromise(resultItem)) {
+      isAsync = true
+    }
     result[index] = resultItem
   }
   return isAsync ? promiseAll(result) : result
@@ -1485,31 +1539,25 @@ console.log(
  */
 
 /**
- * @name arrayFilterConditionsResolver
+ * @name arrayFilterByConditions
  *
  * @synopsis
- * any -> T
- *
- * arrayFilterConditionsResolver(
- *   array Array<T>,
- *   result Array<T>,
+ * arrayFilterByConditions(
+ *   array Array,
+ *   result Array,
  *   index number,
- * ) -> resolvingShouldIncludeItems(
- *   shouldIncludeItem Array<boolean>,
- * )=>result
- *
- * @description
- * For quickscoping filter* .then handlers. index should already be processed.
+ *   conditions Array<boolean>,
+ * ) -> result
  */
-const arrayFilterConditionsResolver = (
-  array, result, index,
-) => function resolvingShouldIncludeItems(shouldIncludeItems) {
-  const arrayLength = array.length
-  let resultIndex = result.length - 1,
-    shouldIncludeItemsIndex = -1
+const arrayFilterByConditions = function (
+  array, result, index, conditions,
+) {
+  const arrayLength = array.length,
+    resultPush = result.push.bind(result)
+  let conditionsIndex = -1
   while (++index < arrayLength) {
-    if (shouldIncludeItems[++shouldIncludeItemsIndex]) {
-      result[++resultIndex] = array[index]
+    if (conditions[++conditionsIndex]) {
+      resultPush(array[index])
     }
   }
   return result
@@ -1538,7 +1586,7 @@ const arrayFilter = function (array, predicate) {
       return promiseAll(
         arrayExtendMap(
           [shouldIncludeItem], array, predicate, index)).then(
-            arrayFilterConditionsResolver(array, result, index - 1))
+            curry4(arrayFilterByConditions, array, result, index - 1, __))
     }
     if (shouldIncludeItem) {
       result[++resultIndex] = item
@@ -1548,22 +1596,21 @@ const arrayFilter = function (array, predicate) {
 }
 
 /**
- * @name objectSetConditionResolver
+ * @name transferPropertyByCondition
  *
  * @synopsis
- * any -> T
- *
- * objectSetConditionResolver(
- *   object Object<T>,
- *   result Object<T>,
+ * transferPropertyByCondition(
+ *   objectA object,
+ *   objectB object,
  *   key string,
- * ) -> settingValueIfTruthy (shouldIncludeItem boolean)=>()
+ *   condition boolean,
+ * ) -> ()
  */
-const objectSetConditionResolver = (
-  object, result, key,
-) => function settingValueIfTruthy(shouldIncludeItem) {
-  if (shouldIncludeItem) {
-    result[key] = object[key]
+const transferPropertyByCondition = function (
+  target, source, key, condition,
+) {
+  if (condition) {
+    target[key] = source[key]
   }
 }
 
@@ -1585,8 +1632,8 @@ const objectFilter = function (object, predicate) {
     const item = object[key]
     const shouldIncludeItem = predicate(item)
     if (isPromise(shouldIncludeItem)) {
-      promises[promises.length] = shouldIncludeItem.then(
-        objectSetConditionResolver(object, result, key))
+      promises.push(shouldIncludeItem.then(
+        curry4(transferPropertyByCondition, result, object, key, __)))
     } else if (shouldIncludeItem) {
       result[key] = item
     }
@@ -1625,50 +1672,35 @@ const generatorFunctionFilter = function (generatorFunction, predicate) {
  * @synopsis
  * any -> T
  *
- * new FilteringIterator(
+ * filteringIterator = new FilteringIterator(
  *   iter Iterator<T>,
  *   predicate T=>boolean,
- * ) -> FilteringIterator<T>
+ * )
+ *
+ * filteringIterator.next() -> { value: any, done: boolean }
  */
 const FilteringIterator = function (iter, predicate) {
   this.iter = iter
   this.predicate = predicate
 }
 
-/**
- * @name FilteringIterator.prototype[Symbol.iterator]
- *
- * @synopsis
- * new FilteringIterator(
- *   iter Iterator,
- *   predicate function,
- * )[Symbol.iterator]() -> FilteringIterator
- */
-FilteringIterator.prototype[symbolIterator] = function filteringValues() {
-  return this
-}
-
-/**
- * @name FilteringIterator.prototype.next
- *
- * @synopsis
- * new FilteringIterator(
- *   iter Iterator,
- *   predicate function,
- * ).next() -> { value: any, done: boolean }
- */
-FilteringIterator.prototype.next = function next() {
-  const thisIterNext = this.iter.next.bind(this.iter),
-    thisPredicate = this.predicate
-  let iteration = this.iter.next()
-  while (!iteration.done) {
-    const { value } = iteration
-    if (thisPredicate(value)) {
-      return { value, done: false }
+FilteringIterator.prototype = {
+  [symbolIterator]() {
+    return this
+  },
+  next() {
+    const thisIterNext = this.iter.next.bind(this.iter),
+      thisPredicate = this.predicate
+    let iteration = this.iter.next()
+    while (!iteration.done) {
+      const { value } = iteration
+      if (thisPredicate(value)) {
+        return { value, done: false }
+      }
+      iteration = thisIterNext()
     }
-    iteration = thisIterNext()
-  }
-  return { value: undefined, done: true }
+    return iteration
+  },
 }
 
 /**
@@ -1705,74 +1737,58 @@ const asyncGeneratorFunctionFilter = function (asyncGeneratorFunction, predicate
  * @synopsis
  * any -> T
  *
- * new FilteringAsyncIterator(
- *   asyncIter AsyncIterator<T>,
+ * const filteringAsyncIterator = new FilteringAsyncIterator(
+ *   iter AsyncIterator<T>,
  *   predicate T=>boolean,
  * ) -> FilteringAsyncIterator<T>
+ *
+ * filteringAsyncIterator.next() -> { value: Promise, done: boolean }
  */
-const FilteringAsyncIterator = function (asyncIter, predicate) {
-  this.asyncIter = asyncIter
+const FilteringAsyncIterator = function (iter, predicate) {
+  this.iter = iter
   this.predicate = predicate
 }
 
-/**
- * @name FilteringAsyncIterator.prototype[Symbol.asyncIterator]
- *
- * @synopsis
- * new FilteringAsyncIterator(
- *   asyncIter AsyncIterator,
- *   predicate function,
- * )[Symbol.asyncIterator]() -> FilteringAsyncIterator
- */
-FilteringAsyncIterator.prototype[symbolAsyncIterator] = function filteringValues() {
-  return this
-}
-
-/**
- * @name FilteringAsyncIterator.prototype.next
- *
- * @synopsis
- * new FilteringAsyncIterator(
- *   asyncIter AsyncIterator,
- *   predicate function,
- * ).next() -> { value: any, done: boolean }
- */
-FilteringAsyncIterator.prototype.next = async function next() {
-  const thisIterNext = this.asyncIter.next.bind(this.asyncIter),
-    thisPredicate = this.predicate
-  let iteration = await thisIterNext()
-  while (!iteration.done) {
-    const { value } = iteration
-    const shouldIncludeItem = thisPredicate(value)
-    if (
-      isPromise(shouldIncludeItem)
-        ? await shouldIncludeItem
-        : shouldIncludeItem
-    ) {
-      return { value, done: false }
+FilteringAsyncIterator.prototype = {
+  [symbolAsyncIterator]() {
+    return this
+  },
+  async next() {
+    const thisIterNext = this.iter.next.bind(this.iter),
+      thisPredicate = this.predicate
+    let iteration = await thisIterNext()
+    while (!iteration.done) {
+      const { value } = iteration
+      const shouldIncludeItem = thisPredicate(value)
+      if (
+        isPromise(shouldIncludeItem)
+          ? await shouldIncludeItem
+          : shouldIncludeItem
+      ) {
+        return { value, done: false }
+      }
+      iteration = await thisIterNext()
     }
-    iteration = await thisIterNext()
-  }
-  return { value: undefined, done: true }
+    return iteration
+  },
 }
 
 /**
- * @name reducerFilterConditionResolver
+ * @name reducerFilterByCondition
  *
  * @synopsis
- * any -> T
+ * T = any
  *
- * reducerFilterConditionResolver(
+ * reducerFilterByCondition(
  *   reducer (any, T)=>Promise|any,
  *   result any,
  *   item T,
- * ) -> (shouldIncludeItem boolean)=>result
+ *   condition boolean,
+ * ) -> any
  */
-const reducerFilterConditionResolver = (
-  reducer, result, item,
-) => function conditionResolver(shouldIncludeItem) {
-  return shouldIncludeItem ? reducer(result, item) : result
-}
+const reducerFilterByCondition = (
+  reducer, result, item, condition,
+) => condition ? reducer(result, item) : result
 
 /**
  * @name reducerFilter
@@ -1788,12 +1804,9 @@ const reducerFilterConditionResolver = (
 const reducerFilter = (
   reducer, predicate,
 ) => function filteringReducer(result, item) {
-  const shouldIncludeItem = predicate(item)
-  if (isPromise(shouldIncludeItem)) {
-    return shouldIncludeItem.then(
-      reducerFilterConditionResolver(reducer, result, item))
-  }
-  return shouldIncludeItem ? reducer(result, item) : result
+  return then(
+    predicate(item),
+    curry4(reducerFilterByCondition, reducer, result, item, __))
 }
 
 /**
@@ -2016,7 +2029,7 @@ const arrayFilterWithIndex = function (array, predicate) {
       return promiseAll(
         arrayExtendMapWithIndex(
           [shouldIncludeItem], array, predicate, index)).then(
-            arrayFilterConditionsResolver(array, result, index - 1))
+            curry4(arrayFilterByConditions, array, result, index - 1, __))
     }
     if (shouldIncludeItem) {
       result[++resultIndex] = item
@@ -2070,22 +2083,6 @@ const asyncArrayReduce = async function (array, reducer, result, index) {
 }
 
 /**
- * @name asyncArrayReduceResultResolver
- *
- * @synopsis
- * asyncArrayReduceResultResolver(
- *   array Array,
- *   reducer function,
- *   index number,
- * ) -> resolver result=>any
- */
-const asyncArrayReduceResultResolver = (
-  array, reducer, index,
-) => function resolver(result) {
-  return asyncArrayReduce(array, reducer, result, index)
-}
-
-/**
  * @name arrayReduce
  *
  * @synopsis
@@ -2107,7 +2104,7 @@ const arrayReduce = function (array, reducer, result) {
     result = reducer(result, array[index])
     if (isPromise(result)) {
       return result.then(
-        asyncArrayReduceResultResolver(array, reducer, index))
+        curry4(asyncArrayReduce, array, reducer, __, index))
     }
   }
   return result
@@ -2142,40 +2139,6 @@ const asyncIteratorReduce = async function (asyncIterator, reducer, result) {
 }
 
 /**
- * @name tacitAsyncIteratorReduce
- *
- * @synopsis
- * any -> T
- *
- * tacitAsyncIteratorReduce(
- *   reducer (any, T)=>Promise|any,
- *   result any,
- * ) -> resolver (asyncIterator AsyncIterator<T>)=>any
- */
-const tacitAsyncIteratorReduce = (
-  reducer, result,
-) => function resolver(asyncIterator) {
-  return asyncIteratorReduce(asyncIterator, reducer, result)
-}
-
-/**
- * @name asyncIteratorReduceResultResolver
- *
- * @synopsis
- * any -> T
- *
- * asyncIteratorReduceResultResolver(
- *   asyncIterator AsyncIterator<T>,
- *   reducer (any, T)=>Promise|any,
- * ) -> resolver (result any)=>any
- */
-const asyncIteratorReduceResultResolver = (
-  asyncIterator, reducer,
-) => function resolver(result) {
-  return asyncIteratorReduce(asyncIterator, reducer, result)
-}
-
-/**
  * @name asyncGeneratorFunctionReduce
  *
  * @synopsis
@@ -2190,7 +2153,8 @@ const asyncIteratorReduceResultResolver = (
 const asyncGeneratorFunctionReduce = (
   asyncGeneratorFunc, reducer, result,
 ) => funcConcat(
-  asyncGeneratorFunc, tacitAsyncIteratorReduce(reducer, result))
+  asyncGeneratorFunc,
+  curry3(asyncIteratorReduce, __, reducer, result))
 
 /**
  * @name iteratorReduce
@@ -2216,29 +2180,11 @@ const iteratorReduce = function (iterator, reducer, result) {
   while (!iteration.done) {
     result = reducer(result, iteration.value)
     if (isPromise(result)) {
-      return result.then(
-        asyncIteratorReduceResultResolver(iterator, reducer))
+      return result.then(curry3(asyncIteratorReduce, iterator, reducer, __))
     }
     iteration = iterator.next()
   }
   return result
-}
-
-/**
- * @name tacitIteratorReduce
- *
- * @synopsis
- * any -> T
- *
- * tacitIteratorReduce(
- *   reducer (any, T)=>Promise|any,
- *   result any,
- * ) -> resolver (iterator Iterator<T>)=>Promise|any
- */
-const tacitIteratorReduce = (
-  reducer, result,
-) => function resolver(iterator) {
-  return iteratorReduce(iterator, reducer, result)
 }
 
 /**
@@ -2255,24 +2201,9 @@ const tacitIteratorReduce = (
  */
 const generatorFunctionReduce = (
   generatorFunc, reducer, result,
-) => funcConcat(generatorFunc, tacitIteratorReduce(reducer, result))
-
-/**
- * @name reducerResultResolver
- *
- * @synopsis
- * any -> T
- *
- * reducerResultResolver(
- *   reducer (result, T)=>result,
- *   item T,
- * )(result any) -> result
- */
-const reducerResultResolver = (
-  reducer, item,
-) => function reducing(result) {
-  return reducer(result, item)
-}
+) => funcConcat(
+  generatorFunc,
+  curry3(iteratorReduce, __, reducer, result))
 
 /**
  * @name reducerConcat
@@ -2281,26 +2212,34 @@ const reducerResultResolver = (
  * any -> T
  *
  * reducerConcat(
- *   reducerA (any, T)=>(intermediate any),
- *   reducerB (intermediate, T)=>any,
- * ) -> pipedReducer (any, T)=>any
+ *   reducerA (any, T)=>(intermediate Promise|any),
+ *   reducerB (intermediate, T)=>Promise|any,
+ * ) -> pipedReducer (any, T)=>Promise|any
  */
 const reducerConcat = function (reducerA, reducerB) {
   return function pipedReducer(result, item) {
     const intermediate = reducerA(result, item)
     return isPromise(intermediate)
-      ? intermediate.then(reducerResultResolver(reducerB, item))
+      ? intermediate.then(curry2(reducerB, __, item))
       : reducerB(intermediate, item)
   }
 }
 
 /**
- * @name reducerEmpty
+ * @name reducerConcatSync
  *
  * @synopsis
- * reducerEmpty(result any) -> result
-const reducerEmpty = result => result
- */
+ * any -> T
+ *
+ * reducerConcatSync(
+ *   reducerA (any, T)=>(intermediate any),
+ *   reducerB (intermediate, T)=>any,
+ * ) -> pipedReducer (any, T)=>any
+const reducerConcatSync = (
+  reducerA, reducerB,
+) => function pipedReducer(result, item) {
+  return reducerB(reducerA(result, item), item)
+} */
 
 /**
  * @name tacitGenericReduce
@@ -2318,7 +2257,6 @@ const tacitGenericReduce = (
 ) => function reducing(...args) {
   return genericReduce(args, reducer, result)
 }
-
 
 /**
  * @name genericReduce
@@ -2370,16 +2308,17 @@ var genericReduce = function (args, reducer, result) {
       return asyncGeneratorFunctionReduce(collection, reducer, result)
     }
     return tacitGenericReduce(
-      args.length == 0 ? reducer : args.reduce(reducerConcat, reducer), result)
+      args.length == 0 ? reducer : args.reduce(reducerConcat, reducer),
+      result)
   }
   if (typeof collection.reduce == 'function') {
     return collection.reduce(reducer, result)
   }
   if (typeof collection.chain == 'function') {
-    return collection.chain(tacit2Ary(reducer, result))
+    return collection.chain(curry2(reducer, __, result))
   }
   if (typeof collection.flatMap == 'function') {
-    return collection.flatMap(tacit2Ary(reducer, result))
+    return collection.flatMap(curry2(reducer, __, result))
   }
   if (collection.constructor == Object) {
     return arrayReduce(objectValues(collection), reducer, result)
@@ -2387,21 +2326,6 @@ var genericReduce = function (args, reducer, result) {
   return result === undefined
     ? reducer(collection)
     : reducer(result, collection)
-}
-
-/**
- * @name curriedGenericReduce
- *
- * @synopsis
- * curriedGenericReduce(
- *   args Array,
- *   reducer function,
- * ) -> resolver (result any)=>any
- */
-const curriedGenericReduce = (
-  args, reducer,
-) => function resolver(result) {
-  return genericReduce(args, reducer, result)
 }
 
 /**
@@ -2646,12 +2570,10 @@ const reduce = function (reducer, init) {
     return function reducing(...args) {
       return then(
         init(...args),
-        curriedGenericReduce(args, reducer))
+        curry3(genericReduce, args, reducer, __))
     }
   }
-  return function reducing(...args) {
-    return genericReduce(args, reducer, init)
-  }
+  return tacitGenericReduce(reducer, init)
 }
 
 /**
@@ -2702,27 +2624,19 @@ const curriedTypedArrayExtend = typedArray => function curried(array) {
 }
 
 /**
- * @name curriedStreamAppend
+ * @name streamAppender
  *
  * @synopsis
- * curriedStreamAppend(stream Writable)(
+ * streamAppender(stream Writable) -> appender (
  *   chunk string|Buffer|Uint8Array|any,
  *   encoding string|undefined,
  *   callback function|undefined,
- * ) -> stream
+ * )=>stream
  */
-const curriedStreamAppend = stream => function concat(
+const streamAppender = stream => function appender(
   chunk, encoding, callback,
 ) {
-  if (isBinary(chunk) || isString(chunk)) {
-    const chunkLength = chunk.length
-    let index = -1
-    while (++index < chunkLength) {
-      stream.write(chunk[index], encoding, callback)
-    }
-  } else { // objectMode
-    stream.write(chunk, encoding, callback)
-  }
+  stream.write(chunk, encoding, callback)
   return stream
 }
 
@@ -2739,41 +2653,41 @@ const curriedStreamAppend = stream => function concat(
 const streamExtendExecutor = (
   resultStream, stream,
 ) => function executor(resolve, reject) {
-  stream.on('data', curriedStreamAppend(resultStream))
-  stream.on('end', thunkifyCallUnary(resolve, resultStream))
+  stream.on('data', streamAppender(resultStream))
+  stream.on('end', thunkify1(resolve, resultStream))
   stream.on('error', reject)
 }
 
 /**
- * @name streamExtend
+ * @name _streamExtend
  *
  * @synopsis
- * streamExtend(
+ * _streamExtend(
  *   resultStream Writable, stream Readable,
  * ) -> writableStream
  */
-const streamExtend = (
+const _streamExtend = (
   resultStream, stream,
 ) => new Promise(streamExtendExecutor(resultStream, stream))
 
 /**
- * @name writableStreamExtend
+ * @name streamExtend
  *
  * @synopsis
  * Writable = { write: function }
  *
  * Readable = { pipe: function }
  *
- * writableStreamExtend(
+ * streamExtend(
  *   stream Writable,
  *   values Readable|any,
  * ) -> stream
  *
  * @note support `.read` maybe
  */
-const writableStreamExtend = function (stream, values) {
+const streamExtend = function (stream, values) {
   if (isNodeReadStream(values)) {
-    return streamExtend(stream, values)
+    return _streamExtend(stream, values)
   }
   stream.write(values)
   return stream
@@ -2813,7 +2727,8 @@ const genericTransform = function (args, transducer, result) {
   if (isBinary(result)) {
     return then(
       genericReduce(args, transducer(arrayExtend), []),
-      curriedTypedArrayExtend(result))
+      curry2(binaryExtend, result, __))
+    // curriedTypedArrayExtend(result))
   }
   if (result == null) {
     return emptyTransform(args, transducer, result)
@@ -2826,7 +2741,7 @@ const genericTransform = function (args, transducer, result) {
     return genericReduce(args, transducer(callConcat), result)
   }
   if (typeof result.write == 'function') {
-    return genericReduce(args, transducer(writableStreamExtend), result)
+    return genericReduce(args, transducer(streamExtend), result)
   }
   if (resultConstructor == Set) {
     return genericReduce(args, transducer(setExtend), result)
@@ -3049,127 +2964,6 @@ const transform = function (transducer, init) {
   }
 }
 
-  /*
-var transform = (fn, init) => {
-  if (!isFunction(fn)) {
-    throw new TypeError('transform(x, y); y is not a function')
-  }
-  return x => possiblePromiseThen(
-    isFunction(init) ? init(x) : init,
-    res => _transformBranch(fn, res, x),
-  )
-}
-*/
-
-// concat is (result, item, index, collection) => result
-// transform.withIndex = (transducer, init) => {}
-
-/**
- * @name arrayPushArray
- *
- * @synopsis
- * arrayPushArray(arrayA Array, arrayB Array) -> undefined
- */
-const arrayPushArray = (arrayA, arrayB) => {
-  const offset = arrayA.length, length = arrayB.length
-  let i = -1
-  while (++i < length) {
-    arrayA[offset + i] = arrayB[i]
-  }
-}
-
-/**
- * @name arrayPushIterable
- *
- * @synopsis
- * arrayPushIterable(x Array, array Array) -> undefined
- */
-const arrayPushIterable = (x, iterable) => {
-  const offset = x.length
-  let i = 0
-  for (const value of iterable) {
-    x[offset + i] = value
-    i += 1
-  }
-}
-
-/**
- * @name arrayFlatten
- *
- * @synopsis
- * <T any>arrayFlatten(Array<Array<T>|T>) -> Array<T>
- */
-const arrayFlatten = x => {
-  const y = []
-  for (const xi of x) {
-    (isArray(xi) ? arrayPushArray(y, xi) :
-      isIterable(xi) ? arrayPushIterable(y, xi) : y.push(xi))
-  }
-  return y
-}
-
-/*
- * @name genericFlatten
- *
- * @synopsis
- * <T any>genericFlatten(
- *   method string,
- *   y Set<>,
- *   x Iterable<Iterable<T>|T>,
- * ) -> Set<T>
- */
-const genericFlatten = (method, y, x) => {
-  const add = y[method].bind(y)
-  for (const xi of x) {
-    if (isIterable(xi)) {
-      for (const v of xi) add(v)
-    } else {
-      add(xi)
-    }
-  }
-  return y
-}
-
-/**
- * @name flatMapArray
- *
- * @synopsis
- * <A any, B any>flatMapArray(
- *   func A=>Iterable<B>|B,
- *   arr Array<A>,
- * ) -> result Promise<Array<B>>|Array<B>
- */
-const flatMapArray = (func, arr) => (
-  possiblePromiseThen(mapArray(func, arr), arrayFlatten))
-
-/**
- * @name flatMapSet
- *
- * @synopsis
- * <A any, B any>flatMapSet(
- *   func A=>Iterable<B>|B,
- *   set Set<A>
- * ) -> result Promise<Set<B>>|Set<B>
- */
-const flatMapSet = (func, set) => possiblePromiseThen(
-  mapSet(func, set),
-  res => genericFlatten('add', new Set(), res),
-)
-
-/**
- * @name flatMapReducer
- *
- * @synopsis
- * <A any, B any>flatMapReducer(
- *   func A=>Iterable<B>|B,
- *   reducer (any, A)=>any
- * ) -> transducedReducer (aggregate any, value A)=>Promise|any
- */
-const flatMapReducer = (func, reducer) => (aggregate, value) => (
-  possiblePromiseThen(func(value), reduce(reducer, aggregate)))
-
-// NOTE ayo
-
 /**
  * @name callChain
  *
@@ -3179,36 +2973,6 @@ const flatMapReducer = (func, reducer) => (aggregate, value) => (
  * callChain(monad Monad, resolver)
  */
 const callChain = (monad, resolver) => monad.chain(resolver)
-
-/**
- * @name curry2Ary
- *
- * @synopsis
- * curry2Ary(
- *   func (argA any, argB any)=>any,
- *   argA,
- * ) -> curried2Ary argB=>any
- *
- * TODO refactor all the curry* and tacit* functions to these
- */
-const curry2Ary = (func, argA) => function curried2Ary(argB) {
-  return func(argA, argB)
-}
-
-/**
- * @name tacit2Ary
- *
- * @synopsis
- * tacit2Ary(func (A, B)=>any, B) -> pointfree2Ary A=>any
- *
- * tacit2Ary(
- *   func (argA any, argB any)=>any,
- *   argB,
- * ) -> pointfree2Ary argA=>any
- */
-const tacit2Ary = (func, argB) => function pointfree2Ary(argA) {
-  return func(argA, argB)
-}
 
 /**
  * @name flatteningTransducer
@@ -3237,16 +3001,6 @@ const flatteningTransducer = concat => function flatteningReducer(
 }
 
 /**
- * @name tacitArrayJoin
- *
- * @synopsis
- * tacitArrayJoin(delimiter string|any)(Array) -> string
- */
-const tacitArrayJoin = delimiter => function joining(array) {
-  return array.join(delimiter)
-}
-
-/**
  * @name arrayFlatMap
  *
  * @synopsis
@@ -3265,6 +3019,7 @@ const tacitArrayJoin = delimiter => function joining(array) {
  */
 const arrayFlatMap = (array, flatMapper) => then(
   arrayMap(array, flatMapper),
+  // curry3(genericReduce, __, flatteningTransducer(arrayExtend), []))
   tacitGenericReduce(flatteningTransducer(arrayExtend), []))
 
 /**
@@ -3306,7 +3061,7 @@ const setFlatMap = (set, flatMapper) => then(
  * ) -> string
  */
 const stringFlatMap = (string, flatMapper) => then(
-  arrayMap(value, flatMapper),
+  arrayMap(string, flatMapper),
   tacitGenericReduce(flatteningTransducer(add), ''))
 
 /**
@@ -3327,9 +3082,9 @@ const stringFlatMap = (string, flatMapper) => then(
  * ) -> stream
  */
 const streamFlatMap = (stream, flatMapper) => genericReduce(
-  [new MappingAsyncIterator(value, flatMapper)],
-  flatteningTransducer(streamFlatExtend),
-  value)
+  [new MappingAsyncIterator(stream[symbolAsyncIterator](), flatMapper)],
+  flatteningTransducer(streamExtend),
+  stream)
 
 /**
  * @name binaryFlatMap
@@ -3415,6 +3170,81 @@ const reducerFlatMap = (
   return then(
     flatMapper(value),
     tacitGenericReduce(flatteningTransducer(reducer), result))
+}
+
+/**
+ * @name FlatMappingIterator
+ *
+ * @synopsis new FlatMappingIterator( iterator Iterator, flatMapper function,
+ * ) -> FlatMappingIterator { next, SymbolIterator }
+ */
+const FlatMappingIterator = function (iterator, flatMapper) {
+  this.iterator = iterator
+  this.flatMapper = flatMapper
+  this.buffer = []
+  this.bufferIndex = -1
+}
+
+FlatMappingIterator.prototype = {
+  [symbolIterator]() {
+    return this
+  },
+  next() { // TODO rethink this algorithm
+    if (this.bufferIndex == -1) {
+      const { value, done } = this.iterator.next()
+      if (done) {
+        return {
+          value: undefined,
+          done: true,
+        }
+      }
+      this.buffer = genericReduce([value], arrayExtend, []) // TODO genericReduceSync
+      this.bufferIndex = -1
+    }
+    console.log('this.buffer', this.buffer, this.bufferIndex + 1, this.buffer[this.bufferIndex + 1])
+    return {
+      value: this.buffer[++this.bufferIndex],
+      done: false,
+    }
+  },
+}
+
+/**
+ * @name FlatMappingAsyncIterator
+ *
+ * @synopsis
+ * new FlatMappingAsyncIterator(
+ *   iterator AsyncIterator, flatMapper function,
+ * ) -> FlatMappingAsyncIterator { next, SymbolAsyncIterator }
+ */
+const FlatMappingAsyncIterator = function (iterator, flatMapper) {
+  this.iterator = iterator
+  this.flatMapper = flatMapper
+  this.buffer = []
+  this.bufferIndex = -1
+}
+
+FlatMappingAsyncIterator.prototype = {
+  [symbolAsyncIterator]() {
+    return this
+  },
+  async next() {
+    if (this.bufferIndex == this.buffer.length) {
+      const { value, done } = await this.iterator.next()
+      if (done) {
+        return {
+          value: undefined,
+          done: true,
+        }
+      }
+      this.buffer = await genericReduce([value], arrayExtend, [])
+      this.bufferIndex = -1
+    }
+    return {
+      value: this.buffer[++this.bufferIndex],
+      done: false,
+    }
+  },
 }
 
 /**
@@ -3591,15 +3421,16 @@ const flatMap = flatMapper => function flatMapping(value) {
     }
     return reducerFlatMap(value, flatMapper)
   }
+  if (isBinary(value)) {
+    return binaryFlatMap(value, flatMapper)
+  }
   if (value == null) {
     return value
   }
-  const valueConstructor = value.constructor
-  if (typeof value == 'string' || valueConstructor == String) {
-    return stringFlatMap(value, flatMapper)
-  }
-  if (valueConstructor == Set) {
-    return setFlatMap(value, flatMapper)
+  if (typeof value.next == 'function') {
+    return symbolIterator in value
+      ? new FlatMappingIterator(value, flatMapper)
+      : new FlatMappingAsyncIterator(value, flatMapper)
   }
   if (typeof value.chain == 'function') {
     return value.chain(flatMapper)
@@ -3613,24 +3444,15 @@ const flatMap = flatMapper => function flatMapping(value) {
   ) {
     return streamFlatMap(value, flatMapper)
   }
-  if (isBinary(value)) {
-    return binaryFlatMap(value, flatMapper)
+  const valueConstructor = value.constructor
+  if (typeof value == 'string' || valueConstructor == String) {
+    return stringFlatMap(value, flatMapper)
+  }
+  if (valueConstructor == Set) {
+    return setFlatMap(value, flatMapper)
   }
   return flatMapper(value)
 }
-
-/*
-const flatMap = func => {
-  if (!isFunction(func)) {
-    throw new TypeError('flatMap(func); func is not a function')
-  }
-  return value => {
-    if (isArray(value)) return flatMapArray(func, value)
-    if (isSet(value)) return flatMapSet(func, value)
-    if (isFunction(value)) return flatMapReducer(func, value)
-    throw new TypeError(`flatMap(...)(value); invalid value ${value}`)
-  }
-} */
 
 /**
  * @name isDelimitedBy

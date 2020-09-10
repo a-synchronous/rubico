@@ -17,6 +17,8 @@ const {
 
 const objectProto = Object.prototype
 
+const symbolAsyncIterator = Symbol.asyncIterator
+
 const nativeObjectToString = objectProto.toString
 
 const objectToString = x => nativeObjectToString.call(x)
@@ -192,6 +194,48 @@ const arrayToObjectReadableStream = function (array) {
       this.push(null)
     },
   })
+}
+
+const MockWritable = function (array = []) {
+  Writable.call(this)
+  this.array = array
+  this.handlers = new Map()
+}
+
+MockWritable.prototype = {
+  write(chunk, encoding, callback) {
+    this.array.push(chunk)
+  },
+  on(eventName, handler) {
+    if (this.handlers.has(eventName)) {
+      this.handlers.get(eventName).push(handler)
+    } else {
+      this.handlers.set(eventName, [handler])
+    }
+  },
+  once(eventName, handler) {
+    this.handlers.set(eventName, [handler])
+  },
+  emit(eventName, ...args) {
+    if (!this.handlers.has(eventName)) {
+      return undefined
+    }
+    return this.handlers.get(eventName).map(handler => handler(...args))
+  }
+}
+
+const MockDuplexStream = function (values) {
+  MockWritable.call(this)
+  this.values = [...values]
+}
+
+MockDuplexStream.prototype = {
+  ...MockWritable.prototype,
+  async* [symbolAsyncIterator]() {
+    for (const item of this.values) {
+      yield item
+    }
+  },
 }
 
 describe('rubico', () => {
@@ -1960,30 +2004,6 @@ transform(
           )
         })
         it('init { write: function }|()=>({ write: function })', async () => {
-          const MockWritable = function (values) {
-            Writable.call(this)
-            this.array = [...values]
-            this.handlers = new Map()
-          }
-          MockWritable.prototype.write = function (chunk, encoding, callback) {
-            this.array.push(chunk)
-          }
-          MockWritable.prototype.on = function (eventName, handler) {
-            if (this.handlers.has(eventName)) {
-              this.handlers.get(eventName).push(handler)
-            } else {
-              this.handlers.set(eventName, [handler])
-            }
-          }
-          MockWritable.prototype.once = function (eventName, handler) {
-            this.handlers.set(eventName, [handler])
-          }
-          MockWritable.prototype.emit = function (eventName, ...args) {
-            if (!this.handlers.has(eventName)) {
-              return undefined
-            }
-            return this.handlers.get(eventName).map(handler => handler(...args))
-          }
           assert.deepEqual(
             transform(map(number => number ** 2), new MockWritable([]))([1, 2, 3, 4, 5]),
             new MockWritable([1, 4, 9, 16, 25]),
@@ -1999,7 +2019,7 @@ transform(
           const numberToSquaredReadable = number => binaryToReadableStream(Buffer.from([number ** 2]))
           assert.deepEqual(
             await transform(map(numberToSquaredReadable), new MockWritable([]))([1, 2, 3, 4, 5]),
-            new MockWritable([1, 4, 9, 16, 25]),
+            new MockWritable([1, 4, 9, 16, 25].map(number => new Uint8Array([number]))),
           )
           const numberToNumberObjectReadable = number => arrayToObjectReadableStream([{ number }])
           assert.deepEqual(
@@ -2270,6 +2290,139 @@ transform(
         await transform(map(square), () => [])(emptyAsyncIterator),
         [],
       )
+    })
+  })
+
+  describe('flatMap', () => {
+    describe(`
+DuplexStream = { read: function, write: function }
+
+Monad = Array|String|Set
+  |TypedArray|DuplexStream|Iterator|AsyncIterator
+  |{ chain: function }|{ flatMap: function }|Object
+
+Foldable = Iterable|AsyncIterable|{ reduce: function }
+
+flatMap(
+  flatMapper item=>Promise|Monad|Foldable|any,
+)(value Monad<item any>) -> result Monad
+
+flatMap(
+  flatMapper item=>Promise|Monad|Foldable|any,
+)(
+  value (args ...any)=>Generator<item>,
+) -> flatMappingGeneratorFunction ...args=>Generator
+
+flatMap(
+  flatMapper item=>Promise|Monad|Foldable|any,
+)(
+  value (args ...any)=>AsyncGenerator<item>,
+) -> flatMappingAsyncGeneratorFunction ...args=>AsyncGenerator
+
+Reducer<T> = (any, T)=>Promise|any
+
+flatMap(
+  flatMapper item=>Promise|Monad|Foldable|any,
+)(value Reducer<item>) -> flatMappingReducer Reducer
+    `, () => {
+      const numbersArray = [1, 2, 3, 4, 5]
+      const numbersDuplicates = [1, 1, 2, 2, 3, 3, 4, 4, 5, 5]
+      const bigIntsArray = [1n, 2n, 3n, 4n, 5n]
+      const bigIntsDuplicates = [1n, 1n, 2n, 2n, 3n, 3n, 4n, 4n, 5n, 5n]
+      const numbersSet = new Set([1, 2, 3, 4, 5])
+      const bigIntsSet = new Set([1n, 2n, 3n, 4n, 5n])
+      const numbersSetWithAyo = new Set([1, 2, 3, 4, 5, 'ayo'])
+      const alphabetString = 'abcde'
+      const numbersDuplexStream = new MockDuplexStream([1, 2, 3, 4, 5])
+      const numbersGeneratorFunction = function* () { for (let i = 1; i < 6; i++) yield i }
+
+      const duplicateArray = value => [value, value]
+      const duplicateString = value => `${value}${value}`
+      const setWithAyo = value => new Set([value, 'ayo'])
+      const duplicateUint8ClampedArray = value => new Uint8ClampedArray([value, value])
+      const duplicateUint8Array = value => new Uint8Array([value, value])
+      const duplicateInt8Array = value => new Int8Array([value, value])
+      const duplicateUint16Array = value => new Uint16Array([value, value])
+      const duplicateInt16Array = value => new Int16Array([value, value])
+      const duplicateUint32Array = value => new Uint32Array([value, value])
+      const duplicateInt32Array = value => new Int32Array([value, value])
+      const duplicateFloat32Array = value => new Float32Array([value, value])
+      const duplicateFloat64Array = value => new Float64Array([value, value])
+      const duplicateBigUint64Array = value => new BigUint64Array([value, value])
+      const duplicateBigInt64Array = value => new BigInt64Array([value, value])
+      const duplicateReadableStream = value => binaryToReadableStream(Buffer.from([value, value]))
+      const duplicateBuffer = value => Buffer.from([value, value])
+
+      const assertions = [
+        [numbersArray, duplicateArray, numbersDuplicates],
+        [numbersArray, duplicateString, ['1', '1', '2', '2', '3', '3', '4', '4', '5', '5']],
+        [numbersArray, setWithAyo, [1, 'ayo', 2, 'ayo', 3, 'ayo', 4, 'ayo', 5, 'ayo']],
+        [numbersArray, duplicateUint8ClampedArray, numbersDuplicates],
+        [numbersArray, duplicateUint8Array, numbersDuplicates],
+        [numbersArray, duplicateInt8Array, numbersDuplicates],
+        [numbersArray, duplicateUint16Array, numbersDuplicates],
+        [numbersArray, duplicateInt16Array, numbersDuplicates],
+        [numbersArray, duplicateUint32Array, numbersDuplicates],
+        [numbersArray, duplicateInt32Array, numbersDuplicates],
+        [numbersArray, duplicateFloat32Array, numbersDuplicates],
+        [numbersArray, duplicateFloat64Array, numbersDuplicates],
+        [bigIntsArray, duplicateBigUint64Array, bigIntsDuplicates],
+        [bigIntsArray, duplicateBigInt64Array, bigIntsDuplicates],
+        [alphabetString, duplicateArray, 'aabbccddee'],
+        [alphabetString, duplicateString, 'aabbccddee'],
+        [alphabetString, setWithAyo, 'aayobayocayodayoeayo'],
+        [numbersSet, duplicateArray, numbersSet],
+        [numbersSet, setWithAyo, new Set([1, 2, 3, 4, 5, 'ayo'])],
+        [numbersSet, duplicateString, new Set(['1', '2', '3', '4', '5'])],
+        [numbersSet, duplicateUint8Array, numbersSet],
+        [numbersSet, duplicateInt8Array, numbersSet],
+        [numbersSet, duplicateUint16Array, numbersSet],
+        [numbersSet, duplicateInt16Array, numbersSet],
+        [numbersSet, duplicateUint32Array, numbersSet],
+        [numbersSet, duplicateInt32Array, numbersSet],
+        [numbersSet, duplicateFloat32Array, numbersSet],
+        [numbersSet, duplicateFloat64Array, numbersSet],
+        [bigIntsSet, duplicateBigUint64Array, bigIntsSet],
+        [bigIntsSet, duplicateBigInt64Array, bigIntsSet],
+        [new MockDuplexStream(numbersArray), duplicateArray, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
+        [new MockDuplexStream(numbersArray), duplicateString, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
+        [new MockDuplexStream(numbersArray), duplicateReadableStream, Object.assign(new MockDuplexStream(numbersArray), { array: numbersArray.map(duplicateBuffer) })], // 1 flatten
+        [new MockDuplexStream(numbersArray), duplicateUint8ClampedArray, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
+        [new MockDuplexStream(numbersArray), duplicateUint8Array, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
+        [new MockDuplexStream(numbersArray), duplicateInt8Array, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
+        [new MockDuplexStream(numbersArray), duplicateUint16Array, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
+        [new MockDuplexStream(numbersArray), duplicateInt16Array, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
+        [new MockDuplexStream(numbersArray), duplicateUint32Array, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
+        [new MockDuplexStream(numbersArray), duplicateInt32Array, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
+        [new MockDuplexStream(numbersArray), duplicateFloat32Array, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
+        [new MockDuplexStream(numbersArray), duplicateFloat64Array, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
+        [new MockDuplexStream(bigIntsArray), duplicateBigUint64Array, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
+        [new MockDuplexStream(bigIntsArray), duplicateBigInt64Array, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })], // 1 == 1n true
+        /*
+        [numbersGeneratorFunction(), duplicateArray, 'hey', function (actual, expected) {
+          assert.deepEqual([...actual], expected)
+        }],
+        */
+      ]
+
+      assertions.forEach(function ([value, flatMapper, result, asserter = assert.deepEqual]) {
+        it(`flatMap(${flatMapper.name})(${value.constructor.name}<${value}>) - ${result}`, async () => {
+          asserter(
+            await flatMap(flatMapper)(value),
+            result,
+          )
+        })
+      })
+      it('value Array')
+      it('value String')
+      it('value Set')
+      it('value TypedArray')
+      it('value DuplexStream')
+      it('value Iterator')
+      it('value AsyncIterator')
+      it('value { chain: function }')
+      it('value { flatMap: function }')
+      it('value Object')
     })
   })
 
