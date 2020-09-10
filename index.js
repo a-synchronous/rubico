@@ -31,6 +31,10 @@ const symbolIterator = Symbol.iterator
 
 const symbolAsyncIterator = Symbol.asyncIterator
 
+const globalThisHasBuffer = typeof Buffer == 'function'
+
+const bufferAlloc = globalThisHasBuffer ? Buffer.alloc : function () {}
+
 const objectValues = Object.values
 
 const objectAssign = Object.assign
@@ -141,18 +145,32 @@ const arrayPush = function (
 }
 
 /**
- * @name arrayExtend
+ * @name _arrayExtend
  *
  * @synopsis
- * arrayExtend(array Array, values Array) -> array
+ * _arrayExtend(array Array, values Array) -> array
  */
-const arrayExtend = (array, values) => {
+const _arrayExtend = function (array, values) {
   const arrayLength = array.length,
     valuesLength = values.length
   let valuesIndex = -1
   while (++valuesIndex < valuesLength) {
     array[arrayLength + valuesIndex] = values[valuesIndex]
   }
+  return array
+}
+
+/**
+ * @name arrayExtend
+ *
+ * @synopsis
+ * arrayExtend(array Array, values Array) -> array
+ */
+const arrayExtend = function (array, values) {
+  if (isArray(values)) {
+    return _arrayExtend(array, values)
+  }
+  array.push(values)
   return array
 }
 
@@ -192,16 +210,55 @@ const arrayExtendMap = function (
 const setAdd = (set, item) => set.add(item)
 
 /**
+ * @name curriedSetAdd
+ *
+ * @synopsis
+ * curriedSetAdd(set Set)(item any) -> set
+ */
+const curriedSetAdd = set => function curried(item) {
+  return setAdd(set, item)
+}
+
+/**
  * @name setExtend
  *
  * @synopsis
- * setExtend(set, values Set) -> set
+ * setExtend(set, values Set|any) -> set
+ *
+ * @TODO test isSet path
  */
 const setExtend = (set, values) => {
-  for (const item of values) {
-    set.add(item)
+  if (isSet(values)) {
+    for (const item of values) {
+      set.add(item)
+    }
+  } else {
+    set.add(values)
   }
   return set
+}
+
+/**
+ * @name setMap
+ *
+ * @synopsis
+ * setMap(set Set, mapper function) -> result Set
+ */
+const setMap = function (set, mapper) {
+  const result = new Set(),
+    curriedSetAddResult = curriedSetAdd(result),
+    promises = []
+  for (const item of set) {
+    const resultItem = mapper(item)
+    if (isPromise(resultItem)) {
+      promises.push(resultItem.then(curriedSetAddResult))
+    } else {
+      result.add(resultItem)
+    }
+  }
+  return promises.length == 0
+    ? result
+    : promiseAll(promises).then(always(result))
 }
 
 /**
@@ -2276,6 +2333,13 @@ const tacitGenericReduce = (
  *   reducer (any, T)=>any,
  *   result undefined|any,
  * ) -> result
+ *
+ * @TODO genericReduceSync(args, reducer, init) - performance optimization for some of these genericReduces that we know are synchronous
+ *
+ * @TODO genericReducePool(poolSize, args, reducer, init) - for some of these genericReduces that we want to race - result should not care about order of concatenations
+ * reduce.pool
+ * transform.pool
+ * flatMap.pool
  */
 var genericReduce = function (args, reducer, result) {
   const collection = args[0]
@@ -2311,6 +2375,12 @@ var genericReduce = function (args, reducer, result) {
   if (typeof collection.reduce == 'function') {
     return collection.reduce(reducer, result)
   }
+  if (typeof collection.chain == 'function') {
+    return collection.chain(tacit2Ary(reducer, result))
+  }
+  if (typeof collection.flatMap == 'function') {
+    return collection.flatMap(tacit2Ary(reducer, result))
+  }
   if (collection.constructor == Object) {
     return arrayReduce(objectValues(collection), reducer, result)
   }
@@ -2339,6 +2409,33 @@ const curriedGenericReduce = (
  *
  * @catchphrase
  * execute data transformation by reducer
+ *
+ * @synopsis TODO - redo like this
+ * ```coffeescript [specscript]
+ * Monad = { chain: function }
+ *
+ * FlatMappable = { flatMap: function }
+ *
+ * Writable = { write: function }
+ *
+ * Semigroup = Array|String|Set
+ *   |TypedArray|Writable
+ *   |{ concat: function }|Object
+ *
+ * Foldable = Iterable|Iterator
+ *   |AsyncIterable|AsyncIterator
+ *   |{ reduce: function }|Object
+ *
+ * flatMap(
+ *   flatMapper item=>Foldable|Monad|FlatMappable|any,
+ * )(value Semigroup<item any>) -> result Semigroup
+ *
+ * Reducer<T> = (any, T)=>Promise|any
+ *
+ * flatMap(
+ *   flatMapper item=>Foldable|Monad|FlatMappable|any,
+ * )(value Reducer<item>) -> flatMappingReducer Reducer
+ * ```
  *
  * @synopsis
  * reduce(
@@ -2576,28 +2673,15 @@ const emptyTransform = (args, transducer, result) => then(
   always(result))
 
 /**
- * @name arrayConcat
+ * @name binaryExtend
  *
  * @synopsis
- * arrayConcat(
- *   array Array,
- *   values Array|any,
- * ) -> array
- */
-const arrayConcat = (array, values) => isArray(values)
-  ? arrayExtend(array, values)
-  : arrayPush(array, values)
-
-/**
- * @name typedArrayExtend
- *
- * @synopsis
- * typedArrayExtend(
+ * binaryExtend(
  *   typedArray TypedArray,
  *   array Array|TypedArray|any,
  * ) -> concatenatedTypedArray
  */
-const typedArrayExtend = function (typedArray, array) {
+const binaryExtend = function (typedArray, array) {
   const offset = typedArray.length
   const result = new typedArray.constructor(offset + array.length)
   result.set(typedArray)
@@ -2614,33 +2698,20 @@ const typedArrayExtend = function (typedArray, array) {
  * )(array Array|TypedArray) -> extended TypedArray
  */
 const curriedTypedArrayExtend = typedArray => function curried(array) {
-  return typedArrayExtend(typedArray, array)
+  return binaryExtend(typedArray, array)
 }
 
 /**
- * @name setConcat
+ * @name curriedStreamAppend
  *
  * @synopsis
- * setConcat(
- *   set Set,
- *   values Set|any
- * ) -> set
- */
-const setConcat = (set, values) => isSet(values)
-  ? setExtend(set, values)
-  : setAdd(set, values)
-
-/**
- * @name curriedStreamExtend
- *
- * @synopsis
- * curriedStreamExtend(stream Writable)(
+ * curriedStreamAppend(stream Writable)(
  *   chunk string|Buffer|Uint8Array|any,
  *   encoding string|undefined,
  *   callback function|undefined,
  * ) -> stream
  */
-const curriedStreamExtend = stream => function concat(
+const curriedStreamAppend = stream => function concat(
   chunk, encoding, callback,
 ) {
   if (isBinary(chunk) || isString(chunk)) {
@@ -2656,53 +2727,53 @@ const curriedStreamExtend = stream => function concat(
 }
 
 /**
- * @name streamFlatExtendExecutor
+ * @name streamExtendExecutor
  *
  * @synopsis
- * streamFlatExtendExecutor(
+ * streamExtendExecutor(
  *   resultStream Writable, stream Readable,
  * ) -> executor (resolve function, reject function)=>()
  *
  * @note optimizes function creation within streamExtend
  */
-const streamFlatExtendExecutor = (
+const streamExtendExecutor = (
   resultStream, stream,
 ) => function executor(resolve, reject) {
-  stream.on('data', curriedStreamExtend(resultStream))
+  stream.on('data', curriedStreamAppend(resultStream))
   stream.on('end', thunkifyCallUnary(resolve, resultStream))
   stream.on('error', reject)
 }
 
 /**
- * @name streamFlatExtend
+ * @name streamExtend
  *
  * @synopsis
- * streamFlatExtend(
+ * streamExtend(
  *   resultStream Writable, stream Readable,
  * ) -> writableStream
  */
-const streamFlatExtend = (
+const streamExtend = (
   resultStream, stream,
-) => new Promise(streamFlatExtendExecutor(resultStream, stream))
+) => new Promise(streamExtendExecutor(resultStream, stream))
 
 /**
- * @name writableStreamConcat
+ * @name writableStreamExtend
  *
  * @synopsis
  * Writable = { write: function }
  *
  * Readable = { pipe: function }
  *
- * writableStreamConcat(
+ * writableStreamExtend(
  *   stream Writable,
  *   values Readable|any,
  * ) -> stream
  *
  * @note support `.read` maybe
  */
-const writableStreamConcat = function (stream, values) {
+const writableStreamExtend = function (stream, values) {
   if (isNodeReadStream(values)) {
-    return streamFlatExtend(stream, values)
+    return streamExtend(stream, values)
   }
   stream.write(values)
   return stream
@@ -2737,11 +2808,11 @@ const callConcat = function (object, values) {
  */
 const genericTransform = function (args, transducer, result) {
   if (isArray(result)) {
-    return genericReduce(args, transducer(arrayConcat), result)
+    return genericReduce(args, transducer(arrayExtend), result)
   }
   if (isBinary(result)) {
     return then(
-      genericReduce(args, transducer(arrayConcat), []),
+      genericReduce(args, transducer(arrayExtend), []),
       curriedTypedArrayExtend(result))
   }
   if (result == null) {
@@ -2755,10 +2826,10 @@ const genericTransform = function (args, transducer, result) {
     return genericReduce(args, transducer(callConcat), result)
   }
   if (typeof result.write == 'function') {
-    return genericReduce(args, transducer(writableStreamConcat), result)
+    return genericReduce(args, transducer(writableStreamExtend), result)
   }
   if (resultConstructor == Set) {
-    return genericReduce(args, transducer(setConcat), result)
+    return genericReduce(args, transducer(setExtend), result)
   }
   if (resultConstructor == Object) {
     return genericReduce(args, transducer(objectAssign), result)
@@ -3097,6 +3168,255 @@ const flatMapSet = (func, set) => possiblePromiseThen(
 const flatMapReducer = (func, reducer) => (aggregate, value) => (
   possiblePromiseThen(func(value), reduce(reducer, aggregate)))
 
+// NOTE ayo
+
+/**
+ * @name callChain
+ *
+ * @synopsis
+ * Monad = { chain: function }
+ *
+ * callChain(monad Monad, resolver)
+ */
+const callChain = (monad, resolver) => monad.chain(resolver)
+
+/**
+ * @name curry2Ary
+ *
+ * @synopsis
+ * curry2Ary(
+ *   func (argA any, argB any)=>any,
+ *   argA,
+ * ) -> curried2Ary argB=>any
+ *
+ * TODO refactor all the curry* and tacit* functions to these
+ */
+const curry2Ary = (func, argA) => function curried2Ary(argB) {
+  return func(argA, argB)
+}
+
+/**
+ * @name tacit2Ary
+ *
+ * @synopsis
+ * tacit2Ary(func (A, B)=>any, B) -> pointfree2Ary A=>any
+ *
+ * tacit2Ary(
+ *   func (argA any, argB any)=>any,
+ *   argB,
+ * ) -> pointfree2Ary argA=>any
+ */
+const tacit2Ary = (func, argB) => function pointfree2Ary(argA) {
+  return func(argA, argB)
+}
+
+/**
+ * @name flatteningTransducer
+ *
+ * @synopsis
+ * flatteningTransducer(concat Reducer) -> flatteningReducer Reducer
+ *
+ * DuplexStream = { read: function, write: function }
+ *
+ * Monad = Array|String|Set
+ *   |TypedArray|DuplexStream|Iterator|AsyncIterator
+ *   |{ chain: function }|{ flatMap: function }|Object
+ *
+ * Foldable = Iterable|AsyncIterable|{ reduce: function }
+ *
+ * FlatteningReducer<T> = (any, T)=>Promise|Monad|Foldable|any
+ *
+ * Reducer<T> = (any, T)=>Promise|any
+ *
+ * flatteningTransducer(concat Reducer) -> flatteningReducer FlatteningReducer
+ */
+const flatteningTransducer = concat => function flatteningReducer(
+  result, item,
+) {
+  return genericReduce([item], concat, result)
+}
+
+/**
+ * @name tacitArrayJoin
+ *
+ * @synopsis
+ * tacitArrayJoin(delimiter string|any)(Array) -> string
+ */
+const tacitArrayJoin = delimiter => function joining(array) {
+  return array.join(delimiter)
+}
+
+/**
+ * @name arrayFlatMap
+ *
+ * @synopsis
+ * DuplexStream = { read: function, write: function }
+ *
+ * Monad = Array|String|Set
+ *   |TypedArray|DuplexStream|Iterator|AsyncIterator
+ *   |{ chain: function }|{ flatMap: function }|Object
+ *
+ * Foldable = Iterable|AsyncIterable|{ reduce: function }
+ *
+ * arrayFlatMap(
+ *   array Array,
+ *   flatMapper item=>Promise|Monad|Foldable|any,
+ * ) -> Array
+ */
+const arrayFlatMap = (array, flatMapper) => then(
+  arrayMap(array, flatMapper),
+  tacitGenericReduce(flatteningTransducer(arrayExtend), []))
+
+/**
+ * @name setFlatMap
+ *
+ * @synopsis
+ * DuplexStream = { read: function, write: function }
+ *
+ * Monad = Array|String|Set
+ *   |TypedArray|DuplexStream|Iterator|AsyncIterator
+ *   |{ chain: function }|{ flatMap: function }|Object
+ *
+ * Foldable = Iterable|AsyncIterable|{ reduce: function }
+ *
+ * setFlatMap(
+ *   set Set,
+ *   flatMapper item=>Promise|Monad|Foldable|any,
+ * ) -> Set
+ */
+const setFlatMap = (set, flatMapper) => then(
+  setMap(set, flatMapper),
+  tacitGenericReduce(flatteningTransducer(setExtend), new Set()))
+
+/**
+ * @name stringFlatMap
+ *
+ * @synopsis
+ * DuplexStream = { read: function, write: function }
+ *
+ * Monad = Array|String|Set
+ *   |TypedArray|DuplexStream|Iterator|AsyncIterator
+ *   |{ chain: function }|{ flatMap: function }|Object
+ *
+ * Foldable = Iterable|AsyncIterable|{ reduce: function }
+ *
+ * stringFlatMap(
+ *   string,
+ *   flatMapper item=>Promise|Monad|Foldable|any,
+ * ) -> string
+ */
+const stringFlatMap = (string, flatMapper) => then(
+  arrayMap(value, flatMapper),
+  tacitGenericReduce(flatteningTransducer(add), ''))
+
+/**
+ * @name streamFlatMap
+ *
+ * @synopsis
+ * DuplexStream = { read: function, write: function }
+ *
+ * Monad = Array|String|Set
+ *   |TypedArray|DuplexStream|Iterator|AsyncIterator
+ *   |{ chain: function }|{ flatMap: function }|Object
+ *
+ * Foldable = Iterable|AsyncIterable|{ reduce: function }
+ *
+ * streamFlatMap(
+ *   stream DuplexStream,
+ *   flatMapper item=>Promise|Monad|Foldable|any,
+ * ) -> stream
+ */
+const streamFlatMap = (stream, flatMapper) => genericReduce(
+  [new MappingAsyncIterator(value, flatMapper)],
+  flatteningTransducer(streamFlatExtend),
+  value)
+
+/**
+ * @name binaryFlatMap
+ *
+ * @synopsis
+ * DuplexStream = { read: function, write: function }
+ *
+ * Monad = Array|String|Set
+ *   |TypedArray|DuplexStream|Iterator|AsyncIterator
+ *   |{ chain: function }|{ flatMap: function }|Object
+ *
+ * Foldable = Iterable|AsyncIterable|{ reduce: function }
+ *
+ * binaryFlatMap(
+ *   stream DuplexStream,
+ *   flatMapper item=>Promise|Monad|Foldable|any,
+ * ) -> stream
+ */
+const binaryFlatMap = (binary, flatMapper) => then(
+  arrayMap(value, flatMapper),
+  tacitGenericReduce(
+    flatteningTransducer(binaryExtend),
+    globalThisHasBuffer && binary.constructor == Buffer
+      ? bufferAlloc(0)
+      : new value.constructor(0)))
+
+/**
+ * @name generatorFunctionFlatMap
+ *
+ * @synopsis
+ * generatorFunctionFlatMap(
+ *   generatorFunction GeneratorFunction,
+ *   flatMapper item=>Promise|Monad|Foldable|any,
+ * ) -> flatMappingGeneratorFunction GeneratorFunction
+ */
+const generatorFunctionFlatMap = (
+  generatorFunction, flatMapper,
+) => function* flatMappingGeneratorFunction(...args) {
+  for (const item of generatorFunction(...args)) {
+    yield* genericReduce(
+      [flatMapper(item)], flatteningTransducer(arrayExtend), [])
+  }
+}
+
+/**
+ * @name asyncGeneratorFunctionFlatMap
+ *
+ * @synopsis
+ * asyncGeneratorFunctionFlatMap(
+ *   generatorFunction GeneratorFunction,
+ *   flatMapper item=>Promise|Monad|Foldable|any,
+ * ) -> flatMappingAsyncGeneratorFunction GeneratorFunction
+ */
+const asyncGeneratorFunctionFlatMap = (
+  asyncGeneratorFunction, flatMapper,
+) => async function* flatMappingAsyncGeneratorFunction(...args) {
+  for await (const item of generatorFunction(...args)) {
+    yield* genericReduce(
+      [await flatMapper(item)], flatteningTransducer(arrayExtend), [])
+  }
+}
+
+/**
+ * @name reducerFlatMap
+ *
+ * @synopsis
+ * DuplexStream = { read: function, write: function }
+ *
+ * Monad = Array|String|Set
+ *   |TypedArray|DuplexStream|Iterator|AsyncIterator
+ *   |{ chain: function }|{ flatMap: function }|Object
+ *
+ * Foldable = Iterable|AsyncIterable|{ reduce: function }
+ *
+ * reducerFlatMap(
+ *   reducer (any, T)=>Promise|any,
+ *   flatMapper item=>Promise|Monad|Foldable|any,
+ * )
+ */
+const reducerFlatMap = (
+  reducer, flatMapper,
+) => function flatMappingReducer(result, value) {
+  return then(
+    flatMapper(value),
+    tacitGenericReduce(flatteningTransducer(reducer), result))
+}
+
 /**
  * @name flatMap
  *
@@ -3104,47 +3424,202 @@ const flatMapReducer = (func, reducer) => (aggregate, value) => (
  * map then flatten
  *
  * @synopsis
- * Monad = { chain: function }
+ * ```coffeescript [specscript]
+ * DuplexStream = { read: function, write: function }
  *
- * FlatMappable = { flatMap: function }
+ * Monad = Array|String|Set
+ *   |TypedArray|DuplexStream|Iterator|AsyncIterator
+ *   |{ chain: function }|{ flatMap: function }|Object
  *
- * Semigroup = Array|string|Set|TypedArray
- *   |{ concat: function }|{ write: function }|Object
- *
- * Collection = Iterable|Iterator
- *   |AsyncIterable|AsyncIterator
- *   |{ reduce: function }|Object|any,
+ * Foldable = Iterable|AsyncIterable|{ reduce: function }
  *
  * flatMap(
- *   flatMapper item=>Collection|Monad|FlatMappable|any,
- * )(value Semigroup<item any>) -> result Semigroup
+ *   flatMapper item=>Promise|Monad|Foldable|any,
+ * )(value Monad<item any>) -> result Monad
  *
- * <A any, B any>flatMap(
- *   func A=>Iterable<B>|B
- * )(value Array<Array<A>|A>) -> result Array<B>
+ * flatMap(
+ *   flatMapper item=>Promise|Monad|Foldable|any,
+ * )(
+ *   value (args ...any)=>Generator<item>,
+ * ) -> flatMappingGeneratorFunction ...args=>Generator
  *
- * <A any, B any>flatMap(
- *   func A=>Iterable<B>|B
- * )(value Set<Set<A>|A>) -> result Set<B>
+ * flatMap(
+ *   flatMapper item=>Promise|Monad|Foldable|any,
+ * )(
+ *   value (args ...any)=>AsyncGenerator<item>,
+ * ) -> flatMappingAsyncGeneratorFunction ...args=>AsyncGenerator
  *
- * <A any, B any>flatMap(
- *   func A=>Iterable<B>|B
- * )(value (any, any)=>any) -> transducedReducer (any, any)=>any
+ * Reducer<T> = (any, T)=>Promise|any
+ *
+ * flatMap(
+ *   flatMapper item=>Promise|Monad|Foldable|any,
+ * )(value Reducer<item>) -> flatMappingReducer Reducer
+ * ```
  *
  * @description
- * **flatMap** accepts a mapper function `func` and an Array or Set `value`, and returns a new flattened and mapped Array or Set `result`. Each item of `result` is the result of applying the mapper function `func` to a given item of the input Array or Set `value`. The final `result` Array or Set is flattened one depth level.
+ * **flatMap** applies a function to each item of a Monad, flattening any resulting Monad or Foldable. The result is the same type as the input value with all items mapped and flattened. The following input values are valid arguments to `flatMap`
  *
- * When `value` is a reducer function, the result is another reducer function `transducedReducer` that represents a flatMap step in a transducer chain. A flatMap step involves the application of the mapper function `func` to a given element of a collecting being reduced, then flattening the result into the aggregate. For more information on this behavior, please see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
+ *  * Monad - a monoid in the category of endofunctors - should have notions of mapping and flattening (empty and concat)
+ *    * Array - map items then flatten results into a new Array
+ *    * String|string - map items then flatten (`+`) results into a new string
+ *    * Set - map items while flattening results into a new set
+ *    * TypedArray - map over bytes, then flatten results into a new TypedArray of the same type
+ *      * Uint8ClampedArray
+ *      * Uint8Array
+ *      * Int8Array
+ *      * Uint16Array
+ *      * Int16Array
+ *      * Uint32Array
+ *      * Int32Array
+ *      * Float32Array
+ *      * Float64Array
+ *      * BigUint64Array
+ *      * BigInt64Array
+ *      * Buffer (Node.js) - Node.js Buffers extend from Uint8Arrays
+ *    * DuplexStream - Node.js stream.Duplex - map over stream items with `.read`, then call stream's `.write` to flatten
+ *    * Object that implements `.chain` or `.flatMap` - either of these are called directly
+ *    * Object - a plain Object, values are mapped with flatMapper, then only plain Objects are flattened into result.
+ *  * Reducer - a function to be used in a flatMapping reducing operation with `reduce`
  *
- * @example
+ * To support concurrent execution of the flatMapper function, arrays are first mapped with the flatMapper, then flattened by concatenation.
+ *
+ * ```javascript-playground
+ * const duplicate = number => [number, number]
+ *
  * console.log(
+ *   flatMap(duplicate)([1, 2, 3, 4, 5]),
+ * ) // [1, 1, 2, 2, 3, 3, 4, 4, 5, 5]
+ *
+ * const asyncIdentity = async value => value
+ *
+ * console.log(
+ *   flatMap(asyncIdentity)([ // concurrent execution
+ *     [1, 1],
+ *     [2, 2],
+ *     [3, 3],
+ *     [4, 4],
+ *     [5, 5],
+ *   ]),
+ * ) // Promise { [1, 1, 2, 2, 3, 3, 4, 4, 5, 5] }
+ * ```
+ *
+ * The following is a list of all the items that `flatMap` flattens after concurrent execution of the flatMapper is complete. These items are all of the Foldable category, and have some notion of transformative iteration
+ *
+ * * Foldable
+ *   * Iterable - implements Symbol.iterator
+ *   * AsyncIterable - implements Symbol.asyncIterator
+ *   * Iterator - implements Symbol.iterator that returns itself
+ *   * AsyncIterator - implements Symbol.asyncIterator that returns itself
+ *   * Generator - the product of a generator function `function* () {}`
+ *   * AsyncGenerator - the product of an async generator function `async function* () {}`
+ *   * Object that implements `.reduce` - this function is called directly for flattening
+ *   * Object - a plain object, specifically its values are flattened
+ *
+ * All other types are not flattened and left in the result as is.
+ *
+ * ```javascript-playground
+ * const identity = value => value
+ *
+ * flatMap(identity)([ // flatten
+ *   [1, 1],
+ *   new Set([2, 2]),
+ *   (function* { yield 3; yield 3 })(),
+ *   (async function* { yield 4; yield 4 })(),
+ *   { a: 5, b: 5 },
+ *   6,
+ *   Promise.resolve(7),
+ *   undefined,
+ *   null,
+ * ]).then(console.log) // [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, undefined, null]
+ * ```
+ *
+ * Similar to the concurrent asynchronous behavior of `flatMap` applied to arrays, a flattening of asynchronous sources like Node.js streams muxes them together as a race of their items by default. This could be useful for perhaps muxing request streams in a webserver.
+ *
+ * `flatMap` also supports purer functional programming with monads. When a flatMapping operation encounters a Monad, it calls the monadic instance's `.chain` method to flatten it and access its functionality.
+ *
+ * ```javascript-playground
+ * const Maybe = function (value) {
+ *   this.value = value
+ * }
+ *
+ * Maybe.prototype.chain = function (resolver) {
+ *   if (this.value == null) {
+ *     return this.value
+ *   }
+ *   return resolver(this.value)
+ * } // resolver will be something
+ *
+ * console.log( // TODO not sure yet
  *   flatMap(
- *     number => [number ** 2, number ** 3],
- *   )([1, 2, 3]),
- * ) // [1, 1, 4, 8, 9, 27]
+ *     value => new Maybe(value),
+ *   )([null, null, 1, 2, undefined, 3]),
+ * ) // [1, 2, 3]
+ * ```
+ *
+ * When `flatMap` receives a function as the first input argument, it creates a flatMapping version of a generator function, an async generator function, or a reducer depending on the type of input function.
+ *
+ * ```javascript-playground
+ * const square = number => number ** 2
+ *
+ * const isOdd = number => number % 2 == 1
+ *
+ * const squaredOdds = pipe([
+ *   filter(isOdd),
+ *   map(square),
+ * ])
+ *
+ * const squaredOdds = flatMap(
+ *   number => isOdd(number) ? [number ** 2] : [])
+ *
+ * // TODO better example
+ * ```
  *
  * @execution concurrent
+ *
+ * @transducers
  */
+const flatMap = flatMapper => function flatMapping(value) {
+  if (isArray(value)) {
+    return arrayFlatMap(value, flatMapper)
+  }
+  if (isFunction(value)) {
+    if (isGeneratorFunction(value)) {
+      return generatorFunctionFlatMap(value, flatMapper)
+    }
+    if (isAsyncGeneratorFunction(value)) {
+      return asyncGeneratorFunctionFlatMap(value, flatMapper)
+    }
+    return reducerFlatMap(value, flatMapper)
+  }
+  if (value == null) {
+    return value
+  }
+  const valueConstructor = value.constructor
+  if (typeof value == 'string' || valueConstructor == String) {
+    return stringFlatMap(value, flatMapper)
+  }
+  if (valueConstructor == Set) {
+    return setFlatMap(value, flatMapper)
+  }
+  if (typeof value.chain == 'function') {
+    return value.chain(flatMapper)
+  }
+  if (typeof value.flatMap == 'function') {
+    return value.flatMap(flatMapper)
+  }
+  if (
+    typeof value[symbolAsyncIterator] == 'function'
+      && typeof value.write == 'function'
+  ) {
+    return streamFlatMap(value, flatMapper)
+  }
+  if (isBinary(value)) {
+    return binaryFlatMap(value, flatMapper)
+  }
+  return flatMapper(value)
+}
+
+/*
 const flatMap = func => {
   if (!isFunction(func)) {
     throw new TypeError('flatMap(func); func is not a function')
@@ -3155,7 +3630,7 @@ const flatMap = func => {
     if (isFunction(value)) return flatMapReducer(func, value)
     throw new TypeError(`flatMap(...)(value); invalid value ${value}`)
   }
-}
+} */
 
 /**
  * @name isDelimitedBy

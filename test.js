@@ -2273,7 +2273,7 @@ transform(
     })
   })
 
-  describe('flatMap', () => {
+  describe('flatMap - v1.5.12 regression', () => {
     it('maps then flattens an array, async + parallel', async () => {
       const asyncPowers = async x => [x ** 2, x ** 3]
       aok(flatMap(asyncPowers)([1, 2, 3, 4, 5]) instanceof Promise)
@@ -2309,11 +2309,11 @@ transform(
         [1, 2, 3, 4, 5],
       )
     })
-    it('does not flatten objects', async () => {
+    it('maps then flattens objects', async () => {
       const createObject = () => ({ a: 1, b: 2, c: 3 })
       ade(
         flatMap(x => x)(arrayOf(createObject, 3)),
-        arrayOf(createObject, 3),
+        [1, 2, 3, 1, 2, 3, 1, 2, 3],
       )
     })
     it('maps then flattens a Set', async () => {
@@ -2331,14 +2331,10 @@ transform(
         new Set([1, 4, 8, 9, 27]),
       )
     })
-    it('does not flatten objects', async () => {
+    it('maps then flattens objects', async () => {
       ade(
         flatMap(x => ({ square: x ** 2, cube: x ** 3 }))(new Set([1, 2, 3])),
-        new Set([
-          { square: 1, cube: 1 },
-          { square: 4, cube: 8 },
-          { square: 9, cube: 27 },
-        ]),
+        new Set([1, 4, 8, 9, 27])
       )
     })
     it('[async] maps then flattens a Set', async () => {
@@ -2390,18 +2386,6 @@ transform(
           [],
         )([1, 2, 3]),
         [1, 1, 4, 8, 9, 27],
-      )
-    })
-    it('throws a TypeError on flatMap(nonFunction)', async () => {
-      assert.throws(
-        () => flatMap({}),
-        new TypeError('flatMap(func); func is not a function'),
-      )
-    })
-    it('throws a TypeError on flatMap(...)(null)', async () => {
-      assert.throws(
-        () => flatMap(() => 'hi')(null),
-        new TypeError('flatMap(...)(value); invalid value null')
       )
     })
   })
