@@ -105,11 +105,20 @@ const funcConcat31 = (funcA, funcB) => function pipedFunction(...args) {
   // timeInLoop.async('funcConcat31 - async', 1e6, () => funcConcat31(asyncFuncA, asyncFuncB)(2))
 }
 
+const funcConcatSync = (
+  funcA, funcB,
+) => function pipedFunction(...args) {
+  return funcB(funcA(...args))
+}
+
+const pipeSync = funcs => funcs.reduce(funcConcatSync)
+
 /**
  * @name pipe
  *
  * @benchmark
  * rubicoPipeline(2): 1e+6: 41.507ms
+ * pipeSyncPipeline(2): 1e+6: 35.365ms
  * lodashPipeline(2): 1e+6: 41.679ms
  * ramdaPipeline(2): 1e+6: 39.722ms
  */
@@ -123,15 +132,20 @@ const funcs = [
 
 const rubicoPipeline = pipe(funcs)
 
+const pipeSyncPipeline = pipeSync(funcs)
+
 const lodashPipeline = _.pipe(funcs)
 
 const ramdaPipeline = R.pipe(...funcs)
 
 // console.log('rubicoPipeline(2)', rubicoPipeline(2))
+// console.log('pipeSyncPipeline(2)', pipeSyncPipeline(2))
 // console.log('lodashPipeline(2)', lodashPipeline(2))
 // console.log('ramdaPipeline(2)', ramdaPipeline(2))
 
 // timeInLoop('rubicoPipeline(2)', 1e6, () => rubicoPipeline(2))
+
+// timeInLoop('pipeSyncPipeline(2)', 1e6, () => pipeSyncPipeline(2))
 
 // timeInLoop('lodashPipeline(2)', 1e6, () => lodashPipeline(2))
 
