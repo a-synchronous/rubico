@@ -1,5 +1,9 @@
 const timeInLoop = require('../x/timeInLoop')
 
+const thunkify1 = (func, argument) => () => func(argument)
+
+const thunkify2 = (func, arg0, arg1) => () => func(arg0, arg1)
+
 /**
  * @name checkNullOrUndefined
  *
@@ -411,4 +415,41 @@ const objectAssign2 = (a, b) => ({ ...a, ...b })
   // timeInLoop('objectAssign1', 1e6, () => objectAssign1(objectA, objectB))
 
   // timeInLoop('objectAssign2', 1e6, () => objectAssign2(objectA, objectB))
+}
+
+const arrayForEach01 = (array, func) => array.forEach(func)
+
+const arrayForEach02 = function (array, func) {
+  const arrayLength = array.length
+  let index = -1
+  while (++index < arrayLength) {
+    func(index)
+  }
+}
+
+const arrayForEach03 = function (array, func) {
+  for (const item of array) {
+    func(item)
+  }
+}
+
+/**
+ * @name arrayForEach
+ *
+ * @benchmark
+ * arrayForEach01: 1e+7: 57.411ms
+ * arrayForEach02: 1e+7: 86.507ms
+ * arrayForEach03: 1e+7: 132.766ms
+ */
+
+{
+  const numbers = [1, 2, 3, 4, 5]
+
+  const identity = value => value
+
+  // timeInLoop('arrayForEach01', 1e7, thunkify2(arrayForEach01, numbers, identity))
+
+  // timeInLoop('arrayForEach02', 1e7, thunkify2(arrayForEach02, numbers, identity))
+
+  // timeInLoop('arrayForEach03', 1e7, thunkify2(arrayForEach03, numbers, identity))
 }
