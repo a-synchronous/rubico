@@ -112,8 +112,6 @@ const add = (a, b) => a + b
 
 const range = (start, end) => Array.from({ length: end - start }, (x, i) => i + start)
 
-const arrayOf = (item, length) => Array.from({ length }, () => item)
-
 const __ = Symbol('placeholder')
 
 // argument resolver for curry2
@@ -259,9 +257,38 @@ const always = value => function getter() { return value }
  * @name thunkify1
  *
  * @synopsis
- * thunkify1(func function, argument Array) -> ()=>func(argument)
+ * thunkify1(
+ *   func function,
+ *   arg0 any,
+ * ) -> ()=>func(arg0)
  */
-const thunkify1 = (func, argument) => () => func(argument)
+const thunkify1 = (func, arg0) => () => func(arg0)
+
+/**
+ * @name thunkify2
+ *
+ * @synopsis
+ * thunkify2(
+ *   func function,
+ *   arg0 any,
+ *   arg1 any,
+ * ) -> ()=>func(arg0, arg1)
+ */
+const thunkify2 = (func, arg0, arg1) => () => func(arg0, arg1)
+
+/**
+ * @name thunkify3
+ *
+ * @synopsis
+ * thunkify3(
+ *   func function,
+ *   arg0 any,
+ *   arg1 any,
+ *   arg2 any,
+ * ) -> ()=>func(arg0, arg1, arg2)
+ */
+const thunkify3 = (func, arg0, arg1, arg2) => () => func(arg0, arg1, arg2)
+
 
 /**
  * @name _arrayExtend
@@ -460,6 +487,18 @@ const funcConcat = (
 }
 
 /**
+ * @name funcConcatSync
+ *
+ * @synopsis
+ * funcConcatSync(funcA function, funcB function) -> pipedFunction function
+ */
+const funcConcatSync = (
+  funcA, funcB,
+) => function pipedFunction(...args) {
+  return funcB(funcA(...args))
+}
+
+/**
  * @name pipe
  *
  * @catchphrase
@@ -537,7 +576,7 @@ const funcConcat = (
  *
  * @execution series
  *
- * @transducers
+ * @transducing
  */
 const pipe = function (funcs) {
   const functionPipeline = funcs.reduce(funcConcat),
@@ -779,6 +818,19 @@ const tap = func => function tapping(...args) {
 }
 
 /**
+ * @name tapSync
+ *
+ * @synopsis
+ * tapSync(function)(args ...any) -> args[0]
+ */
+const tapSync = func => function tapping(...args) {
+  func(...args)
+  return args[0]
+}
+
+tap.sync = tapSync
+
+/**
  * @name tap.if
  *
  * @catchphrase
@@ -811,6 +863,20 @@ const tap = func => function tapping(...args) {
  * @TODO
  */
 tap.if = (cond, func) => {}
+
+/**
+ * @name catcherApply
+ *
+ * @synopsis
+ * catcherApply(
+ *   catcher function,
+ *   err Error|any,
+ *   args Array,
+ * ) -> catcher(err, ...args)
+ */
+const catcherApply = function (catcher, err, args) {
+  return catcher(err, ...args)
+}
 
 /**
  * @name tryCatch
@@ -848,7 +914,7 @@ const tryCatch = (tryer, catcher) => function tryCatcher(...args) {
   try {
     const result = tryer(...args)
     return isPromise(result)
-      ? result.catch(err => catcher(err, ...args))
+      ? result.catch(curry3(catcherApply, catcher, __, args))
       : result
   } catch (err) {
     return catcher(err, ...args)
@@ -879,24 +945,47 @@ const asyncFuncSwitch = async function (funcs, args, funcsIndex) {
 }
 
 /**
- * @name funcConditional
+ * @name thunkConditional
  *
  * @synopsis
- * funcConditional(
+ * thunkConditional(
+ *   boolean,
+ *   thunkA ()=>any,
+ *   thunkB ()=>any,
+ * ) -> any
+ */
+const thunkConditional = (
+  boolean, thunkA, thunkB,
+) => boolean ? thunkA() : thunkB()
+
+/**
+ * @name funcApply
+ *
+ * @synopsis
+ * funcApply(func function, args Array) -> func(...args)
+ */
+const funcApply = (func, args) => func(...args)
+
+/**
+ * @name funcSwitch
+ *
+ * @synopsis
+ * funcSwitch(
  *   funcs Array<args=>Promise|any>,
  * )(args ...any) -> Promise|any
- *
- * @TODO .then quickscope
  */
-const funcConditional = funcs => function funcSwitching(...args) {
+const funcSwitch = funcs => function funcSwitching(...args) {
   const lastIndex = funcs.length - 1
   let funcsIndex = -2
+
   while ((funcsIndex += 2) < lastIndex) {
     const shouldReturnNext = funcs[funcsIndex](...args)
     if (isPromise(shouldReturnNext)) {
-      return shouldReturnNext.then(res => res
-        ? funcs[funcsIndex + 1](...args)
-        : asyncFuncSwitch(funcs, args, funcsIndex))
+      return shouldReturnNext.then(curry3(
+        thunkConditional,
+        __,
+        thunkify1(curry2(funcApply, funcs[funcsIndex + 1], __), args),
+        thunkify3(asyncFuncSwitch, funcs, args, funcsIndex)))
     }
     if (shouldReturnNext) {
       return funcs[funcsIndex + 1](...args)
@@ -911,44 +1000,9 @@ const funcConditional = funcs => function funcSwitching(...args) {
  * @synopsis
  * switchCase(funcs)
  *
- * switchCase(fns Array<function>)(x any) -> Promise|any
+ * switchCase(switchers Array<function>)(args ...any) -> Promise|any
  */
-const switchCase = funcConditional
-
-/*
- * @synopsis
- * mapArray(f function, x Array<any>) -> Array<any>|Promise<Array<any>>
- *
- * @note
- * x.map
- * https://v8.dev/blog/elements-kinds#avoid-polymorphism
- */
-const mapArray = (f, x) => {
-  let isAsync = false
-  const y = x.map(xi => {
-    const point = f(xi)
-    if (isPromise(point)) isAsync = true
-    return point
-  })
-  return isAsync ? Promise.all(y) : y
-}
-
-/*
- * @synopsis
- * mapSet(f function, x Set<any>) -> Set<any>
- */
-const mapSet = (f, x) => {
-  const y = new Set(), promises = []
-  for (const xi of x) {
-    const yi = f(xi)
-    if (isPromise(yi)) {
-      promises.push(yi.then(res => { y.add(res) }))
-    } else {
-      y.add(yi)
-    }
-  }
-  return promises.length > 0 ? Promise.all(promises).then(() => y) : y
-}
+const switchCase = funcSwitch
 
 /**
  * @name arrayMap
@@ -961,10 +1015,14 @@ const mapSet = (f, x) => {
 const arrayMap = function (array, mapper) {
   const arrayLength = array.length,
     result = Array(arrayLength)
-  let index = -1, isAsync = false
+  let index = -1,
+    isAsync = false
+
   while (++index < arrayLength) {
     const resultItem = mapper(array[index])
-    if (isPromise(resultItem)) isAsync = true
+    if (isPromise(resultItem)) {
+      isAsync = true
+    }
     result[index] = resultItem
   }
   return isAsync ? promiseAll(result) : result
@@ -974,19 +1032,42 @@ const arrayMap = function (array, mapper) {
  * @name objectMap
  *
  * @synopsis
- * any -> A, any -> B
- *
- * objectMap(object Object<A>, mapper A=>Promise|B) -> Promise|Object<B>
+ * objectMap(
+ *   object Object, mapper function,
+ * ) -> Promise|Object
  */
 const objectMap = function (object, mapper) {
   const result = {}
   let isAsync = false
+
   for (const key in object) {
     const resultItem = mapper(object[key])
     if (isPromise(resultItem)) isAsync = true
     result[key] = resultItem
   }
   return isAsync ? promiseObjectAll(result) : result
+}
+
+/**
+ * @name objectMapToArray
+ *
+ * @synopsis
+ * objectMapToArray(
+ *   object Object, mapper function,
+ * ) -> Promise|Array
+ *
+ * @note order not guaranteed
+ */
+const objectMapToArray = function (object, mapper) {
+  const result = []
+  let isAsync = false
+
+  for (const key in object) {
+    const resultItem = mapper(object[key])
+    if (isPromise(resultItem)) isAsync = true
+    result.push(resultItem)
+  }
+  return isAsync ? promiseAll(result) : result
 }
 
 /**
@@ -1087,8 +1168,11 @@ MappingAsyncIterator.prototype = {
     if (iteration.done) {
       return iteration
     }
-    return then(
-      this.mapper(iteration.value), toIteration)
+
+    const mapped = this.mapper(iteration.value)
+    return isPromise(mapped)
+      ? mapped.then(toIteration)
+      : { value: mapped, done: false }
   }
 }
 
@@ -1228,7 +1312,7 @@ const reducerMap = (reducer, mapper) => function mappingReducer(result, value) {
  *
  * @execution concurrent
  *
- * @transducers
+ * @transducing
  */
 const map = mapper => function mapping(value) {
   if (isArray(value)) {
@@ -1246,6 +1330,7 @@ const map = mapper => function mapping(value) {
   if (value == null) {
     return value
   }
+
   if (typeof value.next == 'function') {
     return symbolIterator in value
       ? new MappingIterator(value, mapper)
@@ -1277,6 +1362,21 @@ const asyncArrayMapSeries = async function (array, mapper, result, index) {
 }
 
 /**
+ * @name setProperty
+ *
+ * @synopsis
+ * setProperty(
+ *   object Object,
+ *   property string,
+ *   value any,
+ * ) -> object
+ */
+const setProperty = function (object, property, value) {
+  object[property] = value
+  return object
+}
+
+/**
  * @name arrayMapSeries
  *
  * @synopsis
@@ -1290,13 +1390,13 @@ const arrayMapSeries = function (array, mapper) {
   const arrayLength = array.length,
     result = Array(arrayLength)
   let index = -1
+
   while (++index < arrayLength) {
     const resultItem = mapper(array[index])
     if (isPromise(resultItem)) {
-      return resultItem.then(res => {
-        result[index] = res
-        return asyncArrayMapSeries(array, mapper, result, index)
-      })
+      return resultItem.then(funcConcat(
+        curry3(setProperty, result, index, __),
+        curry4(asyncArrayMapSeries, array, mapper, __, index)))
     }
     result[index] = resultItem
   }
@@ -1355,16 +1455,15 @@ const asyncArrayMapPool = async function (
   array, mapper, concurrencyLimit, result, index, promises,
 ) {
   const arrayLength = array.length
+
   while (++index < arrayLength) {
     if (promises.size >= concurrencyLimit) {
       await promiseRace(promises)
     }
     const resultItem = mapper(array[index])
     if (isPromise(resultItem)) {
-      const selfDeletingPromise = resultItem.then(res => {
-        promises.delete(selfDeletingPromise)
-        return res
-      })
+      const selfDeletingPromise = resultItem.then(
+        tapSync(() => promises.delete(selfDeletingPromise)))
       promises.add(selfDeletingPromise)
       result[index] = selfDeletingPromise
     } else {
@@ -1391,14 +1490,13 @@ const arrayMapPool = function (array, mapper, concurrentLimit) {
   const arrayLength = array.length,
     result = Array(arrayLength)
   let index = -1
+
   while (++index < arrayLength) {
     const resultItem = mapper(array[index])
     if (isPromise(resultItem)) {
-      const promises = new Set()
-      const selfDeletingPromise = resultItem.then(res => {
-        promises.delete(selfDeletingPromise)
-        return res
-      })
+      const promises = new Set(),
+        selfDeletingPromise = resultItem.then(
+          tapSync(() => promises.delete(selfDeletingPromise)))
       promises.add(selfDeletingPromise)
       result[index] = selfDeletingPromise
       return asyncArrayMapPool(
@@ -1462,6 +1560,7 @@ const arrayMapWithIndex = function (array, mapper) {
   const arrayLength = array.length,
     result = Array(arrayLength)
   let index = -1, isAsync = false
+
   while (++index < arrayLength) {
     const resultItem = mapper(array[index], index, array)
     if (isPromise(resultItem)) {
@@ -1555,6 +1654,7 @@ const arrayFilterByConditions = function (
   const arrayLength = array.length,
     resultPush = result.push.bind(result)
   let conditionsIndex = -1
+
   while (++index < arrayLength) {
     if (conditions[++conditionsIndex]) {
       resultPush(array[index])
@@ -1579,6 +1679,7 @@ const arrayFilter = function (array, predicate) {
     result = []
   let index = -1,
     resultIndex = -1
+
   while (++index < arrayLength) {
     const item = array[index]
     const shouldIncludeItem = predicate(item)
@@ -1628,6 +1729,7 @@ const transferPropertyByCondition = function (
 const objectFilter = function (object, predicate) {
   const result = {},
     promises = []
+
   for (const key in object) {
     const item = object[key]
     const shouldIncludeItem = predicate(item)
@@ -1692,6 +1794,7 @@ FilteringIterator.prototype = {
     const thisIterNext = this.iter.next.bind(this.iter),
       thisPredicate = this.predicate
     let iteration = this.iter.next()
+
     while (!iteration.done) {
       const { value } = iteration
       if (thisPredicate(value)) {
@@ -1757,6 +1860,7 @@ FilteringAsyncIterator.prototype = {
     const thisIterNext = this.iter.next.bind(this.iter),
       thisPredicate = this.predicate
     let iteration = await thisIterNext()
+
     while (!iteration.done) {
       const { value } = iteration
       const shouldIncludeItem = thisPredicate(value)
@@ -1804,9 +1908,11 @@ const reducerFilterByCondition = (
 const reducerFilter = (
   reducer, predicate,
 ) => function filteringReducer(result, item) {
-  return then(
-    predicate(item),
-    curry4(reducerFilterByCondition, reducer, result, item, __))
+  const shouldInclude = predicate(item)
+  return isPromise(shouldInclude)
+    ? shouldInclude.then(
+      curry4(reducerFilterByCondition, reducer, result, item, __))
+    : shouldInclude ? reducer(result, item) : result
 }
 
 /**
@@ -1951,7 +2057,7 @@ const reducerFilter = (
  *
  * @execution concurrent
  *
- * @transducers
+ * @transducing
  */
 const filter = predicate => function filtering(value) {
   if (isArray(value)) {
@@ -1969,6 +2075,7 @@ const filter = predicate => function filtering(value) {
   if (value == null) {
     return value
   }
+
   if (typeof value.next == 'function') {
     return symbolIterator in value
       ? new FilteringIterator(value, predicate)
@@ -1999,6 +2106,7 @@ const arrayExtendMapWithIndex = function (
 ) {
   const valuesLength = values.length
   let arrayIndex = array.length - 1
+
   while (++valuesIndex < valuesLength) {
     array[++arrayIndex] = valuesMapper(
       values[valuesIndex], valuesIndex, values)
@@ -2022,6 +2130,7 @@ const arrayFilterWithIndex = function (array, predicate) {
     result = []
   let index = -1,
     resultIndex = -1
+
   while (++index < arrayLength) {
     const item = array[index]
     const shouldIncludeItem = predicate(item, index, array)
@@ -2100,6 +2209,7 @@ const arrayReduce = function (array, reducer, result) {
   if (result === undefined) {
     result = array[++index]
   }
+
   while (++index < arrayLength) {
     result = reducer(result, array[index])
     if (isPromise(result)) {
@@ -2131,6 +2241,7 @@ const asyncIteratorReduce = async function (asyncIterator, reducer, result) {
     result = iteration.value
     iteration = await asyncIterator.next()
   }
+
   while (!iteration.done) {
     result = await reducer(result, iteration.value)
     iteration = await asyncIterator.next()
@@ -2177,6 +2288,7 @@ const iteratorReduce = function (iterator, reducer, result) {
     result = iteration.value
     iteration = iterator.next()
   }
+
   while (!iteration.done) {
     result = reducer(result, iteration.value)
     if (isPromise(result)) {
@@ -2272,6 +2384,8 @@ const tacitGenericReduce = (
  *   result undefined|any,
  * ) -> result
  *
+ * @related genericReduceConcurrent
+ *
  * @TODO genericReduceSync(args, reducer, init) - performance optimization for some of these genericReduces that we know are synchronous
  *
  * @TODO genericReducePool(poolSize, args, reducer, init) - for some of these genericReduces that we want to race - result should not care about order of concatenations
@@ -2287,6 +2401,7 @@ var genericReduce = function (args, reducer, result) {
   if (collection == null) {
     return result
   }
+
   if (typeof collection.next == 'function') {
     return symbolIterator in collection
       ? iteratorReduce(collection, reducer, result)
@@ -2557,20 +2672,19 @@ var genericReduce = function (args, reducer, result) {
  *
  * @execution series
  *
- * @transducers
- *
- * @note
- * https://stackoverflow.com/questions/30233302/promise-is-it-possible-to-force-cancel-a-promise/30235261#30235261
- * https://stackoverflow.com/questions/62336381/is-this-promise-cancellation-implementation-for-reducing-an-async-iterable-on-th
+ * @transducing
  *
  * @TODO readerReduce
+ *
+ * @TODO reduce.concurrent
  */
 const reduce = function (reducer, init) {
   if (isFunction(init)) {
     return function reducing(...args) {
-      return then(
-        init(...args),
-        curry3(genericReduce, args, reducer, __))
+      const result = init(...args)
+      return isPromise(result)
+        ? result.then(curry3(genericReduce, args, reducer, __))
+        : genericReduce(args, reducer, result)
     }
   }
   return tacitGenericReduce(reducer, init)
@@ -2590,9 +2704,27 @@ const reduce = function (reducer, init) {
  *   result any,
  * ) -> result
  */
-const emptyTransform = (args, transducer, result) => then(
-  genericReduce(args, transducer(identity), null),
-  always(result))
+const emptyTransform = function (args, transducer, result) {
+  const nil = genericReduce(args, transducer(identity), null)
+  return isPromise(nil) ? nil.then(always(result)) : result
+}
+
+/**
+ * @name _binaryExtend
+ *
+ * @synopsis
+ * _binaryExtend(
+ *   typedArray TypedArray,
+ *   array Array|TypedArray,
+ * ) -> concatenatedTypedArray
+ */
+const _binaryExtend = function (typedArray, array) {
+  const offset = typedArray.length
+  const result = new typedArray.constructor(offset + array.length)
+  result.set(typedArray)
+  result.set(array, offset)
+  return result
+}
 
 /**
  * @name binaryExtend
@@ -2604,23 +2736,10 @@ const emptyTransform = (args, transducer, result) => then(
  * ) -> concatenatedTypedArray
  */
 const binaryExtend = function (typedArray, array) {
-  const offset = typedArray.length
-  const result = new typedArray.constructor(offset + array.length)
-  result.set(typedArray)
-  result.set(array, offset)
-  return result
-}
-
-/**
- * @name curriedTypedArrayExtend
- *
- * @synopsis
- * curriedTypedArrayExtend(
- *   typedArray TypedArray,
- * )(array Array|TypedArray) -> extended TypedArray
- */
-const curriedTypedArrayExtend = typedArray => function curried(array) {
-  return binaryExtend(typedArray, array)
+  if (isArray(array) || isBinary(array)) {
+    return _binaryExtend(typedArray, array)
+  }
+  return _binaryExtend(typedArray, [array])
 }
 
 /**
@@ -2725,14 +2844,15 @@ const genericTransform = function (args, transducer, result) {
     return genericReduce(args, transducer(arrayExtend), result)
   }
   if (isBinary(result)) {
-    return then(
-      genericReduce(args, transducer(arrayExtend), []),
-      curry2(binaryExtend, result, __))
-    // curriedTypedArrayExtend(result))
+    const intermediateArray = genericReduce(args, transducer(arrayExtend), [])
+    return isPromise(intermediateArray)
+      ? intermediateArray.then(curry2(_binaryExtend, result, __))
+      : _binaryExtend(result, intermediateArray)
   }
   if (result == null) {
     return emptyTransform(args, transducer, result)
   }
+
   const resultConstructor = result.constructor
   if (typeof result == 'string' || resultConstructor == String) {
     return genericReduce(args, transducer(add), result)
@@ -2785,6 +2905,8 @@ const curriedGenericTransform = (
  * Reducer<T> = (any, T)=>Promise|any
  *
  * Transducer = Reducer=>Reducer
+ *
+ * TODO explore Semigroup = Iterator|AsyncIterator
  *
  * Semigroup = Array|string|Set|TypedArray
  *   |{ concat: function }|{ write: function }|Object
@@ -2949,14 +3071,15 @@ const curriedGenericTransform = (
  *
  * @execution series
  *
- * @transducers
+ * @transducing
  */
 const transform = function (transducer, init) {
   if (isFunction(init)) {
     return function reducing(...args) {
-      return then(
-        init(...args),
-        curriedGenericTransform(args, transducer))
+      const result = init(...args)
+      return isPromise(result)
+        ? result.then(curry3(genericTransform, args, transducer, __))
+        : genericTransform(args, transducer, result)
     }
   }
   return function reducing(...args) {
@@ -2973,6 +3096,216 @@ const transform = function (transducer, init) {
  * callChain(monad Monad, resolver)
  */
 const callChain = (monad, resolver) => monad.chain(resolver)
+
+/**
+ * @name arrayPushIf
+ *
+ * @synopsis
+ * arrayPushIf(predicate, any=>boolean, array Array, item any) -> ()
+ */
+const arrayPushIf = function (predicate, array, item) {
+  if (predicate(item)) {
+    array.push(item)
+  }
+}
+
+/**
+ * @name forEachReduceConcurrent
+ *
+ * @synopsis
+ * forEachReduceConcurrent(
+ *   collection { forEach: function },
+ *   reducer (any, T)=>Promise|any,
+ *   result any,
+ * ) -> Promise|result
+ */
+const forEachReduceConcurrent = function (collection, reducer, result) {
+  const promises = [],
+    getResult = () => result
+  collection.forEach(funcConcatSync(
+    curry2(reducer, result, __),
+    curry3(arrayPushIf, isPromise, promises, __)))
+  return promises.length == 0
+    ? result
+    : promiseAll(promises).then(getResult)
+}
+
+/**
+ * @name iterableReduceConcurrent
+ *
+ * @synopsis
+ * iterableReduceConcurrent(
+ *   iterable { [Symbol.iterator]: function },
+ *   reducer (any, T)=>Promise|any,
+ *   result any,
+ * ) -> Promise|result
+ */
+const iterableReduceConcurrent = function (iterable, reducer, result) {
+  const promises = [],
+    getResult = () => result,
+    pipeline = funcConcatSync(
+      curry2(reducer, result, __),
+      curry3(arrayPushIf, isPromise, promises, __))
+
+  for (const item of iterable) {
+    pipeline(item)
+  }
+  return promises.length == 0
+    ? result
+    : promiseAll(promises).then(getResult)
+}
+
+/**
+ * @name asyncIterableReduceConcurrent
+ *
+ * @synopsis
+ * asyncIterableReduceConcurrent(
+ *   asyncIterable { [Symbol.iterator]: function },
+ *   reducer (any, T)=>Promise|any,
+ *   result any,
+ * ) -> Promise|result
+ */
+const asyncIterableReduceConcurrent = async function (asyncIterable, reducer, result) {
+  const promises = [],
+    getResult = () => result,
+    pipeline = funcConcatSync(
+      curry2(reducer, result, __),
+      curry3(arrayPushIf, isPromise, promises, __))
+
+  for await (const item of asyncIterable) {
+    pipeline(item)
+  }
+  return promises.length == 0
+    ? result
+    : promiseAll(promises).then(getResult)
+}
+
+/**
+ * @name objectReduceConcurrent
+ *
+ * @synopsis
+ * objectReduceConcurrent(
+ *   object Object,
+ *   reducer (any, T)=>Promise|any,
+ *   result any,
+ * ) -> Promise|result
+ *
+ * @related objectFlatMap
+ */
+const objectReduceConcurrent = function (object, reducer, result) {
+  console.log('ayo', object, reducer, result)
+  const promises = [],
+    getResult = () => result,
+    pipeline = funcConcatSync(
+      curry2(reducer, result, __),
+      curry3(arrayPushIf, isPromise, promises, __))
+
+  for (const key in object) {
+    pipeline(object[key])
+  }
+  return promises.length == 0
+    ? result
+    : promiseAll(promises).then(getResult)
+}
+
+/**
+ * @name getArg1
+ *
+ * @synopsis
+ * getArg1(arg0 any, arg1 any) -> arg1
+ */
+const getArg1 = function (arg0, arg1) {
+  return arg1
+}
+
+/**
+ * @name foldableReduceConcurrent
+ *
+ * @synopsis
+ * foldableReduceConcurrent(
+ *   foldable { reduce: function },
+ *   reducer (any, T)=>Promise|any,
+ *   result any,
+ * ) -> Promise|result
+ */
+const foldableReduceConcurrent = function (foldable, reducer, result) {
+  const promises = [],
+    getResult = () => result,
+    pipeline = [
+      getArg1,
+      curry2(reducer, result, __),
+      curry3(arrayPushIf, isPromise, promises, __),
+    ].reduce(funcConcatSync)
+
+  foldable.reduce(tapSync(pipeline), null)
+  return promises.length == 0
+    ? result
+    : promiseAll(promises).then(getResult)
+}
+
+/**
+ * @name tacitGenericReduceConcurrent
+ *
+ * @synopsis
+ * any -> T
+ *
+ * tacitGenericReduceConcurrent(
+ *   reducer (any, T)=>any,
+ *   result any,
+ * ) -> reducing ...any=>result
+ */
+const tacitGenericReduceConcurrent = (
+  reducer, result,
+) => function reducing(...args) {
+  return genericReduceConcurrent(args, reducer, result)
+}
+
+/**
+ * @name genericReduceConcurrent
+ *
+ * @synopsis
+ * genericReduceConcurrent(
+ *   args Array,
+ *   reducer function,
+ *   result any,
+ * ) -> result
+ *
+ * @related
+ * genericReduce
+ *
+ * @NOTE
+ * concurrency is only possible because result is never reassigned. in that regard, `result` is required.
+ */
+var genericReduceConcurrent = function (args, reducer, result) {
+  const collection = args[0]
+  if (collection == null) {
+    reducer(result, collection)
+    return result
+  }
+  if (typeof collection.forEach == 'function') {
+    return forEachReduceConcurrent(collection, reducer, result)
+  }
+  if (typeof collection[symbolIterator] == 'function') {
+    return iterableReduceConcurrent(collection, reducer, result)
+  }
+  if (typeof collection[symbolAsyncIterator] == 'function') {
+    return asyncIterableReduceConcurrent(collection, reducer, result)
+  }
+  if (typeof collection.reduce == 'function') {
+    return foldableReduceConcurrent(collection, reducer, result)
+  }
+  if (typeof collection.chain == 'function') {
+    return collection.chain(curry2(reducer, __, result))
+  }
+  if (typeof collection.flatMap == 'function') {
+    return collection.flatMap(curry2(reducer, __, result))
+  }
+  if (collection.constructor == Object) {
+    return objectReduceConcurrent(collection, reducer, result)
+  }
+  reducer(result, collection)
+  return result
+}
 
 /**
  * @name flatteningTransducer
@@ -2993,11 +3326,41 @@ const callChain = (monad, resolver) => monad.chain(resolver)
  * Reducer<T> = (any, T)=>Promise|any
  *
  * flatteningTransducer(concat Reducer) -> flatteningReducer FlatteningReducer
+ *
+ * @execution series
  */
 const flatteningTransducer = concat => function flatteningReducer(
   result, item,
 ) {
   return genericReduce([item], concat, result)
+}
+
+/**
+ * @name flatteningTransducerConcurrent
+ *
+ * @synopsis
+ * flatteningTransducerConcurrent(concat Reducer) -> flatteningReducer Reducer
+ *
+ * DuplexStream = { read: function, write: function }
+ *
+ * Monad = Array|String|Set
+ *   |TypedArray|DuplexStream|Iterator|AsyncIterator
+ *   |{ chain: function }|{ flatMap: function }|Object
+ *
+ * Foldable = Iterable|AsyncIterable|{ reduce: function }
+ *
+ * FlatteningReducer<T> = (any, T)=>Promise|Monad|Foldable|any
+ *
+ * Reducer<T> = (any, T)=>Promise|any
+ *
+ * flatteningTransducerConcurrent(concat Reducer) -> flatteningReducer FlatteningReducer
+ *
+ * @execution concurrent
+ */
+const flatteningTransducerConcurrent = concat => function flatteningReducer(
+  result, item,
+) {
+  return genericReduceConcurrent([item], concat, result)
 }
 
 /**
@@ -3017,10 +3380,77 @@ const flatteningTransducer = concat => function flatteningReducer(
  *   flatMapper item=>Promise|Monad|Foldable|any,
  * ) -> Array
  */
-const arrayFlatMap = (array, flatMapper) => then(
-  arrayMap(array, flatMapper),
-  // curry3(genericReduce, __, flatteningTransducer(arrayExtend), []))
-  tacitGenericReduce(flatteningTransducer(arrayExtend), []))
+const arrayFlatMap = function (array, flatMapper) {
+  const monadArray = arrayMap(array, flatMapper)
+  return isPromise(monadArray)
+    ? monadArray.then(
+      tacitGenericReduceConcurrent(
+        flatteningTransducerConcurrent(arrayExtend),
+        []))
+    : genericReduceConcurrent(
+      [monadArray],
+      flatteningTransducerConcurrent(arrayExtend),
+      [])
+}
+
+/**
+ * @name objectFlatMap
+ *
+ * @synopsis
+ * DuplexStream = { read: function, write: function }
+ *
+ * Monad = Array|String|Set
+ *   |TypedArray|DuplexStream|Iterator|AsyncIterator
+ *   |{ chain: function }|{ flatMap: function }|Object
+ *
+ * Foldable = Iterable|AsyncIterable|{ reduce: function }
+ *
+ * objectFlatMap(
+ *   object Object,
+ *   flatMapper item=>Promise|Monad|Foldable|any,
+ * ) -> Object
+ *
+ * @related objectReduceConcurrent
+ */
+const objectFlatMap = function (object, flatMapper) {
+
+  /*
+  const monadObject = objectMap(object, flatMapper)
+  return isPromise(monadObject)
+    ? monadObject.then(tacitGenericReduceConcurrent(objectAssign, {}))
+    : genericReduceConcurrent([monadObject], objectAssign, {})
+    */
+  const monadArray = objectMapToArray(object, flatMapper)
+  return isPromise(monadArray)
+    ? monadArray.then(tacitGenericReduceConcurrent(objectAssign, {}))
+    : genericReduceConcurrent([monadArray], objectAssign, {})
+
+  /*
+  const monadObject = objectMap(object, flatMapper)
+  return isPromise(monadObject)
+    ? monadObject.then(
+      tacitGenericReduceConcurrent(
+        flatteningTransducerConcurrent(objectAssign),
+        {}))
+    : genericReduceConcurrent(
+      [monadObject],
+      flatteningTransducerConcurrent(objectAssign),
+      {})
+      */
+
+  /*
+  const monadArray = objectMapToArray(object, flatMapper)
+  return isPromise(monadArray)
+    ? monadArray.then(
+      tacitGenericReduceConcurrent(
+        flatteningTransducerConcurrent(objectAssign),
+        {}))
+    : genericReduceConcurrent(
+      [monadArray],
+      flatteningTransducerConcurrent(objectAssign),
+      {})
+      */
+}
 
 /**
  * @name setFlatMap
@@ -3039,9 +3469,18 @@ const arrayFlatMap = (array, flatMapper) => then(
  *   flatMapper item=>Promise|Monad|Foldable|any,
  * ) -> Set
  */
-const setFlatMap = (set, flatMapper) => then(
-  setMap(set, flatMapper),
-  tacitGenericReduce(flatteningTransducer(setExtend), new Set()))
+const setFlatMap = function (set, flatMapper) {
+  const monadSet = setMap(set, flatMapper)
+  return isPromise(monadSet)
+    ? monadSet.then(
+      tacitGenericReduceConcurrent(
+        flatteningTransducerConcurrent(setExtend),
+        new Set()))
+    : genericReduceConcurrent(
+      [monadSet],
+      flatteningTransducerConcurrent(setExtend),
+      new Set())
+}
 
 /**
  * @name stringFlatMap
@@ -3060,9 +3499,24 @@ const setFlatMap = (set, flatMapper) => then(
  *   flatMapper item=>Promise|Monad|Foldable|any,
  * ) -> string
  */
-const stringFlatMap = (string, flatMapper) => then(
-  arrayMap(string, flatMapper),
-  tacitGenericReduce(flatteningTransducer(add), ''))
+const stringFlatMap = function (string, flatMapper) {
+  let result = ''
+  const resultExtend = (_, item) => (result += item),
+    getResult = () => result,
+    monadArray = arrayMap(string, flatMapper)
+
+  if (isPromise(monadArray)) {
+    return monadArray.then(
+      tacitGenericReduceConcurrent(
+        flatteningTransducerConcurrent(resultExtend),
+        null)).then(getResult)
+  }
+  genericReduceConcurrent(
+    [monadArray],
+    flatteningTransducerConcurrent(resultExtend),
+    null)
+  return result
+}
 
 /**
  * @name streamFlatMap
@@ -3081,9 +3535,9 @@ const stringFlatMap = (string, flatMapper) => then(
  *   flatMapper item=>Promise|Monad|Foldable|any,
  * ) -> stream
  */
-const streamFlatMap = (stream, flatMapper) => genericReduce(
+const streamFlatMap = (stream, flatMapper) => genericReduceConcurrent(
   [new MappingAsyncIterator(stream[symbolAsyncIterator](), flatMapper)],
-  flatteningTransducer(streamExtend),
+  flatteningTransducerConcurrent(streamExtend),
   stream)
 
 /**
@@ -3103,13 +3557,26 @@ const streamFlatMap = (stream, flatMapper) => genericReduce(
  *   flatMapper item=>Promise|Monad|Foldable|any,
  * ) -> stream
  */
-const binaryFlatMap = (binary, flatMapper) => then(
-  arrayMap(value, flatMapper),
-  tacitGenericReduce(
-    flatteningTransducer(binaryExtend),
-    globalThisHasBuffer && binary.constructor == Buffer
-      ? bufferAlloc(0)
-      : new value.constructor(0)))
+const binaryFlatMap = function (binary, flatMapper) {
+  let result = globalThisHasBuffer && binary.constructor == Buffer
+    ? bufferAlloc(0)
+    : new binary.constructor(0)
+  const resultExtend = (_, chunk) => (result = binaryExtend(result, chunk)),
+    getResult = () => result,
+    monadArray = arrayMap(binary, flatMapper)
+
+  if (isPromise(monadArray)) {
+    return monadArray.then(
+      tacitGenericReduceConcurrent(
+        flatteningTransducerConcurrent(resultExtend),
+        null)).then(getResult)
+  }
+  genericReduceConcurrent(
+    [monadArray],
+    flatteningTransducerConcurrent(resultExtend),
+    null)
+  return result
+}
 
 /**
  * @name generatorFunctionFlatMap
@@ -3124,8 +3591,17 @@ const generatorFunctionFlatMap = (
   generatorFunction, flatMapper,
 ) => function* flatMappingGeneratorFunction(...args) {
   for (const item of generatorFunction(...args)) {
-    yield* genericReduce(
-      [flatMapper(item)], flatteningTransducer(arrayExtend), [])
+    const monad = flatMapper(item)
+    if (monad == null) {
+      yield monad
+    } else if (typeof monad[symbolIterator] == 'function') {
+      yield* monad
+    } else {
+      yield* genericReduceConcurrent(
+        [monad],
+        flatteningTransducerConcurrent(arrayExtend),
+        [])
+    }
   }
 }
 
@@ -3141,9 +3617,18 @@ const generatorFunctionFlatMap = (
 const asyncGeneratorFunctionFlatMap = (
   asyncGeneratorFunction, flatMapper,
 ) => async function* flatMappingAsyncGeneratorFunction(...args) {
-  for await (const item of generatorFunction(...args)) {
-    yield* genericReduce(
-      [await flatMapper(item)], flatteningTransducer(arrayExtend), [])
+  for await (const item of asyncGeneratorFunction(...args)) {
+    const monad = await flatMapper(item)
+    if (monad == null) {
+      yield monad
+    } else if (typeof monad[symbolIterator] == 'function') {
+      yield* monad
+    } else {
+      yield* await genericReduceConcurrent(
+        [monad],
+        flatteningTransducerConcurrent(arrayExtend),
+        [])
+    }
   }
 }
 
@@ -3182,28 +3667,34 @@ const FlatMappingIterator = function (iterator, flatMapper) {
   this.iterator = iterator
   this.flatMapper = flatMapper
   this.buffer = []
-  this.bufferIndex = -1
+  this.bufferIndex = Infinity
 }
 
 FlatMappingIterator.prototype = {
   [symbolIterator]() {
     return this
   },
-  next() { // TODO rethink this algorithm
-    if (this.bufferIndex == -1) {
-      const { value, done } = this.iterator.next()
-      if (done) {
-        return {
-          value: undefined,
-          done: true,
-        }
-      }
-      this.buffer = genericReduce([value], arrayExtend, []) // TODO genericReduceSync
-      this.bufferIndex = -1
+  next() {
+    if (this.bufferIndex < this.buffer.length) {
+      const value = this.buffer[this.bufferIndex]
+      this.bufferIndex += 1
+      return { value, done: false }
     }
-    console.log('this.buffer', this.buffer, this.bufferIndex + 1, this.buffer[this.bufferIndex + 1])
+
+    const iteration = this.iterator.next()
+    if (iteration.done) {
+      return iteration
+    }
+    const monadAsArray = genericReduce( // TODO genericReduceSync
+      [this.flatMapper(iteration.value)],
+      flatteningTransducerConcurrent(arrayExtend),
+      []) // this will always have at least one item
+    if (monadAsArray.length > 1) {
+      this.buffer = monadAsArray
+      this.bufferIndex = 1
+    }
     return {
-      value: this.buffer[++this.bufferIndex],
+      value: monadAsArray[0],
       done: false,
     }
   },
@@ -3213,15 +3704,19 @@ FlatMappingIterator.prototype = {
  * @name FlatMappingAsyncIterator
  *
  * @synopsis
- * new FlatMappingAsyncIterator(
- *   iterator AsyncIterator, flatMapper function,
- * ) -> FlatMappingAsyncIterator { next, SymbolAsyncIterator }
+ * FlatMappingAsyncIterator(
+ *   asyncIterator AsyncIterator, flatMapper function,
+ * ) -> FlatMappingAsyncIterator AsyncIterator
+ *
+ * @execution concurrent
+ *
+ * @muxing
  */
-const FlatMappingAsyncIterator = function (iterator, flatMapper) {
-  this.iterator = iterator
+const FlatMappingAsyncIterator = function (asyncIterator, flatMapper) {
+  this.asyncIterator = asyncIterator
   this.flatMapper = flatMapper
   this.buffer = []
-  this.bufferIndex = -1
+  this.bufferIndex = Infinity
 }
 
 FlatMappingAsyncIterator.prototype = {
@@ -3229,19 +3724,36 @@ FlatMappingAsyncIterator.prototype = {
     return this
   },
   async next() {
-    if (this.bufferIndex == this.buffer.length) {
-      const { value, done } = await this.iterator.next()
-      if (done) {
-        return {
-          value: undefined,
-          done: true,
-        }
-      }
-      this.buffer = await genericReduce([value], arrayExtend, [])
-      this.bufferIndex = -1
+    if (this.bufferIndex < this.buffer.length) {
+      const value = this.buffer[this.bufferIndex]
+      this.bufferIndex += 1
+      return { value, done: false }
+    }
+
+    let iteration = this.asyncIterator.next()
+    if (isPromise(iteration)) {
+      iteration = await iteration
+    }
+    if (iteration.done) {
+      return iteration
+    }
+    let monad = this.flatMapper(iteration.value)
+    if (isPromise(monad)) {
+      monad = await monad
+    }
+    let monadAsArray = genericReduce(
+      [monad],
+      flatteningTransducerConcurrent(arrayExtend),
+      []) // this will always have at least one item
+    if (isPromise(monadAsArray)) {
+      monadAsArray = await monadAsArray
+    }
+    if (monadAsArray.length > 1) {
+      this.buffer = monadAsArray
+      this.bufferIndex = 1
     }
     return {
-      value: this.buffer[++this.bufferIndex],
+      value: monadAsArray[0],
       done: false,
     }
   },
@@ -3379,7 +3891,7 @@ FlatMappingAsyncIterator.prototype = {
  *   return resolver(this.value)
  * } // resolver will be something
  *
- * console.log( // TODO not sure yet
+ * console.log(
  *   flatMap(
  *     value => new Maybe(value),
  *   )([null, null, 1, 2, undefined, 3]),
@@ -3406,7 +3918,7 @@ FlatMappingAsyncIterator.prototype = {
  *
  * @execution concurrent
  *
- * @transducers
+ * @transducing
  */
 const flatMap = flatMapper => function flatMapping(value) {
   if (isArray(value)) {
@@ -3427,6 +3939,7 @@ const flatMap = flatMapper => function flatMapping(value) {
   if (value == null) {
     return value
   }
+
   if (typeof value.next == 'function') {
     return symbolIterator in value
       ? new FlatMappingIterator(value, flatMapper)
@@ -3445,11 +3958,14 @@ const flatMap = flatMapper => function flatMapping(value) {
     return streamFlatMap(value, flatMapper)
   }
   const valueConstructor = value.constructor
-  if (typeof value == 'string' || valueConstructor == String) {
-    return stringFlatMap(value, flatMapper)
+  if (valueConstructor == Object) {
+    return objectFlatMap(value, flatMapper)
   }
   if (valueConstructor == Set) {
     return setFlatMap(value, flatMapper)
+  }
+  if (typeof value == 'string' || valueConstructor == String) {
+    return stringFlatMap(value, flatMapper)
   }
   return flatMapper(value)
 }

@@ -2325,8 +2325,33 @@ flatMap(
   flatMapper item=>Promise|Monad|Foldable|any,
 )(value Reducer<item>) -> flatMappingReducer Reducer
     `, () => {
+      const async = func => async function asyncFunc(...args) {
+        return func(...args)
+      }
+
       const numbersArray = [1, 2, 3, 4, 5]
       const numbersDuplicates = [1, 1, 2, 2, 3, 3, 4, 4, 5, 5]
+      const numbersObject = { a: 1, b: 2, c: 3, d: 4, e: 5 }
+      const numbersUint8Array = new Uint8Array([1, 2, 3, 4, 5])
+      const numbersUint8ArrayDuplicates = new Uint8Array([1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
+      const numbersInt8Array = new Int8Array([1, 2, 3, 4, 5])
+      const numbersInt8ArrayDuplicates = new Int8Array([1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
+      const numbersUint16Array = new Uint16Array([1, 2, 3, 4, 5])
+      const numbersUint16ArrayDuplicates = new Uint16Array([1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
+      const numbersInt16Array = new Int16Array([1, 2, 3, 4, 5])
+      const numbersInt16ArrayDuplicates = new Int16Array([1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
+      const numbersUint32Array = new Uint32Array([1, 2, 3, 4, 5])
+      const numbersUint32ArrayDuplicates = new Uint32Array([1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
+      const numbersInt32Array = new Int32Array([1, 2, 3, 4, 5])
+      const numbersInt32ArrayDuplicates = new Int32Array([1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
+      const numbersFloat32Array = new Float32Array([1, 2, 3, 4, 5])
+      const numbersFloat32ArrayDuplicates = new Float32Array([1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
+      const numbersFloat64Array = new Float64Array([1, 2, 3, 4, 5])
+      const numbersFloat64ArrayDuplicates = new Float64Array([1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
+      const numbersBigUint64Array = new BigUint64Array([1n, 2n, 3n, 4n, 5n])
+      const numbersBigUint64ArrayDuplicates = new BigUint64Array([1n, 1n, 2n, 2n, 3n, 3n, 4n, 4n, 5n, 5n])
+      const numbersBigInt64Array = new BigInt64Array([1n, 2n, 3n, 4n, 5n])
+      const numbersBigInt64ArrayDuplicates = new BigInt64Array([1n, 1n, 2n, 2n, 3n, 3n, 4n, 4n, 5n, 5n])
       const bigIntsArray = [1n, 2n, 3n, 4n, 5n]
       const bigIntsDuplicates = [1n, 1n, 2n, 2n, 3n, 3n, 4n, 4n, 5n, 5n]
       const numbersSet = new Set([1, 2, 3, 4, 5])
@@ -2335,8 +2360,14 @@ flatMap(
       const alphabetString = 'abcde'
       const numbersDuplexStream = new MockDuplexStream([1, 2, 3, 4, 5])
       const numbersGeneratorFunction = function* () { for (let i = 1; i < 6; i++) yield i }
+      const asyncNumbersGeneratorFunction = async function* () { for (let i = 1; i < 6; i++) yield i }
 
+      const identity = value => value
       const duplicateArray = value => [value, value]
+      const duplicateObject = value => ({ [value * 10]: value, [value * 100]: value })
+      const duplicateObjectString = value => ({ [value]: value, [`${value}${value}`]: value })
+      const duplicateObjectBigInt = value => ({ [value * 10n]: value, [value * 100n]: value })
+      const nestedObject = value => ({ a: { a: value }, b: { b: value } })
       const duplicateString = value => `${value}${value}`
       const setWithAyo = value => new Set([value, 'ayo'])
       const duplicateUint8ClampedArray = value => new Uint8ClampedArray([value, value])
@@ -2354,65 +2385,284 @@ flatMap(
       const duplicateBuffer = value => Buffer.from([value, value])
 
       const assertions = [
+        [numbersArray, identity, numbersArray],
         [numbersArray, duplicateArray, numbersDuplicates],
+        [numbersArray, async(duplicateArray), numbersDuplicates],
+        [numbersArray, duplicateObject, numbersDuplicates],
+        [numbersArray, async(duplicateObject), numbersDuplicates],
         [numbersArray, duplicateString, ['1', '1', '2', '2', '3', '3', '4', '4', '5', '5']],
+        [numbersArray, async(duplicateString), ['1', '1', '2', '2', '3', '3', '4', '4', '5', '5']],
         [numbersArray, setWithAyo, [1, 'ayo', 2, 'ayo', 3, 'ayo', 4, 'ayo', 5, 'ayo']],
+        [numbersArray, async(setWithAyo), [1, 'ayo', 2, 'ayo', 3, 'ayo', 4, 'ayo', 5, 'ayo']],
         [numbersArray, duplicateUint8ClampedArray, numbersDuplicates],
+        [numbersArray, async(duplicateUint8ClampedArray), numbersDuplicates],
         [numbersArray, duplicateUint8Array, numbersDuplicates],
+        [numbersArray, async(duplicateUint8Array), numbersDuplicates],
         [numbersArray, duplicateInt8Array, numbersDuplicates],
+        [numbersArray, async(duplicateInt8Array), numbersDuplicates],
         [numbersArray, duplicateUint16Array, numbersDuplicates],
+        [numbersArray, async(duplicateUint16Array), numbersDuplicates],
         [numbersArray, duplicateInt16Array, numbersDuplicates],
+        [numbersArray, async(duplicateInt16Array), numbersDuplicates],
         [numbersArray, duplicateUint32Array, numbersDuplicates],
+        [numbersArray, async(duplicateUint32Array), numbersDuplicates],
         [numbersArray, duplicateInt32Array, numbersDuplicates],
+        [numbersArray, async(duplicateInt32Array), numbersDuplicates],
         [numbersArray, duplicateFloat32Array, numbersDuplicates],
+        [numbersArray, async(duplicateFloat32Array), numbersDuplicates],
         [numbersArray, duplicateFloat64Array, numbersDuplicates],
+        [numbersArray, async(duplicateFloat64Array), numbersDuplicates],
+        [bigIntsArray, identity, bigIntsArray],
         [bigIntsArray, duplicateBigUint64Array, bigIntsDuplicates],
+        [bigIntsArray, async(duplicateBigUint64Array), bigIntsDuplicates],
         [bigIntsArray, duplicateBigInt64Array, bigIntsDuplicates],
+        [bigIntsArray, async(duplicateBigInt64Array), bigIntsDuplicates],
+        [alphabetString, identity, alphabetString],
         [alphabetString, duplicateArray, 'aabbccddee'],
+        [alphabetString, async(duplicateArray), 'aabbccddee'],
+        [alphabetString, duplicateObjectString, 'aabbccddee'],
+        [alphabetString, async(duplicateObjectString), 'aabbccddee'],
         [alphabetString, duplicateString, 'aabbccddee'],
+        [alphabetString, async(duplicateString), 'aabbccddee'],
         [alphabetString, setWithAyo, 'aayobayocayodayoeayo'],
+        [alphabetString, async(setWithAyo), 'aayobayocayodayoeayo'],
+
+        [numbersSet, identity, numbersSet],
         [numbersSet, duplicateArray, numbersSet],
+        [numbersSet, async(duplicateArray), numbersSet],
+        [numbersSet, duplicateObject, numbersSet],
+        [numbersSet, async(duplicateObject), numbersSet],
         [numbersSet, setWithAyo, new Set([1, 2, 3, 4, 5, 'ayo'])],
+        [numbersSet, async(setWithAyo), new Set([1, 2, 3, 4, 5, 'ayo'])],
         [numbersSet, duplicateString, new Set(['1', '2', '3', '4', '5'])],
+        [numbersSet, async(duplicateString), new Set(['1', '2', '3', '4', '5'])],
         [numbersSet, duplicateUint8Array, numbersSet],
+        [numbersSet, async(duplicateUint8Array), numbersSet],
         [numbersSet, duplicateInt8Array, numbersSet],
+        [numbersSet, async(duplicateInt8Array), numbersSet],
         [numbersSet, duplicateUint16Array, numbersSet],
+        [numbersSet, async(duplicateUint16Array), numbersSet],
         [numbersSet, duplicateInt16Array, numbersSet],
+        [numbersSet, async(duplicateInt16Array), numbersSet],
         [numbersSet, duplicateUint32Array, numbersSet],
+        [numbersSet, async(duplicateUint32Array), numbersSet],
         [numbersSet, duplicateInt32Array, numbersSet],
+        [numbersSet, async(duplicateInt32Array), numbersSet],
         [numbersSet, duplicateFloat32Array, numbersSet],
+        [numbersSet, async(duplicateFloat32Array), numbersSet],
         [numbersSet, duplicateFloat64Array, numbersSet],
+        [numbersSet, async(duplicateFloat64Array), numbersSet],
+
+        [numbersUint8Array, identity, numbersUint8Array],
+        [numbersUint8Array, duplicateArray, numbersUint8ArrayDuplicates],
+        [numbersUint8Array, async(duplicateArray), numbersUint8ArrayDuplicates],
+        [numbersUint8Array, duplicateObject, numbersUint8ArrayDuplicates],
+        [numbersUint8Array, async(duplicateObject), numbersUint8ArrayDuplicates],
+        [numbersUint8Array, duplicateUint8Array, numbersUint8ArrayDuplicates],
+        [numbersUint8Array, async(duplicateUint8Array), numbersUint8ArrayDuplicates],
+        [numbersInt8Array, duplicateArray, numbersInt8ArrayDuplicates],
+        [numbersInt8Array, async(duplicateArray), numbersInt8ArrayDuplicates],
+        [numbersInt8Array, duplicateObject, numbersInt8ArrayDuplicates],
+        [numbersInt8Array, async(duplicateObject), numbersInt8ArrayDuplicates],
+        [numbersInt8Array, duplicateInt8Array, numbersInt8ArrayDuplicates],
+        [numbersInt8Array, async(duplicateInt8Array), numbersInt8ArrayDuplicates],
+        [numbersUint16Array, duplicateArray, numbersUint16ArrayDuplicates],
+        [numbersUint16Array, async(duplicateArray), numbersUint16ArrayDuplicates],
+        [numbersUint16Array, duplicateObject, numbersUint16ArrayDuplicates],
+        [numbersUint16Array, async(duplicateObject), numbersUint16ArrayDuplicates],
+        [numbersUint16Array, duplicateUint16Array, numbersUint16ArrayDuplicates],
+        [numbersUint16Array, async(duplicateUint16Array), numbersUint16ArrayDuplicates],
+        [numbersInt16Array, duplicateArray, numbersInt16ArrayDuplicates],
+        [numbersInt16Array, async(duplicateArray), numbersInt16ArrayDuplicates],
+        [numbersInt16Array, duplicateObject, numbersInt16ArrayDuplicates],
+        [numbersInt16Array, async(duplicateObject), numbersInt16ArrayDuplicates],
+        [numbersInt16Array, duplicateInt16Array, numbersInt16ArrayDuplicates],
+        [numbersInt16Array, async(duplicateInt16Array), numbersInt16ArrayDuplicates],
+        [numbersUint32Array, duplicateArray, numbersUint32ArrayDuplicates],
+        [numbersUint32Array, async(duplicateArray), numbersUint32ArrayDuplicates],
+        [numbersUint32Array, duplicateObject, numbersUint32ArrayDuplicates],
+        [numbersUint32Array, async(duplicateObject), numbersUint32ArrayDuplicates],
+        [numbersUint32Array, duplicateUint32Array, numbersUint32ArrayDuplicates],
+        [numbersUint32Array, async(duplicateUint32Array), numbersUint32ArrayDuplicates],
+        [numbersInt32Array, duplicateArray, numbersInt32ArrayDuplicates],
+        [numbersInt32Array, async(duplicateArray), numbersInt32ArrayDuplicates],
+        [numbersInt32Array, duplicateObject, numbersInt32ArrayDuplicates],
+        [numbersInt32Array, async(duplicateObject), numbersInt32ArrayDuplicates],
+        [numbersInt32Array, duplicateInt32Array, numbersInt32ArrayDuplicates],
+        [numbersInt32Array, async(duplicateInt32Array), numbersInt32ArrayDuplicates],
+        [numbersFloat32Array, duplicateArray, numbersFloat32ArrayDuplicates],
+        [numbersFloat32Array, async(duplicateArray), numbersFloat32ArrayDuplicates],
+        [numbersFloat32Array, duplicateObject, numbersFloat32ArrayDuplicates],
+        [numbersFloat32Array, async(duplicateObject), numbersFloat32ArrayDuplicates],
+        [numbersFloat32Array, duplicateFloat32Array, numbersFloat32ArrayDuplicates],
+        [numbersFloat32Array, async(duplicateFloat32Array), numbersFloat32ArrayDuplicates],
+        [numbersFloat64Array, duplicateArray, numbersFloat64ArrayDuplicates],
+        [numbersFloat64Array, async(duplicateArray), numbersFloat64ArrayDuplicates],
+        [numbersFloat64Array, duplicateObject, numbersFloat64ArrayDuplicates],
+        [numbersFloat64Array, async(duplicateObject), numbersFloat64ArrayDuplicates],
+        [numbersFloat64Array, duplicateFloat64Array, numbersFloat64ArrayDuplicates],
+        [numbersFloat64Array, async(duplicateFloat64Array), numbersFloat64ArrayDuplicates],
+        [numbersBigUint64Array, duplicateArray, numbersBigUint64ArrayDuplicates],
+        [numbersBigUint64Array, async(duplicateArray), numbersBigUint64ArrayDuplicates],
+        [numbersBigUint64Array, duplicateObjectBigInt, numbersBigUint64ArrayDuplicates],
+        [numbersBigUint64Array, async(duplicateObjectBigInt), numbersBigUint64ArrayDuplicates],
+        [numbersBigUint64Array, duplicateBigUint64Array, numbersBigUint64ArrayDuplicates],
+        [numbersBigUint64Array, async(duplicateBigUint64Array), numbersBigUint64ArrayDuplicates],
+        [numbersBigInt64Array, duplicateArray, numbersBigInt64ArrayDuplicates],
+        [numbersBigInt64Array, async(duplicateArray), numbersBigInt64ArrayDuplicates],
+        [numbersBigInt64Array, duplicateObjectBigInt, numbersBigInt64ArrayDuplicates],
+        [numbersBigInt64Array, async(duplicateObjectBigInt), numbersBigInt64ArrayDuplicates],
+        [numbersBigInt64Array, duplicateBigInt64Array, numbersBigInt64ArrayDuplicates],
+        [numbersBigInt64Array, async(duplicateBigInt64Array), numbersBigInt64ArrayDuplicates],
         [bigIntsSet, duplicateBigUint64Array, bigIntsSet],
+        [bigIntsSet, async(duplicateBigUint64Array), bigIntsSet],
         [bigIntsSet, duplicateBigInt64Array, bigIntsSet],
+        [bigIntsSet, async(duplicateBigInt64Array), bigIntsSet],
+
+        [new MockDuplexStream(numbersArray), identity, Object.assign(new MockDuplexStream(numbersArray), { array: numbersArray })],
         [new MockDuplexStream(numbersArray), duplicateArray, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
+        [new MockDuplexStream(numbersArray), async(duplicateArray), Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
+        [new MockDuplexStream(numbersArray), duplicateObject, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
+        [new MockDuplexStream(numbersArray), async(duplicateObject), Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
         [new MockDuplexStream(numbersArray), duplicateString, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
+        [new MockDuplexStream(numbersArray), async(duplicateString), Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
         [new MockDuplexStream(numbersArray), duplicateReadableStream, Object.assign(new MockDuplexStream(numbersArray), { array: numbersArray.map(duplicateBuffer) })], // 1 flatten
+        [new MockDuplexStream(numbersArray), async(duplicateReadableStream), Object.assign(new MockDuplexStream(numbersArray), { array: numbersArray.map(duplicateBuffer) })], // 1 flatten
         [new MockDuplexStream(numbersArray), duplicateUint8ClampedArray, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
+        [new MockDuplexStream(numbersArray), async(duplicateUint8ClampedArray), Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
         [new MockDuplexStream(numbersArray), duplicateUint8Array, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
+        [new MockDuplexStream(numbersArray), async(duplicateUint8Array), Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
         [new MockDuplexStream(numbersArray), duplicateInt8Array, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
+        [new MockDuplexStream(numbersArray), async(duplicateInt8Array), Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
         [new MockDuplexStream(numbersArray), duplicateUint16Array, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
+        [new MockDuplexStream(numbersArray), async(duplicateUint16Array), Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
         [new MockDuplexStream(numbersArray), duplicateInt16Array, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
+        [new MockDuplexStream(numbersArray), async(duplicateInt16Array), Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
         [new MockDuplexStream(numbersArray), duplicateUint32Array, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
+        [new MockDuplexStream(numbersArray), async(duplicateUint32Array), Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
         [new MockDuplexStream(numbersArray), duplicateInt32Array, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
+        [new MockDuplexStream(numbersArray), async(duplicateInt32Array), Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
         [new MockDuplexStream(numbersArray), duplicateFloat32Array, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
+        [new MockDuplexStream(numbersArray), async(duplicateFloat32Array), Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
         [new MockDuplexStream(numbersArray), duplicateFloat64Array, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
+        [new MockDuplexStream(numbersArray), async(duplicateFloat64Array), Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
         [new MockDuplexStream(bigIntsArray), duplicateBigUint64Array, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
+        [new MockDuplexStream(bigIntsArray), async(duplicateBigUint64Array), Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
         [new MockDuplexStream(bigIntsArray), duplicateBigInt64Array, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })], // 1 == 1n true
-        /*
-        [numbersGeneratorFunction(), duplicateArray, 'hey', function (actual, expected) {
+        [new MockDuplexStream(bigIntsArray), async(duplicateBigInt64Array), Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })], // 1 == 1n true
+
+        [numbersGeneratorFunction(), identity, numbersArray, function (expected, actual) {
           assert.deepEqual([...actual], expected)
         }],
-        */
+        [numbersGeneratorFunction(), duplicateArray, numbersDuplicates, function (expected, actual) {
+          assert.deepEqual([...actual], expected)
+        }],
+        [numbersGeneratorFunction(), async(duplicateArray), numbersArray.map(duplicateArray), async function (expected, actual) {
+          assert.deepEqual(await Promise.all(actual), expected) // flatten will only see promises, so async does not get flattened
+        }],
+        [numbersGeneratorFunction(), duplicateObject, numbersDuplicates, function (expected, actual) {
+          assert.deepEqual([...actual], expected)
+        }],
+        [numbersGeneratorFunction(), async(duplicateObject), numbersArray.map(duplicateObject), async function (expected, actual) {
+          assert.deepEqual(await Promise.all(actual), expected) // flatten will only see promises, so async does not get flattened
+        }],
+        [asyncNumbersGeneratorFunction(), identity, numbersArray, async function (expected, actual) {
+          const actualArray = []
+          for await (const item of actual) actualArray.push(item)
+          assert.deepEqual(actualArray, expected)
+        }],
+        [asyncNumbersGeneratorFunction(), duplicateArray, numbersDuplicates, async function (expected, actual) {
+          const actualArray = []
+          for await (const item of actual) actualArray.push(item)
+          assert.deepEqual(actualArray, expected)
+        }],
+        [asyncNumbersGeneratorFunction(), async(duplicateArray), numbersDuplicates, async function (expected, actual) {
+          const actualArray = []
+          for await (const item of actual) actualArray.push(item)
+          assert.deepEqual(actualArray, expected)
+        }],
+        [asyncNumbersGeneratorFunction(), duplicateObject, numbersDuplicates, async function (expected, actual) {
+          const actualArray = []
+          for await (const item of actual) actualArray.push(item)
+          assert.deepEqual(actualArray, expected)
+        }],
+        [asyncNumbersGeneratorFunction(), async(duplicateObject), numbersDuplicates, async function (expected, actual) {
+          const actualArray = []
+          for await (const item of actual) actualArray.push(item)
+          assert.deepEqual(actualArray, expected)
+        }],
+        [asyncNumbersGeneratorFunction(), duplicateString, numbersDuplicates, async function (expected, actual) {
+          const actualArray = []
+          for await (const item of actual) actualArray.push(item)
+          assert.deepEqual(actualArray, expected)
+        }],
+        [asyncNumbersGeneratorFunction(), async(duplicateString), numbersDuplicates, async function (expected, actual) {
+          const actualArray = []
+          for await (const item of actual) actualArray.push(item)
+          assert.deepEqual(actualArray, expected)
+        }],
+        [asyncNumbersGeneratorFunction(), duplicateBuffer, numbersDuplicates, async function (expected, actual) {
+          const actualArray = []
+          for await (const item of actual) actualArray.push(item)
+          assert.deepEqual(actualArray, expected)
+        }],
+        [asyncNumbersGeneratorFunction(), async(duplicateBuffer), numbersDuplicates, async function (expected, actual) {
+          const actualArray = []
+          for await (const item of actual) actualArray.push(item)
+          assert.deepEqual(actualArray, expected)
+        }],
+        [asyncNumbersGeneratorFunction(), duplicateUint8Array, numbersDuplicates, async function (expected, actual) {
+          const actualArray = []
+          for await (const item of actual) actualArray.push(item)
+          assert.deepEqual(actualArray, expected)
+        }],
+        [asyncNumbersGeneratorFunction(), async(duplicateUint8Array), numbersDuplicates, async function (expected, actual) {
+          const actualArray = []
+          for await (const item of actual) actualArray.push(item)
+          assert.deepEqual(actualArray, expected)
+        }],
+        [asyncNumbersGeneratorFunction(), duplicateReadableStream, numbersDuplicates, async function (expected, actual) {
+          const actualArray = []
+          for await (const item of actual) actualArray.push(item)
+          assert.deepEqual(actualArray, expected)
+        }],
+        [asyncNumbersGeneratorFunction(), async(duplicateReadableStream), numbersDuplicates, async function (expected, actual) {
+          const actualArray = []
+          for await (const item of actual) actualArray.push(item)
+          assert.deepEqual(actualArray, expected)
+        }],
+        [{ chain: flatMapper => flatMapper('ayo') }, duplicateArray, ['ayo', 'ayo']],
+        [{ chain: flatMapper => flatMapper('ayo') }, async(duplicateArray), ['ayo', 'ayo']],
+        [{ flatMap: flatMapper => flatMapper('ayo') }, duplicateArray, ['ayo', 'ayo']],
+        [{ flatMap: flatMapper => flatMapper('ayo') }, async(duplicateArray), ['ayo', 'ayo']],
+        [numbersObject, duplicateObject, { 
+          '10': 1, '100': 1, '20': 2, '200': 2, '30': 3, '300': 3, '40': 4, '400': 4, '50': 5, '500': 5,
+        }],
+        [numbersObject, async(duplicateObject), { 
+          '10': 1, '100': 1, '20': 2, '200': 2, '30': 3, '300': 3, '40': 4, '400': 4, '50': 5, '500': 5,
+        }],
       ]
+
+      const arrayOfLast = (array, n = 1) => array.slice(array.length - n, array.length)
 
       assertions.forEach(function ([value, flatMapper, result, asserter = assert.deepEqual]) {
         it(`flatMap(${flatMapper.name})(${value.constructor.name}<${value}>) - ${result}`, async () => {
-          asserter(
-            await flatMap(flatMapper)(value),
+          await asserter(
             result,
+            await flatMap(flatMapper)(value),
           )
         })
       })
+
+      it('value undefined', async () => {
+        assert.strictEqual(flatMap(() => 'hey')(undefined), undefined)
+        assert.strictEqual(flatMap(() => 'hey')(), undefined)
+      })
+
+      it('value null', async () => {
+        assert.strictEqual(flatMap(() => 'hey')(null), null)
+      })
+
       it('value Array')
       it('value String')
       it('value Set')
@@ -2455,7 +2705,7 @@ flatMap(
         )(
           flatMap(x => new Map([[x, x ** 2]]))([1, 2, 3, 4, 5]),
         ),
-        [1, 1, 2, 4, 3, 9, 4, 16, 5, 25],
+        [1, 4, 9, 16, 25],
       )
       ade(
         flatMap(x => x)([1, 2, [3, 4], 5]),
