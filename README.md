@@ -78,14 +78,16 @@ const toTodosUrl = id => 'https://jsonplaceholder.typicode.com/todos/' + id
 
 const fetchedToJson = fetched => fetched.json()
 
-const todoIDs = [1, 2, 3, 4, 5]
-
-map(pipe([
+const logTodoByID = pipe([ // fetch a Todo and log it
   toTodosUrl,
   fetch,
   fetchedToJson,
   console.log,
-]))(todoIDs) // here, we map an array
+])
+
+const todoIDs = [1, 2, 3, 4, 5]
+
+map(logTodoByID)(todoIDs) // fetch Todos per id of TodoIDs and log them
 // { userId: 1, id: 4, title: 'et porro tempora', completed: true }
 // { userId: 1, id: 1, title: 'delectus aut autem', completed: false }
 // { userId: 1, id: 3, title: 'fugiat veniam minus', completed: false }
@@ -95,7 +97,7 @@ map(pipe([
 
 <br />
 
-Functional compositions with rubico are flexible, and apply sensibly to a wide range of vanilla JavaScript types. This kind of flexibility is enabled in part by rubico's theoretical roots in mathematics.
+Functional compositions with rubico are flexible, and apply sensibly to a wide range of vanilla JavaScript types. This kind of flexibility is enabled in part by rubico's grounding in mathematics and category theory.
 
 <br />
 
@@ -106,19 +108,22 @@ const toTodosUrl = id => 'https://jsonplaceholder.typicode.com/todos/' + id
 
 const fetchedToJson = fetched => fetched.json()
 
+const logTodoByID = pipe([ // fetch a Todo and log it
+  toTodosUrl,
+  fetch,
+  fetchedToJson,
+  console.log,
+])
+
 const todoIDsRange = function* (from, to) {
   for (let id = from; id <= to; id++) {
     yield id
   }
 }
 
-const logTodosRange = map(pipe([
-  toTodosUrl,
-  fetch,
-  fetchedToJson,
-  console.log,
-]))(todoIDsRange) // here, map is applied to a generator function,
-                  // returning a function that logs todos in a range
+const logTodosRange = map(logTodoByID)(todoIDsRange)
+// the Todos aren't logged here yet because mapping a generator function
+// returns another generator function with all values mapped
 
 ;[...logTodosRange(1, 100)]
 // { userId: 1, id: 4, title: 'et porro tempora', completed: true }
@@ -130,7 +135,7 @@ const logTodosRange = map(pipe([
 
 <br />
 
-The same principle of code reuse by mathematics causes a modal contextual shift in rubico when applied to reducers. The following example employs a Semigroup `Stdout` to accomplish the same transformation as above with purer functional programming.
+The same principle of code reuse by functional programming principles causes a natural modal shift by similar semantics when working with reducers. The following example employs transducers and a Semigroup `Stdout` to accomplish the same transformation as above with purer functional programming.
 
 <br />
 
@@ -154,14 +159,14 @@ const Stdout = {
   }
 }
 
-const todoIDsRange = function* (from, to) {
+const asyncTodoIDsRange = async function* (from, to) { // async because why not
   for (let id = from; id <= to; id++) {
     yield id
   }
 }
 
-// transform todoIDs to todos by fetchTodo, then concatenate to Stdout
-const transformTodosToStdoutRange = transform(map(fetchTodo), Stdout)(todoIDsRange)
+const transformTodosToStdoutRange = transform(
+  map(fetchTodo), Stdout)(asyncTodoIDsRange)
 
 transformTodosToStdoutRange(1, 100)
 // { userId: 1, id: 4, title: 'et porro tempora', completed: true }
@@ -173,7 +178,7 @@ transformTodosToStdoutRange(1, 100)
 
 <br />
 
-For semantically related functionality, rubico provides variations for some of the operators as property functions, e.g. `map.pool` or `map.series`. When something goes wrong, rubico throws meaningful and ergonomic errors to aid in the debugging process. You should get started with rubico if you aspire to be a more effective programmer, write cleaner and more concise code, or harness the expressive power of functional programming in production.
+For closely related functionality, rubico provides variations for some of its operators as property functions, e.g. `map.pool` or `map.series`. When something goes wrong, rubico throws meaningful and ergonomic errors to aid in the debugging process. You should get started with rubico if you aspire to be an effective programmer, write clean and reusable code, or would like a rigorous functional programming option for production.
 
 # Getting Started
  1. [check out the docs](https://doc.rubico.land)
