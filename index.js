@@ -361,17 +361,16 @@ const setAdd = (set, item) => set.add(item)
  * @synopsis
  * setExtend(set, values Set|any) -> set
  *
- * @TODO test isSet path
+ * @related arrayExtend
  */
-const setExtend = (set, values) => {
+const setExtend = function (set, values) {
   if (isSet(values)) {
-    for (const item of values) {
-      set.add(item)
+    for (const value of values) {
+      set.add(value)
     }
-  } else {
-    set.add(values)
+    return set
   }
-  return set
+  return set.add(values)
 }
 
 /**
@@ -2873,24 +2872,6 @@ const genericTransform = function (args, transducer, result) {
 }
 
 /**
- * @name curriedGenericTransform
- *
- * @synopsis
- * Semigroup = Array|string|Set|TypedArray
- *   |{ concat: function }|{ write: function }|Object
- *
- * curriedGenericTransform(
- *   collection any,
- *   transducer function,
- * ) -> resolver (result Semigroup|any)=>any
- */
-const curriedGenericTransform = (
-  args, transducer,
-) => function resolver(result) {
-  return genericTransform(args, transducer, result)
-}
-
-/**
  * @name transform
  *
  * @catchphrase
@@ -3193,7 +3174,6 @@ const asyncIterableReduceConcurrent = async function (asyncIterable, reducer, re
  * @related objectFlatMap
  */
 const objectReduceConcurrent = function (object, reducer, result) {
-  console.log('ayo', object, reducer, result)
   const promises = [],
     getResult = () => result,
     pipeline = funcConcatSync(
@@ -3295,10 +3275,10 @@ var genericReduceConcurrent = function (args, reducer, result) {
     return foldableReduceConcurrent(collection, reducer, result)
   }
   if (typeof collection.chain == 'function') {
-    return collection.chain(curry2(reducer, __, result))
+    return collection.chain(curry2(reducer, result, __))
   }
   if (typeof collection.flatMap == 'function') {
-    return collection.flatMap(curry2(reducer, __, result))
+    return collection.flatMap(curry2(reducer, result, __))
   }
   if (collection.constructor == Object) {
     return objectReduceConcurrent(collection, reducer, result)
@@ -3420,36 +3400,11 @@ const objectFlatMap = function (object, flatMapper) {
     ? monadObject.then(tacitGenericReduceConcurrent(objectAssign, {}))
     : genericReduceConcurrent([monadObject], objectAssign, {})
     */
+
   const monadArray = objectMapToArray(object, flatMapper)
   return isPromise(monadArray)
     ? monadArray.then(tacitGenericReduceConcurrent(objectAssign, {}))
     : genericReduceConcurrent([monadArray], objectAssign, {})
-
-  /*
-  const monadObject = objectMap(object, flatMapper)
-  return isPromise(monadObject)
-    ? monadObject.then(
-      tacitGenericReduceConcurrent(
-        flatteningTransducerConcurrent(objectAssign),
-        {}))
-    : genericReduceConcurrent(
-      [monadObject],
-      flatteningTransducerConcurrent(objectAssign),
-      {})
-      */
-
-  /*
-  const monadArray = objectMapToArray(object, flatMapper)
-  return isPromise(monadArray)
-    ? monadArray.then(
-      tacitGenericReduceConcurrent(
-        flatteningTransducerConcurrent(objectAssign),
-        {}))
-    : genericReduceConcurrent(
-      [monadArray],
-      flatteningTransducerConcurrent(objectAssign),
-      {})
-      */
 }
 
 /**
@@ -3506,11 +3461,12 @@ const stringFlatMap = function (string, flatMapper) {
     monadArray = arrayMap(string, flatMapper)
 
   if (isPromise(monadArray)) {
-    return monadArray.then(
+    return monadArray.then( // flatten each monad into result
       tacitGenericReduceConcurrent(
         flatteningTransducerConcurrent(resultExtend),
         null)).then(getResult)
   }
+
   genericReduceConcurrent(
     [monadArray],
     flatteningTransducerConcurrent(resultExtend),
@@ -3685,7 +3641,7 @@ FlatMappingIterator.prototype = {
     if (iteration.done) {
       return iteration
     }
-    const monadAsArray = genericReduce( // TODO genericReduceSync
+    const monadAsArray = genericReduceConcurrent( // TODO genericReduceSync
       [this.flatMapper(iteration.value)],
       flatteningTransducerConcurrent(arrayExtend),
       []) // this will always have at least one item
