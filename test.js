@@ -2859,6 +2859,58 @@ flatMap(
       it('value null', async () => {
         assert.strictEqual(flatMap(() => 'hey')(null), null)
       })
+
+      it('value GeneratorFunction', async () => {
+        const numbers = function* () { yield 1; yield 2; yield 3; yield 4; yield 5 }
+        const duplicateNumbers = flatMap(duplicateArray)(numbers)
+        assert.equal(objectToString(duplicateNumbers), '[object GeneratorFunction]')
+        assert.deepEqual([...duplicateNumbers()], numbersDuplicates)
+        assert.deepEqual([...flatMap(() => null)(numbers)()], [null, null, null, null, null])
+        assert.deepEqual([...flatMap(() => [null, null])(numbers)()], [null, null, null, null, null, null, null, null, null, null])
+        assert.deepEqual([...flatMap(Identity.of)(numbers)()], [1, 2, 3, 4, 5])
+      })
+      it('value AsyncGeneratorFunction', async () => {
+        const numbers = async function* () { yield 1; yield 2; yield 3; yield 4; yield 5 }
+        const duplicateNumbers = flatMap(duplicateArray)(numbers)
+        assert.equal(objectToString(duplicateNumbers), '[object AsyncGeneratorFunction]')
+        assert.deepEqual(await asyncIteratorToArray(duplicateNumbers()), numbersDuplicates)
+        assert.deepEqual(await asyncIteratorToArray(flatMap(() => null)(numbers)()), [null, null, null, null, null])
+        assert.deepEqual(await asyncIteratorToArray(flatMap(() => [null, null])(numbers)()), [null, null, null, null, null, null, null, null, null, null])
+        assert.deepEqual(await asyncIteratorToArray(flatMap(Identity.of)(numbers)()), [1, 2, 3, 4, 5])
+      })
+
+      it('value Reducer', async () => {
+        const concat = (array, values) => array.concat(values)
+        assert.deepEqual([1, 2, 3, 4, 5].reduce(flatMap(duplicateArray)(concat), []), [1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
+        assert.deepEqual([1, 2, 3, 4, 5].reduce(map(duplicateString)(concat), []), ['11', '22', '33', '44', '55'])
+        assert.deepEqual([1, 2, 3, 4, 5].reduce(flatMap(duplicateString)(concat), []), ['1', '1', '2', '2', '3', '3', '4', '4', '5', '5'])
+        assert.deepEqual([1, 2, 3, 4, 5].reduce(flatMap(duplicateObject)(concat), []), [1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
+        assert.deepEqual([1, 2, 3, 4, 5].reduce(flatMap(duplicateBuffer)(concat), []), [1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
+        assert.deepEqual([1, 2, 3, 4, 5].reduce(flatMap(duplicateUint8ClampedArray)(concat), []), [1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
+        assert.deepEqual([1, 2, 3, 4, 5].reduce(flatMap(duplicateUint8Array)(concat), []), [1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
+        assert.deepEqual([1, 2, 3, 4, 5].reduce(flatMap(duplicateInt8Array)(concat), []), [1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
+        assert.deepEqual([1, 2, 3, 4, 5].reduce(flatMap(duplicateUint16Array)(concat), []), [1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
+        assert.deepEqual([1, 2, 3, 4, 5].reduce(flatMap(duplicateInt16Array)(concat), []), [1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
+        assert.deepEqual([1, 2, 3, 4, 5].reduce(flatMap(duplicateUint32Array)(concat), []), [1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
+        assert.deepEqual([1, 2, 3, 4, 5].reduce(flatMap(duplicateInt32Array)(concat), []), [1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
+        assert.deepEqual([1, 2, 3, 4, 5].reduce(flatMap(duplicateFloat32Array)(concat), []), [1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
+        assert.deepEqual([1, 2, 3, 4, 5].reduce(flatMap(duplicateFloat64Array)(concat), []), [1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
+        assert.deepEqual([1n, 2n, 3n, 4n, 5n].reduce(flatMap(duplicateBigUint64Array)(concat), []), [1n, 1n, 2n, 2n, 3n, 3n, 4n, 4n, 5n, 5n])
+        assert.deepEqual([1n, 2n, 3n, 4n, 5n].reduce(flatMap(duplicateBigInt64Array)(concat), []), [1n, 1n, 2n, 2n, 3n, 3n, 4n, 4n, 5n, 5n])
+        assert.deepEqual([1, 2, 3, 4, 5].reduce(flatMap(duplicateBuffer)(concat), []), [1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
+        assert.deepEqual([1, 2, 3, 4, 5].reduce(flatMap(duplicateMockFoldable)(concat), []), [1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
+        assert.deepEqual([1, 2, 3, 4, 5].reduce(flatMap(DuplicateArray.of)(concat), []), [1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
+        assert.deepEqual([1, 2, 3, 4, 5].reduce(flatMap(Identity.of)(concat), []), [1, 2, 3, 4, 5])
+        assert.deepEqual([1, 2, 3, 4, 5].reduce(flatMap(() => null)(concat), []), [null, null, null, null, null])
+        assert.deepEqual([1, 2, 3, 4, 5].reduce(flatMap(() => [null, null])(concat), []), [null, null, null, null, null, null, null, null, null, null])
+        assert.deepEqual(await reduce(flatMap(duplicateReadableStream)(concat), [])([1, 2, 3, 4, 5]), [1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
+        assert.deepEqual(await reduce(flatMap(async(duplicateReadableStream))(concat), [])([1, 2, 3, 4, 5]), [1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
+        assert.deepEqual(await reduce(flatMap(duplicateArrayOfUint8Array)(concat), [])([1, 2, 3, 4, 5]), [1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
+      })
+
+      it('value number', async () => {
+        assert.deepEqual(flatMap(duplicateArray)(1), [1, 1])
+      })
     })
   })
 

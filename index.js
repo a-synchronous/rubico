@@ -2398,7 +2398,9 @@ var genericReduce = function (args, reducer, result) {
     return arrayReduce(collection, reducer, result)
   }
   if (collection == null) {
-    return result
+    return result === undefined
+      ? reducer(collection)
+      : reducer(result, collection)
   }
 
   if (typeof collection.next == 'function') {
@@ -2429,10 +2431,10 @@ var genericReduce = function (args, reducer, result) {
     return collection.reduce(reducer, result)
   }
   if (typeof collection.chain == 'function') {
-    return collection.chain(curry2(reducer, __, result))
+    return collection.chain(curry2(reducer, result, __))
   }
   if (typeof collection.flatMap == 'function') {
-    return collection.flatMap(curry2(reducer, __, result))
+    return collection.flatMap(curry2(reducer, result, __))
   }
   if (collection.constructor == Object) {
     return arrayReduce(objectValues(collection), reducer, result)
@@ -3106,6 +3108,15 @@ const forEachReduceConcurrent = function (collection, reducer, result) {
   collection.forEach(funcConcatSync(
     curry2(reducer, result, __),
     curry3(arrayPushIf, isPromise, promises, __)))
+
+  /*
+  collection.forEach([
+    tap(item => console.log('heyo', reducer, result, item)),
+    curry2(reducer, result, __),
+    curry3(arrayPushIf, isPromise, promises, __),
+  ].reduce(funcConcatSync))
+  */
+
   return promises.length == 0
     ? result
     : promiseAll(promises).then(getResult)
@@ -3553,10 +3564,7 @@ const generatorFunctionFlatMap = (
     } else if (typeof monad[symbolIterator] == 'function') {
       yield* monad
     } else {
-      yield* genericReduceConcurrent(
-        [monad],
-        flatteningTransducerConcurrent(arrayExtend),
-        [])
+      yield* genericReduceConcurrent([monad], arrayExtend, [])
     }
   }
 }
@@ -3604,13 +3612,25 @@ const asyncGeneratorFunctionFlatMap = (
  *   reducer (any, T)=>Promise|any,
  *   flatMapper item=>Promise|Monad|Foldable|any,
  * )
+ *
+ * @related forEachReduceConcurrent
+ *
+ * @note cannot use genericReduceConcurrent because
  */
 const reducerFlatMap = (
   reducer, flatMapper,
 ) => function flatMappingReducer(result, value) {
-  return then(
-    flatMapper(value),
-    tacitGenericReduce(flatteningTransducer(reducer), result))
+  const monad = flatMapper(value)
+
+  // TODO figure out how to use genericReduceConcurrent
+
+  return isPromise(monad)
+    ? monad.then(tacitGenericReduce(
+      flatteningTransducer(reducer),
+      result))
+    : genericReduce([monad],
+      flatteningTransducer(reducer),
+      result)
 }
 
 /**
