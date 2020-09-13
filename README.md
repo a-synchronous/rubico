@@ -178,7 +178,13 @@ transformTodosToStdoutRange(1, 100)
 
 <br />
 
-For closely related functionality, rubico provides variations for some of its operators as property functions, e.g. `map.pool` or `map.series`. When something goes wrong, rubico throws meaningful and ergonomic errors to aid in the debugging process. You should get started with rubico if you aspire to be an effective programmer, write clean and reusable code, or would like a rigorous functional programming option for production.
+For closely related functionality, rubico provides variations for some of its operators as property functions, e.g.
+
+ * `map` - apply a mapper function concurrently
+ * `map.pool` - apply a mapper function concurrently with a concurrency limit
+ * `map.series` - apply a mapper function serially
+
+<br />
 
 # Getting Started
  1. [check out the docs](https://doc.rubico.land)
