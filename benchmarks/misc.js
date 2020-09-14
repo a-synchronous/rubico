@@ -348,51 +348,30 @@ const mapFromForLoopDestructuring = x => {
  * @name arrayPush
  *
  * @benchmark
- * [].push(1): 1e+7: 425.55ms
- * arrayPush([], 1): 1e+7: 429.496ms
- * arrayPushNoReturn([], 1): 1e+7: 428.798ms
- * arrayPushOptionalIndex([], 1): 1e+7: 427.238ms
+ * arrayPushArrayLength([], 1): 1e+7: 309.364ms
+ * arrayPushByProtoBind(array, 1): 1e+7: 405.707ms
+ * array.push(1): 1e+7: 307.791ms
  *
- * array.push(1): 1e+7: 306.308ms
- * arrayPush(array, 1): 1e+7: 305.312ms
- * arrayPushNoReturn(array, 1): 1e+7: 311.601ms
- * arrayPushOptionalIndex(array, 1): 1e+7: 306.703ms
+ * @note Bo5
  */
 
-const arrayPush = function (array, value, index) {
+const arrayPushArrayLength = function (array, value, index) {
   array[array.length] = value
   return array
 }
 
-const arrayPushNoReturn = function (array, value) {
-  array[array.length] = value
-}
-
-const arrayPushOptionalIndex = function (
-  array, value, index = array.length,
-) {
-  array[index] = value
-  return array
-}
+const arrayProtoPush = Array.prototype.push
 
 {
   const array = []
 
-  // timeInLoop('[].push(1)', 1e7, () => [].push(1))
+  const arrayPushByProtoBind = arrayProtoPush.bind(array)
 
-  // timeInLoop('arrayPush([], 1)', 1e7, () => arrayPush([], 1))
+  // timeInLoop('arrayPushArrayLength(array, 1)', 1e7, () => arrayPushArrayLength(array, 1))
 
-  // timeInLoop('arrayPushNoReturn([], 1)', 1e7, () => arrayPushNoReturn([], 1))
-
-  // timeInLoop('arrayPushOptionalIndex([], 1)', 1e7, () => arrayPushOptionalIndex([], 1))
+  // timeInLoop('arrayPushByProtoBind(array, 1)', 1e7, () => arrayPushByProtoBind(1))
 
   // timeInLoop('array.push(1)', 1e7, () => array.push(1))
-
-  // timeInLoop('arrayPush(array, 1)', 1e7, () => arrayPush(array, 1))
-
-  // timeInLoop('arrayPushNoReturn(array, 1)', 1e7, () => arrayPushNoReturn(array, 1))
-
-  // timeInLoop('arrayPushOptionalIndex(array, 1)', 1e7, () => arrayPushOptionalIndex(array, 1))
 }
 
 const objectAssign1 = Object.assign
