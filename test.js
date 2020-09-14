@@ -2425,6 +2425,7 @@ flatMap(
       const duplicateReadableStream = value => binaryToReadableStream(Buffer.from([value, value]))
       const duplicateBuffer = value => Buffer.from([value, value])
       const duplicateMockFoldable = value => new MockFoldable([value, value])
+      const duplicateMockFoldableObjects = value => new MockFoldable([{ [value * 10]: value }, { [value * 100]: value }])
 
       const DuplicateArray = function (value) {
         this.value = value
@@ -2435,6 +2436,17 @@ flatMap(
         },
       }
       DuplicateArray.of = value => new DuplicateArray(value)
+
+      const DuplicateObject = function  (value) {
+        this.value = value
+      }
+      DuplicateObject.prototype = {
+        chain(flatMapper) {
+          const value = this.value
+          return flatMapper({ [value * 10]: value, [value * 100]: value })
+        },
+      }
+      DuplicateObject.of = value => new DuplicateObject(value)
 
       const Identity = function (value) {
         this.value = value
@@ -2453,8 +2465,8 @@ flatMap(
         [numbersArray, identity, numbersArray],
         [numbersArray, duplicateArray, numbersDuplicates],
         [numbersArray, async(duplicateArray), numbersDuplicates],
-        [numbersArray, DuplicateArray.of, numbersDuplicates],
-        [numbersArray, async(DuplicateArray.of), numbersDuplicates],
+        [numbersArray, DuplicateArray.of, numbersArray.map(duplicateArray)],
+        [numbersArray, async(DuplicateArray.of), numbersArray.map(duplicateArray)],
         [numbersArray, Identity.of, numbersArray],
         [numbersArray, async(Identity.of), numbersArray],
         [numbersArray, duplicateMockFoldable, numbersDuplicates],
@@ -2483,6 +2495,8 @@ flatMap(
         [numbersArray, async(duplicateFloat32Array), numbersDuplicates],
         [numbersArray, duplicateFloat64Array, numbersDuplicates],
         [numbersArray, async(duplicateFloat64Array), numbersDuplicates],
+        [numbersArray, duplicateReadableStream, numbersArray.map(duplicateBuffer)],
+        [numbersArray, async(duplicateReadableStream), numbersArray.map(duplicateBuffer)],
         [bigIntsArray, identity, bigIntsArray],
         [bigIntsArray, duplicateBigUint64Array, bigIntsDuplicates],
         [bigIntsArray, async(duplicateBigUint64Array), bigIntsDuplicates],
@@ -2506,6 +2520,7 @@ flatMap(
         [alphabetString, async(setWithAyo), 'aayobayocayodayoeayo'],
 
         [numbersSet, identity, numbersSet],
+        [numbersSet, () => null, new Set([null])],
         [numbersSet, duplicateArray, numbersSet],
         [numbersSet, async(duplicateArray), numbersSet],
         [numbersSet, DuplicateArray.of, new Set([...numbersSet].map(duplicateArray))],
@@ -2536,6 +2551,8 @@ flatMap(
         [numbersSet, async(duplicateFloat32Array), numbersSet],
         [numbersSet, duplicateFloat64Array, numbersSet],
         [numbersSet, async(duplicateFloat64Array), numbersSet],
+        [numbersSet, duplicateReadableStream, new Set(numbersArray.map(duplicateBuffer))],
+        [numbersSet, async(duplicateReadableStream), new Set(numbersArray.map(duplicateBuffer))],
 
         [numbersUint8Array, identity, numbersUint8Array],
         [numbersUint8Array, number => [[number, number]], numbersUint8ArrayDuplicates],
@@ -2669,6 +2686,7 @@ flatMap(
         [bigIntsSet, async(duplicateBigInt64Array), bigIntsSet],
 
         [new MockDuplexStream(numbersArray), identity, Object.assign(new MockDuplexStream(numbersArray), { array: numbersArray })],
+        [new MockDuplexStream(numbersArray), () => null, Object.assign(new MockDuplexStream(numbersArray), { array: [null, null, null, null, null] })],
         [new MockDuplexStream(numbersArray), duplicateArray, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
         [new MockDuplexStream(numbersArray), async(duplicateArray), Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
         [new MockDuplexStream(numbersArray), DuplicateArray.of, Object.assign(new MockDuplexStream(numbersArray), { array: numbersArray.map(duplicateArray) })],
@@ -2716,6 +2734,7 @@ flatMap(
           assert.deepEqual(await Promise.all(actual), expected) // flatten will only see promises, so async does not get flattened
         }],
         [numbersGeneratorFunction(), DuplicateArray.of, numbersDuplicates, function (expected, actual) {
+          console.log('heyo', expected, actual)
           assert.deepEqual([...actual], expected)
         }],
         [numbersGeneratorFunction(), async(DuplicateArray.of), numbersArray.map(DuplicateArray.of), async function (expected, actual) {
@@ -2827,18 +2846,41 @@ flatMap(
           assert.deepEqual(actualArray, expected)
         }],
 
+        [numbersObject, identity, {}],
+        [numbersObject, async(identity), {}],
+        [numbersObject, duplicateArray, {}],
+        [numbersObject, async(duplicateArray), {}],
+        [numbersObject, number => [{ [number]: number }, { [number]: number }], { 1: 1, 2: 2, 3: 3, 4: 4, 5: 5 }],
+        [numbersObject, number => null, {}],
+        [numbersObject, number => [{ [number]: null }, { [number]: null }], { 1: null, 2: null, 3: null, 4: null, 5: null }],
         [numbersObject, duplicateObject, { 
           '10': 1, '100': 1, '20': 2, '200': 2, '30': 3, '300': 3, '40': 4, '400': 4, '50': 5, '500': 5,
         }],
         [numbersObject, async(duplicateObject), { 
           '10': 1, '100': 1, '20': 2, '200': 2, '30': 3, '300': 3, '40': 4, '400': 4, '50': 5, '500': 5,
         }],
+        [numbersObject, duplicateReadableStream, { 0: 5, 1: 5 }],
+        [numbersObject, async(duplicateReadableStream), { 0: 5, 1: 5 }],
+        [numbersObject, duplicateObjectString, { 1: 1, 11: 1, 2: 2, 22: 2, 3: 3, 33: 3, 4: 4, 44: 4, 5: 5, 55: 5 }],
+        [numbersObject, async(duplicateObjectString), { 1: 1, 11: 1, 2: 2, 22: 2, 3: 3, 33: 3, 4: 4, 44: 4, 5: 5, 55: 5 }],
+        [numbersObject, duplicateMockFoldable, {}],
+        [numbersObject, async(duplicateMockFoldable), {}],
+        [numbersObject, duplicateMockFoldableObjects, { 10: 1, 100: 1, 20: 2, 200: 2, 30: 3, 300: 3, 40: 4, 400: 4, 50: 5, 500: 5 }],
+        [numbersObject, async(duplicateMockFoldableObjects), { 10: 1, 100: 1, 20: 2, 200: 2, 30: 3, 300: 3, 40: 4, 400: 4, 50: 5, 500: 5 }],
+        [numbersObject, DuplicateObject.of, { 10: 1, 100: 1, 20: 2, 200: 2, 30: 3, 300: 3, 40: 4, 400: 4, 50: 5, 500: 5 }],
+        [numbersObject, async(DuplicateObject.of), { 10: 1, 100: 1, 20: 2, 200: 2, 30: 3, 300: 3, 40: 4, 400: 4, 50: 5, 500: 5 }],
+        [numbersObject, Identity.of, {}],
+        [numbersObject, async(Identity.of), {}],
+        [{ a: { a: 1 }, b: { b: 2 }, c: { c: 3 }, d: { d: 4 }, e: { e: 5 } }, Identity.of, numbersObject],
+        [{ a: { a: 1 }, b: { b: 2 }, c: { c: 3 }, d: { d: 4 }, e: { e: 5 } }, async(Identity.of), numbersObject],
+
         [{ chain: flatMapper => flatMapper('ayo') }, duplicateArray, ['ayo', 'ayo']],
         [{ chain: flatMapper => flatMapper('ayo') }, async(duplicateArray), ['ayo', 'ayo']],
         [DuplicateArray.of('ayo'), DuplicateArray.of, DuplicateArray.of(['ayo', 'ayo'])],
         [DuplicateArray.of('ayo'), async(DuplicateArray.of), DuplicateArray.of(['ayo', 'ayo'])],
         [Identity.of('ayo'), Identity.of, Identity.of('ayo')],
         [Identity.of('ayo'), async(Identity.of), Identity.of('ayo')],
+
       ]
 
       const arrayOfLast = (array, n = 1) => array.slice(array.length - n, array.length)
@@ -2867,7 +2909,14 @@ flatMap(
         assert.deepEqual([...duplicateNumbers()], numbersDuplicates)
         assert.deepEqual([...flatMap(() => null)(numbers)()], [null, null, null, null, null])
         assert.deepEqual([...flatMap(() => [null, null])(numbers)()], [null, null, null, null, null, null, null, null, null, null])
+        assert.deepEqual([...flatMap(DuplicateArray.of)(numbers)()], numbersArray.map(duplicateArray))
         assert.deepEqual([...flatMap(Identity.of)(numbers)()], [1, 2, 3, 4, 5])
+        assert.deepEqual([...flatMap(duplicateMockFoldable)(numbers)()], numbersDuplicates)
+        assert.deepEqual([...flatMap(duplicateArray)(numbers)()], numbersDuplicates)
+        assert.deepEqual([...flatMap(duplicateObject)(numbers)()], numbersDuplicates)
+        assert.deepEqual([...flatMap(duplicateUint8Array)(numbers)()], numbersDuplicates)
+        assert.deepEqual([...flatMap(number => new Set([number]))(numbers)()], numbersArray)
+        assert.deepEqual([...flatMap(() => 1)(numbers)()], [1, 1, 1, 1, 1])
       })
       it('value AsyncGeneratorFunction', async () => {
         const numbers = async function* () { yield 1; yield 2; yield 3; yield 4; yield 5 }
@@ -2876,7 +2925,22 @@ flatMap(
         assert.deepEqual(await asyncIteratorToArray(duplicateNumbers()), numbersDuplicates)
         assert.deepEqual(await asyncIteratorToArray(flatMap(() => null)(numbers)()), [null, null, null, null, null])
         assert.deepEqual(await asyncIteratorToArray(flatMap(() => [null, null])(numbers)()), [null, null, null, null, null, null, null, null, null, null])
+        assert.deepEqual(await asyncIteratorToArray(flatMap(DuplicateArray.of)(numbers)()), numbersArray.map(duplicateArray))
         assert.deepEqual(await asyncIteratorToArray(flatMap(Identity.of)(numbers)()), [1, 2, 3, 4, 5])
+        assert.deepEqual(await asyncIteratorToArray(flatMap(duplicateArray)(numbers)()), numbersDuplicates)
+        assert.deepEqual(await asyncIteratorToArray(flatMap(async(duplicateArray))(numbers)()), numbersDuplicates)
+        assert.deepEqual(await asyncIteratorToArray(flatMap(duplicateObject)(numbers)()), numbersDuplicates)
+        assert.deepEqual(await asyncIteratorToArray(flatMap(async(duplicateObject))(numbers)()), numbersDuplicates)
+        assert.deepEqual(await asyncIteratorToArray(flatMap(duplicateUint8Array)(numbers)()), numbersDuplicates)
+        assert.deepEqual(await asyncIteratorToArray(flatMap(async(duplicateUint8Array))(numbers)()), numbersDuplicates)
+        assert.deepEqual(await asyncIteratorToArray(flatMap(duplicateMockFoldable)(numbers)()), numbersDuplicates)
+        assert.deepEqual(await asyncIteratorToArray(flatMap(async(duplicateMockFoldable))(numbers)()), numbersDuplicates)
+        assert.deepEqual(await asyncIteratorToArray(flatMap(duplicateReadableStream)(numbers)()), numbersArray.map(duplicateBuffer))
+        assert.deepEqual(await asyncIteratorToArray(flatMap(async(duplicateReadableStream))(numbers)()), numbersArray.map(duplicateBuffer))
+        assert.deepEqual(await asyncIteratorToArray(flatMap(number => new Set([number]))(numbers)()), numbersArray)
+        assert.deepEqual(await asyncIteratorToArray(flatMap(async(number => new Set([number])))(numbers)()), numbersArray)
+        assert.deepEqual(await asyncIteratorToArray(flatMap(() => 1)(numbers)()), [1, 1, 1, 1, 1])
+        assert.deepEqual(await asyncIteratorToArray(flatMap(async(() => 1))(numbers)()), [1, 1, 1, 1, 1])
       })
 
       it('value Reducer', async () => {
@@ -2943,7 +3007,7 @@ flatMap(
         )(
           flatMap(x => new Map([[x, x ** 2]]))([1, 2, 3, 4, 5]),
         ),
-        [1, 4, 9, 16, 25],
+        [1, 1, 2, 4, 3, 9, 4, 16, 5, 25],
       )
       ade(
         flatMap(x => x)([1, 2, [3, 4], 5]),

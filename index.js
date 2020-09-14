@@ -490,12 +490,11 @@ const funcConcat = (
  *
  * @synopsis
  * funcConcatSync(funcA function, funcB function) -> pipedFunction function
- */
 const funcConcatSync = (
   funcA, funcB,
 ) => function pipedFunction(...args) {
   return funcB(funcA(...args))
-}
+} */
 
 /**
  * @name pipe
@@ -1048,28 +1047,6 @@ const objectMap = function (object, mapper) {
 }
 
 /**
- * @name objectMapToArray
- *
- * @synopsis
- * objectMapToArray(
- *   object Object, mapper function,
- * ) -> Promise|Array
- *
- * @note order not guaranteed
- */
-const objectMapToArray = function (object, mapper) {
-  const result = []
-  let isAsync = false
-
-  for (const key in object) {
-    const resultItem = mapper(object[key])
-    if (isPromise(resultItem)) isAsync = true
-    result.push(resultItem)
-  }
-  return isAsync ? promiseAll(result) : result
-}
-
-/**
  * @name generatorFunctionMap
  *
  * @synopsis
@@ -1312,6 +1289,8 @@ const reducerMap = (reducer, mapper) => function mappingReducer(result, value) {
  * @execution concurrent
  *
  * @transducing
+ *
+ * TODO streamMap
  */
 const map = mapper => function mapping(value) {
   if (isArray(value)) {
@@ -3071,234 +3050,6 @@ const transform = function (transducer, init) {
 }
 
 /**
- * @name callChain
- *
- * @synopsis
- * Monad = { chain: function }
- *
- * callChain(monad Monad, resolver)
- */
-const callChain = (monad, resolver) => monad.chain(resolver)
-
-/**
- * @name arrayPushIf
- *
- * @synopsis
- * arrayPushIf(predicate, any=>boolean, array Array, item any) -> ()
- */
-const arrayPushIf = function (predicate, array, item) {
-  if (predicate(item)) {
-    array.push(item)
-  }
-}
-
-/**
- * @name forEachReduceConcurrent
- *
- * @synopsis
- * forEachReduceConcurrent(
- *   collection { forEach: function },
- *   reducer (any, T)=>Promise|any,
- *   result any,
- * ) -> Promise|result
- */
-const forEachReduceConcurrent = function (collection, reducer, result) {
-  const promises = [],
-    getResult = () => result
-  collection.forEach(funcConcatSync(
-    curry2(reducer, result, __),
-    curry3(arrayPushIf, isPromise, promises, __)))
-
-  /*
-  collection.forEach([
-    tap(item => console.log('heyo', reducer, result, item)),
-    curry2(reducer, result, __),
-    curry3(arrayPushIf, isPromise, promises, __),
-  ].reduce(funcConcatSync))
-  */
-
-  return promises.length == 0
-    ? result
-    : promiseAll(promises).then(getResult)
-}
-
-/**
- * @name iterableReduceConcurrent
- *
- * @synopsis
- * iterableReduceConcurrent(
- *   iterable { [Symbol.iterator]: function },
- *   reducer (any, T)=>Promise|any,
- *   result any,
- * ) -> Promise|result
- */
-const iterableReduceConcurrent = function (iterable, reducer, result) {
-  const promises = [],
-    getResult = () => result,
-    pipeline = funcConcatSync(
-      curry2(reducer, result, __),
-      curry3(arrayPushIf, isPromise, promises, __))
-
-  for (const item of iterable) {
-    pipeline(item)
-  }
-  return promises.length == 0
-    ? result
-    : promiseAll(promises).then(getResult)
-}
-
-/**
- * @name asyncIterableReduceConcurrent
- *
- * @synopsis
- * asyncIterableReduceConcurrent(
- *   asyncIterable { [Symbol.iterator]: function },
- *   reducer (any, T)=>Promise|any,
- *   result any,
- * ) -> Promise|result
- */
-const asyncIterableReduceConcurrent = async function (asyncIterable, reducer, result) {
-  const promises = [],
-    getResult = () => result,
-    pipeline = funcConcatSync(
-      curry2(reducer, result, __),
-      curry3(arrayPushIf, isPromise, promises, __))
-
-  for await (const item of asyncIterable) {
-    pipeline(item)
-  }
-  return promises.length == 0
-    ? result
-    : promiseAll(promises).then(getResult)
-}
-
-/**
- * @name objectReduceConcurrent
- *
- * @synopsis
- * objectReduceConcurrent(
- *   object Object,
- *   reducer (any, T)=>Promise|any,
- *   result any,
- * ) -> Promise|result
- *
- * @related objectFlatMap
- */
-const objectReduceConcurrent = function (object, reducer, result) {
-  const promises = [],
-    getResult = () => result,
-    pipeline = funcConcatSync(
-      curry2(reducer, result, __),
-      curry3(arrayPushIf, isPromise, promises, __))
-
-  for (const key in object) {
-    pipeline(object[key])
-  }
-  return promises.length == 0
-    ? result
-    : promiseAll(promises).then(getResult)
-}
-
-/**
- * @name getArg1
- *
- * @synopsis
- * getArg1(arg0 any, arg1 any) -> arg1
- */
-const getArg1 = function (arg0, arg1) {
-  return arg1
-}
-
-/**
- * @name foldableReduceConcurrent
- *
- * @synopsis
- * foldableReduceConcurrent(
- *   foldable { reduce: function },
- *   reducer (any, T)=>Promise|any,
- *   result any,
- * ) -> Promise|result
- */
-const foldableReduceConcurrent = function (foldable, reducer, result) {
-  const promises = [],
-    getResult = () => result,
-    pipeline = [
-      getArg1,
-      curry2(reducer, result, __),
-      curry3(arrayPushIf, isPromise, promises, __),
-    ].reduce(funcConcatSync)
-
-  foldable.reduce(tapSync(pipeline), null)
-  return promises.length == 0
-    ? result
-    : promiseAll(promises).then(getResult)
-}
-
-/**
- * @name tacitGenericReduceConcurrent
- *
- * @synopsis
- * any -> T
- *
- * tacitGenericReduceConcurrent(
- *   reducer (any, T)=>any,
- *   result any,
- * ) -> reducing ...any=>result
- */
-const tacitGenericReduceConcurrent = (
-  reducer, result,
-) => function reducing(...args) {
-  return genericReduceConcurrent(args, reducer, result)
-}
-
-/**
- * @name genericReduceConcurrent
- *
- * @synopsis
- * genericReduceConcurrent(
- *   args Array,
- *   reducer function,
- *   result any,
- * ) -> result
- *
- * @related
- * genericReduce
- *
- * @NOTE
- * concurrency is only possible because result is never reassigned. in that regard, `result` is required.
- */
-var genericReduceConcurrent = function (args, reducer, result) {
-  const collection = args[0]
-  if (collection == null) {
-    reducer(result, collection)
-    return result
-  }
-  if (typeof collection.forEach == 'function') {
-    return forEachReduceConcurrent(collection, reducer, result)
-  }
-  if (typeof collection[symbolIterator] == 'function') {
-    return iterableReduceConcurrent(collection, reducer, result)
-  }
-  if (typeof collection[symbolAsyncIterator] == 'function') {
-    return asyncIterableReduceConcurrent(collection, reducer, result)
-  }
-  if (typeof collection.reduce == 'function') {
-    return foldableReduceConcurrent(collection, reducer, result)
-  }
-  if (typeof collection.chain == 'function') {
-    return collection.chain(curry2(reducer, result, __))
-  }
-  if (typeof collection.flatMap == 'function') {
-    return collection.flatMap(curry2(reducer, result, __))
-  }
-  if (collection.constructor == Object) {
-    return objectReduceConcurrent(collection, reducer, result)
-  }
-  reducer(result, collection)
-  return result
-}
-
-/**
  * @name flatteningTransducer
  *
  * @synopsis
@@ -3327,31 +3078,90 @@ const flatteningTransducer = concat => function flatteningReducer(
 }
 
 /**
- * @name flatteningTransducerConcurrent
+ * @name asyncIteratorForEach
  *
  * @synopsis
- * flatteningTransducerConcurrent(concat Reducer) -> flatteningReducer Reducer
+ * asyncIteratorForEach(asyncIterator AsyncIterable, callback function) -> ()
+ */
+const asyncIteratorForEach = async function (asyncIterator, callback) {
+  for await (const item of asyncIterator) {
+    callback(item)
+  }
+}
+
+/**
+ * @name arrayPush
  *
- * DuplexStream = { read: function, write: function }
+ * @synopsis
+ * arrayPush(array, item) => array.push(item)
+ */
+const arrayPush = function (array, item) {
+  array.push(item)
+  return array
+}
+
+/**
+ * @name monadArrayFlatten
  *
+ * @synopsis
  * Monad = Array|String|Set
  *   |TypedArray|DuplexStream|Iterator|AsyncIterator
  *   |{ chain: function }|{ flatMap: function }|Object
  *
- * Foldable = Iterable|AsyncIterable|{ reduce: function }
+ * monadArrayFlatten(array Array<Monad|Foldable|any>) -> Array
  *
- * FlatteningReducer<T> = (any, T)=>Promise|Monad|Foldable|any
- *
- * Reducer<T> = (any, T)=>Promise|any
- *
- * flatteningTransducerConcurrent(concat Reducer) -> flatteningReducer FlatteningReducer
- *
- * @execution concurrent
+ * @related genericReduceConcurrent
  */
-const flatteningTransducerConcurrent = concat => function flatteningReducer(
-  result, item,
-) {
-  return genericReduceConcurrent([item], concat, result)
+const monadArrayFlatten = function (array) {
+  const length = array.length,
+    promises = [],
+    result = [],
+    resultPushReducer = (_, subItem) => result.push(subItem),
+    resultPush = curry2(arrayPush, result, __),
+    getResult = () => result
+  let index = -1
+
+  while (++index < length) {
+    const item = array[index]
+    if (isArray(item)) {
+      const itemLength = item.length
+      let itemIndex = -1
+      while (++itemIndex < itemLength) {
+        result.push(item[itemIndex])
+      }
+    } else if (item == null) {
+      result.push(item)
+    } else if (typeof item[symbolIterator] == 'function') {
+      for (const subItem of item) {
+        result.push(subItem)
+      }
+    } else if (typeof item[symbolAsyncIterator] == 'function') {
+      promises.push(
+        asyncIteratorForEach(item[symbolAsyncIterator](), resultPush))
+    } else if (typeof item.chain == 'function') {
+      const monadValue = item.chain(identity)
+      isPromise(monadValue)
+        ? promises.push(monadValue.then(resultPush))
+        : result.push(monadValue)
+    } else if (typeof item.flatMap == 'function') {
+      const monadValue = item.flatMap(identity)
+      isPromise(monadValue)
+        ? promises.push(monadValue.then(resultPush))
+        : result.push(monadValue)
+    } else if (typeof item.reduce == 'function') {
+      const folded = item.reduce(resultPushReducer, null)
+      isPromise(folded) && promises.push(folded)
+    } else if (item.constructor == Object) {
+      for (const key in item) {
+        result.push(item[key])
+      }
+    } else {
+      result.push(item)
+    }
+  }
+  return promises.length == 0
+    ? result
+    : promiseAll(promises).then(getResult)
 }
 
 /**
@@ -3374,14 +3184,54 @@ const flatteningTransducerConcurrent = concat => function flatteningReducer(
 const arrayFlatMap = function (array, flatMapper) {
   const monadArray = arrayMap(array, flatMapper)
   return isPromise(monadArray)
-    ? monadArray.then(
-      tacitGenericReduceConcurrent(
-        flatteningTransducerConcurrent(arrayExtend),
-        []))
-    : genericReduceConcurrent(
-      [monadArray],
-      flatteningTransducerConcurrent(arrayExtend),
-      [])
+    ? monadArray.then(monadArrayFlatten)
+    : monadArrayFlatten(monadArray)
+}
+
+/**
+ * @name monadObjectFlatten
+ *
+ * @synopsis
+ * monadObjectFlatten(object Object) -> Object
+ */
+const monadObjectFlatten = function (object) {
+  const promises = [],
+    result = {},
+    resultAssignReducer = (_, subItem) => objectAssign(result, subItem),
+    resultAssign = curry2(objectAssign, result, __),
+    getResult = () => result
+
+  for (const key in object) {
+    const item = object[key]
+    if (item == null) {
+      continue
+    } else if (typeof item[symbolIterator] == 'function') {
+      for (const monadItem of item) {
+        objectAssign(result, monadItem)
+      }
+    } else if (typeof item[symbolAsyncIterator] == 'function') {
+      promises.push(
+        asyncIteratorForEach(item[symbolAsyncIterator](), resultAssign))
+    } else if (typeof item.chain == 'function') {
+      const monadValue = item.chain(identity)
+      isPromise(monadValue)
+        ? promises.push(monadValue.then(resultAssign))
+        : objectAssign(result, monadValue)
+    } else if (typeof item.flatMap == 'function') {
+      const monadValue = item.flatMap(identity)
+      isPromise(monadValue)
+        ? promises.push(monadValue.then(resultAssign))
+        : resultAssign(monadValue)
+    } else if (typeof item.reduce == 'function') {
+      const folded = item.reduce(resultAssignReducer, null)
+      isPromise(folded) && promises.push(folded)
+    } else {
+      objectAssign(result, item)
+    }
+  }
+  return promises.length == 0
+    ? result
+    : promiseAll(promises).then(getResult)
 }
 
 /**
@@ -3404,18 +3254,66 @@ const arrayFlatMap = function (array, flatMapper) {
  * @related objectReduceConcurrent
  */
 const objectFlatMap = function (object, flatMapper) {
-
-  /*
   const monadObject = objectMap(object, flatMapper)
   return isPromise(monadObject)
-    ? monadObject.then(tacitGenericReduceConcurrent(objectAssign, {}))
-    : genericReduceConcurrent([monadObject], objectAssign, {})
-    */
+    ? monadObject.then(monadObjectFlatten)
+    : monadObjectFlatten(monadObject)
+}
 
-  const monadArray = objectMapToArray(object, flatMapper)
-  return isPromise(monadArray)
-    ? monadArray.then(tacitGenericReduceConcurrent(objectAssign, {}))
-    : genericReduceConcurrent([monadArray], objectAssign, {})
+/**
+ * @name monadSetFlatten
+ *
+ * @synopsis
+ * monadSetFlatten(set Set<Monad|Foldable|any>) -> Set
+ */
+const monadSetFlatten = function (set) {
+  const size = set.size,
+    promises = [],
+    result = new Set(),
+    resultAddReducer = (_, subItem) => result.add(subItem),
+    resultAdd = curry2(setAdd, result, __),
+    getResult = () => result
+
+  for (const item of set) {
+    if (isArray(item)) {
+      const itemLength = item.length
+      let itemIndex = -1
+      while (++itemIndex < itemLength) {
+        result.add(item[itemIndex])
+      }
+    } else if (item == null) {
+      result.add(item)
+    } else if (typeof item[symbolIterator] == 'function') {
+      for (const subItem of item) {
+        result.add(subItem)
+      }
+    } else if (typeof item[symbolAsyncIterator] == 'function') {
+      promises.push(
+        asyncIteratorForEach(item[symbolAsyncIterator](), resultAdd))
+    } else if (typeof item.chain == 'function') {
+      const monadValue = item.chain(identity)
+      isPromise(monadValue)
+        ? promises.push(monadValue.then(resultAdd))
+        : result.add(monadValue)
+    } else if (typeof item.flatMap == 'function') {
+      const monadValue = item.flatMap(identity)
+      isPromise(monadValue)
+        ? promises.push(monadValue.then(resultAdd))
+        : result.add(monadValue)
+    } else if (typeof item.reduce == 'function') {
+      const folded = item.reduce(resultAddReducer, null)
+      isPromise(folded) && promises.push(folded)
+    } else if (item.constructor == Object) {
+      for (const key in item) {
+        result.add(item[key])
+      }
+    } else {
+      result.add(item)
+    }
+  }
+  return promises.length == 0
+    ? result
+    : promiseAll(promises).then(getResult)
 }
 
 /**
@@ -3438,15 +3336,28 @@ const objectFlatMap = function (object, flatMapper) {
 const setFlatMap = function (set, flatMapper) {
   const monadSet = setMap(set, flatMapper)
   return isPromise(monadSet)
-    ? monadSet.then(
-      tacitGenericReduceConcurrent(
-        flatteningTransducerConcurrent(setExtend),
-        new Set()))
-    : genericReduceConcurrent(
-      [monadSet],
-      flatteningTransducerConcurrent(setExtend),
-      new Set())
+    ? monadSet.then(monadSetFlatten)
+    : monadSetFlatten(monadSet)
 }
+
+/**
+ * @name arrayJoin
+ *
+ * @synopsis
+ * arrayJoin(array Array, delimiter string) -> string
+ */
+const arrayJoin = (array, delimiter) => array.join(delimiter)
+
+/**
+ * @name monadArrayFlattenToString
+ *
+ * @synopsis
+ * monadArrayFlattenToString(
+ *   array Array<Monad|Foldable|any>,
+ * ) -> string
+ */
+const monadArrayFlattenToString = funcConcat(
+  monadArrayFlatten, curry2(arrayJoin, __, ''))
 
 /**
  * @name stringFlatMap
@@ -3464,25 +3375,86 @@ const setFlatMap = function (set, flatMapper) {
  *   string,
  *   flatMapper item=>Promise|Monad|Foldable|any,
  * ) -> string
+ *
+ * @related arrayFlatMap
  */
 const stringFlatMap = function (string, flatMapper) {
-  let result = ''
-  const resultExtend = (_, item) => (result += item),
-    getResult = () => result,
-    monadArray = arrayMap(string, flatMapper)
+  const monadArray = arrayMap(string, flatMapper)
+  return isPromise(monadArray)
+    ? monadArray.then(monadArrayFlattenToString)
+    : monadArrayFlattenToString(monadArray)
+}
 
-  if (isPromise(monadArray)) {
-    return monadArray.then( // flatten each monad into result
-      tacitGenericReduceConcurrent(
-        flatteningTransducerConcurrent(resultExtend),
-        null)).then(getResult)
+/**
+ * @name streamWrite
+ *
+ * @synopsis
+ * streamWrite(
+ *   stream Writable,
+ *   chunk string|Buffer|Uint8Array|any,
+ *   encoding string|undefined,
+ *   callback function|undefined,
+ * ) -> stream
+ */
+const streamWrite = function (stream, chunk, encoding, callback) {
+  stream.write(chunk, encoding, callback)
+  return stream
+}
+
+/**
+ * @name streamFlatten
+ *
+ * @synopsis
+ * Monad = Array|String|Set
+ *   |TypedArray|DuplexStream|Iterator|AsyncIterator
+ *   |{ chain: function }|{ flatMap: function }|Object
+ *
+ * Foldable = Iterable|AsyncIterable|{ reduce: function }
+ *
+ * streamFlatExtend(stream DuplexStream, item Monad|Foldable|any) -> stream
+ */
+const streamFlatExtend = function (stream, item) {
+  const resultStreamWrite = curry2(streamWrite, stream, __),
+    resultStreamWriteReducer = (_, subItem) => stream.write(subItem),
+    promises = []
+  if (isArray(item)) {
+    const itemLength = item.length
+    let itemIndex = -1
+    while (++itemIndex < itemLength) {
+      stream.write(item[itemIndex])
+    }
+  } else if (item == null) {
+    stream.write(item)
+  } else if (typeof item[symbolIterator] == 'function') {
+    for (const subItem of item) {
+      stream.write(subItem)
+    }
+  } else if (typeof item[symbolAsyncIterator] == 'function') {
+    promises.push(
+      asyncIteratorForEach(item[symbolAsyncIterator](), resultStreamWrite))
+  } else if (typeof item.chain == 'function') {
+    const monadValue = item.chain(identity)
+    isPromise(monadValue)
+      ? promises.push(monadValue.then(resultStreamWrite))
+      : stream.write(monadValue)
+  } else if (typeof item.flatMap == 'function') {
+    const monadValue = item.flatMap(identity)
+    isPromise(monadValue)
+      ? promises.push(monadValue.then(resultStreamWrite))
+      : stream.write(monadValue)
+  } else if (typeof item.reduce == 'function') {
+    const folded = item.reduce(resultStreamWriteReducer, null)
+    isPromise(folded) && promises.push(folded)
+  } else if (item.constructor == Object) {
+    for (const key in item) {
+      stream.write(item[key])
+    }
+  } else {
+    stream.write(item)
   }
-
-  genericReduceConcurrent(
-    [monadArray],
-    flatteningTransducerConcurrent(resultExtend),
-    null)
-  return result
+  return promises.length == 0
+    ? stream
+    : promiseAll(promises).then(always(stream))
 }
 
 /**
@@ -3501,11 +3473,70 @@ const stringFlatMap = function (string, flatMapper) {
  *   stream DuplexStream,
  *   flatMapper item=>Promise|Monad|Foldable|any,
  * ) -> stream
+ *
+ * @related monadArrayFlatten
  */
-const streamFlatMap = (stream, flatMapper) => genericReduceConcurrent(
-  [new MappingAsyncIterator(stream[symbolAsyncIterator](), flatMapper)],
-  flatteningTransducerConcurrent(streamExtend),
-  stream)
+const streamFlatMap = async function (stream, flatMapper) {
+  const promises = new Set()
+  for await (const item of stream) {
+    const monad = flatMapper(item)
+    if (isPromise(monad)) {
+      const selfDeletingPromise = monad.then(
+        curry2(streamFlatExtend, stream, __)).then(
+          () => promises.delete(selfDeletingPromise))
+      promises.add(selfDeletingPromise)
+    } else {
+      const streamFlatExtendOperation = streamFlatExtend(stream, monad)
+      if (isPromise(streamFlatExtendOperation)) {
+        const selfDeletingPromise = streamFlatExtendOperation.then(
+          () => promises.delete(selfDeletingPromise))
+        promises.add(selfDeletingPromise)
+      }
+    }
+  }
+  while (promises.size > 0) {
+    await promiseRace(promises)
+  }
+  return stream
+}
+
+/**
+ * @name arrayJoinToBinary
+ *
+ * @synopsis
+ * arrayJoinToBinary(array Array, init TypedArray|Buffer) -> TypedArray|Buffer
+ */
+const arrayJoinToBinary = function (array, init) {
+  const length = array.length
+  let index = -1,
+    result = init
+  while (++index < length) {
+    result = binaryExtend(result, array[index])
+  }
+  return result
+}
+
+/**
+ * @name monadArrayFlattenToBinary
+ *
+ * @synopsis
+ * Monad = Array|String|Set
+ *   |TypedArray|DuplexStream|Iterator|AsyncIterator
+ *   |{ chain: function }|{ flatMap: function }|Object
+ *
+ * Foldable = Iterable|AsyncIterable|{ reduce: function }
+ *
+ * monadArrayFlattenToBinary(
+ *   array Array<Monad|Foldable|any>,
+ *   result TypedAray|Buffer,
+ * ) -> TypedArray|Buffer
+ */
+const monadArrayFlattenToBinary = function (array, result) {
+  const flattened = monadArrayFlatten(array)
+  return isPromise(flattened)
+    ? flattened.then(curry2(arrayJoinToBinary, __, result))
+    : arrayJoinToBinary(flattened, result)
+}
 
 /**
  * @name binaryFlatMap
@@ -3525,24 +3556,14 @@ const streamFlatMap = (stream, flatMapper) => genericReduceConcurrent(
  * ) -> stream
  */
 const binaryFlatMap = function (binary, flatMapper) {
-  let result = globalThisHasBuffer && binary.constructor == Buffer
-    ? bufferAlloc(0)
-    : new binary.constructor(0)
-  const resultExtend = (_, chunk) => (result = binaryExtend(result, chunk)),
-    getResult = () => result,
-    monadArray = arrayMap(binary, flatMapper)
+  const monadArray = arrayMap(binary, flatMapper),
+    result = globalThisHasBuffer && binary.constructor == Buffer
+      ? bufferAlloc(0)
+      : new binary.constructor(0)
 
-  if (isPromise(monadArray)) {
-    return monadArray.then(
-      tacitGenericReduceConcurrent(
-        flatteningTransducerConcurrent(resultExtend),
-        null)).then(getResult)
-  }
-  genericReduceConcurrent(
-    [monadArray],
-    flatteningTransducerConcurrent(resultExtend),
-    null)
-  return result
+  return isPromise(monadArray)
+    ? monadArray.then(curry2(monadArrayFlattenToBinary, __, result))
+    : monadArrayFlattenToBinary(monadArray, result)
 }
 
 /**
@@ -3553,19 +3574,80 @@ const binaryFlatMap = function (binary, flatMapper) {
  *   generatorFunction GeneratorFunction,
  *   flatMapper item=>Promise|Monad|Foldable|any,
  * ) -> flatMappingGeneratorFunction GeneratorFunction
+ *
+ * @related monadArrayFlatten
  */
 const generatorFunctionFlatMap = (
   generatorFunction, flatMapper,
 ) => function* flatMappingGeneratorFunction(...args) {
   for (const item of generatorFunction(...args)) {
     const monad = flatMapper(item)
-    if (monad == null) {
+    if (isArray(monad)) {
+      const monadLength = monad.length
+      let monadIndex = -1
+      while (++monadIndex < monadLength) {
+        yield monad[monadIndex]
+      }
+    } else if (monad == null) {
       yield monad
     } else if (typeof monad[symbolIterator] == 'function') {
-      yield* monad
+      for (const subItem of monad) {
+        yield subItem
+      }
+    } else if (typeof monad.chain == 'function') {
+      yield monad.chain(identity)
+    } else if (typeof monad.flatMap == 'function') {
+      yield monad.flatMap(identity)
+    } else if (typeof monad.reduce == 'function') {
+      for (const monadItem of monad.reduce(arrayPush, [])) {
+        yield monadItem
+      }
+    } else if (monad.constructor == Object) {
+      for (const key in monad) {
+        yield monad[key]
+      }
     } else {
-      yield* genericReduceConcurrent([monad], arrayExtend, [])
+      yield monad
     }
+  }
+}
+
+/**
+ * @name asyncGeneratorFunctionFlatExtend
+ *
+ * @synopsis
+ * asyncGeneratorFunctionFlatExtend(monad Monad|Foldable|any) -> AsyncIterator
+ *
+ * @related streamFlatExtend
+ */
+const asyncGeneratorFunctionFlatExtend = async function* (monad) {
+  const asyncIterators = []
+  if (isArray(monad)) {
+    const monadLength = monad.length
+    let monadIndex = -1
+    while (++monadIndex < monadLength) {
+      yield monad[monadIndex]
+    }
+  } else if (monad == null) {
+    yield monad
+  } else if (typeof monad[symbolIterator] == 'function') {
+    yield* monad
+  } else if (typeof monad[symbolAsyncIterator] == 'function') {
+    yield* monad
+  } else if (typeof monad.chain == 'function') {
+    yield monad.chain(identity)
+  } else if (typeof monad.flatMap == 'function') {
+    yield monad.flatMap(identity)
+  } else if (typeof monad.reduce == 'function') {
+    for (const monadItem of monad.reduce(arrayPush, [])) {
+      yield monadItem
+    }
+  } else if (monad.constructor == Object) {
+    for (const key in monad) {
+      yield monad[key]
+    }
+  } else {
+    yield monad
   }
 }
 
@@ -3577,21 +3659,18 @@ const generatorFunctionFlatMap = (
  *   generatorFunction GeneratorFunction,
  *   flatMapper item=>Promise|Monad|Foldable|any,
  * ) -> flatMappingAsyncGeneratorFunction GeneratorFunction
+ *
+ * @related streamFlatMap
  */
 const asyncGeneratorFunctionFlatMap = (
   asyncGeneratorFunction, flatMapper,
 ) => async function* flatMappingAsyncGeneratorFunction(...args) {
   for await (const item of asyncGeneratorFunction(...args)) {
-    const monad = await flatMapper(item)
-    if (monad == null) {
-      yield monad
-    } else if (typeof monad[symbolIterator] == 'function') {
-      yield* monad
+    const monad = flatMapper(item)
+    if (isPromise(monad)) {
+      yield* (await monad.then(asyncGeneratorFunctionFlatExtend))
     } else {
-      yield* await genericReduceConcurrent(
-        [monad],
-        flatteningTransducerConcurrent(arrayExtend),
-        [])
+      yield* asyncGeneratorFunctionFlatExtend(monad)
     }
   }
 }
@@ -3621,9 +3700,6 @@ const reducerFlatMap = (
   reducer, flatMapper,
 ) => function flatMappingReducer(result, value) {
   const monad = flatMapper(value)
-
-  // TODO figure out how to use genericReduceConcurrent
-
   return isPromise(monad)
     ? monad.then(tacitGenericReduce(
       flatteningTransducer(reducer),
@@ -3661,9 +3737,9 @@ FlatMappingIterator.prototype = {
     if (iteration.done) {
       return iteration
     }
-    const monadAsArray = genericReduceConcurrent( // TODO genericReduceSync
+    const monadAsArray = genericReduce( // TODO genericReduceSync
       [this.flatMapper(iteration.value)],
-      flatteningTransducerConcurrent(arrayExtend),
+      flatteningTransducer(arrayExtend),
       []) // this will always have at least one item
     if (monadAsArray.length > 1) {
       this.buffer = monadAsArray
@@ -3719,7 +3795,7 @@ FlatMappingAsyncIterator.prototype = {
     }
     let monadAsArray = genericReduce(
       [monad],
-      flatteningTransducerConcurrent(arrayExtend),
+      flatteningTransducer(arrayExtend),
       []) // this will always have at least one item
     if (isPromise(monadAsArray)) {
       monadAsArray = await monadAsArray
