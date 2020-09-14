@@ -25,17 +25,17 @@ Monad(value any).chain(
 
 ## Monad.prototype.map
 ```coffeescript [specscript]
-Monad(value any).map(mapper value=>(result any)) -> mappedMonad Monad
+Monad(value any).map(mapper value=>any) -> mappedMonad Monad
 ```
 
 ## Monad.prototype.concat
 ```coffeescript [specscript]
-new Monad(value any).concat(anotherMonad Monad) -> combinedMonad Monad
+Monad(value any).concat(anotherMonad Monad) -> combinedMonad Monad
 ```
 
 ## Monad.prototype.empty
 ```coffeescript [specscript]
-new Monad(value any).empty() -> emptyMonad Monad
+Monad.empty() -> emptyMonad Monad
 ```
 
 A monad's effect is activated by calling its `.chain` method with `flatMap`.
