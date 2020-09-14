@@ -1,4 +1,9 @@
-## v1.5.12 - latest
+## v1.5.13 - latest
+ * flatMap rewrite + benchmarks
+ * improved tryCatch performance
+ * improved switchCase performance
+
+## v1.5.12
  * transform rewrite + benchmarks
 
 ## v1.5.11
