@@ -38,6 +38,8 @@ Monad(value any).concat(anotherMonad Monad) -> combinedMonad Monad
 Monad.empty() -> emptyMonad Monad
 ```
 
+# Examples
+
 A monad's effect is activated by calling its `.chain` method with `flatMap`.
 
 ```javascript
