@@ -6,27 +6,36 @@ Warning: this entire directory is experimental; APIs here are subject to change.
 
 # Specification
 
-Each rubico monad must be constructable via the `new` keyword and implement `.chain` on its prototype, while having some notion of `.map` and `.concat`. Similarly, `empty` is not strictly required, though there should be some notion of an empty instance of a Monad. For example, `[]` is `empty` for Arrays. All of these methods as well as any others are free to implement; only the constructor and `.chain` are required. Monads should throw TypeErrors from the constructor for invalid types of arguments. Monads should generally not act on functions.
+Each rubico monad must return an object that implements `.chain`, while having some notion of `.map` and `.concat`. Similarly, while `.empty` is not strictly required, there should be some notion of an empty instance of a Monad. For example, `[]` is `empty` for Arrays. All of these methods as well as any others are free to implement; only `.chain` is required. Monads should throw TypeErrors from the constructor for invalid types of arguments. rubico Monads should generally act on objects or primitive values and not functions. A Monad that acts on a function may be better for rubico/x.
 
-## Monad constructor - required
 ```coffeescript [specscript]
-new Monad(...any) -> Monad {...}
+Monad = (args ...any)=>({
+  chain: function,
+  map: function?,
+  concat: function?,
+  empty: function?,
+})
 ```
 
 ## Monad.prototype.chain - required
 ```coffeescript [specscript]
-new Monad(value any).chain(
+Monad(value any).chain(
   flatMapper value=>(result Monad|any)) -> result
 ```
 
 ## Monad.prototype.map
 ```coffeescript [specscript]
-new Monad(value).map(mapper value=>Monad)
+Monad(value any).map(mapper value=>(result any)) -> mappedMonad Monad
 ```
 
 ## Monad.prototype.concat
 ```coffeescript [specscript]
 new Monad(value any).concat(anotherMonad Monad) -> combinedMonad Monad
+```
+
+## Monad.prototype.empty
+```coffeescript [specscript]
+new Monad(value any).empty() -> emptyMonad Monad
 ```
 
 A monad's effect is activated by calling its `.chain` method with `flatMap`.
