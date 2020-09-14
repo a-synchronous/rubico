@@ -521,7 +521,7 @@ const funcConcatSync = (
  * @description
  * **pipe** takes an array of functions and chains them together, each function passing its return value to the next function until all functions have been called. The final output for a given pipe is the output of the last function in the pipe.
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * console.log(
  *   pipe([
  *     number => number + 1,
@@ -551,7 +551,7 @@ const funcConcatSync = (
  *
  * **pipe** supports transducer composition. When passed a reducer function, a pipe of functions returns a new reducer function that applies the transducers of the functions array in series, ending the chain with the passed in reducer. `compositeReducer` must be used in transducer position in conjunction with **reduce** or any implementation of reduce to have a transducing effect. For more information on this behavior, see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
  *
  * const square = number => number ** 2
@@ -653,7 +653,7 @@ const funcAll = funcs => function allFuncs(...args) {
  *
  * All functions of `funcs`, including additional forks, are executed concurrently.
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * console.log(
  *   fork({
  *     greetings: fork([
@@ -731,7 +731,7 @@ const funcAllSeries = funcs => function allFuncsSeries(...args) {
  * @description
  * **fork.series** is fork with serial execution instead of concurrent execution of functions. All functions of `funcs` are then executed in series.
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * const sleep = ms => () => new Promise(resolve => setTimeout(resolve, ms))
  *
  * fork.series([
@@ -765,7 +765,7 @@ fork.series = funcAllSeries
  *
  * All functions of `funcs`, including additional forks, are executed concurrently.
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * console.log(
  *   assign({
  *     squared: ({ number }) => number ** 2,
@@ -800,7 +800,7 @@ const assign = function (funcs) {
  * @description
  * **tap** accepts a function and any value, calls the function with the value, and returns the original value. This is useful for running side effects in function pipelines, e.g. logging out data in a pipeline to the console.
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * pipe([
  *   tap(console.log),
  *   value => value + 'bar'
@@ -843,7 +843,7 @@ tap.sync = tapSync
  * @description
  * **tap.if** takes a condition `cond`, a function `func`, and an input `value`, returning the `result` as the unchanged `value`. If `cond` applied with `value` is falsy, `func` is not called; otherwise, `func` is called with `value`. `result` is a Promise if either `func` or `cond` is asynchronous.
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
  *
  * pipe([
@@ -891,7 +891,7 @@ const catcherApply = function (catcher, err, args) {
  * @description
  * **tryCatch** takes two functions, a tryer and a catcher, and returns a tryCatcher function that, when called, calls the tryer with the arguments. If the tryer throws an Error or returns a Promise that rejects, tryCatch calls the catcher with the thrown value and the arguments. If the tryer called with the arguments does not throw, the tryCatcher returns the result of that call.
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * const errorThrower = tryCatch(
  *   message => {
  *     throw new Error(message)
@@ -1216,7 +1216,7 @@ const reducerMap = (reducer, mapper) => function mappingReducer(result, value) {
  *
  * If the input functor has an implicit order, e.g. an Array, the resulting functor will have the same order. If the input collection does not have an implicit order, the order of the result is not guaranteed.
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * const square = number => number ** 2
  *
  * console.log(
@@ -1236,7 +1236,7 @@ const reducerMap = (reducer, mapper) => function mappingReducer(result, value) {
  *
  * With mapping generator functions and mapping async generator functions, transformations on iterators and their async counterparts are simple to compose.
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * const capitalize = string => string.toUpperCase()
  *
  * const abc = function* () {
@@ -1266,7 +1266,7 @@ const reducerMap = (reducer, mapper) => function mappingReducer(result, value) {
  *
  * A **reducer** is a variadic function like the one supplied to `Array.prototype.reduce`, but without the index and reference to the accumulated result per call. A **transducer** is a function that accepts a reducer function as an argument and returns another reducer function, which enables chaining functionality at the reducer level. `map` is core to this mechanism, and provides a seamless way to create transducers with mapper functions.
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * const square = number => number ** 2
  *
  * const concat = (array, item) => array.concat(item)
@@ -1395,7 +1395,7 @@ const arrayMapSeries = function (array, mapper) {
  * @description
  * **map.series** is **map** but with serial instead of concurrent application of the mapping function to each item of the input value.
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * const delayedLog = x => new Promise(function (resolve) {
  *   setTimeout(function () {
  *     console.log(x)
@@ -1502,7 +1502,7 @@ const arrayMapPool = function (array, mapper, concurrentLimit) {
  * @description
  * **map.pool** is **map** with a concurrency limit that specifies the maximum number of promises in flight in a given moment for an asynchronous mapping operation.
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * const delayedLog = x => new Promise(function (resolve) {
  *   setTimeout(function () {
  *     console.log(x)
@@ -1945,7 +1945,7 @@ const reducerFilter = (
  * @description
  * **filter** accepts a predicate function and a value of any type and returns the same type with elements excluded by the provided predicate function.
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
  *
  * console.log(
@@ -1961,7 +1961,7 @@ const reducerFilter = (
  *
  * When filtering on arrays and objects, the predicate supplied to `filter` can be asynchronous.
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
  *
  * const numbers = function* () {
@@ -1989,7 +1989,7 @@ const reducerFilter = (
  *
  * **Warning**: usage of an async predicate with generator functions or iterators may lead to undesirable behavior.
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * const asyncIsOdd = async number => number % 2 == 1
  *
  * const asyncNumbers = async function* () {
@@ -2017,7 +2017,7 @@ const reducerFilter = (
  *
  * The predicate can be asynchronous when filtering async iterators or async generator functions.
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
  *
  * const concat = (array, item) => array.concat(item)
@@ -2497,7 +2497,7 @@ var genericReduce = function (args, reducer, result) {
  * @description
  * **reduce** constructs a reducing function that executes a data transformation defined by a reducer function and an optional init value. When called with a collection, a given reducing function applies its reducer function in series to an accumulator with initial value `init` and each item of the collection, returning the result of calling the reducer with the accumulator and the last item of the collection.
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * const add = (a, b) => a + b
  *
  * console.log(
@@ -2507,7 +2507,7 @@ var genericReduce = function (args, reducer, result) {
  *
  * If `init` is undefined, the first item of the input collection is used as the initial value for the accumulator.
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * const max = (a, b) => a > b ? a : b
  *
  * console.log(
@@ -2517,7 +2517,7 @@ var genericReduce = function (args, reducer, result) {
  *
  * If `init` is a function, it is treated as a resolver and called with the input arguments to resolve an initial value for the accumulator. Unless care is exercised when handling references for this initial value, a function `init` is the recommended way to use reduce for transformations on non-primitive initial values.
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * const concatSquares = (array, value) => array.concat(value ** 2)
  *
  * const initEmptyArray = () => []
@@ -2529,7 +2529,7 @@ var genericReduce = function (args, reducer, result) {
  *
  * `reduce` elevates the concept of transformation beyond synchronous operations on arrays. The `reducer` function can be asynchronous, while the input value can be an asynchronous stream.
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
  *
  * // asyncAppReducer(
@@ -2579,7 +2579,7 @@ var genericReduce = function (args, reducer, result) {
  *
  * rubico's async capable [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md) API is useful for chaining operations on items of large or even infinite streams of data. A combination with async capable `reduce` enables a compositional refactor of `asyncAppReducer` above.
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
  *
  * const isActionTypeFetchTodo = action => action.type == 'FETCH_TODO'
@@ -2621,7 +2621,7 @@ var genericReduce = function (args, reducer, result) {
  *
  * If the first argument to a reducing function is a reducer, `reduce` concatenates any reducers in argument position onto the initial reducer, producing a combined reducer that performs a chained operation per each item in a reducing operation. For more reducer combinators, see rubico's Reducer monad.
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * const reducerA = (state, action) => {
  *   if (action.type == 'A') return { ...state, A: true }
  *   return state
@@ -2908,7 +2908,7 @@ const genericTransform = function (args, transducer, result) {
  *
  * **transform** executes a reducing operation defined by a transducer, initial value or resolver of value, and a concatenation operation `.concat` specific to the type of the resolved initial value.
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * const square = number => number ** 2
  *
  * const isOdd = number => number % 2 == 1
@@ -2954,7 +2954,7 @@ const genericTransform = function (args, transducer, result) {
  *
  * When an object implements `.concat`, it can be transformed as a Semigroup. This is to be able to support transformations of any custom object that could be considered a semigroup.
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * const Max = function (number) {
  *   this.number = number
  * }
@@ -2997,7 +2997,7 @@ const genericTransform = function (args, transducer, result) {
  *
  * For an aggregate object, incoming items are assigned. This behavior combined with reducer combinators supports application state management with async reducers similar to `reduce`.
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * const reducerA = async (state, action) => {
  *   if (action.type == 'A') return { ...state, A: true }
  *   return state
@@ -3877,7 +3877,7 @@ FlatMappingAsyncIterator.prototype = {
  *
  * To support concurrent execution of the flatMapper function, arrays are first mapped with the flatMapper, then flattened by concatenation.
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * const duplicate = number => [number, number]
  *
  * console.log(
@@ -3911,7 +3911,7 @@ FlatMappingAsyncIterator.prototype = {
  *
  * All other types are not flattened and left in the result as is.
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * const identity = value => value
  *
  * flatMap(identity)([ // flatten
@@ -3931,7 +3931,7 @@ FlatMappingAsyncIterator.prototype = {
  *
  * `flatMap` also supports purer functional programming with monads. When a flatMapping operation encounters a Monad, it calls the monadic instance's `.chain` method to flatten it and access its functionality.
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * const Maybe = function (value) {
  *   this.value = value
  * }
@@ -3952,7 +3952,7 @@ FlatMappingAsyncIterator.prototype = {
  *
  * When `flatMap` receives a function as the first input argument, it creates a flatMapping version of a generator function, an async generator function, or a reducer depending on the type of input function.
  *
- * ```javascript-playground
+ * ```javascript [playground]
  * const square = number => number ** 2
  *
  * const isOdd = number => number % 2 == 1
