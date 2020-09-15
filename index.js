@@ -3903,7 +3903,6 @@ const asyncGeneratorFunctionFlatMap = (
  *   * Object that implements `.chain` or `.flatMap` - either of these is called directly to flatten
  *   * Iterable - implements Symbol.iterator
  *   * Iterator - implements Symbol.iterator that returns itself
- *   * AsyncIterator - implements Symbol.asyncIterator that returns itself
  *   * Generator - the product of a generator function `function* () {}`
  *   * Object that implements `.reduce` - this function is called directly for flattening
  *   * Object - a plain object, specifically its values are flattened
@@ -3911,6 +3910,7 @@ const asyncGeneratorFunctionFlatMap = (
  * The following is a list of all the items that `flatMap` muxes.
  *
  *   * AsyncIterable - implements Symbol.asyncIterator
+ *   * AsyncIterator - implements Symbol.asyncIterator that returns itself
  *   * AsyncGenerator - the product of an async generator function `async function* () {}`
  *
  * All other types are not flattened nor muxed and are left in the result as is.
@@ -4067,32 +4067,46 @@ const arrayPathGet = (path, value, defaultValue) => {
 /**
  * @name get
  *
+ * @catchphrase
+ * Access a property by path
+ *
  * @synopsis
  * get(
  *   path Array<number|string>|number|string,
  *   defaultValue function|any,
  * )(value any) -> result any
  *
- * @catchphrase
- * Access a property by path
- *
  * @description
- * **get** takes an Array of Numbers or Strings, Number, or String `path` argument, a function or any `defaultValue` argument, and returns a getter function that, when supplied any `value`, returns a property on that `value` described by `path`.
+ * **get** creates getter functions that access object values by provided path, with special treatment for the following:
+ *
+ *  * an Array of numbers or strings - each item denotes a deeper property access
+ *  * a dot-delimited string - string is split by dots, with each resulting token denoting a deeper property access
+ *
+ *  Any other type of path is looked up on objects directly.
  *
  * @example
  * const nestedABC = { a: { b: { c: 1 } } }
  *
  * console.log(
+ *   get('a')(nestedABC),
+ * ) // { b: { c: 1 } }
+ *
+ * console.log(
  *   get('a.b.c')(nestedABC),
+ * ) // 1
+ *
+ * console.log(
+ *   get(['a', 'b', 'c'])(nestedABC),
  * ) // 1
  */
 const get = (path, defaultValue) => {
-  if (isArray(path)) return value => arrayPathGet(path, value, defaultValue)
-  if (isNumber(path)) return value => arrayPathGet([path], value, defaultValue)
-  if (isString(path)) return (isDelimitedBy('.', path)
-    ? value => arrayPathGet(path.split('.'), value, defaultValue)
-    : value => arrayPathGet([path], value, defaultValue))
-  throw new TypeError(`get(path); invalid path ${path}`)
+  if (isArray(path)) {
+    return curry3(arrayPathGet, path, __, defaultValue)
+  }
+  if (isString(path)) {
+    return curry3(arrayPathGet, path.split('.'), __, defaultValue)
+  }
+  return curry3(arrayPathGet, [path], __, defaultValue)
 }
 
 /*

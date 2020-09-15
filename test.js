@@ -3146,12 +3146,6 @@ flatMap(
       ase(get('a', obj => obj.b)({ b: 1 }), 1)
       ase(get('a', obj => obj.b)({}), undefined)
     })
-    it('throws a TypeError on invalid path', async () => {
-      assert.throws(
-        () => get({}),
-        new TypeError('get(path); invalid path [object Object]'),
-      )
-    })
   })
 
   describe('pick', () => {
