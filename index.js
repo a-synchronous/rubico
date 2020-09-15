@@ -3824,7 +3824,7 @@ const asyncGeneratorFunctionFlatMap = (
  * ```
  *
  * @description
- * **flatMap** applies a function to each item of a Monad, flattening any resulting Monad or Foldable. The result is always the same type as the input value with all items mapped and flattened. The following outlines `flatMap` behavior for various Monads.
+ * Apply a function to each item of a collection, flattening any resulting collection. The result is always the same type as the input value with all items mapped and flattened. The following outlines behavior for various collections.
  *
  *   * Array - map items then flatten results into a new Array
  *   * String|string - map items then flatten (`+`) results into a new string
@@ -3846,7 +3846,7 @@ const asyncGeneratorFunctionFlatMap = (
  *   * Object - a plain Object, values are mapped then flattened into result by `Object.assign`
  *   * Reducer - a function to be used in a reducing operation. Items of a flatMapped reducing operation are mapped then flattened into the aggregate
  *
- * For arrays, `flatMap` applies the flatMapper function by `map`, then flattens the results. If the flatMapper function is asynchronous, `flatMap` executes that function per each item concurrently.
+ * On arrays, map the flatMapper function with concurrent asynchronous execution, then flatten the result one depth.
  *
  * ```javascript [playground]
  * const duplicate = number => [number, number]
@@ -3861,11 +3861,7 @@ const asyncGeneratorFunctionFlatMap = (
  *   [1, 2, 3, 4, 5]).then(console.log) // [1, 1, 2, 2, 3, 3, 4, 4, 5, 5]
  * ```
  *
- * All monads returned by the flatMapper are flattened into the result by type-specific iteration and concatenation, with the exception of async iterables that are muxed instead.
- *
- * > Muxing, or asynchronously "mixing", is the process of combining multiple asynchronous sources into one source, with order determined by the asynchronous resolution of the individual items.
- *
- * `flatMap`'s default muxing behavior may be useful for working with asynchronous streams, e.g. DOM events or requests.
+ * In general, collections returned by the flatMapper are flattened into the result by type-specific iteration and concatenation, while async iterables are muxed. Muxing, or asynchronously "mixing", is the process of combining multiple asynchronous sources into one source, with order determined by the asynchronous resolution of the individual items. This behavior is useful for working with asynchronous streams, e.g. of DOM events or requests.
  *
  * ```javascript [playground]
  * const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
@@ -3891,22 +3887,17 @@ const asyncGeneratorFunctionFlatMap = (
  * // ['foo', 'bar', 'baz', 'foo', 'bar', 'baz', 'foo', 'bar', 'baz']
  * ```
  *
- * The following is a list of all the items that `flatMap` flattens by concatenation after concurrent execution of the flatMapper is complete. These items can be Monads or Foldables.
+ * Upon flatMapper execution, flatten any collection return into the result.
  *
- *   * Object that implements `.chain` or `.flatMap` - either of these is called directly to flatten
- *   * Iterable - implements Symbol.iterator
- *   * Iterator - implements Symbol.iterator that returns itself
- *   * Generator - the product of a generator function `function* () {}`
+ *   * Iterable - items are concatenated into the result
+ *   * Iterator/Generator - items are concatenated into the result. Source is consumed.
  *   * Object that implements `.reduce` - this function is called directly for flattening
- *   * Object - a plain object, specifically its values are flattened
+ *   * Object that implements `.chain` or `.flatMap` - either of these is called directly to flatten
+ *   * any other Object - values are flattened
+ *   * AsyncIterable - items are muxed by asynchronous resolution
+ *   * AsyncIterator/AsyncGenerator - items are muxed by asynchronous resolution. Source is consumed.
  *
- * The following is a list of all the items that `flatMap` muxes.
- *
- *   * AsyncIterable - implements Symbol.asyncIterator
- *   * AsyncIterator - implements Symbol.asyncIterator that returns itself
- *   * AsyncGenerator - the product of an async generator function `async function* () {}`
- *
- * All other types are not flattened nor muxed and are left in the result as is.
+ * All other types are left in the result as they are.
  *
  * ```javascript [playground]
  * const identity = value => value
@@ -3920,13 +3911,11 @@ const asyncGeneratorFunctionFlatMap = (
  *   6,
  *   Promise.resolve(7),
  *   new Uint8Array([8]),
- *   undefined,
- *   null,
  * ]).then(console.log)
- * // [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 8, undefined, null]
+ * // [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 8]
  * ```
  *
- * `flatMap` supports purer functional programming with monads. When a flatMapping operation encounters a monad, it calls the monad's `.chain` method directly.
+ * Purer functional programming is possible with flatMap operation on monads. A monad could be any object that implements `.chain` or `.flatMap`. When a flatMapping operation encounters a monad, it calls the monad's `.chain` method directly to flatten.
  *
  * ```javascript [playground]
  * const Maybe = value => ({
@@ -3940,7 +3929,7 @@ const asyncGeneratorFunctionFlatMap = (
  * flatMap(console.log)(Maybe('hello world')) // hello world
  * ```
  *
- * When `flatMap` receives a reducer as the first input argument, it acts as a transducer and creates an async-capable flatMapping version of the argument reducer using the flatMapper function.
+ * In addition to monads, `flatMap` provides much needed flexibility when working with transducers. A flatMapping transducer is like a mapping transducer except all items of a reducing operation are additionally flattened into the result.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -3962,10 +3951,10 @@ const asyncGeneratorFunctionFlatMap = (
  *   filter(isOdd),
  *   flatMap(asyncPowers),
  * ])
- * ```
  *
  * transform(asyncOddPowers, [])([1, 2, 3, 4, 5]).then(console.log)
  * // [1, 1, 1, 3, 9, 27, 5, 25, 125]
+ * ```
  *
  * @execution concurrent
  *
@@ -4103,7 +4092,7 @@ const getByPath = function (object, path) {
  * )(value any) -> result any
  *
  * @description
- * Use **get** to access properties on objects. `get(property)` creates a function that, when supplied an object, returns the value on the object associated with `property`.
+ * Access properties on objects. `get(property)` creates a function that, when supplied an object, returns the value on the object associated with `property`.
  *
  * ```javascript [playground]
  * console.log(
@@ -4162,21 +4151,30 @@ const get = (path, defaultValue) => function getter(value) {
  * @name pick
  *
  * @catchphrase
- * Copy properties from an object
+ * Pick properties from an object
  *
  * @synopsis
- * pick(Array<string|Array|any>)(object Object) -> picked Object
+ * pick(Array<string|Array|any>)(source Object) -> picked Object
+ *
+ * @description
+ * Create a new object from a source object including only the properties from a provided array.
+ *
+ * ```javascript [playground]
+ * console.log(
+ *   pick(['hello', 'world'])({ goodbye: 1, world: 2 }),
+ * ) // { world: 2 }
+ * ```
  */
-const pick = keys => function picking(object) {
-  if (object == null) {
-    return object
+const pick = keys => function picking(source) {
+  if (source == null) {
+    return source
   }
   const keysLength = keys.length,
     result = {}
   let keysIndex = -1
   while (++keysIndex < keysLength) {
     const key = keys[keysIndex],
-      value = object[key]
+      value = source[key]
     if (value != null) {
       result[key] = value
     }
@@ -4184,26 +4182,35 @@ const pick = keys => function picking(object) {
   return result
 }
 
-/*
+/**
+ * @name omit
+ *
+ * @catchphrase
+ * Exclude properties from an object
+ *
  * @synopsis
- * TODO
+ * omit(Array<string|Array|any>)(source Object) -> omitted Object
+ *
+ * @description
+ * Create a new object excluding the keys from a provided array.
+ *
+ * ```javascript [playground]
+ * console.log(
+ *   omit(['_id'])({ _id: '1', name: 'George' }),
+ * ) // { name: 'George' }
+ * ```
  */
-const omitObject = (props, x) => {
-  const y = Object.assign({}, x)
-  for (let i = 0; i < props.length; i++) delete y[props[i]]
-  return y
-}
-
-/*
- * @synopsis
- * TODO
- */
-const omit = props => {
-  if (isArray(props)) return x => {
-    if (isObject(x)) return omitObject(props, x)
-    throw new TypeError('omit(...)(x); x is not an object')
+const omit = keys => function omitting(source) {
+  if (source == null) {
+    return source
   }
-  throw new TypeError('omit(x); x is not an array')
+  const keysLength = keys.length,
+    result = { ...source }
+  let keysIndex = -1
+  while (++keysIndex < keysLength) {
+    delete result[keys[keysIndex]]
+  }
+  return result
 }
 
 /*

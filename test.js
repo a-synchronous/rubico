@@ -3174,18 +3174,9 @@ flatMap(
       ade(omit(['a'])(abc), { b: 2, c: 3 })
       ade(omit(['a', 'd'])(abc), { b: 2, c: 3 })
       ade(omit(['d'])(abc), { a: 1, b: 2, c: 3 })
-    })
-    it('throws a TypeError on invalid props', async () => {
-      assert.throws(
-        () => omit('hey'),
-        new TypeError('omit(x); x is not an array'),
-      )
-    })
-    it('throws a TypeError on invalid input', async () => {
-      assert.throws(
-        () => omit(['hey'])(['hey']),
-        new TypeError('omit(...)(x); x is not an object'),
-      )
+      ase(omit(['d'])(null), null)
+      ase(omit(['d'])(undefined), undefined)
+      ase(omit(['d'])(), undefined)
     })
   })
 
