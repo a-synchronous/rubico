@@ -1,4 +1,7 @@
-## v1.5.13 - latest
+## v1.5.14 - latest
+ * fix: flatMap async muxing
+
+## v1.5.13
  * flatMap rewrite + benchmarks
  * improved tryCatch performance
  * improved switchCase performance
