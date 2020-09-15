@@ -4171,9 +4171,12 @@ const pick = keys => function picking(object) {
   if (object == null) {
     return object
   }
-  const result = {}
-  for (const key of keys) {
-    const value = object[key]
+  const keysLength = keys.length,
+    result = {}
+  let keysIndex = -1
+  while (++keysIndex < keysLength) {
+    const key = keys[keysIndex],
+      value = object[key]
     if (value != null) {
       result[key] = value
     }
