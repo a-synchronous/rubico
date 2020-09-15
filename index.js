@@ -289,6 +289,30 @@ const thunkify2 = (func, arg0, arg1) => () => func(arg0, arg1)
  */
 const thunkify3 = (func, arg0, arg1, arg2) => () => func(arg0, arg1, arg2)
 
+/**
+ * @name memoizeCappedUnary
+ *
+ * @synopsis
+ * memoizeCappedUnary(func function, cap number) -> memoized function
+ *
+ * @todo explore Map reimplementation
+ */
+const memoizeCappedUnary = function (func, cap) {
+  const cache = new Map(),
+    memoized = function memoized(arg0) {
+      if (cache.has(arg0)) {
+        return cache.get(arg0)
+      }
+      const result = func(arg0)
+      cache.set(arg0, result)
+      if (cache.size > cap) {
+        cache.clear()
+      }
+      return result
+    }
+  memoized.cache = cache
+  return memoized
+}
 
 /**
  * @name _arrayExtend
@@ -3997,37 +4021,70 @@ const flatMap = flatMapper => function flatMapping(value) {
   return flatMapper(value)
 }
 
-/**
- * @name isDelimitedBy
- *
- * @synopsis
- * isDelimitedBy(delim string, value string) -> boolean
- */
-const isDelimitedBy = (delim, value) => (value != null
-  && value[0] !== delim
-  && value[value.length - 1] !== delim
-  && value.slice(1, value.length - 1).includes(delim))
+// a[0].b.c
+const pathStringSplitRegex = /[\.|\[|\]]+/
 
 /**
- * @name arrayPathGet
+ * @name memoizedCappedPathStringSplit
  *
  * @synopsis
- * arrayPathGet(
- *   path Array<string|number>,
- *   value any,
- *   defaultValue function|any,
- * ) -> result any
+ * memoizedCappedPathStringSplit(pathString string) -> Array<string>
+ *
+ * @note
+ * a[0].b.c
+ * a.0.b[0][1].c
  */
-const arrayPathGet = (path, value, defaultValue) => {
-  if (value == null) {
-    return isFunction(defaultValue) ? defaultValue(value) : defaultValue
+const pathStringSplit = function (pathString) {
+  const pathStringLastIndex = pathString.length - 1,
+    firstChar = pathString[0],
+    lastChar = pathString[pathStringLastIndex],
+    isFirstCharLeftBracket = firstChar == '[',
+    isLastCharRightBracket = lastChar == ']'
+
+  if (isFirstCharLeftBracket && isLastCharRightBracket) {
+    return pathString.slice(1, pathStringLastIndex).split(pathStringSplitRegex)
+  } else if (isFirstCharLeftBracket) {
+    return pathString.slice(1).split(pathStringSplitRegex)
+  } else if (isLastCharRightBracket) {
+    return pathString.slice(0, pathStringLastIndex).split(pathStringSplitRegex)
   }
-  const pathLength = path.length
-  let result = value, i = -1
-  while (++i < pathLength) {
-    result = result[path[i]]
+  return pathString.split(pathStringSplitRegex)
+}
+
+// memoized version of pathStringSplit, max cache size 500
+const memoizedCappedPathStringSplit = memoizeCappedUnary(pathStringSplit, 500)
+
+/**
+ * @name pathToArray
+ *
+ * @synopsis
+ * pathToArray(path Array|string|object)
+ */
+const pathToArray = function (path) {
+  if (typeof path == 'string' || path.constructor == String) {
+    return memoizedCappedPathStringSplit(path)
+  }
+  if (isArray(path)) {
+    return path
+  }
+  return [path]
+}
+
+/**
+ * @name getByPath
+ *
+ * @synopsis
+ * getByPath(object Object, path string|Array|any) -> any
+ */
+const getByPath = function (object, path) {
+  const pathArray = pathToArray(path),
+    pathArrayLength = pathArray.length
+  let index = -1,
+    result = object
+  while (++index < pathArrayLength) {
+    result = result[pathArray[index]]
     if (result == null) {
-      return isFunction(defaultValue) ? defaultValue(value) : defaultValue
+      return undefined
     }
   }
   return result
@@ -4041,41 +4098,48 @@ const arrayPathGet = (path, value, defaultValue) => {
  *
  * @synopsis
  * get(
- *   path Array<number|string>|number|string,
- *   defaultValue function|any,
+ *   path string|Array|any,
+ *   defaultValue (value=>any)?,
  * )(value any) -> result any
  *
  * @description
- * **get** creates getter functions that access object values by provided path, with special treatment for the following:
+ * Use **get** to access properties on objects coming down functional pipelines. `get(someProperty)` creates a getter function that returns the value at `someProperty` when supplied an object.
  *
- *  * an Array of numbers or strings - each item denotes a deeper property access
- *  * a dot-delimited string - string is split by dots, with each resulting token denoting a deeper property access
- *
- *  Any other type of path is looked up on objects directly.
- *
- * @example
- * const nestedABC = { a: { b: { c: 1 } } }
- *
+ * ```javascript [playground]
  * console.log(
- *   get('a')(nestedABC),
- * ) // { b: { c: 1 } }
+ *   get('hello')({ hello: 'world' }),
+ * ) // world
+ * ```
+ *
+ * `get` supports nested property access for the following `path` patterns.
+ *
+ *  * a dot delimited string
+ *  * bracket notation property access
+ *  * an array
+ *
+ * ```javascript [playground]
+ * const nestedABC = { a: { b: { c: 'hello' } } }
  *
  * console.log(
  *   get('a.b.c')(nestedABC),
- * ) // 1
+ * ) // hello
+ *
+ * const nested00000 = [[[[['foo']]]]]
  *
  * console.log(
- *   get(['a', 'b', 'c'])(nestedABC),
- * ) // 1
+ *   get('[0][0][0][0][0]')(nested00000),
+ * ) // foo
+ *
+ * console.log(
+ *   get([0, 0, 0, 0, 0])(nested00000),
+ * ) // foo
+ * ```
  */
-const get = (path, defaultValue) => {
-  if (isArray(path)) {
-    return curry3(arrayPathGet, path, __, defaultValue)
-  }
-  if (isString(path)) {
-    return curry3(arrayPathGet, path.split('.'), __, defaultValue)
-  }
-  return curry3(arrayPathGet, [path], __, defaultValue)
+const get = (path, defaultValue) => function getter(value) {
+  const result = value == null ? undefined : getByPath(value, path)
+  return result === undefined
+    ? typeof defaultValue == 'function' ? defaultValue(value) : defaultValue
+    : result
 }
 
 /*

@@ -3119,6 +3119,12 @@ flatMap(
       ase(get(1)([1]), undefined)
       ase(get(1, 0)([1]), 0)
     })
+    it('accesses a property by array[index]', async () => {
+      ase(get('[0][0][0][0][0]')(nested), 1)
+      ase(get('[0][0][0][0][0')(nested), 1)
+      ase(get('0][0][0][0][0]')(nested), 1)
+      ase(get('0][0][0][0][0')(nested), 1)
+    })
     it('accesses a property of an object by dot notation', async () => {
       ase(get('a.a.a.a.a')(aaaaa), 1)
       ase(get('a.a.a.a.b')(aaaaa), undefined)
@@ -3145,6 +3151,8 @@ flatMap(
     it('defaultValue can be a function', async () => {
       ase(get('a', obj => obj.b)({ b: 1 }), 1)
       ase(get('a', obj => obj.b)({}), undefined)
+    })
+    it('clears cache at size 500', async () => {
     })
   })
 
