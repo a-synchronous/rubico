@@ -4099,11 +4099,11 @@ const getByPath = function (object, path) {
  * @synopsis
  * get(
  *   path string|Array|any,
- *   defaultValue (value=>any)?,
+ *   defaultValue (value=>any)|any?,
  * )(value any) -> result any
  *
  * @description
- * Use **get** to access properties on objects coming down functional pipelines. `get(property)` creates a function that, when supplied an object, returns the value on the object associated with `property`.
+ * Use **get** to access properties on objects. `get(property)` creates a function that, when supplied an object, returns the value on the object associated with `property`.
  *
  * ```javascript [playground]
  * console.log(
@@ -4123,11 +4123,11 @@ const getByPath = function (object, path) {
  * ) // bar
  * ```
  *
- * Finally, `get` supports nested property access for the following `path` patterns.
+ * At times it is necessary to access nested properties. `get` supports nested property access for the following `path` patterns.
  *
  *  * a dot delimited string
  *  * bracket notation property access
- *  * an array
+ *  * an array of string keys or number indices
  *
  * ```javascript [playground]
  * const nestedABC0 = { a: { b: { c: ['hello'] } } }
@@ -4160,6 +4160,9 @@ const get = (path, defaultValue) => function getter(value) {
 
 /**
  * @name pick
+ *
+ * @catchphrase
+ * Copy properties from an object
  *
  * @synopsis
  * pick(Array<string|Array|any>)(object Object) -> picked Object
