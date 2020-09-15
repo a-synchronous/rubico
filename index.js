@@ -3574,42 +3574,11 @@ const binaryFlatMap = function (binary, flatMapper) {
  *   generatorFunction GeneratorFunction,
  *   flatMapper item=>Promise|Monad|Foldable|any,
  * ) -> flatMappingGeneratorFunction GeneratorFunction
- *
- * @related monadArrayFlatten
  */
 const generatorFunctionFlatMap = (
   generatorFunction, flatMapper,
 ) => function* flatMappingGeneratorFunction(...args) {
-  for (const item of generatorFunction(...args)) {
-    const monad = flatMapper(item)
-    if (isArray(monad)) {
-      const monadLength = monad.length
-      let monadIndex = -1
-      while (++monadIndex < monadLength) {
-        yield monad[monadIndex]
-      }
-    } else if (monad == null) {
-      yield monad
-    } else if (typeof monad[symbolIterator] == 'function') {
-      for (const subItem of monad) {
-        yield subItem
-      }
-    } else if (typeof monad.chain == 'function') {
-      yield monad.chain(identity)
-    } else if (typeof monad.flatMap == 'function') {
-      yield monad.flatMap(identity)
-    } else if (typeof monad.reduce == 'function') {
-      for (const monadItem of monad.reduce(arrayPush, [])) {
-        yield monadItem
-      }
-    } else if (monad.constructor == Object) {
-      for (const key in monad) {
-        yield monad[key]
-      }
-    } else {
-      yield monad
-    }
-  }
+  yield* new FlatMappingIterator(generatorFunction(...args), flatMapper)
 }
 
 /**
