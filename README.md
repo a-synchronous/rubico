@@ -97,7 +97,7 @@ map(logTodoByID)(todoIDs) // fetch Todos per id of TodoIDs and log them
 
 <br />
 
-Functional compositions with rubico are flexible, and apply sensibly to a wide range of vanilla JavaScript types. This kind of flexibility is enabled in part by rubico's grounding in mathematics and category theory.
+Functional compositions with rubico are flexible, and apply sensibly to a wide range of vanilla JavaScript types. This kind of flexibility is enabled in part by rubico's theoretical grounding in mathematics.
 
 <br />
 
