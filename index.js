@@ -3613,69 +3613,6 @@ const generatorFunctionFlatMap = (
 }
 
 /**
- * @name asyncGeneratorFunctionFlatExtend
- *
- * @synopsis
- * asyncGeneratorFunctionFlatExtend(monad Monad|Foldable|any) -> AsyncIterator
- *
- * @related streamFlatExtend
- */
-const asyncGeneratorFunctionFlatExtend = async function* (monad) {
-  const asyncIterators = []
-  if (isArray(monad)) {
-    const monadLength = monad.length
-    let monadIndex = -1
-    while (++monadIndex < monadLength) {
-      yield monad[monadIndex]
-    }
-  } else if (monad == null) {
-    yield monad
-  } else if (typeof monad[symbolIterator] == 'function') {
-    yield* monad
-  } else if (typeof monad[symbolAsyncIterator] == 'function') {
-    yield* monad
-  } else if (typeof monad.chain == 'function') {
-    yield monad.chain(identity)
-  } else if (typeof monad.flatMap == 'function') {
-    yield monad.flatMap(identity)
-  } else if (typeof monad.reduce == 'function') {
-    for (const monadItem of monad.reduce(arrayPush, [])) {
-      yield monadItem
-    }
-  } else if (monad.constructor == Object) {
-    for (const key in monad) {
-      yield monad[key]
-    }
-  } else {
-    yield monad
-  }
-}
-
-/**
- * @name asyncGeneratorFunctionFlatMap
- *
- * @synopsis
- * asyncGeneratorFunctionFlatMap(
- *   generatorFunction GeneratorFunction,
- *   flatMapper item=>Promise|Monad|Foldable|any,
- * ) -> flatMappingAsyncGeneratorFunction GeneratorFunction
- *
- * @related streamFlatMap
- */
-const asyncGeneratorFunctionFlatMap = (
-  asyncGeneratorFunction, flatMapper,
-) => async function* flatMappingAsyncGeneratorFunction(...args) {
-  for await (const item of asyncGeneratorFunction(...args)) {
-    const monad = flatMapper(item)
-    if (isPromise(monad)) {
-      yield* (await monad.then(asyncGeneratorFunctionFlatExtend))
-    } else {
-      yield* asyncGeneratorFunctionFlatExtend(monad)
-    }
-  }
-}
-
-/**
  * @name reducerFlatMap
  *
  * @synopsis
@@ -3712,7 +3649,8 @@ const reducerFlatMap = (
 /**
  * @name FlatMappingIterator
  *
- * @synopsis new FlatMappingIterator( iterator Iterator, flatMapper function,
+ * @synopsis new FlatMappingIterator(
+ *   iterator Iterator, flatMapper function,
  * ) -> FlatMappingIterator { next, SymbolIterator }
  */
 const FlatMappingIterator = function (iterator, flatMapper) {
@@ -3726,6 +3664,15 @@ FlatMappingIterator.prototype = {
   [symbolIterator]() {
     return this
   },
+
+  /**
+   * @name FlatMappingIterator.prototype.next
+   *
+   * @synopsis
+   * new FlatMappingIterator(
+   *   iterator Iterator, flatMapper function
+   * ).next() -> { value: any, done: boolean }
+   */
   next() {
     if (this.bufferIndex < this.buffer.length) {
       const value = this.buffer[this.bufferIndex]
@@ -3737,9 +3684,9 @@ FlatMappingIterator.prototype = {
     if (iteration.done) {
       return iteration
     }
-    const monadAsArray = genericReduce( // TODO genericReduceSync
+    const monadAsArray = genericReduce(
       [this.flatMapper(iteration.value)],
-      flatteningTransducer(arrayExtend),
+      arrayPush,
       []) // this will always have at least one item
     if (monadAsArray.length > 1) {
       this.buffer = monadAsArray
@@ -3768,7 +3715,7 @@ const FlatMappingAsyncIterator = function (asyncIterator, flatMapper) {
   this.asyncIterator = asyncIterator
   this.flatMapper = flatMapper
   this.buffer = []
-  this.bufferIndex = Infinity
+  this.bufferIndex = 0
   this.promises = new Set()
 }
 
@@ -3776,46 +3723,72 @@ FlatMappingAsyncIterator.prototype = {
   [symbolAsyncIterator]() {
     return this
   },
+
+  toString() {
+    return '[object FlatMappingAsyncIterator]'
+  },
+
+  /**
+   * @name FlatMappingAsyncIterator.prototype.next
+   *
+   * @synopsis
+   * new FlatMappingAsyncIterator(
+   *   asyncIterator AsyncIterator, flatMapper function,
+   * ).next() -> Promise<{ value, done }>
+   *
+   * @note
+   * Promises
+   * 1. asyncIterator.next() -> { value, done }
+   * 2. flatMapper(value) -> monad
+   * 3. flatten operation -> deferred promise set
+   */
+  async next() {
+    const { buffer, bufferIndex } = this
+    if (bufferIndex < buffer.length) {
+      const value = buffer[bufferIndex]
+      delete buffer[bufferIndex]
+      this.bufferIndex += 1
+      return { value, done: false }
+    }
+
+    const iteration = await this.asyncIterator.next()
+    if (iteration.done) {
+      if (this.promises.size == 0) {
+        return iteration
+      }
+      await promiseRace(this.promises)
+      return this.next()
+    }
+    let monad = this.flatMapper(iteration.value)
+    if (isPromise(monad)) {
+      monad = await monad
+    }
+    // this will always load at least one item
+    const bufferLoading = genericReduce([monad], arrayPush, this.buffer)
+    if (isPromise(bufferLoading)) {
+      const promise = bufferLoading.then(() => this.promises.delete(promise))
+      this.promises.add(promise)
+    }
+    return this.next()
+  },
 }
 
 /**
- * @name FlatMappingAsyncIterator.prototype.next
+ * @name asyncGeneratorFunctionFlatMap
  *
  * @synopsis
- * new FlatMappingAsyncIterator(
- *   asyncIterator AsyncIterator, flatMapper function,
- * ).next() -> Promise<{ value, done }>
+ * asyncGeneratorFunctionFlatMap(
+ *   generatorFunction GeneratorFunction,
+ *   flatMapper item=>Promise|Monad|Foldable|any,
+ * ) -> flatMappingAsyncGeneratorFunction GeneratorFunction
+ *
+ * @related streamFlatMap
  */
-FlatMappingAsyncIterator.prototype.next = async function next() {
-  if (this.bufferIndex < this.buffer.length) {
-    const value = this.buffer[this.bufferIndex]
-    this.bufferIndex += 1
-    return { value, done: false }
-  }
-
-  const iteration = await this.asyncIterator.next()
-  if (iteration.done) {
-    return iteration
-  }
-  let monad = this.flatMapper(iteration.value)
-  if (isPromise(monad)) {
-    monad = await monad
-  }
-  let monadAsArray = genericReduce(
-    [monad],
-    flatteningTransducer(arrayExtend),
-    []) // this will always have at least one item
-  if (isPromise(monadAsArray)) {
-    monadAsArray = await monadAsArray
-  }
-  if (monadAsArray.length > 1) {
-    this.buffer = monadAsArray
-    this.bufferIndex = 1
-  }
-  return {
-    value: monadAsArray[0],
-    done: false,
-  }
+const asyncGeneratorFunctionFlatMap = (
+  asyncGeneratorFunction, flatMapper,
+) => async function* flatMappingAsyncGeneratorFunction(...args) {
+  yield* new FlatMappingAsyncIterator(
+    asyncGeneratorFunction(...args), flatMapper)
 }
 
 /**

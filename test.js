@@ -2465,7 +2465,7 @@ flatMap(
         [numbersArray, identity, numbersArray],
         [numbersArray, duplicateArray, numbersDuplicates],
         [numbersArray, async(duplicateArray), numbersDuplicates],
-        [numbersArray, DuplicateArray.of, numbersArray.map(duplicateArray)],
+        [numbersArray, DuplicateArray.of, numbersArray.map(duplicateArray)], // calling .chain is 1 flat
         [numbersArray, async(DuplicateArray.of), numbersArray.map(duplicateArray)],
         [numbersArray, Identity.of, numbersArray],
         [numbersArray, async(Identity.of), numbersArray],
@@ -2495,7 +2495,7 @@ flatMap(
         [numbersArray, async(duplicateFloat32Array), numbersDuplicates],
         [numbersArray, duplicateFloat64Array, numbersDuplicates],
         [numbersArray, async(duplicateFloat64Array), numbersDuplicates],
-        [numbersArray, duplicateReadableStream, numbersArray.map(duplicateBuffer)],
+        [numbersArray, duplicateReadableStream, numbersArray.map(duplicateBuffer)], // 1 flat removes the stream
         [numbersArray, async(duplicateReadableStream), numbersArray.map(duplicateBuffer)],
         [bigIntsArray, identity, bigIntsArray],
         [bigIntsArray, duplicateBigUint64Array, bigIntsDuplicates],
@@ -2506,7 +2506,7 @@ flatMap(
         [alphabetString, identity, alphabetString],
         [alphabetString, duplicateArray, 'aabbccddee'],
         [alphabetString, async(duplicateArray), 'aabbccddee'],
-        [alphabetString, DuplicateArray.of, 'a,ab,bc,cd,de,e'],
+        [alphabetString, DuplicateArray.of, 'a,ab,bc,cd,de,e'], // calling .chain is 1 flat
         [alphabetString, async(DuplicateArray.of), 'a,ab,bc,cd,de,e'],
         [alphabetString, Identity.of, alphabetString],
         [alphabetString, async(Identity.of), alphabetString],
@@ -2557,7 +2557,7 @@ flatMap(
         [numbersUint8Array, identity, numbersUint8Array],
         [numbersUint8Array, number => [[number, number]], numbersUint8ArrayDuplicates],
         [numbersUint8Array, async(number => [[number, number]]), numbersUint8ArrayDuplicates],
-        [numbersUint8Array, number => [new Uint8Array([number, number])], numbersUint8ArrayDuplicates],
+        [numbersUint8Array, number => [new Uint8Array([number, number])], numbersUint8ArrayDuplicates], // binary cannot nest arrays
         [numbersUint8Array, async(number => [new Uint8Array([number, number])]), numbersUint8ArrayDuplicates],
         [numbersUint8Array, number => [new Uint8Array([number]), new Uint8Array([number])], numbersUint8ArrayDuplicates],
         [numbersUint8Array, duplicateArray, numbersUint8ArrayDuplicates],
@@ -2689,7 +2689,7 @@ flatMap(
         [new MockDuplexStream(numbersArray), () => null, Object.assign(new MockDuplexStream(numbersArray), { array: [null, null, null, null, null] })],
         [new MockDuplexStream(numbersArray), duplicateArray, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
         [new MockDuplexStream(numbersArray), async(duplicateArray), Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
-        [new MockDuplexStream(numbersArray), DuplicateArray.of, Object.assign(new MockDuplexStream(numbersArray), { array: numbersArray.map(duplicateArray) })],
+        [new MockDuplexStream(numbersArray), DuplicateArray.of, Object.assign(new MockDuplexStream(numbersArray), { array: numbersArray.map(duplicateArray) })], // .chain is 1 flat
         [new MockDuplexStream(numbersArray), async(DuplicateArray.of), Object.assign(new MockDuplexStream(numbersArray), { array: numbersArray.map(duplicateArray) })],
         [new MockDuplexStream(numbersArray), Identity.of, Object.assign(new MockDuplexStream(numbersArray), { array: numbersArray })],
         [new MockDuplexStream(numbersArray), async(Identity.of), Object.assign(new MockDuplexStream(numbersArray), { array: numbersArray })],
@@ -2699,7 +2699,7 @@ flatMap(
         [new MockDuplexStream(numbersArray), async(duplicateObject), Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
         [new MockDuplexStream(numbersArray), duplicateString, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
         [new MockDuplexStream(numbersArray), async(duplicateString), Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
-        [new MockDuplexStream(numbersArray), duplicateReadableStream, Object.assign(new MockDuplexStream(numbersArray), { array: numbersArray.map(duplicateBuffer) })],
+        [new MockDuplexStream(numbersArray), duplicateReadableStream, Object.assign(new MockDuplexStream(numbersArray), { array: numbersArray.map(duplicateBuffer) })], // 1 flat to buf
         [new MockDuplexStream(numbersArray), async(duplicateReadableStream), Object.assign(new MockDuplexStream(numbersArray), { array: numbersArray.map(duplicateBuffer) })],
         [new MockDuplexStream(numbersArray), duplicateUint8ClampedArray, Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
         [new MockDuplexStream(numbersArray), async(duplicateUint8ClampedArray), Object.assign(new MockDuplexStream(numbersArray), { array: numbersDuplicates })],
@@ -2733,8 +2733,7 @@ flatMap(
         [numbersGeneratorFunction(), async(duplicateArray), numbersArray.map(duplicateArray), async function (expected, actual) {
           assert.deepEqual(await Promise.all(actual), expected) // flatten will only see promises, so async does not get flattened
         }],
-        [numbersGeneratorFunction(), DuplicateArray.of, numbersDuplicates, function (expected, actual) {
-          console.log('heyo', expected, actual)
+        [numbersGeneratorFunction(), DuplicateArray.of, numbersArray.map(duplicateArray), function (expected, actual) {
           assert.deepEqual([...actual], expected)
         }],
         [numbersGeneratorFunction(), async(DuplicateArray.of), numbersArray.map(DuplicateArray.of), async function (expected, actual) {
@@ -2775,12 +2774,14 @@ flatMap(
           for await (const item of actual) actualArray.push(item)
           assert.deepEqual(actualArray, expected)
         }],
-        [asyncNumbersGeneratorFunction(), DuplicateArray.of, numbersDuplicates, async function (expected, actual) {
+
+        [asyncNumbersGeneratorFunction(), DuplicateArray.of, numbersArray.map(duplicateArray), async function (expected, actual) {
           const actualArray = []
           for await (const item of actual) actualArray.push(item)
           assert.deepEqual(actualArray, expected)
         }],
-        [asyncNumbersGeneratorFunction(), async(DuplicateArray.of), numbersDuplicates, async function (expected, actual) {
+
+        [asyncNumbersGeneratorFunction(), async(DuplicateArray.of), numbersArray.map(duplicateArray), async function (expected, actual) {
           const actualArray = []
           for await (const item of actual) actualArray.push(item)
           assert.deepEqual(actualArray, expected)
@@ -2835,12 +2836,12 @@ flatMap(
           for await (const item of actual) actualArray.push(item)
           assert.deepEqual(actualArray, expected)
         }],
-        [asyncNumbersGeneratorFunction(), duplicateReadableStream, numbersDuplicates, async function (expected, actual) {
+        [asyncNumbersGeneratorFunction(), duplicateReadableStream, numbersArray.map(duplicateBuffer), async function (expected, actual) {
           const actualArray = []
           for await (const item of actual) actualArray.push(item)
           assert.deepEqual(actualArray, expected)
         }],
-        [asyncNumbersGeneratorFunction(), async(duplicateReadableStream), numbersDuplicates, async function (expected, actual) {
+        [asyncNumbersGeneratorFunction(), async(duplicateReadableStream), numbersArray.map(duplicateBuffer), async function (expected, actual) {
           const actualArray = []
           for await (const item of actual) actualArray.push(item)
           assert.deepEqual(actualArray, expected)
@@ -2926,7 +2927,9 @@ flatMap(
         assert.deepEqual(await asyncIteratorToArray(flatMap(() => null)(numbers)()), [null, null, null, null, null])
         assert.deepEqual(await asyncIteratorToArray(flatMap(() => [null, null])(numbers)()), [null, null, null, null, null, null, null, null, null, null])
         assert.deepEqual(await asyncIteratorToArray(flatMap(DuplicateArray.of)(numbers)()), numbersArray.map(duplicateArray))
+        assert.deepEqual(await asyncIteratorToArray(flatMap(async(DuplicateArray.of))(numbers)()), numbersArray.map(duplicateArray))
         assert.deepEqual(await asyncIteratorToArray(flatMap(Identity.of)(numbers)()), [1, 2, 3, 4, 5])
+        assert.deepEqual(await asyncIteratorToArray(flatMap(async(Identity.of))(numbers)()), [1, 2, 3, 4, 5])
         assert.deepEqual(await asyncIteratorToArray(flatMap(duplicateArray)(numbers)()), numbersDuplicates)
         assert.deepEqual(await asyncIteratorToArray(flatMap(async(duplicateArray))(numbers)()), numbersDuplicates)
         assert.deepEqual(await asyncIteratorToArray(flatMap(duplicateObject)(numbers)()), numbersDuplicates)
@@ -2974,6 +2977,16 @@ flatMap(
 
       it('value number', async () => {
         assert.deepEqual(flatMap(duplicateArray)(1), [1, 1])
+      })
+    })
+
+    describe('FlatMappingAsyncIterator', () => {
+      const asyncNumbers = async function* () {
+        yield 1; yield 2; yield 3; yield 4; yield 5
+      }
+      const flatMappingAsyncIterator = flatMap(value => value)(asyncNumbers())
+      it('[object FlatMappingAsyncIterator]', async () => {
+        assert.strictEqual(flatMappingAsyncIterator.toString(), '[object FlatMappingAsyncIterator]')
       })
     })
   })
