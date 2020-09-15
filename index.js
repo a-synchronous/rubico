@@ -4022,7 +4022,7 @@ const flatMap = flatMapper => function flatMapping(value) {
 }
 
 // a[0].b.c
-const pathStringSplitRegex = /[\.|\[|\]]+/
+const pathStringSplitRegex = /[.|[|\]]+/
 
 /**
  * @name memoizedCappedPathStringSplit
@@ -4103,7 +4103,7 @@ const getByPath = function (object, path) {
  * )(value any) -> result any
  *
  * @description
- * Use **get** to access properties on objects coming down functional pipelines. `get(someProperty)` creates a getter function that returns the value at `someProperty` when supplied an object.
+ * Use **get** to access properties on objects coming down functional pipelines. `get(property)` creates a function that, when supplied an object, returns the value on the object associated with `property`.
  *
  * ```javascript [playground]
  * console.log(
@@ -4111,20 +4111,36 @@ const getByPath = function (object, path) {
  * ) // world
  * ```
  *
- * `get` supports nested property access for the following `path` patterns.
+ * `get` accepts a default value to return if the property is not found. This default value may be a resolver of such value - rubico supplies this function with the input object.
+ *
+ * ```javascript [playground]
+ * console.log(
+ *   get('hello', 'default')({ foo: 'bar' }),
+ * ) // default
+ *
+ * console.log(
+ *   get('hello', object => object.foo)({ foo: 'bar' }),
+ * ) // bar
+ * ```
+ *
+ * Finally, `get` supports nested property access for the following `path` patterns.
  *
  *  * a dot delimited string
  *  * bracket notation property access
  *  * an array
  *
  * ```javascript [playground]
- * const nestedABC = { a: { b: { c: 'hello' } } }
+ * const nestedABC0 = { a: { b: { c: ['hello'] } } }
  *
  * console.log(
- *   get('a.b.c')(nestedABC),
+ *   get('a.b.c[0]')(nestedABC0),
  * ) // hello
  *
  * const nested00000 = [[[[['foo']]]]]
+ *
+ * console.log(
+ *   get('0.0.0.0.0')(nested00000),
+ * ) // foo
  *
  * console.log(
  *   get('[0][0][0][0][0]')(nested00000),
@@ -4142,28 +4158,24 @@ const get = (path, defaultValue) => function getter(value) {
     : result
 }
 
-/*
+/**
+ * @name pick
+ *
  * @synopsis
- * TODO
+ * pick(Array<string|Array|any>)(object Object) -> picked Object
  */
-const pickObject = (props, x) => {
-  const y = {}
-  for (let i = 0; i < props.length; i++) {
-    if (isDefined(x[props[i]])) y[props[i]] = x[props[i]]
+const pick = keys => function picking(object) {
+  if (object == null) {
+    return object
   }
-  return y
-}
-
-/*
- * @synopsis
- * TODO
- */
-const pick = props => {
-  if (isArray(props)) return x => {
-    if (isObject(x)) return pickObject(props, x)
-    throw new TypeError('pick(...)(x); x is not an object')
+  const result = {}
+  for (const key of keys) {
+    const value = object[key]
+    if (value != null) {
+      result[key] = value
+    }
   }
-  throw new TypeError('pick(x); x is not an array')
+  return result
 }
 
 /*

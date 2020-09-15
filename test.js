@@ -3162,18 +3162,9 @@ flatMap(
       ade(pick(['a'])(abc), { a: 1 })
       ade(pick(['a', 'd'])(abc), { a: 1 })
       ade(pick(['d'])(abc), {})
-    })
-    it('throws a TypeError on pick(nonArray)', async () => {
-      assert.throws(
-        () => pick('hey'),
-        new TypeError('pick(x); x is not an array'),
-      )
-    })
-    it('throws a TypeError on pick(...)(nonObject)', async () => {
-      assert.throws(
-        () => pick(['hey'])(['hey']),
-        new TypeError('pick(...)(x); x is not an object'),
-      )
+      ade(pick(['d'])(null), null)
+      ade(pick(['d'])(undefined), undefined)
+      ade(pick(['d'])(), undefined)
     })
   })
 
