@@ -135,7 +135,7 @@ const logTodosRange = map(logTodoByID)(todoIDsRange)
 
 <br />
 
-The same principle of code reuse by functional programming principles causes a natural modal shift by similar semantics when working with reducers. The following example employs transducers and a Semigroup `Stdout` to accomplish the same transformation as above with purer functional programming.
+The same principle of code reuse by functional programming principles enables similar transformation semantics when working with reducers. The following example employs transducers and a Semigroup `Stdout` to accomplish the same transformation as above with purer functional programming.
 
 <br />
 
