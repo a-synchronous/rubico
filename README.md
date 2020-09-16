@@ -40,7 +40,7 @@ asyncSquaredOdds([1, 2, 3, 4, 5]).then(console.log) // [1, 9, 25]
 
 # Motivation
 A note from the author
-> At a certain point in my career, I grew frustrated with the entanglement of my own code. While looking for something better, I found functional programming. I was excited by the idea of functional composition, but disillusioned by the redundant hierarchy of effectful types. I started rubico to capitalize on the prior while rebuking the latter. Many iterations since then, the library has grown into something I personally enjoy using, and continue to use to this day.
+> At a certain point in my career, I grew frustrated with the entanglement of my own code. While looking for something better, I found functional programming. I was excited by the idea of functional composition, but disillusioned by the redundancy of its effectful types. I started rubico to capitalize on the prior while rebuking the latter. Many iterations since then, the library has grown into something I personally enjoy using, and continue to use to this day.
 
 rubico's value resides at the intersection of the following principles:
  * [asynchronous code should be simple](https://dev.to/richytong/rubico-a-synchrnous-functional-syntax-motivation-20hf)
@@ -50,9 +50,7 @@ rubico's value resides at the intersection of the following principles:
 When you use this library, you obtain the freedom that comes only from having those three points fulfilled. The result is something you may enjoy.
 
 # Introduction
-**rubico** is a powerful, flexible, and thoroughly benchmarked module of 24 higher order operators for async agnostic functional programming in JavaScript.
-
-<br />
+**rubico** is a powerful, flexible, and thoroughly benchmarked module of 24 operators for [a]synchronous functional programming in JavaScript.
 
 ```javascript
 const {
@@ -65,11 +63,7 @@ const {
 } = rubico
 ```
 
-<br />
-
-The style and naming conventions of rubico are idiomatic across languages and other libraries - using this library should feel second nature. Just like vanilla JavaScript operators, rubico operators act sensibly on sync or async JavaScript functions to create declarative, highly extensible, and async-enabled compositions.
-
-<br />
+The style and naming conventions of rubico are idiomatic across languages and other libraries - using this library should feel second nature. Just like vanilla JavaScript operators, rubico's operators act sensibly on sync or async JavaScript functions to create declarative, highly extensible, and async-enabled compositions.
 
 ```javascript
 import { pipe, map } from 'rubico'
@@ -95,11 +89,7 @@ map(logTodoByID)(todoIDs) // fetch Todos per id of TodoIDs and log them
 // { userId: 1, id: 5, title: 'laboriosam mollitia...', completed: false }
 ```
 
-<br />
-
-Functional compositions with rubico are flexible, and apply sensibly to a wide range of vanilla JavaScript types. This kind of flexibility is enabled in part by rubico's theoretical grounding in mathematics.
-
-<br />
+Functional compositions with rubico are flexible, and apply sensibly to the full spectrum of vanilla JavaScript types. This kind of flexibility is rooted in mathematics and enabled by newer features of the ECMAScript language like `Symbol.iterator` and `Symbol.asyncIterator`.
 
 ```javascript
 import { pipe, map } from 'rubico'
@@ -133,11 +123,7 @@ const logTodosRange = map(logTodoByID)(todoIDsRange)
 // { userId: 5, id: 100, title: 'excepturi a et neque...', completed: false }
 ```
 
-<br />
-
-The same principle of code reuse by functional programming principles enables similar transformation semantics when working with reducers. The following example employs transducers and a Semigroup `Stdout` to accomplish the same transformation as above with purer functional programming.
-
-<br />
+The same principle of code reuse by functional programming principles enables similar semantics when working with reducers. The following example employs transducers and a Semigroup `Stdout` to accomplish the same transformation as above with purer functional programming.
 
 ```javascript
 import { pipe, map, transform } from 'rubico'
@@ -176,15 +162,13 @@ transformTodosToStdoutRange(1, 100)
 // { userId: 1, id: 100, title: 'excepturi a et neque...', completed: false }
 ```
 
-<br />
-
-For closely related functionality, rubico provides variations for some of its operators as property functions, e.g.
+rubico exposes semantically related methods of its core API as property functions. For example,
 
  * `map` - apply a mapper function concurrently
  * `map.pool` - apply a mapper function concurrently with a concurrency limit
  * `map.series` - apply a mapper function serially
 
-<br />
+Beyond that, advanced functions may be found in `rubico/x`.
 
 # Getting Started
  1. [check out the docs](https://doc.rubico.land)
