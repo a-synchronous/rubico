@@ -3459,7 +3459,40 @@ all(predicate all=>Promise|boolean)(value Foldable) -> Promise|boolean
     })
   })
 
-  describe('and', () => {
+  describe(`
+and(
+  predicates Array<...args=>Promise|boolean>
+)(args ...any) -> Promise|boolean
+  `, () => {
+    it('predicates 3', async () => {
+      const isOdd = number => number % 2 == 1
+      const isEven = number => number % 2 == 0
+      const variadicAsyncIsOdd = number => number % 2 == 1 ? Promise.resolve(true) : false
+      assert.strictEqual(and([isOdd, isOdd, isOdd])(3), true)
+      assert.strictEqual(and([isOdd, isOdd, isOdd])(2), false)
+      assert.strictEqual(and([isEven, isEven, isOdd])(2), false)
+      assert.strictEqual(await and([async(isOdd), isOdd, isOdd])(3), true)
+      assert.strictEqual(await and([isOdd, async(isOdd), isOdd])(3), true)
+      assert.strictEqual(await and([isOdd, isOdd, async(isOdd)])(3), true)
+      assert.strictEqual(await and([async(isOdd), async(isOdd), async(isOdd)])(3), true)
+      assert.strictEqual(await and([variadicAsyncIsOdd, variadicAsyncIsOdd, variadicAsyncIsOdd])(3), true)
+    })
+
+    it('predicates 0', async () => {
+      assert.strictEqual(and([])(1), true)
+    })
+
+    it('null', async () => {
+      assert.strictEqual(and([isOdd, isOdd, isOdd])(null), false)
+    })
+
+    it('undefined', async () => {
+      assert.strictEqual(and([isOdd, isOdd, isOdd])(undefined), false)
+      assert.strictEqual(and([isOdd, isOdd, isOdd])(), false)
+    })
+  })
+
+  describe('and - v1.5.15 regression', () => {
     const isGreaterThan1 = x => x > 1
     it('sync tests input against provided array of functions, true if all evaluations are truthy', async () => {
       ase(and([isOdd, isGreaterThan1])(3), true)
@@ -3470,27 +3503,32 @@ all(predicate all=>Promise|boolean)(value Foldable) -> Promise|boolean
       ase(await and([asyncIsEven, isGreaterThan1])(2), true)
       ase(await and([asyncIsEven, isGreaterThan1])(0), false)
     })
-    it('throws a TypeError if passed a non array', async () => {
-      assert.throws(
-        () => and('hey'),
-        new TypeError('and(x); x is not an array of functions'),
-      )
-    })
-    it('throws a RangeError if passed less than one function', async () => {
-      assert.throws(
-        () => and([]),
-        new RangeError('and(x); x is not an array of at least one function'),
-      )
-    })
-    it('throws a TypeError if any item is not a function', async () => {
-      assert.throws(
-        () => and([() => false, 'hey', () => 'hi']),
-        new TypeError('and(x); x[1] is not a function'),
-      )
+  })
+
+  describe(`
+or(
+  predicates Array<...args=>Promise|boolean>
+)(args ...any) -> Promise|boolean
+  `, () => {
+    const isOdd = number => number % 2 == 1
+    const isEven = number => number % 2 == 0
+    const variadicAsyncIsOdd = number => number % 2 == 1 ? Promise.resolve(true) : false
+    it('predicates', async () => {
+      assert.strictEqual(or([isOdd, isEven])(0), true)
+      assert.strictEqual(or([isOdd, isOdd, isOdd])(0), false)
+      assert.strictEqual(or([isOdd, isOdd, isOdd])(1), true)
+      assert.strictEqual(or([isOdd, isOdd, isOdd])(3955), true)
+      assert.strictEqual(await or([variadicAsyncIsOdd, variadicAsyncIsOdd, variadicAsyncIsOdd])(3955), true)
+      assert.strictEqual(await or([variadicAsyncIsOdd, () => false, () => false])(3955), true)
+      assert.strictEqual(await or([variadicAsyncIsOdd, () => false, () => false])(3956), false)
+      assert.strictEqual(await or([() => false, variadicAsyncIsOdd, () => false])(3955), true)
+      assert.strictEqual(await or([() => false, variadicAsyncIsOdd, () => false])(3956), false)
+      assert.strictEqual(await or([async(isOdd), isEven])(0), true)
+      assert.strictEqual(await or([async(isOdd), isOdd, isOdd])(0), false)
     })
   })
 
-  describe('or', () => {
+  describe('or - v1.5.15 regression', () => {
     const isGreaterThan1 = x => x > 1
     it('sync tests input against provided array of functions, true if any evaluations are truthy', async () => {
       ase(or([isOdd, isGreaterThan1])(3), true)
@@ -3500,24 +3538,6 @@ all(predicate all=>Promise|boolean)(value Foldable) -> Promise|boolean
       aok(or([asyncIsEven, isGreaterThan1])(2) instanceof Promise)
       ase(await or([asyncIsEven, isGreaterThan1])(2), true)
       ase(await or([asyncIsEven, isGreaterThan1])(1), false)
-    })
-    it('throws a TypeError if passed a non array', async () => {
-      assert.throws(
-        () => or('hey'),
-        new TypeError('or(fns); fns is not an array of functions'),
-      )
-    })
-    it('throws a RangeError if passed less than one function', async () => {
-      assert.throws(
-        () => or([]),
-        new RangeError('or(fns); fns is not an array of at least one function'),
-      )
-    })
-    it('throws a TypeError if any item is not a function', async () => {
-      assert.throws(
-        () => or([() => false, 'hey', () => 'hi']),
-        new TypeError('or(fns); fns[1] is not a function'),
-      )
     })
   })
 

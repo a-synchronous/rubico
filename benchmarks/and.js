@@ -1,41 +1,24 @@
-const { and } = require('..')
 const timeInLoop = require('../x/timeInLoop')
+const rubico = require('..')
 
-const isOdd = x => x % 2 === 1
+const { and } = rubico
 
-// 4.326ms
-timeInLoop('isOdd', 1e6, () => {
-  isOdd(9)
-})
+const isOdd = x => x % 2 == 1
 
-const gt2 = x => x > 2
+const threeOddChecks = number => isOdd(number) && isOdd(number) && isOdd(number)
 
-// 10.47ms
-timeInLoop('gt2', 1e6, () => {
-  gt2(9)
-})
+const threeIsOdd = and([isOdd, isOdd, isOdd])
 
-const isOddGt2 = x => isOdd(x) && gt2(x)
+/**
+ * @name or
+ *
+ * @benchmark
+ * isOdd(value) && isOdd(value) && isOdd(value): 1e+6: 6.664ms
+ * and([isOdd, isOdd, isOdd]): 1e+6: 16.842ms
+ */
 
-// 10.458ms
-timeInLoop('x => isOdd(x) && gt2(x)', 1e6, () => {
-  isOddGt2(9)
-})
+{
+  // timeInLoop('isOdd(value) && isOdd(value) && isOdd(value)', 1e6, () => threeOddChecks(1))
 
-const testRubicoAnd = and([
-  x => x % 2 === 1,
-  x => x > 2,
-])
-
-// 68.633ms
-timeInLoop('and_rubicoHappyPath', 1e6, () => {
-  testRubicoAnd(9)
-})
-
-// 153.602ms
-timeInLoop('and_rubicoIncludingInit', 1e6, () => {
-  and([
-    x => x % 2 === 1,
-    x => x > 2,
-  ])(9)
-})
+  // timeInLoop('and([isOdd, isOdd, isOdd])', 1e6, () => threeIsOdd(1))
+}

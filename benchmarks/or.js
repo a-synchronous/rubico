@@ -1,41 +1,51 @@
-const { or } = require('..')
 const timeInLoop = require('../x/timeInLoop')
+const rubico = require('..')
 
-const isOdd = x => x % 1 === 2
+const { or } = rubico
 
-// 4.52ms
-timeInLoop('isOdd', 1e6, () => {
-  isOdd(0)
-})
+const isPromise = value => value != null && typeof value.then == 'function'
 
-const gt2 = x => x > 2
+const isOdd = x => x % 2 == 1
 
-// 10.674ms
-timeInLoop('gt2', 1e6, () => {
-  gt2(0)
-})
+const threeOddChecks = number => isOdd(number) || isOdd(number) || isOdd(number)
 
-const isOddGt2 = x => isOdd(x) || gt2(x)
+const threeIsOdd = or([isOdd, isOdd, isOdd])
 
-// 10.696ms
-timeInLoop('x => isOdd(x) || gt2(x)', 1e6, () => {
-  isOddGt2(0)
-})
+const arrayOr = (fns, x) => {
+  const promises = []
+  for (let i = 0; i < fns.length; i++) {
+    const point = fns[i](x)
+    if (isPromise(point)) promises.push(point)
+    else if (point) return (promises.length > 0
+      ? Promise.all(promises).then(() => true)
+      : true)
+  }
+  return (promises.length > 0
+    ? Promise.all(promises).then(res => res.some(x => x))
+    : false)
+}
 
-const happyPath = or([
-  x => x % 2 === 1,
-  x => x > 2,
-])
+const isOddArray = [isOdd, isOdd, isOdd]
 
-// 58.143ms
-timeInLoop('or_rubicoHappyPath', 1e6, () => {
-  happyPath(0)
-})
+/**
+ * @name or
+ *
+ * @benchmark
+ * isOdd(value) || isOdd(value) || isOdd(value): 1e+6: 5.96ms
+ * arrayOr([isOdd, isOdd, isOdd]): 1e+6: 27.249ms
+ * or([isOdd, isOdd, isOdd]): 1e+6: 15.245ms
+ *
+ * @remarks
+ * ...args slows down from ~48ms
+ */
 
-// 143.205ms
-timeInLoop('or_rubicoIncludingInit', 1e6, () => {
-  or([
-    x => x % 2 === 1,
-    x => x > 2,
-  ])(0)
-})
+{
+  // console.log(arrayOr(isOddArray, 2))
+  // console.log(or([isOdd, isOdd, isOdd])(2))
+
+  // timeInLoop('isOdd(value) || isOdd(value) || isOdd(value)', 1e6, () => threeOddChecks(2))
+
+  // timeInLoop('arrayOr([isOdd, isOdd, isOdd])', 1e6, () => arrayOr(isOddArray, 2))
+
+  // timeInLoop('or([isOdd, isOdd, isOdd])', 1e6, () => threeIsOdd(2))
+}

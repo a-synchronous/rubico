@@ -659,7 +659,7 @@ const funcAll = funcs => function allFuncs(...args) {
  * @name fork
  *
  * @catchphrase
- * Parallelize functions
+ * parallelize functions
  *
  * @synopsis
  * fork(
@@ -776,7 +776,7 @@ fork.series = funcAllSeries
  * @name assign
  *
  * @catchphrase
- * Assign properties by resolver
+ * assign properties by resolver
  *
  * @synopsis
  * assign(
@@ -4030,7 +4030,7 @@ const getByPath = function (object, path) {
  * @name get
  *
  * @catchphrase
- * Access a property by path
+ * access a property by path
  *
  * @synopsis
  * get(
@@ -4098,7 +4098,7 @@ const get = (path, defaultValue) => function getter(value) {
  * @name pick
  *
  * @catchphrase
- * Pick properties from an object
+ * pick properties from an object
  *
  * @synopsis
  * pick(Array<string|Array|any>)(source Object) -> picked Object
@@ -4134,7 +4134,7 @@ const pick = keys => function picking(source) {
  * @name omit
  *
  * @catchphrase
- * Exclude properties from an object
+ * exclude properties from an object
  *
  * @synopsis
  * omit(Array<string|Array|any>)(source Object) -> omitted Object
@@ -4177,8 +4177,6 @@ const promiseInFlight = function (basePromise) {
  * @name asyncArrayAny
  *
  * @synopsis
- * PromisesInFlight = { add: Promise=>this }
- *
  * asyncArrayAny(
  *   array Array,
  *   predicate any=>Promise|boolean,
@@ -4238,13 +4236,11 @@ const arrayAny = function (array, predicate) {
  * @name asyncIteratorAny
  *
  * @synopsis
- * PromisesInFlight = { add: Promise=>this }
- *
  * asyncIteratorAny(
  *   iterator Iterator|AsyncIterator,
  *   predicate any=>Promise|boolean,
  *   index number,
- *   promisesInFlight PromisesInFlight,
+ *   promisesInFlight Set<Promise>,
  *   maxConcurrency number=20,
  * ) -> boolean
  */
@@ -4350,7 +4346,7 @@ const foldableAnyReducer = predicate => function anyReducer(result, item) {
  * @name any
  *
  * @catchphrase
- * Test for any truthy predication
+ * any items truthy
  *
  * @synopsis
  * any(predicate function)(value any) -> result Promise|boolean
@@ -4396,6 +4392,8 @@ const foldableAnyReducer = predicate => function anyReducer(result, item) {
  * @execution concurrent
  *
  * @muxing
+ *
+ * @related or
  */
 const any = predicate => function anyTruthy(value) {
   if (isArray(value)) {
@@ -4549,7 +4547,7 @@ const foldableAllReducer = predicate => function allReducer(result, item) {
  * @name all
  *
  * @catchphrase
- * Test for all truthy predications
+ * all items truthy
  *
  * @synopsis
  * all(predicate function)(value all) -> result Promise|boolean
@@ -4576,6 +4574,11 @@ const foldableAllReducer = predicate => function allReducer(result, item) {
  * The predicate may return a Promise, while the value may be an asynchronous stream.
  *
  * ```javascript [playground]
+ * const asyncNumbers = async function* () {
+ *   yield 1; yield 2; yield 3; yield 4; yield 5
+ * }
+ *
+ * all(async number => number < 6)(asyncNumbers()).then(console.log) // true
  * ```
  *
  * @execution concurrent
@@ -4605,78 +4608,6 @@ const all = predicate => function allTruthy(value) {
   return !!predicate(value)
 }
 
-/*
- * @synopsis
- * TODO
- */
-const arrayAnd = (fns, x) => {
-  const promises = []
-  for (let i = 0; i < fns.length; i++) {
-    const point = fns[i](x)
-    if (isPromise(point)) promises.push(point)
-    else if (!point) return (promises.length > 0
-      ? Promise.all(promises).then(() => false)
-      : false)
-  }
-  return (promises.length > 0
-    ? Promise.all(promises).then(res => res.every(x => x))
-    : true)
-}
-
-/*
- * @synopsis
- * TODO
- */
-const and = fns => {
-  if (!isArray(fns)) {
-    throw new TypeError('and(x); x is not an array of functions')
-  }
-  if (fns.length < 1) {
-    throw new RangeError('and(x); x is not an array of at least one function')
-  }
-  for (let i = 0; i < fns.length; i++) {
-    if (isFunction(fns[i])) continue
-    throw new TypeError(`and(x); x[${i}] is not a function`)
-  }
-  return x => arrayAnd(fns, x)
-}
-
-/*
- * @synopsis
- * TODO
- */
-const arrayOr = (fns, x) => {
-  const promises = []
-  for (let i = 0; i < fns.length; i++) {
-    const point = fns[i](x)
-    if (isPromise(point)) promises.push(point)
-    else if (point) return (promises.length > 0
-      ? Promise.all(promises).then(() => true)
-      : true)
-  }
-  return (promises.length > 0
-    ? Promise.all(promises).then(res => res.some(x => x))
-    : false)
-}
-
-/*
- * @synopsis
- * TODO
- */
-const or = fns => {
-  if (!isArray(fns)) {
-    throw new TypeError('or(fns); fns is not an array of functions')
-  }
-  if (fns.length < 1) {
-    throw new RangeError('or(fns); fns is not an array of at least one function')
-  }
-  for (let i = 0; i < fns.length; i++) {
-    if (isFunction(fns[i])) continue
-    throw new TypeError(`or(fns); fns[${i}] is not a function`)
-  }
-  return x => arrayOr(fns, x)
-}
-
 // true -> false
 const _not = value => !value
 
@@ -4684,7 +4615,7 @@ const _not = value => !value
  * @name not
  *
  * @catchphrase
- * logically invert a function
+ * logical inversion
  *
  * @synopsis
  * not(predicate ...any=>Promise|boolean) -> logicalInverter ...any=>Promise|boolean
@@ -4732,6 +4663,155 @@ const notSync = func => function notSync(...args) {
  * ```
  */
 not.sync = notSync
+
+/**
+ * @name asyncAnd
+ *
+ * @synopsis
+ * asyncAnd(
+ *   predicates Array<value=>Promise|boolean>
+ *   value any,
+ * ) -> allTruthy boolean
+ */
+const asyncAnd = async function (predicates, value) {
+  const length = predicates.length
+  let index = -1
+  while (++index < length) {
+    let predication = predicates[index](value)
+    if (isPromise(predication)) {
+      predication = await predication
+    }
+    if (!predication) {
+      return false
+    }
+  }
+  return true
+}
+
+// handles the first predication before asyncAnd
+const _asyncAndInterlude = (
+  predicates, value, firstPredication,
+) => firstPredication ? asyncAnd(predicates, value) : false
+
+/**
+ * @name and
+ *
+ * @catchphrase
+ * all predicates truthy
+ *
+ * @synopsis
+ * and(
+ *   predicates Array<value=>Promise|boolean>
+ * )(value any) -> allTruthy Promise|boolean
+ *
+ * @description
+ * Concurrently test an array of predicates against a single input, returning true if all of them test truthy. Predicates may be asynchronous.
+ *
+ * ```javascript [playground]
+ * const isOdd = number => number % 2 == 1
+ *
+ * const isPositive = number => number > 0
+ *
+ * const isLessThan3 = number => number < 3
+ *
+ * console.log(
+ *   and([isOdd, isPositive, isLessThan3])(1),
+ * ) // true
+ * ```
+ *
+ * @execution serial
+ *
+ * @note ...args slows down here by an order of magnitude
+ */
+const and = predicates => function allPredicates(value) {
+  const length = predicates.length,
+    promises = []
+  let index = -1
+
+  while (++index < length) {
+    const predication = predicates[index](value)
+    if (isPromise(predication)) {
+      return predication.then(curry3(_asyncAndInterlude, predicates, value, __))
+    }
+    if (!predication) {
+      return false
+    }
+  }
+  return true
+}
+
+/**
+ * @name asyncOr
+ *
+ * @synopsis
+ * asyncOr(
+ *   predicates Array<value=>Promise|boolean>
+ *   value any,
+ * ) -> allTruthy boolean
+ */
+const asyncOr = async function (predicates, value) {
+  const length = predicates.length
+  let index = -1
+  while (++index < length) {
+    let predication = predicates[index](value)
+    if (isPromise(predication)) {
+      predication = await predication
+    }
+    if (predication) {
+      return true
+    }
+  }
+  return false
+}
+
+// handles the first predication before asyncOr
+const _asyncOrInterlude = (
+  predicates, value, firstPredication,
+) => firstPredication ? true : asyncOr(predicates, value)
+
+/**
+ * @name or
+ *
+ * @catchphrase
+ * any predicates truthy
+ *
+ * @synopsis
+ * or(
+ *   predicates Array<value=>Promise|boolean>
+ * )(value any) -> anyTruthy Promise|boolean
+ *
+ * @description
+ * Concurrently test an array of predicates against a single input, returning true if any of them test truthy. Predicates may be asynchronous.
+ *
+ * ```javascript [playground]
+ * const isOdd = number => number % 2 == 1
+ *
+ * const isEven = number => number % 2 == 0
+ *
+ * console.log(
+ *   or([isOdd, isEven])(0),
+ * ) // true
+ * ```
+ *
+ * @execution series
+ *
+ * @note ...args slows down here by an order of magnitude
+ */
+const or = predicates => function anyPredicates(value) {
+  const length = predicates.length
+  let index = -1
+
+  while (++index < length) {
+    const predication = predicates[index](value)
+    if (isPromise(predication)) {
+      return predication.then(curry3(_asyncOrInterlude, predicates, value, __))
+    }
+    if (predication) {
+      return true
+    }
+  }
+  return false
+}
 
 /*
  * @synopsis
