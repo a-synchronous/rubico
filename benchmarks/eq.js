@@ -7,14 +7,18 @@ const R = require('ramda')
  * @name eq
  *
  * @benchmark
- * rubico.eq(0, 0): 1e+7: 12.706ms
- * _.eq(0, 0): 1e+7: 12.987ms
+ * rubico.eq(0, 0): 1e+7: 12.499ms
+ * _.eq(0, 0): 1e+7: 12.585ms
  * R.equals(0, 0): 1e+7: 196.767ms
  */
 
 const rubicoEq = rubico.eq(0, 0)
 
-// timeInLoop('rubico.eq(0, 0)', 1e7, () => rubicoEq(0, 0))
+// console.log(rubicoEq())
+// console.log(_.eq(0, 0))
+// console.log(R.equals(0, 0))
+
+// timeInLoop('rubico.eq(0, 0)', 1e7, () => rubicoEq())
 
 // timeInLoop('_.eq(0, 0)', 1e7, () => _.eq(0, 0))
 
