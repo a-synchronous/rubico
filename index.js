@@ -4416,7 +4416,7 @@ const any = predicate => function applyingPredicate(value) {
   if (value.constructor == Object) {
     return iteratorAny(objectValuesGenerator(value), predicate)
   }
-  return predicate(value)
+  return !!predicate(value)
 }
 
 /*
