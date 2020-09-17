@@ -8,6 +8,10 @@
  * and rewrite + benchmarks
  * or rewrite + benchmarks
  * eq rewrite + benchmarks
+ * gt rewrite + benchmarks
+ * lt rewrite + benchmarks
+ * gte rewrite + benchmarks
+ * lte rewrite + benchmarks
 
 ## v1.5.14 - latest
  * fix: flatMap async muxing
