@@ -432,3 +432,19 @@ const arrayForEach03 = function (array, func) {
 
   // timeInLoop('arrayForEach03', 1e7, thunkify2(arrayForEach03, numbers, identity))
 }
+
+const toBoolean1 = Boolean
+
+const toBoolean2 = value => !!value
+
+/**
+ * @name typeCastingBoolean
+ *
+ * @benchmark
+ * Boolean(true): 1e+7: 12.723ms
+ * !!true: 1e+7: 13.632ms
+ */
+
+// timeInLoop('Boolean(true)', 1e7, () => Boolean(true))
+
+// timeInLoop('!!true', 1e7, () => toBoolean2(true))
