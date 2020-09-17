@@ -806,7 +806,7 @@ const assign = function (funcs) {
   return function assignment(object) {
     const result = allFuncs(object)
     return isPromise(result)
-      ? result.then(res => ({ ...object, ...res }))
+      ? result.then(curry2(objectAssign, object, __))
       : ({ ...object, ...result })
   }
 }
@@ -4336,13 +4336,13 @@ const _foldableAnyReducer = (predicate, result, item) => result ? true : predica
  * foldableAnyReducer(
  *   predicate any=>boolean,
  * ) -> reducer(result boolean, item any)=>boolean
+ *
+ * @related foldableAllReducer
  */
 const foldableAnyReducer = predicate => function anyReducer(result, item) {
-  if (result === true) {
-    return true
-  }
-  return isPromise(result)
-    ? result.then(curry3(_foldableAnyReducer, predicate, __, item))
+  return result === true ? true
+    : isPromise(result) ? result.then(
+      curry3(_foldableAnyReducer, predicate, __, item))
     : result ? true : predicate(item)
 }
 
@@ -4397,7 +4397,7 @@ const foldableAnyReducer = predicate => function anyReducer(result, item) {
  *
  * @muxing
  */
-const any = predicate => function applyingPredicate(value) {
+const any = predicate => function anyTruthy(value) {
   if (isArray(value)) {
     return arrayAny(value, predicate)
   }
@@ -4419,46 +4419,190 @@ const any = predicate => function applyingPredicate(value) {
   return !!predicate(value)
 }
 
-/*
+/**
+ * @name callPropUnary
+ *
  * @synopsis
- * TODO
+ * callPropUnary(
+ *   value object,
+ *   property string,
+ *   arg0 any,
+ * ) -> value[property](arg0)
  */
-const allIterable = (fn, x) => {
-  const promises = []
-  for (const xi of x) {
-    const point = fn(xi)
-    if (isPromise(point)) promises.push(point)
-    else if (!point) return (promises.length > 0
-      ? Promise.all(promises).then(() => false)
-      : false)
+const callPropUnary = (value, property, arg0) => value[property](arg0)
+
+/**
+ * @name arrayAll
+ *
+ * @synopsis
+ * arrayAll(array Array, predicate ...any=>boolean) -> boolean
+ */
+const arrayAll = function (array, predicate) {
+  const arrayLength = array.length,
+    promises = []
+  let index = -1
+  while (++index < arrayLength) {
+    const predication = predicate(array[index])
+    if (isPromise(predication)) {
+      promises.push(predication)
+    } else if (!predication) {
+      return false
+    }
   }
-  return (promises.length > 0
-    ? Promise.all(promises).then(res => res.every(x => x))
-    : true)
+  return promises.length == 0
+    ? true
+    : promiseAll(promises).then(curry3(callPropUnary, __, 'every', Boolean))
 }
 
-/*
+/**
+ * @name iteratorAll
+ *
  * @synopsis
- * TODO
+ * iteratorAll(iterator Iterator, predicate ...any=>boolean) -> boolean
  */
-const allObject = (fn, x) => allIterable(
-  fn,
-  (function* () { for (const k in x) yield x[k] })(),
-)
+const iteratorAll = function (iterator, predicate) {
+  const promises = []
+  for (const item of iterator) {
+    const predication = predicate(item)
+    if (isPromise(predication)) {
+      promises.push(predication)
+    } else if (!predication) {
+      return false
+    }
+  }
+  return promises.length == 0
+    ? true
+    : promiseAll(promises).then(curry3(callPropUnary, __, 'every', Boolean))
+}
 
-/*
+/**
+ * @name asyncIteratorAll
+ *
  * @synopsis
- * TODO
+ * asyncIteratorAll(asyncIterator AsyncIterator, predicate ...any=>boolean) -> boolean
+ *
+ * @related asyncIteratorAny
  */
-const all = fn => {
-  if (!isFunction(fn)) {
-    throw new TypeError('all(x); x is not a function')
+const asyncIteratorAll = async function (
+  iterator, predicate, promisesInFlight, maxConcurrency = 20,
+) {
+  let iteration = iterator.next()
+  if (isPromise(iteration)) {
+    iteration = await iteration
   }
-  return x => {
-    if (isIterable(x)) return allIterable(fn, x)
-    if (isObject(x)) return allObject(fn, x)
-    throw new TypeError('all(...)(x); x invalid')
+
+  while (!iteration.done) {
+    if (promisesInFlight.size >= maxConcurrency) {
+      const [predication, promise] = await promiseRace(promisesInFlight)
+      promisesInFlight.delete(promise)
+      if (!predication) {
+        return false
+      }
+    }
+    const predication = predicate(iteration.value)
+    if (isPromise(predication)) {
+      promisesInFlight.add(promiseInFlight(predication))
+    } else if (!predication) {
+      return false
+    }
+    iteration = iterator.next()
+    if (isPromise(iteration)) {
+      iteration = await iteration
+    }
   }
+  while (promisesInFlight.size > 0) {
+    const [predication, promise] = await promiseRace(promisesInFlight)
+    promisesInFlight.delete(promise)
+    if (!predication) {
+      return false
+    }
+  }
+  return true
+}
+
+/**
+ * @name _foldableAllReducer
+ *
+ * @synopsis
+ * _foldableAllReducer(predicate any=> boolean, result boolean, item any) -> boolean
+ */
+const _foldableAllReducer = (predicate, result, item) => result ? predicate(item) : false
+
+/**
+ * @name foldableAllReducer
+ *
+ * @synopsis
+ * foldableAllReducer(
+ *   predicate any=>boolean,
+ * ) -> reducer(result boolean, item any)=>boolean
+ *
+ * @related foldableAnyReducer
+ */
+const foldableAllReducer = predicate => function allReducer(result, item) {
+  return result === false ? false
+    : isPromise(result) ? result.then(
+      curry3(_foldableAllReducer, predicate, __, item))
+    : result ? predicate(item) : false
+}
+
+/**
+ * @name all
+ *
+ * @catchphrase
+ * Test for all truthy predications
+ *
+ * @synopsis
+ * all(predicate function)(value all) -> result Promise|boolean
+ *
+ * Foldable = Iterable|AsyncIterable|{ reduce: function }
+ *
+ * all(predicate all=>Promise|boolean)(value Foldable) -> Promise|boolean
+ *
+ * @description
+ * Concurrently test a predicate across all items of a collection, returning true if all predications are truthy.
+ *
+ * ```javascript [playground]
+ * const isOdd = number => number % 2 == 1
+ *
+ * console.log(
+ *   all(isOdd)([1, 2, 3, 4, 5]),
+ * ) // false
+ *
+ * console.log(
+ *   all(isOdd)([1, 3, 5]),
+ * ) // true
+ * ```
+ *
+ * The predicate may return a Promise, while the value may be an asynchronous stream.
+ *
+ * ```javascript [playground]
+ * ```
+ *
+ * @execution concurrent
+ *
+ * @muxing
+ */
+const all = predicate => function allTruthy(value) {
+  if (isArray(value)) {
+    return arrayAll(value, predicate)
+  }
+  if (value == null) {
+    return predicate(value)
+  }
+
+  if (typeof value[symbolIterator] == 'function') {
+    return iteratorAll(value, predicate)
+  }
+  if (typeof value[symbolAsyncIterator] == 'function') {
+    return asyncIteratorAll(value, predicate, new Set())
+  }
+  if (typeof value.reduce == 'function') {
+    return value.reduce(foldableAllReducer(predicate), true)
+  }
+  if (value.constructor == Object) {
+    return iteratorAll(objectValuesGenerator(value), predicate)
+  }
+  return !!predicate(value)
 }
 
 /*
@@ -4533,16 +4677,61 @@ const or = fns => {
   return x => arrayOr(fns, x)
 }
 
-/*
+// true -> false
+const _not = value => !value
+
+/**
+ * @name not
+ *
+ * @catchphrase
+ * logically invert a function
+ *
  * @synopsis
- * TODO
+ * not(predicate ...any=>Promise|boolean) -> logicalInverter ...any=>Promise|boolean
+ *
+ * @description
+ * Logically invert a function by always logically inverting its return value. Predicate may be asynchronous.
+ *
+ * ```javascript [playground]
+ * console.log(
+ *   not(isOdd)(3),
+ * ) // false
+ * ```
  */
-const not = fn => {
-  if (!isFunction(fn)) {
-    throw new TypeError('not(x); x is not a function')
-  }
-  return x => possiblePromiseThen(fn(x), res => !res)
+const not = func => function logicalInverter(...args) {
+  const boolean = func(...args)
+  return isPromise(boolean) ? boolean.then(_not) : !boolean
 }
+
+/**
+ * @name notSync
+ *
+ * @synopsis
+ * notSync(func ...any=>boolean) -> logicallyInverted ...any=>boolean
+ */
+const notSync = func => function notSync(...args) {
+  return !func(...args)
+}
+
+/**
+ * @name not.sync
+ *
+ * @catchphrase
+ * synchronous not
+ *
+ * @synopsis
+ * not.sync(func ...any=>boolean) -> logicallyInverted ...any=>boolean
+ *
+ * @description
+ * Logically invert a function without promise handling.
+ *
+ * ```javascript [playground]
+ * console.log(
+ *   not.sync(isOdd)(2),
+ * ) // true
+ * ```
+ */
+not.sync = notSync
 
 /*
  * @synopsis

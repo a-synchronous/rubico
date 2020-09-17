@@ -3311,7 +3311,107 @@ any(predicate any=>Promise|boolean)(value Foldable) -> Promise|boolean
     })
   })
 
-  describe('all', () => {
+  describe(`
+all(predicate function)(value all) -> result Promise|boolean
+
+Foldable = Iterable|AsyncIterable|{ reduce: function }
+
+all(predicate all=>Promise|boolean)(value Foldable) -> Promise|boolean
+  `, () => {
+    const numbersArray = [1, 2, 3, 4, 5]
+    const evenNumbersArray = [2, 4, 6, 8, 10]
+    const numbersGenerator = function* () {
+      yield 1; yield 2; yield 3; yield 4; yield 5
+    }
+    const evenNumbersGenerator = function* () {
+      yield 2; yield 4; yield 6; yield 8; yield 10
+    }
+    const asyncNumbersGenerator = async function* () {
+      yield 1; yield 2; yield 3; yield 4; yield 5
+    }
+    const asyncEvenNumbersGenerator = async function* () {
+      yield 2; yield 4; yield 6; yield 8; yield 10
+    }
+    const isOdd = number => number % 2 == 1
+    const isEven = number => number % 2 == 0
+    const variadicAsyncIsOdd = number => number % 2 == 1 ? Promise.resolve(true) : false
+    const variadicAsyncIsEven = number => number % 2 == 0 ? Promise.resolve(true) : false
+
+    const cases = [
+      [isEven, numbersArray, false],
+      [async(isEven), numbersArray, false],
+      [isEven, evenNumbersArray, true],
+      [isEven, new MockFoldable(numbersArray), false],
+      [isEven, new MockFoldable(evenNumbersArray), true],
+      [async(isEven), new MockFoldable(numbersArray), false],
+      [async(isEven), new MockFoldable(evenNumbersArray), true],
+      [async(isEven), evenNumbersArray, true],
+      [variadicAsyncIsEven, numbersArray, false],
+      [variadicAsyncIsEven, evenNumbersArray, true],
+      [isEven, numbersGenerator(), false],
+      [isEven, evenNumbersGenerator(), true],
+      [async(isEven), numbersGenerator(), false],
+      [async(isEven), evenNumbersGenerator(), true],
+      [isEven, asyncNumbersGenerator(), false],
+      [isEven, asyncEvenNumbersGenerator(), true],
+      [async(isEven), asyncNumbersGenerator(), false],
+      [async(isEven), asyncEvenNumbersGenerator(), true],
+      [variadicAsyncIsEven, asyncNumbersGenerator(), false],
+      [variadicAsyncIsEven, asyncEvenNumbersGenerator(), true],
+      [isEven, asyncNumbersGenerator(), false],
+      [isEven, asyncEvenNumbersGenerator(), true],
+      [async(isEven), asyncNumbersGenerator(), false],
+      [async(isEven), asyncEvenNumbersGenerator(), true],
+      [variadicAsyncIsEven, asyncNumbersGenerator(), false],
+      [variadicAsyncIsEven, asyncEvenNumbersGenerator(), true],
+    ]
+
+    cases.forEach(([func, value, result, asserter = assert.strictEqual]) => {
+      it(`${func.name}(${JSON.stringify(value)}) -> ${result}`, async () => {
+        asserter(await all(func)(value), result)
+      })
+    })
+
+    it('max concurrency 20', async () => {
+      const asyncRange = async function* (to) {
+        for (let index = 1; index < to; index++) {
+          yield index
+        }
+      }
+      let concurrencyCount = 0,
+        maxConcurrencyCount = 0
+      assert.strictEqual(await all(async number => {
+        concurrencyCount += 1
+        maxConcurrencyCount = Math.max(maxConcurrencyCount, concurrencyCount)
+        await sleep(10)
+        concurrencyCount -= 1
+        return true
+      })(asyncRange(40)), true)
+      assert.strictEqual(concurrencyCount, 0)
+      assert.strictEqual(maxConcurrencyCount, 20)
+      assert.strictEqual(await all(async number => {
+        maxConcurrencyCount = Math.max(maxConcurrencyCount, concurrencyCount)
+        await sleep(10)
+        if (number == 19) {
+          return false
+        }
+        return true
+      })(asyncRange(40)), false)
+    })
+
+    it('1', async () => {
+      assert.strictEqual(all(() => true)(1), true)
+    })
+    it('null', async () => {
+      assert.strictEqual(all(() => true)(null), true)
+    })
+    it('undefined', async () => {
+      assert.strictEqual(all(() => true)(undefined), true)
+      assert.strictEqual(all(() => true)(), true)
+    })
+  })
+
+  describe('all - v1.5.15 regression', () => {
     const numbers = [1, 2, 3, 4, 5]
     const numbersObject = { a: 1, b: 2, c: 3, d: 4, e: 5 }
     it('syncly evaluates fn against all items in iterable, true if all evaluations are truthy', async () => {
@@ -3337,17 +3437,25 @@ any(predicate any=>Promise|boolean)(value Foldable) -> Promise|boolean
         false,
       )
     })
-    it('throws TypeError on all(nonFunction)', async () => {
-      assert.throws(
-        () => all('hey'),
-        new TypeError('all(x); x is not a function'),
-      )
+  })
+
+  describe('not - v1.5.15 regression', () => {
+    it('[sync] not(isOdd)(x) === !isOdd(x)', async () => {
+      ase(not(isOdd)(2), true)
+      ase(not(isOdd)(1), false)
     })
-    it('throws TypeError on all(...)(string)', async () => {
-      assert.throws(
-        () => all(x => x)(1),
-        new TypeError('all(...)(x); x invalid'),
-      )
+    it('[async] not(isEven)(x) === !(await isEven(x))', async () => {
+      aok(not(asyncIsEven)(2) instanceof Promise)
+      ase(await not(asyncIsEven)(2), false)
+      ase(await not(asyncIsEven)(1), true)
+    })
+  })
+
+  describe('not.sync', () => {
+    it('not.sync(isOdd)', async () => {
+      const isOdd = number => number % 2 == 1
+      assert.strictEqual(not.sync(isOdd)(1), false)
+      assert.strictEqual(not.sync(isOdd)(0), true)
     })
   })
 
@@ -3409,24 +3517,6 @@ any(predicate any=>Promise|boolean)(value Foldable) -> Promise|boolean
       assert.throws(
         () => or([() => false, 'hey', () => 'hi']),
         new TypeError('or(fns); fns[1] is not a function'),
-      )
-    })
-  })
-
-  describe('not', () => {
-    it('[sync] not(isOdd)(x) === !isOdd(x)', async () => {
-      ase(not(isOdd)(2), true)
-      ase(not(isOdd)(1), false)
-    })
-    it('[async] not(isEven)(x) === !(await isEven(x))', async () => {
-      aok(not(asyncIsEven)(2) instanceof Promise)
-      ase(await not(asyncIsEven)(2), false)
-      ase(await not(asyncIsEven)(1), true)
-    })
-    it('throws TypeError on not(nonFunction)', async () => {
-      assert.throws(
-        () => not('hey'),
-        new TypeError('not(x); x is not a function'),
       )
     })
   })
