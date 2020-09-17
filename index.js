@@ -4813,17 +4813,87 @@ const or = predicates => function anyPredicates(value) {
   return false
 }
 
-/*
+/**
+ * @name spread2
+ *
  * @synopsis
- * TODO
+ * spread2(func function) -> spreading2 (
+ *   arg0 any, arg1 any,
+ * )=>func(arg0, arg1)
  */
-const eq = (f, g) => {
-  if (isFunction(f) && isFunction(g)) return x => (
-    possiblePromiseAll([f(x), g(x)]).then(([fx, gx]) => fx === gx))
-  if (isFunction(f)) return x => possiblePromiseThen(f(x), fx => fx === g)
-  if (isFunction(g)) return x => possiblePromiseThen(g(x), gx => f === gx)
-  const h = f === g
-  return () => h
+const spread2 = func => function spreading2([arg0, arg1]) {
+  return func(arg0, arg1)
+}
+
+/**
+ * @name strictEquals
+ *
+ * @synopsis
+ * strictEquals(a any, b any) -> boolean
+ */
+const strictEquals = (a, b) => a === b
+
+/**
+ * @name eq
+ *
+ * @catchphrase
+ * left strictly equals right
+ *
+ * @synopsis
+ * eq(
+ *   left (any=>Promise|boolean)|any,
+ *   right (any=>Promise|boolean)|any,
+ * ) -> strictEqualsBy (value any)=>Promise|boolean
+ *
+ * @description
+ * Tacit, concurrent test for strict equality between two values. Either parameter may be an asynchronous resolver.
+ *
+ * ```javascript [playground]
+ * console.log(
+ *   eq(25, person => person.age)({ name: 'George', age: 25 }),
+ * ) // true
+ * ```
+ *
+ * @execution concurrent
+ */
+const eq = function (left, right) {
+  const isLeftResolver = typeof left == 'function',
+    isRightResolver = typeof right == 'function'
+  if (isLeftResolver && isRightResolver) {
+    return function strictEqualsBy(value) {
+      const leftResolve = left(value),
+        rightResolve = right(value)
+      const isLeftPromise = isPromise(leftResolve),
+        isRightPromise = isPromise(rightResolve)
+      if (isLeftPromise && isRightPromise) {
+        return promiseAll(
+          [leftResolve, rightResolve]).then(spread2(strictEquals))
+      } else if (isLeftPromise) {
+        return leftResolve.then(curry2(strictEquals, __, rightResolve))
+      } else if (isRightPromise) {
+        return rightResolve.then(curry2(strictEquals, leftResolve, __))
+      }
+      return leftResolve === rightResolve
+    }
+  }
+
+  if (isLeftResolver) {
+    return function strictEqualsBy(value) {
+      const leftResolve = left(value)
+      return isPromise(leftResolve)
+        ? leftResolve.then(curry2(strictEquals, __, right))
+        : leftResolve === right
+    }
+  }
+  if (isRightResolver) {
+    return function strictEqualsBy(value) {
+      const rightResolve = right(value)
+      return isPromise(rightResolve)
+        ? rightResolve.then(curry2(strictEquals, left, __))
+        : left === rightResolve
+    }
+  }
+  return always(left === right)
 }
 
 /*

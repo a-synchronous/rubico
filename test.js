@@ -3541,7 +3541,51 @@ or(
     })
   })
 
-  describe('eq', () => {
+  describe(`
+eq(
+  left (any=>Promise|boolean)|any,
+  right (any=>Promise|boolean)|any,
+) -> strictEqualsBy (value any)=>Promise|boolean
+  `, () => {
+
+    const cases = [
+      [eq(0, 0), undefined, true],
+      [eq(0, () => 0), undefined, true],
+      [eq(0, async () => 0), undefined, true],
+      [eq(() => 0, 0), undefined, true],
+      [eq(async () => 0, 0), undefined, true],
+      [eq(() => 0, () => 0), undefined, true],
+      [eq(async () => 0, () => 0), undefined, true],
+      [eq(() => 0, async () => 0), undefined, true],
+      [eq(async () => 0, async () => 0), undefined, true],
+      [eq(1, 0), undefined, false],
+      [eq(1, () => 0), undefined, false],
+      [eq(1, async () => 0), undefined, false],
+      [eq(() => 1, 0), undefined, false],
+      [eq(async () => 1, 0), undefined, false],
+      [eq(() => 1, () => 0), undefined, false],
+      [eq(async () => 1, () => 0), undefined, false],
+      [eq(async () => 1, async () => 0), undefined, false],
+      [eq(async () => 1, async () => 0), undefined, false],
+      [eq(0, '0'), undefined, false],
+      [eq(0, () => '0'), undefined, false],
+      [eq(0, async () => '0'), undefined, false],
+      [eq(() => 0, '0'), undefined, false],
+      [eq(async () => 0, '0'), undefined, false],
+      [eq(() => 0, () => '0'), undefined, false],
+      [eq(async () => 0, () => '0'), undefined, false],
+      [eq(() => 0, async () => '0'), undefined, false],
+      [eq(async () => 0, async () => '0'), undefined, false],
+    ]
+
+    cases.forEach(([func, value, result, asserter = assert.strictEqual]) => {
+      it(`${func.name}(${JSON.stringify(value)}) -> ${result}`, async () => {
+        asserter(await func(value), result)
+      })
+    })
+  })
+
+  describe('eq - v1.5.15 regression', () => {
     it('[sync] eq(f, g)(x) === (f(x) === g(x))', async () => {
       ase(eq(x => `${x}`, x => x)('hey'), true)
       ase(eq(x => `${x}`, x => x)(1), false)
@@ -3566,6 +3610,7 @@ or(
     it('[async] eq(value, g)(x) === (value === g(x))', async () => {
       aok(eq('hey', async x => x)('hey') instanceof Promise)
       ase(await eq('hey', async x => x)('hey'), true)
+      ase(await eq(async x => x, 'hey')('hey'), true)
       ase(await eq('ho', async x => x)(1), false)
     })
     it('[sync] eq(valueA, valueB)(x) === (valueA === valueB)', async () => {
