@@ -1,4 +1,4 @@
-## v1.5.15 - next release
+## v1.5.15 - latest
  * get rewrite + benchmarks
  * pick rewrite + benchmarks
  * omit rewrite + benchmarks
@@ -13,7 +13,7 @@
  * gte rewrite + benchmarks
  * lte rewrite + benchmarks
 
-## v1.5.14 - latest
+## v1.5.14
  * fix: flatMap async muxing
 
 ## v1.5.13
