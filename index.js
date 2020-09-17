@@ -1,5 +1,5 @@
 /**
- * rubico v1.5.14
+ * rubico v1.5.15
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2020 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -5174,6 +5174,6 @@ return {
   any, all, and, or, not,
   eq, gt, lt, gte, lte,
   get, pick, omit,
-} // == 5200 lines (comments included)
+}
 
 }())))

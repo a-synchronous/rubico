@@ -1,4 +1,4 @@
-/* rubico v1.5.14
+/* rubico v1.5.15
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2020 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -267,6 +267,30 @@ const thunkify2 = (func, arg0, arg1) => () => func(arg0, arg1)
  */
 const thunkify3 = (func, arg0, arg1, arg2) => () => func(arg0, arg1, arg2)
 
+/**
+ * @name memoizeCappedUnary
+ *
+ * @synopsis
+ * memoizeCappedUnary(func function, cap number) -> memoized function
+ *
+ * @todo explore Map reimplementation
+ */
+const memoizeCappedUnary = function (func, cap) {
+  const cache = new Map(),
+    memoized = function memoized(arg0) {
+      if (cache.has(arg0)) {
+        return cache.get(arg0)
+      }
+      const result = func(arg0)
+      cache.set(arg0, result)
+      if (cache.size > cap) {
+        cache.clear()
+      }
+      return result
+    }
+  memoized.cache = cache
+  return memoized
+}
 
 /**
  * @name _arrayExtend
@@ -407,15 +431,6 @@ const promiseObjectAll = object => new Promise(function (resolve) {
 })
 
 /**
- * @name possiblePromiseThen
- *
- * @synopsis
- * possiblePromiseThen(value Promise|any, func function) -> Promise|any
- */
-const possiblePromiseThen = (value, func) => (
-  isPromise(value) ? value.then(func) : func(value))
-
-/**
  * @name SyncThenable
  *
  * @synopsis
@@ -430,18 +445,6 @@ const SyncThenable = function (value) { this.value = value }
  * new SyncThenable(value any).then(func function) -> any
  */
 SyncThenable.prototype.then = function (func) { return func(this.value) }
-
-/**
- * @name possiblePromiseAll
- *
- * @synopsis
- * possiblePromiseAll(
- *   values Array<Promise>|Array,
- * ) -> Promise<Array>|SyncThenable<Array>
- */
-const possiblePromiseAll = values => (values.some(isPromise)
-  ? promiseAll(values)
-  : new SyncThenable(values))
 
 /**
  * @name funcConcat
@@ -478,26 +481,24 @@ const funcConcatSync = (
  * @name pipe
  *
  * @catchphrase
- * define flow: chain functions together
+ * chain functions together
  *
  * @synopsis
- * any -> T
- *
- * (any, T)=>Promise|any -> Reducer<T>
- *
- * Reducer=>Reducer -> Transducer
- *
  * pipe([
  *   args=>Promise|any,
  *   ...Array<any=>Promise|any>,
  * ])(args ...any) -> Promise|any
+ *
+ * (any, T)=>Promise|any -> Reducer<T>
+ *
+ * Reducer=>Reducer -> Transducer
  *
  * pipe(
  *   Array<Transducer>,
  * )(Reducer) -> composed Reducer
  *
  * @description
- * **pipe** takes an array of functions and chains them together, each function passing its return value to the next function until all functions have been called. The final output for a given pipe is the output of the last function in the pipe.
+ * Chain together an array of functions as a pipe, each function passing its return value as the first argument to the next function until all functions executed. The final result is the result of the last function execution.
  *
  * ```javascript [playground]
  * console.log(
@@ -509,9 +510,9 @@ const funcConcatSync = (
  * ) // 11
  * ```
  *
- * When the first argument supplied to a pipe of functions is a non-generator function, **pipe** assumes it is being used in transducer position and iterates through its functions in reverse. This is due to an implementation detail in transducers, and enables the library transducer API.
+ * When the first argument supplied to a pipe of functions is a non-generator function, it assumes transducer position and iterates through its functions in reverse. This is due to an implementation detail in transducers, and enables a left-to-right transducer API.
  *
- * ```
+ * ```coffeescript [specscript]
  * any -> T
  *
  * (any, T)=>Promise|any -> Reducer<T> // the standalone <T> means "generic of T"
@@ -521,13 +522,13 @@ const funcConcatSync = (
  *
  * A reducer is a function that takes a generic of any type T, a given instance of type T, and returns possibly a Promise of a generic of type T. A transducer is a function that takes a reducer and returns another reducer.
  *
- * ```
+ * ```coffeescript [specscript]
  * pipe(
  *   Array<Transducer>,
  * )(Reducer) -> composed Reducer
  * ```
  *
- * **pipe** supports transducer composition. When passed a reducer function, a pipe of functions returns a new reducer function that applies the transducers of the functions array in series, ending the chain with the passed in reducer. `compositeReducer` must be used in transducer position in conjunction with **reduce** or any implementation of reduce to have a transducing effect. For more information on this behavior, see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
+ * A pipe of transducers, when passed a reducer function, returns a new reducer function that applies the transducers in series, ending the chain with the argument reducer. Following this setup, a transduced reducer must be used in transducer position in conjunction with `reduce` to have a transducing effect. For more information on this behavior, see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -543,7 +544,7 @@ const funcConcatSync = (
  *
  * console.log(
  *   [1, 2, 3, 4, 5].reduce(squaredOdds(add), 0),
- * ) // 1 + 9 + 25 -> 35
+ * ) // 35
  *
  * console.log(
  *   squaredOdds([1, 2, 3, 4, 5])
@@ -615,21 +616,22 @@ const funcAll = funcs => function allFuncs(...args) {
  * @name fork
  *
  * @catchphrase
- * duplicate and diverge flow
+ * parallelize functions
  *
  * @synopsis
  * fork(
- *   funcs Object<args=>Promise|any>,
+ *   funcs Object<...args=>Promise|any>,
  * )(args ...any) -> Promise|Object
  *
  * fork(
- *   funcs Array<args=>Promise|any>,
+ *   funcs Array<...args=>Promise|any>,
  * )(args ...any) -> Promise|Array
  *
  * @description
- * **fork** takes an array or object of optionally async functions and an input value and returns an array or object or Promise of either. The resulting array or object is the product of applying each function in the array or object of functions to any amount of input arguments.
+ * Parallelize multiple functions into a single function with concurrent execution with either an object or array result depending on the shape of the functions.
  *
- * All functions of `funcs`, including additional forks, are executed concurrently.
+ *  * `fork(Array<function>) -> Array` - an Array result is yielded for an Array of functions
+ *  * `fork(Object<function>) -> Object` - an Object result is yielded for an Object of functions
  *
  * ```javascript [playground]
  * console.log(
@@ -707,7 +709,7 @@ const funcAllSeries = funcs => function allFuncsSeries(...args) {
  * )(args ...any) -> Promise|Array
  *
  * @description
- * **fork.series** is fork with serial execution instead of concurrent execution of functions. All functions of `funcs` are then executed in series.
+ * `fork` with serial execution.
  *
  * ```javascript [playground]
  * const sleep = ms => () => new Promise(resolve => setTimeout(resolve, ms))
@@ -731,7 +733,7 @@ fork.series = funcAllSeries
  * @name assign
  *
  * @catchphrase
- * fork, then merge results
+ * assign properties by resolver
  *
  * @synopsis
  * assign(
@@ -739,9 +741,7 @@ fork.series = funcAllSeries
  * )(object Object) -> result Promise|Object
  *
  * @description
- * **assign** accepts an object of optionally async functions and an object input and returns an object or a Promise of an object. The result is composed of the original input and an object computed from a concurrent evaluation of the object of functions with the input. `result` is each function of `funcs` applied with Object `object` merged into the input Object `object`. If any functions of `funcs` is asynchronous, `result` is a Promise.
- *
- * All functions of `funcs`, including additional forks, are executed concurrently.
+ * Lazily set properties on a target object by an input object of functions.
  *
  * ```javascript [playground]
  * console.log(
@@ -750,18 +750,20 @@ fork.series = funcAllSeries
  *     cubed: ({ number }) => number ** 3,
  *   })({ number: 3 }),
  * ) // { number: 3, squared: 9, cubed: 27 }
+ *
+ * assign({
+ *   asyncNumber: async ({ number }) => number,
+ * })({ number: 3 }).then(console.log) // { number: 3, asyncNumber: 3 }
  * ```
  *
  * @execution concurrent
- *
- * @TODO .then quickscope
  */
 const assign = function (funcs) {
   const allFuncs = funcObjectAll(funcs)
   return function assignment(object) {
     const result = allFuncs(object)
     return isPromise(result)
-      ? result.then(res => ({ ...object, ...res }))
+      ? result.then(curry2(objectAssign, object, __))
       : ({ ...object, ...result })
   }
 }
@@ -770,13 +772,13 @@ const assign = function (funcs) {
  * @name tap
  *
  * @catchphrase
- * spy on flow
+ * spy on data in a pipe
  *
  * @synopsis
  * tap(function)(value any) -> Promise|value
  *
  * @description
- * **tap** accepts a function and any value, calls the function with the value, and returns the original value. This is useful for running side effects in function pipelines, e.g. logging out data in a pipeline to the console.
+ * Take a function and any value, call the function with the value, and return the original value. Useful for running side effects in function pipelines, e.g. logging out data to the console.
  *
  * ```javascript [playground]
  * pipe([
@@ -796,8 +798,22 @@ const tap = func => function tapping(...args) {
 /**
  * @name tapSync
  *
+ * @catchphrase
+ * synchronous tap
+ *
  * @synopsis
  * tapSync(function)(args ...any) -> args[0]
+ *
+ * @description
+ * `tap` without Promise handling. Any Promises will terminate early.
+ *
+ * ```javascript [playground]
+ * pipe([
+ *   tap.sync(number => console.log('square', number ** 2))
+ *   tap.sync(number => console.log('cube', number ** 3))
+ * ])(3) // 9
+ *       // 27
+ * ```
  */
 const tapSync = func => function tapping(...args) {
   func(...args)
@@ -867,7 +883,7 @@ const catcherApply = function (catcher, err, args) {
  * )(args ...any) -> Promise|any
  *
  * @description
- * **tryCatch** takes two functions, a tryer and a catcher, and returns a tryCatcher function that, when called, calls the tryer with the arguments. If the tryer throws an Error or returns a Promise that rejects, tryCatch calls the catcher with the thrown value and the arguments. If the tryer called with the arguments does not throw, the tryCatcher returns the result of that call.
+ * Try a tryer, catch with a catcher. On error or rejected Promise, call catcher with the error as the first argument followed by the original arguments.
  *
  * ```javascript [playground]
  * const errorThrower = tryCatch(
@@ -883,8 +899,6 @@ const catcherApply = function (catcher, err, args) {
  * console.log(errorThrower('hello')) // Error: hello
  *                                    // hello from catcher
  * ```
- *
- * @TODO offload result.catch to its own function
  */
 const tryCatch = (tryer, catcher) => function tryCatcher(...args) {
   try {
@@ -1182,17 +1196,15 @@ const reducerMap = (reducer, mapper) => function mappingReducer(result, value) {
  * )(Reducer<item>) -> Reducer<mapper(item)>
  *
  * @description
- * **map** takes an [a]synchronous mapper function and applies it to each item of a functor, returning a functor of the same type with all resulting items. Since multiple vanilla JavaScript types can be considered functors, `map` is polymorphic and predefines the required `map` operation for values of the following types:
+ * Apply a mapper concurrently to each item of a collection, returning a collection of the same type with all results. If order is implied by the collection, it is maintained in the result. Below are valid collections along with their iteration behavior.
  *
- *  * `Array`
- *  * `Object` - just the values are iterated
- *  * `Iterator` or `Generator`
- *  * `AsyncIterator` or `AsyncGenerator`
- *  * `{ map: (T=>any)=>this }` - an object that implements map
+ *  * `Array` - iterate values by index
+ *  * `Object` - iterate object values
+ *  * `Iterator`/`Generator` - iterate by calling `.next`
+ *  * `AsyncIterator`/`AsyncGenerator` - iterate by calling `.next`, then awaiting. Mapper is still applied concurrently.
+ *  * `{ map: mapper (T=>any)=>this }` - literal functor - call `.map` directly with mapper.
  *
- * If the first value supplied to a mapping function is not one of the above, the result of the mapping operation is a direct application of the mapper function to the first value. This defines behavior for any type supplied to a mapping function - a mapping function created with `map` will not throw unless the error originates from the mapper.
- *
- * If the input functor has an implicit order, e.g. an Array, the resulting functor will have the same order. If the input collection does not have an implicit order, the order of the result is not guaranteed.
+ * For all other types, the mapper is applied directly to the data parameter.
  *
  * ```javascript [playground]
  * const square = number => number ** 2
@@ -1204,12 +1216,16 @@ const reducerMap = (reducer, mapper) => function mappingReducer(result, value) {
  * console.log(
  *   map(square)({ a: 1, b: 2, c: 3 }),
  * ) // { a: 1, b: 4, c: 9 }
+ *
+ * console.log(
+ *   map(square)(3)
+ * ) // 9
  * ```
  *
- * In general, a mapping function will always return a result that is the same type as the first provided argument. Each of the following function types, when passed as the first value to a mapping function, create a function of the same type with all items of the return value transformed by the mapper.
+ * Functions are regarded as resolvers. Each of the following calls, when passed to a mapping function `map(mapper)`, creates a function with all items of its return transformed by the mapper.
  *
  *  * `...any=>Iterator` or `GeneratorFunction` - items of the iterator are mapped into a new iterator. Warning: using an async mapper in a synchronous generator function is not recommended and could lead to unexpected behavior.
- *  * `...any=>AsyncIterator` or `AsyncGeneratorFunction` - items of the async iterator are mapped into a new async iterator. Async result items are awaited in a new async iterator. Async mapper functions are okay here.
+ *  * `...any=>AsyncIterator` or `AsyncGeneratorFunction` - items of the async iterator are mapped into a new async iterator. Async result items are awaited in a new async iterator. Async mapper functions are valid.
  *  * `Reducer<T> = (any, T)=>Promise|any` - when combined with `reduce` or any implementation thereof, items of the reducing operation are transformed by the mapper function. If an async mapper function is desired here, it is possible with rubico `reduce`.
  *
  * With mapping generator functions and mapping async generator functions, transformations on iterators and their async counterparts are simple to compose.
@@ -1225,24 +1241,22 @@ const reducerMap = (reducer, mapper) => function mappingReducer(result, value) {
  *
  * const abcIter = abc()
  *
- * const ABCIter = map(capitalize)(abcIter)
+ * const ABCIter = ABC()
  *
- * console.log([...ABC()]) // ['A', 'B', 'C']
+ * console.log([...abcIter]) // ['a', 'b', 'c']
  *
  * console.log([...ABCIter]) // ['A', 'B', 'C']
  * ```
  *
- * The above concept is extended to reducer functions as [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
+ * Function laziness is extended to reducer functions as [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
  *
  * ```
- * any -> T
+ * Reducer<T> = (any, T)=>Promise|any
  *
- * (any, T)=>Promise|any -> Reducer<T>
- *
- * Reducer=>Reducer -> Transducer
+ * Transducer = Reducer=>Reducer
  * ```
  *
- * A **reducer** is a variadic function like the one supplied to `Array.prototype.reduce`, but without the index and reference to the accumulated result per call. A **transducer** is a function that accepts a reducer function as an argument and returns another reducer function, which enables chaining functionality at the reducer level. `map` is core to this mechanism, and provides a seamless way to create transducers with mapper functions.
+ * A reducer is a variadic function like the one supplied to `Array.prototype.reduce`, but without the index and reference to the accumulated result per call. A transducer is a function that accepts a reducer function as an argument and returns another reducer function, which enables chaining functionality for reducers. `map` is core to this mechanism, and provides a way to create transducers with mapper functions.
  *
  * ```javascript [playground]
  * const square = number => number ** 2
@@ -1252,16 +1266,23 @@ const reducerMap = (reducer, mapper) => function mappingReducer(result, value) {
  * const mapSquare = map(square)
  * // mapSquare could potentially be a transducer, but at this point, it is
  * // undifferentiated and not necessarily locked in to transducer behavior.
- * // For example, mapSquare([1, 2, 3, 4, 5]) would produce [1, 9, 25]
+ *
+ * console.log(
+ *   mapSquare([1, 2, 3, 4, 5]),
+ * ) // [1, 4, 9, 16, 25]
  *
  * const squareConcatReducer = mapSquare(concat)
  * // now mapSquare is passed the function concat, so it assumes transducer
- * // position. squareConcatReducer is a reducer with chained functionality -
+ * // position. squareConcatReducer is a reducer with chained functionality
  * // square and concat.
  *
  * console.log(
  *   [1, 2, 3, 4, 5].reduce(squareConcatReducer, []),
  * ) // [1, 4, 9, 16, 25]
+  *
+ * console.log(
+ *   [1, 2, 3, 4, 5].reduce(squareConcatReducer, ''),
+ * ) // '1491625'
  * ```
  *
  * @execution concurrent
@@ -1371,7 +1392,7 @@ const arrayMapSeries = function (array, mapper) {
  * map.series(mapper A=>Promise|B)(Array<A>) -> Promise|Array<B>
  *
  * @description
- * **map.series** is **map** but with serial instead of concurrent application of the mapping function to each item of the input value.
+ * `map` with serial execution of the mapper function with collection items.
  *
  * ```javascript [playground]
  * const delayedLog = x => new Promise(function (resolve) {
@@ -1478,7 +1499,7 @@ const arrayMapPool = function (array, mapper, concurrentLimit) {
  * )(value Array<A>) -> Promise|Array<B>
  *
  * @description
- * **map.pool** is **map** with a concurrency limit that specifies the maximum number of promises in flight in a given moment for an asynchronous mapping operation.
+ * `map` with a concurrency limit that specifies the maximum number of promises in flight at any given moment.
  *
  * ```javascript [playground]
  * const delayedLog = x => new Promise(function (resolve) {
@@ -1541,8 +1562,19 @@ const arrayMapWithIndex = function (array, mapper) {
  * )(Array<A>) -> Promise|Array<B>
  *
  * @description
+ * `map` with index and collection parameters additionally supplied to the mapper function each iteration.
+ *
+ * ```javascript [playground]
+ * const range = length => map.withIndex(
+ *   (_, index) => index + 1)(Array(length))
+ *
+ * console.log(range(5)) // [1, 2, 3, 4, 5]
+ * ```
  *
  * @execution concurrent
+ *
+ * @related
+ * map, filter.withIndex
  */
 map.withIndex = mapper => function mappingWithIndex(value) {
   if (isArray(value)) {
@@ -1875,7 +1907,7 @@ const reducerFilter = (
  * @name filter
  *
  * @catchphrase
- * exclude data by predicate
+ * exclude items by predicate
  *
  * @synopsis
  * any -> T
@@ -1921,7 +1953,7 @@ const reducerFilter = (
  * ) -> Promise|T
  *
  * @description
- * **filter** accepts a predicate function and a value of any type and returns the same type with elements excluded by the provided predicate function.
+ * Exclude items from a collection based on the result of their concurrent execution with predicate function.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -1935,7 +1967,7 @@ const reducerFilter = (
  * ) // { a: 1, c: 3, e: 5 }
  * ```
  *
- * `filter` filters arrays and objects. Arrays are filtered by supplying a given item of the array to the predicate function and only including the item if the evaluation is truthy. For objects, `filter` iterates over all keys, including those inherited from the prototype. Objects are filtered by supplying the value associated with a given key to the predicate.
+ * Arrays are filtered by supplying each item of the array to the predicate, only including the item in the result if the evaluation is truthy. Objects are filtered by supplying the value associated with each key.
  *
  * When filtering on arrays and objects, the predicate supplied to `filter` can be asynchronous.
  *
@@ -2009,7 +2041,7 @@ const reducerFilter = (
  *
  * Finally, `filter` returns a filtering reducer when acting on a reducer. A filtering reducer skips items of a reducing operation if they test falsy under the predicate. In the example above, the filtering reducer `concatOddNumbers` only concatenates the odd numbers of `[1, 2, 3, 4, 5]` onto the result array by testing them against the predicate `isOdd`.
  *
- * It is possible to use an asynchronous predicate when filtering a reducer, however the implementation of `reduce` must support asynchronous operations. rubico provides such an implementation as `reduce`.
+ * It is possible to use an asynchronous predicate when filtering a reducer, however the implementation of `reduce` must support asynchronous operations. This library provides such an implementation as `reduce`.
  *
  * @execution concurrent
  *
@@ -2117,7 +2149,16 @@ const arrayFilterWithIndex = function (array, predicate) {
  * ) -> Array<T>
  *
  * @description
- * **filter.withIndex** is `filter` but every call of the predicate is supplemented with the additional index and reference to the array being filtered.
+ * `filter` with each predicate call supplemented by index and original reference parameters.
+ *
+ * ```javascript [playground]
+ * const uniq = filter.withIndex(
+ *   (item, index, array) => item != array[index + 1])
+ *
+ * console.log(
+ *   uniq([1, 1, 1, 2, 2, 2, 3, 3, 3]),
+ * ) // [1, 2, 3]
+ * ```
  *
  * @execution concurrent
  */
@@ -2405,85 +2446,39 @@ var genericReduce = function (args, reducer, result) {
  * @name reduce
  *
  * @catchphrase
- * execute data transformation by reducer
- *
- * @synopsis TODO - redo like this
- * ```coffeescript [specscript]
- * Monad = { chain: function }
- *
- * FlatMappable = { flatMap: function }
- *
- * Writable = { write: function }
- *
- * Semigroup = Array|String|Set
- *   |TypedArray|Writable
- *   |{ concat: function }|Object
- *
- * Foldable = Iterable|Iterator
- *   |AsyncIterable|AsyncIterator
- *   |{ reduce: function }|Object
- *
- * flatMap(
- *   flatMapper item=>Foldable|Monad|FlatMappable|any,
- * )(value Semigroup<item any>) -> result Semigroup
- *
- * Reducer<T> = (any, T)=>Promise|any
- *
- * flatMap(
- *   flatMapper item=>Foldable|Monad|FlatMappable|any,
- * )(value Reducer<item>) -> flatMappingReducer Reducer
- * ```
+ * execute a reducer
  *
  * @synopsis
  * reduce(
  *   reducer function,
- *   init undefined|function|any,
+ *   init function|any?,
  * )(...any) -> Promise|any
  *
- * Reducer<T> (any, T)=>Promise|any
+ * Foldable = Iterable|AsyncIterable|{ reduce: function }|Object|any
  *
  * reduce(
  *   reducer Reducer,
- *   init undefined
- *     |((collection, ...restArgs)=>Promise|any)
- *     |any,
- * )(
- *   collection Iterable|Iterator
- *     |AsyncIterable|AsyncIterator
- *     |{ reduce: function }|Object|any,
- *   restArgs ...any
- * ) -> Promise|any
+ *   init (collection=>Promise|any)|any?,
+ * )(collection Foldable) -> Promise|any
  *
  * reduce(
  *   reducer Reducer,
- *   init undefined
- *     |(...args=>Promise|any)
- *     |any,
+ *   init (...args=>Promise|any)|any?,
  * )(
  *   generatorFunction (...args=>Generator)|(...args=>AsyncGenerator),
  * ) -> reducingFunction (args ...any)=>Promise|any
  *
+ * Reducer = (any, T)=>Promise|any
+ *
  * reduce(
  *   reducer Reducer,
- *   init undefined
- *     |(...args=>Promise|any)
- *     |any,
+ *   init (...args=>Promise|any)|any?,
  * )(
  *   anotherReducer Reducer, moreReducers ...Reducer
  * ) -> chainedReducingFunction (args ...any)=>Promise|any
  *
  * @description
- * **reduce** constructs a reducing function that executes a data transformation defined by a reducer function and an optional init value. When called with a collection, a given reducing function applies its reducer function in series to an accumulator with initial value `init` and each item of the collection, returning the result of calling the reducer with the accumulator and the last item of the collection.
- *
- * ```javascript [playground]
- * const add = (a, b) => a + b
- *
- * console.log(
- *   reduce(add, 0)([1, 2, 3, 4, 5]),
- * ) // 15
- * ```
- *
- * If `init` is undefined, the first item of the input collection is used as the initial value for the accumulator.
+ * Execute a reducer for each item of a collection, resulting in a single output value.
  *
  * ```javascript [playground]
  * const max = (a, b) => a > b ? a : b
@@ -2493,7 +2488,17 @@ var genericReduce = function (args, reducer, result) {
  * ) // 5
  * ```
  *
- * If `init` is a function, it is treated as a resolver and called with the input arguments to resolve an initial value for the accumulator. Unless care is exercised when handling references for this initial value, a function `init` is the recommended way to use reduce for transformations on non-primitive initial values.
+ * If the optional initialization parameter is supplied, the result starts as that parameter rather than the first item of the collection.
+ *
+ * ```javascript [playground]
+ * const add = (a, b) => a + b
+ *
+ * console.log(
+ *   reduce(add)([1, 2, 3, 4, 5], 0),
+ * ) // 15
+ * ```
+ *
+ * If the initialization parameter is a function, it is treated as a resolver and called with the input arguments to resolve an initial value for the accumulator. Unless care is exercised when handling references for this initial value, a function `init` is the recommended way to use reduce for transformations on non-primitive initial values.
  *
  * ```javascript [playground]
  * const concatSquares = (array, value) => array.concat(value ** 2)
@@ -2505,7 +2510,7 @@ var genericReduce = function (args, reducer, result) {
  * ) // [1, 4, 9, 16, 25]
  * ```
  *
- * `reduce` elevates the concept of transformation beyond synchronous operations on arrays. The `reducer` function can be asynchronous, while the input value can be an asynchronous stream.
+ * The concept of iteratable reducer execution goes beyond synchronous reducers on arrays. Reducers can be asynchronous, while data parameters can be asynchronous streams.
  *
  * ```javascript [playground]
  * const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
@@ -2555,49 +2560,7 @@ var genericReduce = function (args, reducer, result) {
  * // }
  * ```
  *
- * rubico's async capable [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md) API is useful for chaining operations on items of large or even infinite streams of data. A combination with async capable `reduce` enables a compositional refactor of `asyncAppReducer` above.
- *
- * ```javascript [playground]
- * const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
- *
- * const isActionTypeFetchTodo = action => action.type == 'FETCH_TODO'
- *
- * const fetchTodoByAction = action => fetch(
- *   'https://jsonplaceholder.typicode.com/todos/' + action.todoID,
- * ).then(response => response.json())
- *
- * const stateAddTodo = function (state, todo) {
- *   state.todos.push(todo)
- *   return state
- * }
- *
- * // asyncAppReducer(
- * //   state { todos: Array },
- * //   action { type: string, todoID: string },
- * // ) -> state
- * const asyncAppReducer = pipe([
- *   filter(isActionTypeFetchTodo),
- *   map(fetchTodoByAction),
- *   map(tap(function (todo) {
- *     console.log('fetched', todo)
- *   })),
- * ])(stateAddTodo)
- *
- * const asyncFetchActions = async function* (count) {
- *   let idCount = 0
- *   while (++idCount <= count) {
- *     await sleep(1000)
- *     yield { type: 'FETCH_TODO', todoID: idCount }
- *   }
- * }
- *
- * const state = { todos: [] }
- *
- * reduce(asyncAppReducer, state)(asyncFetchActions(5)).then(
- *   reducedState => console.log('finalState', reducedState))
- * ```
- *
- * If the first argument to a reducing function is a reducer, `reduce` concatenates any reducers in argument position onto the initial reducer, producing a combined reducer that performs a chained operation per each item in a reducing operation. For more reducer combinators, see rubico's Reducer monad.
+ * If the first argument to a reducing function is a reducer, `reduce` concatenates any reducers in argument position onto the initial reducer, producing a combined reducer that performs a chained operation per each item in a reducing operation.
  *
  * ```javascript [playground]
  * const reducerA = (state, action) => {
@@ -2637,7 +2600,7 @@ var genericReduce = function (args, reducer, result) {
  * @TODO reduce.concurrent
  */
 const reduce = function (reducer, init) {
-  if (isFunction(init)) {
+  if (typeof init == 'function') {
     return function reducing(...args) {
       const result = init(...args)
       return isPromise(result)
@@ -2652,7 +2615,7 @@ const reduce = function (reducer, init) {
  * @name emptyTransform
  *
  * @synopsis
- * Reducer<T> = (any, T)=>any
+ * Reducer = (any, T)=>any
  *
  * Transducer = Reducer=>Reducer
  *
@@ -2834,7 +2797,7 @@ const genericTransform = function (args, transducer, result) {
  * @name transform
  *
  * @catchphrase
- * execute data transformation by transducer + concatenation
+ * execute a transducer by concatenation
  *
  * @synopsis
  * transform(
@@ -2842,26 +2805,21 @@ const genericTransform = function (args, transducer, result) {
  *   init function|any,
  * )(...any) -> Promise|any
  *
- * Reducer<T> = (any, T)=>Promise|any
+ * Reducer = (any, T)=>Promise|any
  *
  * Transducer = Reducer=>Reducer
- *
- * TODO explore Semigroup = Iterator|AsyncIterator
  *
  * Semigroup = Array|string|Set|TypedArray
  *   |{ concat: function }|{ write: function }|Object
  *
+ * Foldable = Iterable|AsyncIterable|{ reduce: function }|Object|any
+ *
  * transform(
  *   transducer Transducer,
- *   init ((collection, ...restArgs)=>Promise|Semigroup|any)
+ *   init (collection=>Promise|Semigroup|any)
  *     |Semigroup
  *     |any,
- * )(
- *   collection Iterable|Iterator
- *     |AsyncIterable|AsyncIterator
- *     |{ reduce: function }|Object|any,
- *   restArgs ...any
- * ) -> Semigroup Promise|any
+ * )(collection Foldable) -> result Promise|Semigroup|any
  *
  * transform(
  *   transducer Transducer,
@@ -2869,7 +2827,7 @@ const genericTransform = function (args, transducer, result) {
  *     |Semigroup
  *     |any,
  * )(
- *   generatorFunction (...args=>Generator)|(...args=>AsyncGenerator),
+ *   generatorFunction GeneratorFunction|AsyncGeneratorFunction,
  * ) -> reducingFunction (args ...any)=>Promise|Semigroup|any
  *
  * transform(
@@ -2878,13 +2836,11 @@ const genericTransform = function (args, transducer, result) {
  *     |Semigroup
  *     |any,
  * )(
- *   anotherReducer Reducer, moreReducers ...Reducer
+ *   reducer Reducer, moreReducers ...Reducer
  * ) -> chainedReducingFunction (args ...any)=>Promise|any
  *
  * @description
- * Before reading further, make sure to have a decent understanding of [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
- *
- * **transform** executes a reducing operation defined by a transducer, initial value or resolver of value, and a concatenation operation `.concat` specific to the type of the resolved initial value.
+ * Execute a transducer for each item of a collection, concatenating results into the accumulator. The initial value may be a function, in which case it is treated as a resolver.
  *
  * ```javascript [playground]
  * const square = number => number ** 2
@@ -2909,17 +2865,6 @@ const genericTransform = function (args, transducer, result) {
  * ) // Uint8Array(3) [ 1, 9, 25 ]
  * ```
  *
- * `transform` is effectively `reduce` paired with a transduced reducer with a type specific `.concat` operation for merging pipeline items into the aggregate result. `transform` is a specialized application of `reduce` towards transformations between domains. For example, the above `squaredOdds` transducer is capable of transforming an array of numbers to another array, a string, or a slice of bytes based on the initial value of the accumulator.
- *
- * The full spectrum of types that `transform` recognizes as domains is defined by the `Semigroup` type and category. If concatenation makes sense for objects of a certain type, it could be considered a `Semigroup` ([fantasyland spec](https://github.com/fantasyland/fantasy-land#semigroup)).
- *
- * rubico defines several built-in types as part of `Semigroup`, including ones that do not necessarily implement `.concat` but where concatenation is sensible. For example, `transform` can operate on instances of `TypedArray` even when they do not officially implement `.concat`. This happens via a library algorithm that manages the size of the buffer.
- *
- * ```
- * Semigroup = Array|string|Set|TypedArray
- *   |{ concat: function }|{ write: function }|Object
- * ```
- *
  * Concatenation varies by aggregate result and pipeline item. Generally, if an item is of the same type as the aggregate result, it is flattened into the result. Otherwise, the item is appended.
  *
  *  * `Array` - concatenation resembles `result.concat(item)`. Non-arrays are concatenated as items, while arrays are flattened.
@@ -2930,7 +2875,7 @@ const genericTransform = function (args, transducer, result) {
  *  * { write: function } - an object that implements write; these are for Node.js streams. Concatenation calls the method `.write` in `result.write(item)` or `item.pipe(result)` if the `item` is readable.
  *  * Object - a regular object, this could be state. Concatenation is a shallow merge `{ ...object, ...item }` or identity for null and undefined.
  *
- * When an object implements `.concat`, it can be transformed as a Semigroup. This is to be able to support transformations of any custom object that could be considered a semigroup.
+ * Any object that implements `.concat` can be transformed as a Semigroup.
  *
  * ```javascript [playground]
  * const Max = function (number) {
@@ -2949,7 +2894,7 @@ const genericTransform = function (args, transducer, result) {
  * )([-1, -2, -3, -4, -5]) // Max { 5 }
  * ```
  *
- * With `transform`, it is possible to pipe together streams and async streams, e.g. Node.js Streams with async iterables. This is made possible by rubico's internal promise handling.
+ * Node.js WritableStream interfaces are consumed as well.
  *
  * ```javascript
  * // this example is duplicated in rubico/examples/transformStreamRandomInts.js
@@ -2973,7 +2918,7 @@ const genericTransform = function (args, transducer, result) {
  * )(streamRandomInts()) // 9216576529289484980147613249169774446246768649...
  * ```
  *
- * For an aggregate object, incoming items are assigned. This behavior combined with reducer combinators supports application state management with async reducers similar to `reduce`.
+ * `transform`, like `reduce`, supports reducer combination. This has a use case in state management, where for an aggregate state object, incoming values are concatenated (shallowly assigned).
  *
  * ```javascript [playground]
  * const reducerA = async (state, action) => {
@@ -2997,7 +2942,8 @@ const genericTransform = function (args, transducer, result) {
  * }
  *
  * const reducingABC = transform(
- *   map(logAction), () => ({}),
+ *   map(logAction), // transducer middleware
+ *   () => ({}),
  * )(reducerA, reducerB, reducerC)
  *
  * const actions = [{ type: 'A' }, { type: 'B' }, { type: 'C' }]
@@ -3012,6 +2958,8 @@ const genericTransform = function (args, transducer, result) {
  * @execution series
  *
  * @transducing
+ *
+ * TODO explore Semigroup = Iterator|AsyncIterator
  */
 const transform = function (transducer, init) {
   if (isFunction(init)) {
@@ -3552,42 +3500,11 @@ const binaryFlatMap = function (binary, flatMapper) {
  *   generatorFunction GeneratorFunction,
  *   flatMapper item=>Promise|Monad|Foldable|any,
  * ) -> flatMappingGeneratorFunction GeneratorFunction
- *
- * @related monadArrayFlatten
  */
 const generatorFunctionFlatMap = (
   generatorFunction, flatMapper,
 ) => function* flatMappingGeneratorFunction(...args) {
-  for (const item of generatorFunction(...args)) {
-    const monad = flatMapper(item)
-    if (isArray(monad)) {
-      const monadLength = monad.length
-      let monadIndex = -1
-      while (++monadIndex < monadLength) {
-        yield monad[monadIndex]
-      }
-    } else if (monad == null) {
-      yield monad
-    } else if (typeof monad[symbolIterator] == 'function') {
-      for (const subItem of monad) {
-        yield subItem
-      }
-    } else if (typeof monad.chain == 'function') {
-      yield monad.chain(identity)
-    } else if (typeof monad.flatMap == 'function') {
-      yield monad.flatMap(identity)
-    } else if (typeof monad.reduce == 'function') {
-      for (const monadItem of monad.reduce(arrayPush, [])) {
-        yield monadItem
-      }
-    } else if (monad.constructor == Object) {
-      for (const key in monad) {
-        yield monad[key]
-      }
-    } else {
-      yield monad
-    }
-  }
+  yield* new FlatMappingIterator(generatorFunction(...args), flatMapper)
 }
 
 /**
@@ -3777,6 +3694,8 @@ const asyncGeneratorFunctionFlatMap = (
  *
  * @synopsis
  * ```coffeescript [specscript]
+ * flatMap(flatMapper function)(value any) -> result any
+ *
  * DuplexStream = { read: function, write: function }
  *
  * Monad = Array|String|Set
@@ -3809,7 +3728,7 @@ const asyncGeneratorFunctionFlatMap = (
  * ```
  *
  * @description
- * **flatMap** applies a function to each item of a Monad, flattening any resulting Monad or Foldable. The result is always the same type as the input value with all items mapped and flattened. The following outlines `flatMap` behavior for various Monads.
+ * Apply a function to each item of a collection, flattening any resulting collection. The result is always the same type as the input value with all items mapped and flattened. The following outlines behavior for various collections.
  *
  *   * Array - map items then flatten results into a new Array
  *   * String|string - map items then flatten (`+`) results into a new string
@@ -3831,7 +3750,7 @@ const asyncGeneratorFunctionFlatMap = (
  *   * Object - a plain Object, values are mapped then flattened into result by `Object.assign`
  *   * Reducer - a function to be used in a reducing operation. Items of a flatMapped reducing operation are mapped then flattened into the aggregate
  *
- * For arrays, `flatMap` applies the flatMapper function by `map`, then flattens the results. If the flatMapper function is asynchronous, `flatMap` executes that function per each item concurrently.
+ * On arrays, map the flatMapper function with concurrent asynchronous execution, then flatten the result one depth.
  *
  * ```javascript [playground]
  * const duplicate = number => [number, number]
@@ -3846,11 +3765,7 @@ const asyncGeneratorFunctionFlatMap = (
  *   [1, 2, 3, 4, 5]).then(console.log) // [1, 1, 2, 2, 3, 3, 4, 4, 5, 5]
  * ```
  *
- * All monads returned by the flatMapper are flattened into the result by type-specific iteration and concatenation, with the exception of async iterables that are muxed instead.
- *
- * > Muxing, or asynchronously "mixing", is the process of combining multiple asynchronous sources into one source, with order determined by the asynchronous resolution of the individual items.
- *
- * `flatMap`'s default muxing behavior may be useful for working with asynchronous streams, e.g. DOM events or requests.
+ * In general, collections returned by the flatMapper are flattened into the result by type-specific iteration and concatenation, while async iterables are muxed. Muxing, or asynchronously "mixing", is the process of combining multiple asynchronous sources into one source, with order determined by the asynchronous resolution of the individual items. This behavior is useful for working with asynchronous streams, e.g. of DOM events or requests.
  *
  * ```javascript [playground]
  * const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
@@ -3876,22 +3791,17 @@ const asyncGeneratorFunctionFlatMap = (
  * // ['foo', 'bar', 'baz', 'foo', 'bar', 'baz', 'foo', 'bar', 'baz']
  * ```
  *
- * The following is a list of all the items that `flatMap` flattens by concatenation after concurrent execution of the flatMapper is complete. These items can be Monads or Foldables.
+ * Upon flatMapper execution, flatten any collection return into the result.
  *
- *   * Object that implements `.chain` or `.flatMap` - either of these is called directly to flatten
- *   * Iterable - implements Symbol.iterator
- *   * Iterator - implements Symbol.iterator that returns itself
- *   * AsyncIterator - implements Symbol.asyncIterator that returns itself
- *   * Generator - the product of a generator function `function* () {}`
+ *   * Iterable - items are concatenated into the result
+ *   * Iterator/Generator - items are concatenated into the result. Source is consumed.
  *   * Object that implements `.reduce` - this function is called directly for flattening
- *   * Object - a plain object, specifically its values are flattened
+ *   * Object that implements `.chain` or `.flatMap` - either of these is called directly to flatten
+ *   * any other Object - values are flattened
+ *   * AsyncIterable - items are muxed by asynchronous resolution
+ *   * AsyncIterator/AsyncGenerator - items are muxed by asynchronous resolution. Source is consumed.
  *
- * The following is a list of all the items that `flatMap` muxes.
- *
- *   * AsyncIterable - implements Symbol.asyncIterator
- *   * AsyncGenerator - the product of an async generator function `async function* () {}`
- *
- * All other types are not flattened nor muxed and are left in the result as is.
+ * All other types are left in the result as they are.
  *
  * ```javascript [playground]
  * const identity = value => value
@@ -3905,13 +3815,11 @@ const asyncGeneratorFunctionFlatMap = (
  *   6,
  *   Promise.resolve(7),
  *   new Uint8Array([8]),
- *   undefined,
- *   null,
  * ]).then(console.log)
- * // [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 8, undefined, null]
+ * // [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 8]
  * ```
  *
- * `flatMap` supports purer functional programming with monads. When a flatMapping operation encounters a monad, it calls the monad's `.chain` method directly.
+ * Purer functional programming is possible with flatMap operation on monads. A monad could be any object that implements `.chain` or `.flatMap`. When a flatMapping operation encounters a monad, it calls the monad's `.chain` method directly to flatten.
  *
  * ```javascript [playground]
  * const Maybe = value => ({
@@ -3925,7 +3833,7 @@ const asyncGeneratorFunctionFlatMap = (
  * flatMap(console.log)(Maybe('hello world')) // hello world
  * ```
  *
- * When `flatMap` receives a reducer as the first input argument, it acts as a transducer and creates an async-capable flatMapping version of the argument reducer using the flatMapper function.
+ * In addition to monads, `flatMap` provides much needed flexibility when working with transducers. A flatMapping transducer is like a mapping transducer except all items of a reducing operation are additionally flattened into the result.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -3947,10 +3855,10 @@ const asyncGeneratorFunctionFlatMap = (
  *   filter(isOdd),
  *   flatMap(asyncPowers),
  * ])
- * ```
  *
  * transform(asyncOddPowers, [])([1, 2, 3, 4, 5]).then(console.log)
  * // [1, 1, 1, 3, 9, 27, 5, 25, 125]
+ * ```
  *
  * @execution concurrent
  *
@@ -4006,37 +3914,70 @@ const flatMap = flatMapper => function flatMapping(value) {
   return flatMapper(value)
 }
 
-/**
- * @name isDelimitedBy
- *
- * @synopsis
- * isDelimitedBy(delim string, value string) -> boolean
- */
-const isDelimitedBy = (delim, value) => (value != null
-  && value[0] !== delim
-  && value[value.length - 1] !== delim
-  && value.slice(1, value.length - 1).includes(delim))
+// a[0].b.c
+const pathStringSplitRegex = /[.|[|\]]+/
 
 /**
- * @name arrayPathGet
+ * @name memoizedCappedPathStringSplit
  *
  * @synopsis
- * arrayPathGet(
- *   path Array<string|number>,
- *   value any,
- *   defaultValue function|any,
- * ) -> result any
+ * memoizedCappedPathStringSplit(pathString string) -> Array<string>
+ *
+ * @note
+ * a[0].b.c
+ * a.0.b[0][1].c
  */
-const arrayPathGet = (path, value, defaultValue) => {
-  if (value == null) {
-    return isFunction(defaultValue) ? defaultValue(value) : defaultValue
+const pathStringSplit = function (pathString) {
+  const pathStringLastIndex = pathString.length - 1,
+    firstChar = pathString[0],
+    lastChar = pathString[pathStringLastIndex],
+    isFirstCharLeftBracket = firstChar == '[',
+    isLastCharRightBracket = lastChar == ']'
+
+  if (isFirstCharLeftBracket && isLastCharRightBracket) {
+    return pathString.slice(1, pathStringLastIndex).split(pathStringSplitRegex)
+  } else if (isFirstCharLeftBracket) {
+    return pathString.slice(1).split(pathStringSplitRegex)
+  } else if (isLastCharRightBracket) {
+    return pathString.slice(0, pathStringLastIndex).split(pathStringSplitRegex)
   }
-  const pathLength = path.length
-  let result = value, i = -1
-  while (++i < pathLength) {
-    result = result[path[i]]
+  return pathString.split(pathStringSplitRegex)
+}
+
+// memoized version of pathStringSplit, max cache size 500
+const memoizedCappedPathStringSplit = memoizeCappedUnary(pathStringSplit, 500)
+
+/**
+ * @name pathToArray
+ *
+ * @synopsis
+ * pathToArray(path Array|string|object)
+ */
+const pathToArray = function (path) {
+  if (typeof path == 'string' || path.constructor == String) {
+    return memoizedCappedPathStringSplit(path)
+  }
+  if (isArray(path)) {
+    return path
+  }
+  return [path]
+}
+
+/**
+ * @name getByPath
+ *
+ * @synopsis
+ * getByPath(object Object, path string|Array|any) -> any
+ */
+const getByPath = function (object, path) {
+  const pathArray = pathToArray(path),
+    pathArrayLength = pathArray.length
+  let index = -1,
+    result = object
+  while (++index < pathArrayLength) {
+    result = result[pathArray[index]]
     if (result == null) {
-      return isFunction(defaultValue) ? defaultValue(value) : defaultValue
+      return undefined
     }
   }
   return result
@@ -4045,310 +3986,1163 @@ const arrayPathGet = (path, value, defaultValue) => {
 /**
  * @name get
  *
+ * @catchphrase
+ * access a property by path
+ *
  * @synopsis
  * get(
- *   path Array<number|string>|number|string,
- *   defaultValue function|any,
+ *   path string|Array|any,
+ *   defaultValue (value=>any)|any?,
  * )(value any) -> result any
  *
- * @catchphrase
- * Access a property by path
- *
  * @description
- * **get** takes an Array of Numbers or Strings, Number, or String `path` argument, a function or any `defaultValue` argument, and returns a getter function that, when supplied any `value`, returns a property on that `value` described by `path`.
+ * Access properties on objects. `get(property)` creates a function that, when supplied an object, returns the value on the object associated with `property`.
  *
- * @example
- * const nestedABC = { a: { b: { c: 1 } } }
+ * ```javascript [playground]
+ * console.log(
+ *   get('hello')({ hello: 'world' }),
+ * ) // world
+ * ```
+ *
+ * `get` accepts a default value to return if the property is not found. This default value may be a resolver of such value - rubico supplies this function with the input object.
+ *
+ * ```javascript [playground]
+ * console.log(
+ *   get('hello', 'default')({ foo: 'bar' }),
+ * ) // default
  *
  * console.log(
- *   get('a.b.c')(nestedABC),
- * ) // 1
+ *   get('hello', object => object.foo)({ foo: 'bar' }),
+ * ) // bar
+ * ```
+ *
+ * At times it is necessary to access nested properties. `get` supports nested property access for the following `path` patterns.
+ *
+ *  * a dot delimited string
+ *  * bracket notation property access
+ *  * an array of string keys or number indices
+ *
+ * ```javascript [playground]
+ * const nestedABC0 = { a: { b: { c: ['hello'] } } }
+ *
+ * console.log(
+ *   get('a.b.c[0]')(nestedABC0),
+ * ) // hello
+ *
+ * const nested00000 = [[[[['foo']]]]]
+ *
+ * console.log(
+ *   get('0.0.0.0.0')(nested00000),
+ * ) // foo
+ *
+ * console.log(
+ *   get('[0][0][0][0][0]')(nested00000),
+ * ) // foo
+ *
+ * console.log(
+ *   get([0, 0, 0, 0, 0])(nested00000),
+ * ) // foo
+ * ```
  */
-const get = (path, defaultValue) => {
-  if (isArray(path)) return value => arrayPathGet(path, value, defaultValue)
-  if (isNumber(path)) return value => arrayPathGet([path], value, defaultValue)
-  if (isString(path)) return (isDelimitedBy('.', path)
-    ? value => arrayPathGet(path.split('.'), value, defaultValue)
-    : value => arrayPathGet([path], value, defaultValue))
-  throw new TypeError(`get(path); invalid path ${path}`)
+const get = (path, defaultValue) => function getter(value) {
+  const result = value == null ? undefined : getByPath(value, path)
+  return result === undefined
+    ? typeof defaultValue == 'function' ? defaultValue(value) : defaultValue
+    : result
 }
 
-/*
+/**
+ * @name pick
+ *
+ * @catchphrase
+ * pick properties from an object
+ *
  * @synopsis
- * TODO
+ * pick(Array<string|Array|any>)(source Object) -> picked Object
+ *
+ * @description
+ * Create a new object from a source object including only the properties from a provided array.
+ *
+ * ```javascript [playground]
+ * console.log(
+ *   pick(['hello', 'world'])({ goodbye: 1, world: 2 }),
+ * ) // { world: 2 }
+ * ```
  */
-const pickObject = (props, x) => {
-  const y = {}
-  for (let i = 0; i < props.length; i++) {
-    if (isDefined(x[props[i]])) y[props[i]] = x[props[i]]
+const pick = keys => function picking(source) {
+  if (source == null) {
+    return source
   }
-  return y
-}
 
-/*
- * @synopsis
- * TODO
- */
-const pick = props => {
-  if (isArray(props)) return x => {
-    if (isObject(x)) return pickObject(props, x)
-    throw new TypeError('pick(...)(x); x is not an object')
+  const keysLength = keys.length,
+    result = {}
+  let keysIndex = -1
+  while (++keysIndex < keysLength) {
+    const key = keys[keysIndex],
+      value = source[key]
+    if (value != null) {
+      result[key] = value
+    }
   }
-  throw new TypeError('pick(x); x is not an array')
+  return result
 }
 
-/*
+/**
+ * @name omit
+ *
+ * @catchphrase
+ * exclude properties from an object
+ *
  * @synopsis
- * TODO
+ * omit(Array<string|Array|any>)(source Object) -> omitted Object
+ *
+ * @description
+ * Create a new object excluding the keys from a provided array.
+ *
+ * ```javascript [playground]
+ * console.log(
+ *   omit(['_id'])({ _id: '1', name: 'George' }),
+ * ) // { name: 'George' }
+ * ```
  */
-const omitObject = (props, x) => {
-  const y = Object.assign({}, x)
-  for (let i = 0; i < props.length; i++) delete y[props[i]]
-  return y
-}
-
-/*
- * @synopsis
- * TODO
- */
-const omit = props => {
-  if (isArray(props)) return x => {
-    if (isObject(x)) return omitObject(props, x)
-    throw new TypeError('omit(...)(x); x is not an object')
+const omit = keys => function omitting(source) {
+  if (source == null) {
+    return source
   }
-  throw new TypeError('omit(x); x is not an array')
+
+  const keysLength = keys.length,
+    result = { ...source }
+  let keysIndex = -1
+  while (++keysIndex < keysLength) {
+    delete result[keys[keysIndex]]
+  }
+  return result
 }
 
-/*
+/**
+ * @name promiseInFlight
+ *
  * @synopsis
- * TODO
+ * promiseInFlight(basePromise<T>) -> Promise<[T, basePromise<T>]>
  */
-const anyIterable = (fn, x) => {
+const promiseInFlight = function (basePromise) {
+  const promise = basePromise.then(res => [res, promise])
+  return promise
+}
+
+/**
+ * @name asyncArrayAny
+ *
+ * @synopsis
+ * asyncArrayAny(
+ *   array Array,
+ *   predicate any=>Promise|boolean,
+ *   index number,
+ *   promisesInFlight Set<Promise>,
+ * ) -> boolean
+ */
+const asyncArrayAny = async function (
+  array, predicate, index, promisesInFlight,
+) {
+  const length = array.length
+
+  while (++index < length) {
+    const predication = predicate(array[index])
+    if (isPromise(predication)) {
+      promisesInFlight.add(promiseInFlight(predication))
+    } else if (predication) {
+      return true
+    }
+  }
+  while (promisesInFlight.size > 0) {
+    const [predication, promise] = await promiseRace(promisesInFlight)
+    promisesInFlight.delete(promise)
+    if (predication) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * @name arrayAny
+ *
+ * @synopsis
+ * arrayAny(
+ *   array Array,
+ *   predicate any=>Promise|boolean,
+ * ) -> boolean
+ */
+const arrayAny = function (array, predicate) {
+  const length = array.length
+  let index = -1
+  while (++index < length) {
+    const predication = predicate(array[index])
+    if (isPromise(predication)) {
+      return asyncArrayAny(
+        array, predicate, index, new Set([promiseInFlight(predication)]))
+    }
+    if (predication) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * @name asyncIteratorAny
+ *
+ * @synopsis
+ * asyncIteratorAny(
+ *   iterator Iterator|AsyncIterator,
+ *   predicate any=>Promise|boolean,
+ *   index number,
+ *   promisesInFlight Set<Promise>,
+ *   maxConcurrency number=20,
+ * ) -> boolean
+ */
+const asyncIteratorAny = async function (
+  iterator, predicate, promisesInFlight, maxConcurrency = 20,
+) {
+  let iteration = iterator.next()
+  if (isPromise(iteration)) {
+    iteration = await iteration
+  }
+
+  while (!iteration.done) {
+    if (promisesInFlight.size >= maxConcurrency) {
+      const [predication, promise] = await promiseRace(promisesInFlight)
+      promisesInFlight.delete(promise)
+      if (predication) {
+        return true
+      }
+    }
+    const predication = predicate(iteration.value)
+    if (isPromise(predication)) {
+      promisesInFlight.add(promiseInFlight(predication))
+    } else if (predication) {
+      return true
+    }
+    iteration = iterator.next()
+    if (isPromise(iteration)) {
+      iteration = await iteration
+    }
+  }
+  while (promisesInFlight.size > 0) {
+    const [predication, promise] = await promiseRace(promisesInFlight)
+    promisesInFlight.delete(promise)
+    if (predication) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * @name iteratorAny
+ *
+ * @synopsis
+ * iteratorAny(
+ *   iterator Iterator,
+ *   predicate any=>Promise|boolean,
+ * ) -> boolean
+ */
+const iteratorAny = function (iterator, predicate) {
+  for (const item of iterator) {
+    const predication = predicate(item)
+    if (isPromise(predication)) {
+      return asyncIteratorAny(
+        iterator, predicate, new Set([promiseInFlight(predication)]))
+    }
+    if (predication) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * @name objectValuesGenerator
+ *
+ * @synopsis
+ * objectValuesGenerator(object Object<T>) -> Generator<T>
+ */
+const objectValuesGenerator = function* (object) {
+  for (const key in object) {
+    yield object[key]
+  }
+}
+
+
+/**
+ * @name _foldableAnyReducer
+ *
+ * @synopsis
+ * _foldableAnyReducer(predicate any=> boolean, result boolean, item any) -> boolean
+ */
+const _foldableAnyReducer = (predicate, result, item) => result ? true : predicate(item)
+
+/**
+ * @name foldableAnyReducer
+ *
+ * @synopsis
+ * foldableAnyReducer(
+ *   predicate any=>boolean,
+ * ) -> reducer(result boolean, item any)=>boolean
+ *
+ * @related foldableAllReducer
+ */
+const foldableAnyReducer = predicate => function anyReducer(result, item) {
+  return result === true ? true
+    : isPromise(result) ? result.then(
+      curry3(_foldableAnyReducer, predicate, __, item))
+    : result ? true : predicate(item)
+}
+
+/**
+ * @name any
+ *
+ * @catchphrase
+ * any items truthy
+ *
+ * @synopsis
+ * any(predicate function)(value any) -> result Promise|boolean
+ *
+ * Foldable = Iterable|AsyncIterable|{ reduce: function }
+ *
+ * any(predicate any=>Promise|boolean)(value Foldable) -> Promise|boolean
+ *
+ * @description
+ * Concurrently test a predicate across all items of a collection, returning true if any predication is truthy.
+ *
+ * ```javascript [playground]
+ * const isOdd = number => number % 2 == 1
+ *
+ * console.log(
+ *   any(isOdd)([1, 2, 3, 4, 5]),
+ * ) // true
+ * ```
+ *
+ * The predicate may return a Promise, while the value may be an asynchronous stream.
+ *
+ * ```javascript [playground]
+ * const toTodosUrl = id => 'https://jsonplaceholder.typicode.com/todos/' + id
+ *
+ * const fetchedToJson = fetched => fetched.json()
+ *
+ * const fetchTodo = pipe([
+ *   toTodosUrl,
+ *   fetch,
+ *   fetchedToJson,
+ * ])
+ *
+ * const todoIDsGenerator = async function* () {
+ *   yield 1; yield 2; yield 3; yield 4; yield 5
+ * }
+ *
+ * any(pipe([
+ *   fetchTodo,
+ *   todo => todo.title.startsWith('fugiat'),
+ * ]))(todoIDsGenerator()).then(console.log) // true
+ * ```
+ *
+ * @execution concurrent
+ *
+ * @muxing
+ *
+ * @related or
+ */
+const any = predicate => function anyTruthy(value) {
+  if (isArray(value)) {
+    return arrayAny(value, predicate)
+  }
+  if (value == null) {
+    return predicate(value)
+  }
+  if (typeof value[symbolIterator] == 'function') {
+    return iteratorAny(value[symbolIterator](), predicate)
+  }
+  if (typeof value[symbolAsyncIterator] == 'function') {
+    return asyncIteratorAny(value[symbolAsyncIterator](), predicate, new Set())
+  }
+  if (typeof value.reduce == 'function') {
+    return value.reduce(foldableAnyReducer(predicate), false)
+  }
+  if (value.constructor == Object) {
+    return iteratorAny(objectValuesGenerator(value), predicate)
+  }
+  return !!predicate(value)
+}
+
+/**
+ * @name callPropUnary
+ *
+ * @synopsis
+ * callPropUnary(
+ *   value object,
+ *   property string,
+ *   arg0 any,
+ * ) -> value[property](arg0)
+ */
+const callPropUnary = (value, property, arg0) => value[property](arg0)
+
+/**
+ * @name arrayAll
+ *
+ * @synopsis
+ * arrayAll(array Array, predicate ...any=>boolean) -> boolean
+ */
+const arrayAll = function (array, predicate) {
+  const arrayLength = array.length,
+    promises = []
+  let index = -1
+  while (++index < arrayLength) {
+    const predication = predicate(array[index])
+    if (isPromise(predication)) {
+      promises.push(predication)
+    } else if (!predication) {
+      return false
+    }
+  }
+  return promises.length == 0
+    ? true
+    : promiseAll(promises).then(curry3(callPropUnary, __, 'every', Boolean))
+}
+
+/**
+ * @name iteratorAll
+ *
+ * @synopsis
+ * iteratorAll(iterator Iterator, predicate ...any=>boolean) -> boolean
+ */
+const iteratorAll = function (iterator, predicate) {
   const promises = []
-  for (const xi of x) {
-    const point = fn(xi)
-    if (isPromise(point)) promises.push(point)
-    else if (point) return (promises.length > 0
-      ? Promise.all(promises).then(() => true)
-      : true)
+  for (const item of iterator) {
+    const predication = predicate(item)
+    if (isPromise(predication)) {
+      promises.push(predication)
+    } else if (!predication) {
+      return false
+    }
   }
-  return (promises.length > 0
-    ? Promise.all(promises).then(res => res.some(x => x))
-    : false)
+  return promises.length == 0
+    ? true
+    : promiseAll(promises).then(curry3(callPropUnary, __, 'every', Boolean))
 }
 
-/*
+/**
+ * @name asyncIteratorAll
+ *
  * @synopsis
- * TODO
+ * asyncIteratorAll(asyncIterator AsyncIterator, predicate ...any=>boolean) -> boolean
+ *
+ * @related asyncIteratorAny
  */
-const anyObject = (fn, x) => anyIterable(
-  fn,
-  (function* () { for (const k in x) yield x[k] })(),
-)
+const asyncIteratorAll = async function (
+  iterator, predicate, promisesInFlight, maxConcurrency = 20,
+) {
+  let iteration = iterator.next()
+  if (isPromise(iteration)) {
+    iteration = await iteration
+  }
 
-/*
- * @synopsis
- * TODO
- */
-const any = fn => {
-  if (!isFunction(fn)) {
-    throw new TypeError('any(x); x is not a function')
+  while (!iteration.done) {
+    if (promisesInFlight.size >= maxConcurrency) {
+      const [predication, promise] = await promiseRace(promisesInFlight)
+      promisesInFlight.delete(promise)
+      if (!predication) {
+        return false
+      }
+    }
+    const predication = predicate(iteration.value)
+    if (isPromise(predication)) {
+      promisesInFlight.add(promiseInFlight(predication))
+    } else if (!predication) {
+      return false
+    }
+    iteration = iterator.next()
+    if (isPromise(iteration)) {
+      iteration = await iteration
+    }
   }
-  return x => {
-    if (isIterable(x)) return anyIterable(fn, x)
-    if (isObject(x)) return anyObject(fn, x)
-    throw new TypeError('any(...)(x); x invalid')
+  while (promisesInFlight.size > 0) {
+    const [predication, promise] = await promiseRace(promisesInFlight)
+    promisesInFlight.delete(promise)
+    if (!predication) {
+      return false
+    }
   }
+  return true
 }
 
-/*
+/**
+ * @name _foldableAllReducer
+ *
  * @synopsis
- * TODO
+ * _foldableAllReducer(predicate any=> boolean, result boolean, item any) -> boolean
  */
-const allIterable = (fn, x) => {
-  const promises = []
-  for (const xi of x) {
-    const point = fn(xi)
-    if (isPromise(point)) promises.push(point)
-    else if (!point) return (promises.length > 0
-      ? Promise.all(promises).then(() => false)
-      : false)
-  }
-  return (promises.length > 0
-    ? Promise.all(promises).then(res => res.every(x => x))
-    : true)
+const _foldableAllReducer = (predicate, result, item) => result ? predicate(item) : false
+
+/**
+ * @name foldableAllReducer
+ *
+ * @synopsis
+ * foldableAllReducer(
+ *   predicate any=>boolean,
+ * ) -> reducer(result boolean, item any)=>boolean
+ *
+ * @related foldableAnyReducer
+ */
+const foldableAllReducer = predicate => function allReducer(result, item) {
+  return result === false ? false
+    : isPromise(result) ? result.then(
+      curry3(_foldableAllReducer, predicate, __, item))
+    : result ? predicate(item) : false
 }
 
-/*
+/**
+ * @name all
+ *
+ * @catchphrase
+ * all items truthy
+ *
  * @synopsis
- * TODO
+ * all(predicate function)(value all) -> result Promise|boolean
+ *
+ * Foldable = Iterable|AsyncIterable|{ reduce: function }
+ *
+ * all(predicate all=>Promise|boolean)(value Foldable) -> Promise|boolean
+ *
+ * @description
+ * Concurrently test a predicate across all items of a collection, returning true if all predications are truthy.
+ *
+ * ```javascript [playground]
+ * const isOdd = number => number % 2 == 1
+ *
+ * console.log(
+ *   all(isOdd)([1, 2, 3, 4, 5]),
+ * ) // false
+ *
+ * console.log(
+ *   all(isOdd)([1, 3, 5]),
+ * ) // true
+ * ```
+ *
+ * The predicate may return a Promise, while the value may be an asynchronous stream.
+ *
+ * ```javascript [playground]
+ * const asyncNumbers = async function* () {
+ *   yield 1; yield 2; yield 3; yield 4; yield 5
+ * }
+ *
+ * all(async number => number < 6)(asyncNumbers()).then(console.log) // true
+ * ```
+ *
+ * @execution concurrent
+ *
+ * @muxing
  */
-const allObject = (fn, x) => allIterable(
-  fn,
-  (function* () { for (const k in x) yield x[k] })(),
-)
+const all = predicate => function allTruthy(value) {
+  if (isArray(value)) {
+    return arrayAll(value, predicate)
+  }
+  if (value == null) {
+    return predicate(value)
+  }
 
-/*
- * @synopsis
- * TODO
- */
-const all = fn => {
-  if (!isFunction(fn)) {
-    throw new TypeError('all(x); x is not a function')
+  if (typeof value[symbolIterator] == 'function') {
+    return iteratorAll(value, predicate)
   }
-  return x => {
-    if (isIterable(x)) return allIterable(fn, x)
-    if (isObject(x)) return allObject(fn, x)
-    throw new TypeError('all(...)(x); x invalid')
+  if (typeof value[symbolAsyncIterator] == 'function') {
+    return asyncIteratorAll(value, predicate, new Set())
   }
+  if (typeof value.reduce == 'function') {
+    return value.reduce(foldableAllReducer(predicate), true)
+  }
+  if (value.constructor == Object) {
+    return iteratorAll(objectValuesGenerator(value), predicate)
+  }
+  return !!predicate(value)
 }
 
-/*
+// true -> false
+const _not = value => !value
+
+/**
+ * @name not
+ *
+ * @catchphrase
+ * logical inversion
+ *
  * @synopsis
- * TODO
+ * not(predicate ...any=>Promise|boolean) -> logicalInverter ...any=>Promise|boolean
+ *
+ * @description
+ * Logically invert a function by always logically inverting its return value. Predicate may be asynchronous.
+ *
+ * ```javascript [playground]
+ * console.log(
+ *   not(isOdd)(3),
+ * ) // false
+ * ```
  */
-const arrayAnd = (fns, x) => {
-  const promises = []
-  for (let i = 0; i < fns.length; i++) {
-    const point = fns[i](x)
-    if (isPromise(point)) promises.push(point)
-    else if (!point) return (promises.length > 0
-      ? Promise.all(promises).then(() => false)
-      : false)
-  }
-  return (promises.length > 0
-    ? Promise.all(promises).then(res => res.every(x => x))
-    : true)
+const not = func => function logicalInverter(...args) {
+  const boolean = func(...args)
+  return isPromise(boolean) ? boolean.then(_not) : !boolean
 }
 
-/*
+/**
+ * @name notSync
+ *
  * @synopsis
- * TODO
+ * notSync(func ...any=>boolean) -> logicallyInverted ...any=>boolean
  */
-const and = fns => {
-  if (!isArray(fns)) {
-    throw new TypeError('and(x); x is not an array of functions')
-  }
-  if (fns.length < 1) {
-    throw new RangeError('and(x); x is not an array of at least one function')
-  }
-  for (let i = 0; i < fns.length; i++) {
-    if (isFunction(fns[i])) continue
-    throw new TypeError(`and(x); x[${i}] is not a function`)
-  }
-  return x => arrayAnd(fns, x)
+const notSync = func => function notSync(...args) {
+  return !func(...args)
 }
 
-/*
+/**
+ * @name not.sync
+ *
+ * @catchphrase
+ * synchronous not
+ *
  * @synopsis
- * TODO
+ * not.sync(func ...any=>boolean) -> logicallyInverted ...any=>boolean
+ *
+ * @description
+ * Logically invert a function without promise handling.
+ *
+ * ```javascript [playground]
+ * console.log(
+ *   not.sync(isOdd)(2),
+ * ) // true
+ * ```
  */
-const arrayOr = (fns, x) => {
-  const promises = []
-  for (let i = 0; i < fns.length; i++) {
-    const point = fns[i](x)
-    if (isPromise(point)) promises.push(point)
-    else if (point) return (promises.length > 0
-      ? Promise.all(promises).then(() => true)
-      : true)
+not.sync = notSync
+
+/**
+ * @name asyncAnd
+ *
+ * @synopsis
+ * asyncAnd(
+ *   predicates Array<value=>Promise|boolean>
+ *   value any,
+ * ) -> allTruthy boolean
+ */
+const asyncAnd = async function (predicates, value) {
+  const length = predicates.length
+  let index = -1
+  while (++index < length) {
+    let predication = predicates[index](value)
+    if (isPromise(predication)) {
+      predication = await predication
+    }
+    if (!predication) {
+      return false
+    }
   }
-  return (promises.length > 0
-    ? Promise.all(promises).then(res => res.some(x => x))
-    : false)
+  return true
 }
 
-/*
+// handles the first predication before asyncAnd
+const _asyncAndInterlude = (
+  predicates, value, firstPredication,
+) => firstPredication ? asyncAnd(predicates, value) : false
+
+/**
+ * @name and
+ *
+ * @catchphrase
+ * all predicates truthy
+ *
  * @synopsis
- * TODO
+ * and(
+ *   predicates Array<value=>Promise|boolean>
+ * )(value any) -> allTruthy Promise|boolean
+ *
+ * @description
+ * Concurrently test an array of predicates against a single input, returning true if all of them test truthy. Predicates may be asynchronous.
+ *
+ * ```javascript [playground]
+ * const isOdd = number => number % 2 == 1
+ *
+ * const isPositive = number => number > 0
+ *
+ * const isLessThan3 = number => number < 3
+ *
+ * console.log(
+ *   and([isOdd, isPositive, isLessThan3])(1),
+ * ) // true
+ * ```
+ *
+ * @execution serial
+ *
+ * @note ...args slows down here by an order of magnitude
  */
-const or = fns => {
-  if (!isArray(fns)) {
-    throw new TypeError('or(fns); fns is not an array of functions')
+const and = predicates => function allPredicates(value) {
+  const length = predicates.length,
+    promises = []
+  let index = -1
+
+  while (++index < length) {
+    const predication = predicates[index](value)
+    if (isPromise(predication)) {
+      return predication.then(curry3(_asyncAndInterlude, predicates, value, __))
+    }
+    if (!predication) {
+      return false
+    }
   }
-  if (fns.length < 1) {
-    throw new RangeError('or(fns); fns is not an array of at least one function')
+  return true
+}
+
+/**
+ * @name asyncOr
+ *
+ * @synopsis
+ * asyncOr(
+ *   predicates Array<value=>Promise|boolean>
+ *   value any,
+ * ) -> allTruthy boolean
+ */
+const asyncOr = async function (predicates, value) {
+  const length = predicates.length
+  let index = -1
+  while (++index < length) {
+    let predication = predicates[index](value)
+    if (isPromise(predication)) {
+      predication = await predication
+    }
+    if (predication) {
+      return true
+    }
   }
-  for (let i = 0; i < fns.length; i++) {
-    if (isFunction(fns[i])) continue
-    throw new TypeError(`or(fns); fns[${i}] is not a function`)
+  return false
+}
+
+// handles the first predication before asyncOr
+const _asyncOrInterlude = (
+  predicates, value, firstPredication,
+) => firstPredication ? true : asyncOr(predicates, value)
+
+/**
+ * @name or
+ *
+ * @catchphrase
+ * any predicates truthy
+ *
+ * @synopsis
+ * or(
+ *   predicates Array<value=>Promise|boolean>
+ * )(value any) -> anyTruthy Promise|boolean
+ *
+ * @description
+ * Concurrently test an array of predicates against a single input, returning true if any of them test truthy. Predicates may be asynchronous.
+ *
+ * ```javascript [playground]
+ * const isOdd = number => number % 2 == 1
+ *
+ * const isEven = number => number % 2 == 0
+ *
+ * console.log(
+ *   or([isOdd, isEven])(0),
+ * ) // true
+ * ```
+ *
+ * @execution series
+ *
+ * @note ...args slows down here by an order of magnitude
+ */
+const or = predicates => function anyPredicates(value) {
+  const length = predicates.length
+  let index = -1
+
+  while (++index < length) {
+    const predication = predicates[index](value)
+    if (isPromise(predication)) {
+      return predication.then(curry3(_asyncOrInterlude, predicates, value, __))
+    }
+    if (predication) {
+      return true
+    }
   }
-  return x => arrayOr(fns, x)
+  return false
 }
 
-/*
+/**
+ * @name spread2
+ *
  * @synopsis
- * TODO
+ * spread2(func function) -> spreading2 (
+ *   arg0 any, arg1 any,
+ * )=>func(arg0, arg1)
  */
-const not = fn => {
-  if (!isFunction(fn)) {
-    throw new TypeError('not(x); x is not a function')
+const spread2 = func => function spreading2([arg0, arg1]) {
+  return func(arg0, arg1)
+}
+
+/**
+ * @name strictEquals
+ *
+ * @synopsis
+ * strictEquals(a any, b any) -> boolean
+ */
+const strictEquals = (a, b) => a === b
+
+/**
+ * @name eq
+ *
+ * @catchphrase
+ * left strictly equals right
+ *
+ * @synopsis
+ * eq(
+ *   left (any=>Promise|boolean)|any,
+ *   right (any=>Promise|boolean)|any,
+ * ) -> strictEqualsBy (value any)=>Promise|boolean
+ *
+ * @description
+ * Tacit, concurrent test for strict equality (`===`) between two values. Either parameter may be an asynchronous resolver.
+ *
+ * ```javascript [playground]
+ * const personIsGeorge = eq(person => person.name, 'George')
+ *
+ * console.log(
+ *   personIsGeorge({ name: 'George', likes: 'bananas' }),
+ * ) // true
+ * ```
+ *
+ * @execution concurrent
+ */
+const eq = function (left, right) {
+  const isLeftResolver = typeof left == 'function',
+    isRightResolver = typeof right == 'function'
+  if (isLeftResolver && isRightResolver) {
+    return function strictEqualsBy(value) {
+      const leftResolve = left(value),
+        rightResolve = right(value)
+      const isLeftPromise = isPromise(leftResolve),
+        isRightPromise = isPromise(rightResolve)
+      if (isLeftPromise && isRightPromise) {
+        return promiseAll(
+          [leftResolve, rightResolve]).then(spread2(strictEquals))
+      } else if (isLeftPromise) {
+        return leftResolve.then(curry2(strictEquals, __, rightResolve))
+      } else if (isRightPromise) {
+        return rightResolve.then(curry2(strictEquals, leftResolve, __))
+      }
+      return leftResolve === rightResolve
+    }
   }
-  return x => possiblePromiseThen(fn(x), res => !res)
+
+  if (isLeftResolver) {
+    return function strictEqualsBy(value) {
+      const leftResolve = left(value)
+      return isPromise(leftResolve)
+        ? leftResolve.then(curry2(strictEquals, __, right))
+        : leftResolve === right
+    }
+  }
+  if (isRightResolver) {
+    return function strictEqualsBy(value) {
+      const rightResolve = right(value)
+      return isPromise(rightResolve)
+        ? rightResolve.then(curry2(strictEquals, left, __))
+        : left === rightResolve
+    }
+  }
+  return always(left === right)
 }
 
-/*
+/**
+ * @name greaterThan
+ *
  * @synopsis
- * TODO
+ * greaterThan(left any, right any) -> boolean
  */
-const eq = (f, g) => {
-  if (isFunction(f) && isFunction(g)) return x => (
-    possiblePromiseAll([f(x), g(x)]).then(([fx, gx]) => fx === gx))
-  if (isFunction(f)) return x => possiblePromiseThen(f(x), fx => fx === g)
-  if (isFunction(g)) return x => possiblePromiseThen(g(x), gx => f === gx)
-  const h = f === g
-  return () => h
+const greaterThan = (left, right) => left > right
+
+/**
+ * @name gt
+ *
+ * @catchphrase
+ * left greater than right
+ *
+ * @synopsis
+ * gt(
+ *   left (any=>Promise|boolean)|any,
+ *   right (any=>Promise|boolean)|any,
+ * )(value any) -> greaterThanBy(value any)=>Promise|boolean
+ *
+ * @description
+ * Tacit, concurrent test for left value greater than (`>`) right value. Either parameter may be an asynchronous resolver.
+ *
+ * ```javascript
+ * const isOfLegalAge = gt(21, person => person.age)
+ *
+ * const juvenile = { age: 16 }
+ *
+ * console.log(isOfLegalAge(juvenile)) // false
+ * ```
+ */
+const gt = function (left, right) {
+  const isLeftResolver = typeof left == 'function',
+    isRightResolver = typeof right == 'function'
+  if (isLeftResolver && isRightResolver) {
+    return function greaterThanBy(value) {
+      const leftResolve = left(value),
+        rightResolve = right(value)
+      const isLeftPromise = isPromise(leftResolve),
+        isRightPromise = isPromise(rightResolve)
+      if (isLeftPromise && isRightPromise) {
+        return promiseAll(
+          [leftResolve, rightResolve]).then(spread2(greaterThan))
+      } else if (isLeftPromise) {
+        return leftResolve.then(curry2(greaterThan, __, rightResolve))
+      } else if (isRightPromise) {
+        return rightResolve.then(curry2(greaterThan, leftResolve, __))
+      }
+      return leftResolve > rightResolve
+    }
+  }
+
+  if (isLeftResolver) {
+    return function greaterThanBy(value) {
+      const leftResolve = left(value)
+      return isPromise(leftResolve)
+        ? leftResolve.then(curry2(greaterThan, __, right))
+        : leftResolve > right
+    }
+  }
+  if (isRightResolver) {
+    return function strictEqualsBy(value) {
+      const rightResolve = right(value)
+      return isPromise(rightResolve)
+        ? rightResolve.then(curry2(greaterThan, left, __))
+        : left > rightResolve
+    }
+  }
+  return always(left > right)
 }
 
-/*
+/**
+ * @name lessThan
+ *
  * @synopsis
- * TODO
+ * lessThan(left any, right any) -> boolean
  */
-const gt = function (f, g) {
-  if (isFunction(f) && isFunction(g)) return x => (
-    possiblePromiseAll([f(x), g(x)]).then(([fx, gx]) => fx > gx))
-  if (isFunction(f)) return x => possiblePromiseThen(f(x), fx => fx > g)
-  if (isFunction(g)) return x => possiblePromiseThen(g(x), gx => f > gx)
-  const h = f > g
-  return () => h
+const lessThan = (left, right) => left < right
+
+/**
+ * @name lt
+ *
+ * @catchphrase
+ * left greater than right
+ *
+ * @synopsis
+ * lt(
+ *   left (any=>Promise|boolean)|any,
+ *   right (any=>Promise|boolean)|any,
+ * )(value any) -> lessThanBy(value any)=>Promise|boolean
+ *
+ * @description
+ * Tacit, concurrent test for left value less than (`<`) right value. Either parameter may be an asynchronous resolver.
+ *
+ * ```javascript
+ * const identity = value => value
+ *
+ * const isLessThan3 = lt(identity, 3)
+ *
+ * console.log(isLessThan3(1), true)
+ * console.log(isLessThan3(3), false)
+ * console.log(isLessThan3(5), false)
+ * ```
+ */
+const lt = function (left, right) {
+  const isLeftResolver = typeof left == 'function',
+    isRightResolver = typeof right == 'function'
+  if (isLeftResolver && isRightResolver) {
+    return function lessThanBy(value) {
+      const leftResolve = left(value),
+        rightResolve = right(value)
+      const isLeftPromise = isPromise(leftResolve),
+        isRightPromise = isPromise(rightResolve)
+      if (isLeftPromise && isRightPromise) {
+        return promiseAll(
+          [leftResolve, rightResolve]).then(spread2(lessThan))
+      } else if (isLeftPromise) {
+        return leftResolve.then(curry2(lessThan, __, rightResolve))
+      } else if (isRightPromise) {
+        return rightResolve.then(curry2(lessThan, leftResolve, __))
+      }
+      return leftResolve < rightResolve
+    }
+  }
+
+  if (isLeftResolver) {
+    return function lessThanBy(value) {
+      const leftResolve = left(value)
+      return isPromise(leftResolve)
+        ? leftResolve.then(curry2(lessThan, __, right))
+        : leftResolve < right
+    }
+  }
+  if (isRightResolver) {
+    return function strictEqualsBy(value) {
+      const rightResolve = right(value)
+      return isPromise(rightResolve)
+        ? rightResolve.then(curry2(lessThan, left, __))
+        : left < rightResolve
+    }
+  }
+  return always(left < right)
 }
 
-/*
+/**
+ * @name greaterThanOrEquals
+ *
  * @synopsis
- * TODO
+ * greaterThanOrEquals(left any, right any) -> boolean
  */
-const lt = function (f, g) {
-  if (isFunction(f) && isFunction(g)) return x => (
-    possiblePromiseAll([f(x), g(x)]).then(([fx, gx]) => fx < gx))
-  if (isFunction(f)) return x => possiblePromiseThen(f(x), fx => fx < g)
-  if (isFunction(g)) return x => possiblePromiseThen(g(x), gx => f < gx)
-  const h = f < g
-  return () => h
+const greaterThanOrEquals = (left, right) => left >= right
+
+/**
+ * @name gte
+ *
+ * @catchphrase
+ * left greater than or equals right
+ *
+ * @synopsis
+ * gte(
+ *   left (any=>Promise|boolean)|any,
+ *   right (any=>Promise|boolean)|any,
+ * )(value any) -> greaterThanEqualsBy(value any)=>Promise|boolean
+ *
+ * @description
+ * Tacit, concurrent test for left value greater than or equals (`>=`) right value. Either parameter may be an asynchronous resolver.
+ *
+ * ```javascript
+ * const identity = value => value
+ *
+ * const isAtLeast100 = gte(identity, 100)
+ *
+ * console.log(isAtLeast100(99)) // false
+ * console.log(isAtLeast100(100)) // true
+ * console.log(isAtLeast100(101)) // true
+ * ```
+ */
+const gte = function (left, right) {
+  const isLeftResolver = typeof left == 'function',
+    isRightResolver = typeof right == 'function'
+  if (isLeftResolver && isRightResolver) {
+    return function greaterThanEqualsBy(value) {
+      const leftResolve = left(value),
+        rightResolve = right(value)
+      const isLeftPromise = isPromise(leftResolve),
+        isRightPromise = isPromise(rightResolve)
+      if (isLeftPromise && isRightPromise) {
+        return promiseAll(
+          [leftResolve, rightResolve]).then(spread2(greaterThanOrEquals))
+      } else if (isLeftPromise) {
+        return leftResolve.then(curry2(greaterThanOrEquals, __, rightResolve))
+      } else if (isRightPromise) {
+        return rightResolve.then(curry2(greaterThanOrEquals, leftResolve, __))
+      }
+      return leftResolve >= rightResolve
+    }
+  }
+
+  if (isLeftResolver) {
+    return function greaterThanEqualsBy(value) {
+      const leftResolve = left(value)
+      return isPromise(leftResolve)
+        ? leftResolve.then(curry2(greaterThanOrEquals, __, right))
+        : leftResolve >= right
+    }
+  }
+  if (isRightResolver) {
+    return function strictEqualsBy(value) {
+      const rightResolve = right(value)
+      return isPromise(rightResolve)
+        ? rightResolve.then(curry2(greaterThanOrEquals, left, __))
+        : left >= rightResolve
+    }
+  }
+  return always(left >= right)
 }
 
-/*
+/**
+ * @name lessThanOrEquals
+ *
  * @synopsis
- * TODO
+ * lessThanOrEquals(left any, right any) -> boolean
  */
-const gte = function (f, g) {
-  if (isFunction(f) && isFunction(g)) return x => (
-    possiblePromiseAll([f(x), g(x)]).then(([fx, gx]) => fx >= gx))
-  if (isFunction(f)) return x => possiblePromiseThen(f(x), fx => fx >= g)
-  if (isFunction(g)) return x => possiblePromiseThen(g(x), gx => f >= gx)
-  const h = f >= g
-  return () => h
-}
+const lessThanOrEquals = (left, right) => left <= right
 
-/*
+/**
+ * @name lte
+ *
+ * @catchphrase
+ * left greater than right
+ *
  * @synopsis
- * TODO
+ * lte(
+ *   left (any=>Promise|boolean)|any,
+ *   right (any=>Promise|boolean)|any,
+ * )(value any) -> lessThanBy(value any)=>Promise|boolean
+ *
+ * @description
+ * Tacit, concurrent test for left value less than or equals (`<=`) right value. Either parameter may be an asynchronous resolver.
+ *
+ * ```javascript
+ * const identity = value => value
+ *
+ * const isLessThan3 = lte(identity, 3)
+ *
+ * console.log(isLessThan3(1), true)
+ * console.log(isLessThan3(3), false)
+ * console.log(isLessThan3(5), false)
+ * ```
  */
-const lte = function (f, g) {
-  if (isFunction(f) && isFunction(g)) return x => (
-    possiblePromiseAll([f(x), g(x)]).then(([fx, gx]) => fx <= gx))
-  if (isFunction(f)) return x => possiblePromiseThen(f(x), fx => fx <= g)
-  if (isFunction(g)) return x => possiblePromiseThen(g(x), gx => f <= gx)
-  const h = f <= g
-  return () => h
+const lte = function (left, right) {
+  const isLeftResolver = typeof left == 'function',
+    isRightResolver = typeof right == 'function'
+  if (isLeftResolver && isRightResolver) {
+    return function lessThanBy(value) {
+      const leftResolve = left(value),
+        rightResolve = right(value)
+      const isLeftPromise = isPromise(leftResolve),
+        isRightPromise = isPromise(rightResolve)
+      if (isLeftPromise && isRightPromise) {
+        return promiseAll(
+          [leftResolve, rightResolve]).then(spread2(lessThanOrEquals))
+      } else if (isLeftPromise) {
+        return leftResolve.then(curry2(lessThanOrEquals, __, rightResolve))
+      } else if (isRightPromise) {
+        return rightResolve.then(curry2(lessThanOrEquals, leftResolve, __))
+      }
+      return leftResolve <= rightResolve
+    }
+  }
+
+  if (isLeftResolver) {
+    return function lessThanBy(value) {
+      const leftResolve = left(value)
+      return isPromise(leftResolve)
+        ? leftResolve.then(curry2(lessThanOrEquals, __, right))
+        : leftResolve <= right
+    }
+  }
+  if (isRightResolver) {
+    return function strictEqualsBy(value) {
+      const rightResolve = right(value)
+      return isPromise(rightResolve)
+        ? rightResolve.then(curry2(lessThanOrEquals, left, __))
+        : left <= rightResolve
+    }
+  }
+  return always(left <= right)
 }
 
 export {
