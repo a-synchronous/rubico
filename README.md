@@ -168,7 +168,7 @@ rubico exposes semantically related methods of its core API as property function
  * `map.pool` - apply a mapper function concurrently with a concurrency limit
  * `map.series` - apply a mapper function serially
 
-Beyond that, advanced functions may be found in `rubico/x`.
+Advanced functions may be found in `rubico/x`.
 
 # Getting Started
  1. [check out the docs](https://doc.rubico.land)
