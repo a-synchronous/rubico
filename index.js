@@ -520,7 +520,7 @@ const funcConcatSync = (
  * )(Reducer) -> composed Reducer
  *
  * @description
- * Chain together an array of functions as a pipe, each function passing its return value as the first argument to the next function until all functions executed. The final result is the result of the last function execution.
+ * Chain together an array of functions as a pipe, each function passing its return value as the first argument to the next function until all functions have executed. The final result is the result of the last function execution.
  *
  * ```javascript [playground]
  * console.log(
@@ -650,7 +650,7 @@ const funcAll = funcs => function allFuncs(...args) {
  * )(args ...any) -> Promise|Array
  *
  * @description
- * Parallelize multiple functions into a single function with concurrent execution with either an object or array result depending on the shape of the functions.
+ * Parallelize multiple functions with concurrent execution into either an object or array.
  *
  *  * `fork(Array<function>) -> Array` - an Array result is yielded for an Array of functions
  *  * `fork(Object<function>) -> Object` - an Object result is yielded for an Object of functions
@@ -1414,7 +1414,7 @@ const arrayMapSeries = function (array, mapper) {
  * map.series(mapper A=>Promise|B)(Array<A>) -> Promise|Array<B>
  *
  * @description
- * `map` with serial execution of the mapper function with collection items.
+ * `map` with serial execution.
  *
  * ```javascript [playground]
  * const delayedLog = x => new Promise(function (resolve) {
@@ -2918,7 +2918,7 @@ const genericTransform = function (args, transducer, result) {
  *
  * Node.js WritableStream interfaces are consumed as well.
  *
- * ```javascript
+ * ```javascript [playground]
  * // this example is duplicated in rubico/examples/transformStreamRandomInts.js
  *
  * const { pipe, map, transform } = require('rubico')
@@ -4900,7 +4900,7 @@ const greaterThan = (left, right) => left > right
  * @description
  * Tacit, concurrent test for left value greater than (`>`) right value. Either parameter may be an asynchronous resolver.
  *
- * ```javascript
+ * ```javascript [playground]
  * const isOfLegalAge = gt(21, person => person.age)
  *
  * const juvenile = { age: 16 }
@@ -4971,7 +4971,7 @@ const lessThan = (left, right) => left < right
  * @description
  * Tacit, concurrent test for left value less than (`<`) right value. Either parameter may be an asynchronous resolver.
  *
- * ```javascript
+ * ```javascript [playground]
  * const identity = value => value
  *
  * const isLessThan3 = lt(identity, 3)
@@ -5044,7 +5044,7 @@ const greaterThanOrEquals = (left, right) => left >= right
  * @description
  * Tacit, concurrent test for left value greater than or equals (`>=`) right value. Either parameter may be an asynchronous resolver.
  *
- * ```javascript
+ * ```javascript [playground]
  * const identity = value => value
  *
  * const isAtLeast100 = gte(identity, 100)
@@ -5117,7 +5117,7 @@ const lessThanOrEquals = (left, right) => left <= right
  * @description
  * Tacit, concurrent test for left value less than or equals (`<=`) right value. Either parameter may be an asynchronous resolver.
  *
- * ```javascript
+ * ```javascript [playground]
  * const identity = value => value
  *
  * const isLessThan3 = lte(identity, 3)
