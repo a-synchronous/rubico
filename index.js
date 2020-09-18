@@ -1926,7 +1926,7 @@ const reducerFilter = (
  * ) // { a: 1, c: 3, e: 5 }
  * ```
  *
- * Passing a generator function to `filter` returns a filtering generator function; all values that are normally yielded by a generator function that test falsy with the predicate are skipped by the returned filtering generator function. 
+ * Passing a generator function to `filter` returns a filtering generator function; all values that are normally yielded by a generator function that test falsy with the predicate are skipped by the returned filtering generator function.
  *
  * **Warning**: usage of an async predicate with generator functions or iterators may lead to undesirable behavior.
  *
