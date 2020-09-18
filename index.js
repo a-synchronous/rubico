@@ -4805,24 +4805,24 @@ const spread2 = func => function spreading2([arg0, arg1]) {
 }
 
 /**
- * @name strictEquals
+ * @name strictEqual
  *
  * @synopsis
- * strictEquals(a any, b any) -> boolean
+ * strictEqual(a any, b any) -> boolean
  */
-const strictEquals = (a, b) => a === b
+const strictEqual = (a, b) => a === b
 
 /**
  * @name eq
  *
  * @catchphrase
- * left strictly equals right
+ * left strictly equal to right
  *
  * @synopsis
  * eq(
  *   left (any=>Promise|boolean)|any,
  *   right (any=>Promise|boolean)|any,
- * ) -> strictEqualsBy (value any)=>Promise|boolean
+ * ) -> strictEqualBy (value any)=>Promise|boolean
  *
  * @description
  * Tacit, concurrent test for strict equality (`===`) between two values. Either parameter may be an asynchronous resolver.
@@ -4841,36 +4841,36 @@ const eq = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
   if (isLeftResolver && isRightResolver) {
-    return function strictEqualsBy(value) {
+    return function strictEqualBy(value) {
       const leftResolve = left(value),
         rightResolve = right(value)
       const isLeftPromise = isPromise(leftResolve),
         isRightPromise = isPromise(rightResolve)
       if (isLeftPromise && isRightPromise) {
         return promiseAll(
-          [leftResolve, rightResolve]).then(spread2(strictEquals))
+          [leftResolve, rightResolve]).then(spread2(strictEqual))
       } else if (isLeftPromise) {
-        return leftResolve.then(curry2(strictEquals, __, rightResolve))
+        return leftResolve.then(curry2(strictEqual, __, rightResolve))
       } else if (isRightPromise) {
-        return rightResolve.then(curry2(strictEquals, leftResolve, __))
+        return rightResolve.then(curry2(strictEqual, leftResolve, __))
       }
       return leftResolve === rightResolve
     }
   }
 
   if (isLeftResolver) {
-    return function strictEqualsBy(value) {
+    return function strictEqualBy(value) {
       const leftResolve = left(value)
       return isPromise(leftResolve)
-        ? leftResolve.then(curry2(strictEquals, __, right))
+        ? leftResolve.then(curry2(strictEqual, __, right))
         : leftResolve === right
     }
   }
   if (isRightResolver) {
-    return function strictEqualsBy(value) {
+    return function strictEqualBy(value) {
       const rightResolve = right(value)
       return isPromise(rightResolve)
-        ? rightResolve.then(curry2(strictEquals, left, __))
+        ? rightResolve.then(curry2(strictEqual, left, __))
         : left === rightResolve
     }
   }
@@ -4938,7 +4938,7 @@ const gt = function (left, right) {
     }
   }
   if (isRightResolver) {
-    return function strictEqualsBy(value) {
+    return function strictEqualBy(value) {
       const rightResolve = right(value)
       return isPromise(rightResolve)
         ? rightResolve.then(curry2(greaterThan, left, __))
@@ -4960,7 +4960,7 @@ const lessThan = (left, right) => left < right
  * @name lt
  *
  * @catchphrase
- * left greater than right
+ * left less than right
  *
  * @synopsis
  * lt(
@@ -5011,7 +5011,7 @@ const lt = function (left, right) {
     }
   }
   if (isRightResolver) {
-    return function strictEqualsBy(value) {
+    return function strictEqualBy(value) {
       const rightResolve = right(value)
       return isPromise(rightResolve)
         ? rightResolve.then(curry2(lessThan, left, __))
@@ -5022,27 +5022,27 @@ const lt = function (left, right) {
 }
 
 /**
- * @name greaterThanOrEquals
+ * @name greaterThanOrEqualTo
  *
  * @synopsis
- * greaterThanOrEquals(left any, right any) -> boolean
+ * greaterThanOrEqualTo(left any, right any) -> boolean
  */
-const greaterThanOrEquals = (left, right) => left >= right
+const greaterThanOrEqualTo = (left, right) => left >= right
 
 /**
  * @name gte
  *
  * @catchphrase
- * left greater than or equals right
+ * left greater than or equal to right
  *
  * @synopsis
  * gte(
  *   left (any=>Promise|boolean)|any,
  *   right (any=>Promise|boolean)|any,
- * )(value any) -> greaterThanEqualsBy(value any)=>Promise|boolean
+ * )(value any) -> greaterThanOrEqualToBy(value any)=>Promise|boolean
  *
  * @description
- * Tacit, concurrent test for left value greater than or equals (`>=`) right value. Either parameter may be an asynchronous resolver.
+ * Tacit, concurrent test for left value greater than or equal to (`>=`) right value. Either parameter may be an asynchronous resolver.
  *
  * ```javascript [playground]
  * const identity = value => value
@@ -5058,36 +5058,36 @@ const gte = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
   if (isLeftResolver && isRightResolver) {
-    return function greaterThanEqualsBy(value) {
+    return function greaterThanOrEqualToBy(value) {
       const leftResolve = left(value),
         rightResolve = right(value)
       const isLeftPromise = isPromise(leftResolve),
         isRightPromise = isPromise(rightResolve)
       if (isLeftPromise && isRightPromise) {
         return promiseAll(
-          [leftResolve, rightResolve]).then(spread2(greaterThanOrEquals))
+          [leftResolve, rightResolve]).then(spread2(greaterThanOrEqualTo))
       } else if (isLeftPromise) {
-        return leftResolve.then(curry2(greaterThanOrEquals, __, rightResolve))
+        return leftResolve.then(curry2(greaterThanOrEqualTo, __, rightResolve))
       } else if (isRightPromise) {
-        return rightResolve.then(curry2(greaterThanOrEquals, leftResolve, __))
+        return rightResolve.then(curry2(greaterThanOrEqualTo, leftResolve, __))
       }
       return leftResolve >= rightResolve
     }
   }
 
   if (isLeftResolver) {
-    return function greaterThanEqualsBy(value) {
+    return function greaterThanOrEqualToBy(value) {
       const leftResolve = left(value)
       return isPromise(leftResolve)
-        ? leftResolve.then(curry2(greaterThanOrEquals, __, right))
+        ? leftResolve.then(curry2(greaterThanOrEqualTo, __, right))
         : leftResolve >= right
     }
   }
   if (isRightResolver) {
-    return function strictEqualsBy(value) {
+    return function strictEqualBy(value) {
       const rightResolve = right(value)
       return isPromise(rightResolve)
-        ? rightResolve.then(curry2(greaterThanOrEquals, left, __))
+        ? rightResolve.then(curry2(greaterThanOrEqualTo, left, __))
         : left >= rightResolve
     }
   }
@@ -5095,18 +5095,18 @@ const gte = function (left, right) {
 }
 
 /**
- * @name lessThanOrEquals
+ * @name lessThanOrEqualTo
  *
  * @synopsis
- * lessThanOrEquals(left any, right any) -> boolean
+ * lessThanOrEqualTo(left any, right any) -> boolean
  */
-const lessThanOrEquals = (left, right) => left <= right
+const lessThanOrEqualTo = (left, right) => left <= right
 
 /**
  * @name lte
  *
  * @catchphrase
- * left greater than right
+ * left less than or equal to right
  *
  * @synopsis
  * lte(
@@ -5115,16 +5115,16 @@ const lessThanOrEquals = (left, right) => left <= right
  * )(value any) -> lessThanBy(value any)=>Promise|boolean
  *
  * @description
- * Tacit, concurrent test for left value less than or equals (`<=`) right value. Either parameter may be an asynchronous resolver.
+ * Tacit, concurrent test for left value less than or equal to (`<=`) right value. Either parameter may be an asynchronous resolver.
  *
  * ```javascript [playground]
  * const identity = value => value
  *
- * const isLessThan3 = lte(identity, 3)
+ * const isLessThanOrEqualTo3 = lte(identity, 3)
  *
- * console.log(isLessThan3(1), true)
- * console.log(isLessThan3(3), false)
- * console.log(isLessThan3(5), false)
+ * console.log(isLessThanOrEqualTo3(1), true)
+ * console.log(isLessThanOrEqualTo3(3), true)
+ * console.log(isLessThanOrEqualTo3(5), false)
  * ```
  */
 const lte = function (left, right) {
@@ -5138,11 +5138,11 @@ const lte = function (left, right) {
         isRightPromise = isPromise(rightResolve)
       if (isLeftPromise && isRightPromise) {
         return promiseAll(
-          [leftResolve, rightResolve]).then(spread2(lessThanOrEquals))
+          [leftResolve, rightResolve]).then(spread2(lessThanOrEqualTo))
       } else if (isLeftPromise) {
-        return leftResolve.then(curry2(lessThanOrEquals, __, rightResolve))
+        return leftResolve.then(curry2(lessThanOrEqualTo, __, rightResolve))
       } else if (isRightPromise) {
-        return rightResolve.then(curry2(lessThanOrEquals, leftResolve, __))
+        return rightResolve.then(curry2(lessThanOrEqualTo, leftResolve, __))
       }
       return leftResolve <= rightResolve
     }
@@ -5152,15 +5152,15 @@ const lte = function (left, right) {
     return function lessThanBy(value) {
       const leftResolve = left(value)
       return isPromise(leftResolve)
-        ? leftResolve.then(curry2(lessThanOrEquals, __, right))
+        ? leftResolve.then(curry2(lessThanOrEqualTo, __, right))
         : leftResolve <= right
     }
   }
   if (isRightResolver) {
-    return function strictEqualsBy(value) {
+    return function strictEqualBy(value) {
       const rightResolve = right(value)
       return isPromise(rightResolve)
-        ? rightResolve.then(curry2(lessThanOrEquals, left, __))
+        ? rightResolve.then(curry2(lessThanOrEqualTo, left, __))
         : left <= rightResolve
     }
   }
