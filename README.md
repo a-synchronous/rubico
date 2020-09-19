@@ -49,7 +49,7 @@ rubico is founded on the following principles:
 When you use this library, you obtain the freedom that comes only from having those three points fulfilled. The result is something you may enjoy.
 
 # Introduction
-**rubico** is a powerful, flexible, and thoroughly benchmarked module of 24 operators for [a]synchronous functional programming in JavaScript.
+rubico is a powerful, flexible, and thoroughly benchmarked module of 24 operators for [a]synchronous functional programming in JavaScript.
 
 ```javascript
 const {
