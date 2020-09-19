@@ -88,7 +88,7 @@ map(logTodoByID)(todoIDs) // fetch Todos per id of TodoIDs and log them
 // { userId: 1, id: 5, title: 'laboriosam mollitia...', completed: false }
 ```
 
-Functional compositions with rubico are flexible, and apply sensibly to the full spectrum of vanilla JavaScript types. This kind of flexibility is rooted in mathematics and enabled by newer features of the ECMAScript language like `Symbol.iterator` and `Symbol.asyncIterator`.
+Functional compositions with rubico are flexible, and apply sensibly to the full spectrum of vanilla JavaScript types. This kind of flexibility is rooted in mathematics and enabled by newer language features like `Symbol.iterator` and `Symbol.asyncIterator`.
 
 ```javascript
 import { pipe, map } from 'rubico'
