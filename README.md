@@ -122,7 +122,7 @@ const logTodosRange = map(logTodoByID)(todoIDsRange)
 // { userId: 5, id: 100, title: 'excepturi a et neque...', completed: false }
 ```
 
-Code reuse by category theory enables similar semantics when working with reducers. The following example uses transducers and a Semigroup `Stdout` to accomplish the same transformation as above with purer functional programming.
+Code reuse by category theory enables similar semantics when working with reducers. The following example uses transducers (`reducer=>reducer`) and a Semigroup `Stdout` to accomplish the same transformation as above with purer functional programming.
 
 ```javascript
 import { pipe, map, transform } from 'rubico'
