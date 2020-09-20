@@ -46,10 +46,10 @@ rubico is founded on the following principles:
  * functional style should not care about async
  * functional transformations should be composable, performant, and simple to express
 
-When you use this library, you obtain the freedom that comes only from having those three points fulfilled. The result is something you may enjoy.
+When you use this library, you obtain the freedom that comes from having those three points fulfilled. The result is something you may enjoy.
 
 # Introduction
-rubico is a powerful, flexible, and thoroughly benchmarked module of 24 operators for [a]synchronous functional programming in JavaScript.
+rubico is a module of 24 operators for [a]synchronous functional programming in JavaScript.
 
 ```javascript
 const {
@@ -122,7 +122,7 @@ const logTodosRange = map(logTodoByID)(todoIDsRange)
 // { userId: 5, id: 100, title: 'excepturi a et neque...', completed: false }
 ```
 
-The same principle of code reuse by functional programming principles enables similar semantics when working with reducers. The following example employs transducers and a Semigroup `Stdout` to accomplish the same transformation as above with purer functional programming.
+Code reuse by category theory enables similar semantics when working with reducers. The following example uses transducers and a Semigroup `Stdout` to accomplish the same transformation as above with purer functional programming.
 
 ```javascript
 import { pipe, map, transform } from 'rubico'
