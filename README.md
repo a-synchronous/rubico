@@ -38,6 +38,7 @@ rubico is founded on the following principles:
 When you use this library, you obtain the freedom that comes from having those three points fulfilled. The result is something you may enjoy.
 
 # Introduction
+
 rubico is a module of twenty-four operators for [a]synchronous functional programming in JavaScript.
 
 ```javascript
@@ -51,7 +52,7 @@ const {
 } = rubico
 ```
 
-The style and naming conventions of rubico are idiomatic across languages and other libraries - using this library should feel second nature. Just like vanilla JavaScript operators, rubico's operators act sensibly on sync or async JavaScript functions to create declarative, highly extensible, and async-enabled compositions.
+These operators act sensibly on a wide range of vanilla JavaScript types to create declarative, highly reusable, and async-enabled compositions.
 
 ```javascript
 import { pipe, map } from 'rubico'
@@ -75,79 +76,6 @@ map(logTodoByID)(todoIDs) // fetch Todos per id of TodoIDs and log them
 // { userId: 1, id: 3, title: 'fugiat veniam minus', completed: false }
 // { userId: 1, id: 2, title: 'quis ut nam facilis...', completed: false }
 // { userId: 1, id: 5, title: 'laboriosam mollitia...', completed: false }
-```
-
-Functional compositions with rubico are flexible, and apply sensibly to the full spectrum of vanilla JavaScript types. This kind of flexibility is enabled by newer language features like `Symbol.iterator` and `Symbol.asyncIterator`.
-
-```javascript
-import { pipe, map } from 'rubico'
-
-const toTodosUrl = id => 'https://jsonplaceholder.typicode.com/todos/' + id
-
-const fetchedToJson = fetched => fetched.json()
-
-const logTodoByID = pipe([ // fetch a Todo and log it
-  toTodosUrl,
-  fetch,
-  fetchedToJson,
-  console.log,
-])
-
-const todoIDsRange = function* (from, to) {
-  for (let id = from; id <= to; id++) {
-    yield id
-  }
-}
-
-const logTodosRange = map(logTodoByID)(todoIDsRange)
-// the Todos aren't logged here yet because mapping a generator function
-// returns another generator function with all values mapped
-
-;[...logTodosRange(1, 100)]
-// { userId: 1, id: 4, title: 'et porro tempora', completed: true }
-// { userId: 1, id: 1, title: 'delectus aut autem', completed: false }
-// ...
-// ...
-// { userId: 5, id: 100, title: 'excepturi a et neque...', completed: false }
-```
-
-Code reuse by category theory enables similar semantics when working with reducers. The following example uses transducers (`reducer=>reducer`) and a Semigroup `Stdout` to accomplish the same transformation as above with purer functional programming.
-
-```javascript
-import { pipe, map, transform } from 'rubico'
-
-const toTodosUrl = id => 'https://jsonplaceholder.typicode.com/todos/' + id
-
-const fetchedToJson = fetched => fetched.json()
-
-const fetchTodo = pipe([
-  toTodosUrl,
-  fetch,
-  fetchedToJson,
-])
-
-const Stdout = {
-  concat(...args) {
-    console.log(...args)
-    return this
-  }
-}
-
-const asyncTodoIDsRange = async function* (from, to) { // async because why not
-  for (let id = from; id <= to; id++) {
-    yield id
-  }
-}
-
-const transformTodosToStdoutRange = transform(
-  map(fetchTodo), Stdout)(asyncTodoIDsRange)
-
-transformTodosToStdoutRange(1, 100)
-// { userId: 1, id: 4, title: 'et porro tempora', completed: true }
-// { userId: 1, id: 1, title: 'delectus aut autem', completed: false }
-// ...
-// ...
-// { userId: 1, id: 100, title: 'excepturi a et neque...', completed: false }
 ```
 
 rubico exposes semantically related methods of its core API as property functions. For example,
