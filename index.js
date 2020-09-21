@@ -290,6 +290,14 @@ const thunkify2 = (func, arg0, arg1) => () => func(arg0, arg1)
 const thunkify3 = (func, arg0, arg1, arg2) => () => func(arg0, arg1, arg2)
 
 /**
+ * @name thunkifyArgs
+ *
+ * @synopsis
+ * thunkifyArgs(func function, args Array) -> ()=>func(...args)
+ */
+const thunkifyArgs = (func, args) => () => func(...args)
+
+/**
  * @name memoizeCappedUnary
  *
  * @synopsis
@@ -795,6 +803,20 @@ const tapSync = func => function tapping(...args) {
 }
 
 /**
+ * @name thunkConditional
+ *
+ * @synopsis
+ * thunkConditional(
+ *   boolean,
+ *   thunkA ()=>any,
+ *   thunkB ()=>any,
+ * ) -> any
+ */
+const thunkConditional = (
+  boolean, thunkA, thunkB,
+) => boolean ? thunkA() : thunkB()
+
+/**
  * @name tap.sync
  *
  * @synopsis
@@ -819,13 +841,13 @@ tap.sync = tapSync
  * @name tap.if
  *
  * @synopsis
- * tap.if(
- *   cond T=>boolean,
- *   func T=>Promise|any,
- * )(value T) -> value
+ * tap.if<args ...any>(
+ *   predicate ...args=>Promise|boolean,
+ *   func ...args=>Promise|any,
+ * )(...args) -> Promise|value
  *
  * @description
- * **tap.if** takes a condition `cond`, a function `func`, and an input `value`, returning the `result` as the unchanged `value`. If `cond` applied with `value` is falsy, `func` is not called; otherwise, `func` is called with `value`. `result` is a Promise if either `func` or `cond` is asynchronous.
+ * Conditional tap by predicate
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -842,9 +864,19 @@ tap.sync = tapSync
  *       // squared odd 9
  * ```
  *
- * @TODO
+ * @related tap
  */
-tap.if = (cond, func) => {}
+tap.if = (predicate, func) => function tappingIf(...args) {
+  const predication = predicate(...args)
+  if (isPromise(predication)) {
+    return predication.then(curry3(
+      thunkConditional, __, thunkifyArgs(tap(func), args), always(args[0])))
+  }
+  if (predication) {
+    func(...args)
+  }
+  return args[0]
+}
 
 /**
  * @name catcherApply
@@ -920,20 +952,6 @@ const asyncFuncSwitch = async function (funcs, args, funcsIndex) {
   }
   return funcs[funcsIndex](...args)
 }
-
-/**
- * @name thunkConditional
- *
- * @synopsis
- * thunkConditional(
- *   boolean,
- *   thunkA ()=>any,
- *   thunkB ()=>any,
- * ) -> any
- */
-const thunkConditional = (
-  boolean, thunkA, thunkB,
-) => boolean ? thunkA() : thunkB()
 
 /**
  * @name funcApply

@@ -515,20 +515,28 @@ describe('rubico', () => {
   })
 
   describe('tap.if', () => {
-    xit('[sync] tap.if(condition, f); conditional tap; only calls fn on truthy condition', async () => {
-      const isOdd = x => x % 2 === 1
-      const oddNumbers = []
-      ade(
-        tap.if(isOdd, number => oddNumbers.push(number))([1, 2, 3, 4, 5]),
-        [1, 2, 3, 4, 5],
-      )
-      ade(oddNumbers, [1, 3, 5])
+    describe('tap.if(condition, f); conditional tap; only calls fn on truthy condition', () => {
+      it('sync', async () => {
+        const isOdd = x => x % 2 === 1
+        const oddNumbers = []
+        const pushOddNumbers = number => oddNumbers.push(number)
+        const numbers = [1, 2, 3, 4, 5]
+        numbers.forEach(number => {
+          assert.strictEqual(tap.if(isOdd, pushOddNumbers)(number), number)
+        })
+        assert.deepEqual(oddNumbers, [1, 3, 5])
+      })
+      it('async', async () => {
+        const isOdd = x => x % 2 === 1
+        const oddNumbers = []
+        const pushOddNumbers = number => oddNumbers.push(number)
+        const numbers = [1, 2, 3, 4, 5]
+        for (const number of numbers) {
+          assert.strictEqual(await tap.if(async(isOdd), pushOddNumbers)(number), number)
+        }
+        assert.deepEqual(oddNumbers, [1, 3, 5])
+      })
     })
-    xit('[async] tap.if(condition, f); conditional tap; only calls fn on truthy condition')
-    xit('throws TypeError on tap.if(nonFunction, f)()')
-    xit('throws TypeError on tap.if(condition, nonFunction)()')
-    xit('handles errors thrown from condition of tap.if(condition, f)()')
-    xit('handles errors thrown from f of tap.if(condition, f)')
   })
 
   describe('tryCatch', () => {
