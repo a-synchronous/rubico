@@ -78,14 +78,6 @@ map(logTodoByID)(todoIDs) // fetch Todos per id of TodoIDs and log them
 // { userId: 1, id: 5, title: 'laboriosam mollitia...', completed: false }
 ```
 
-rubico exposes semantically related methods of its core API as property functions. For example,
-
- * `map` - apply a mapper function concurrently
- * `map.pool` - apply a mapper function concurrently with a concurrency limit
- * `map.series` - apply a mapper function serially
-
-Advanced functions may be found in `rubico/x`.
-
 # Getting Started
  1. [check out the docs](https://doc.rubico.land)
  2. [take the tour](https://tour.rubico.land)
