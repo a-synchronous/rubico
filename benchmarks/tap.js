@@ -81,3 +81,10 @@ const tap1 = func => function tapping(...args) {
 
   // timeInLoop('tap1', 1e7, () => tap1(noop)(0))
 }
+
+/**
+ * @name tap.if
+ *
+ * @benchmark
+ * TODO
+ */
