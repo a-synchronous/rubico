@@ -9,8 +9,8 @@
 
 ### [a]synchronous functional programming
 
-```javascript
-import { pipe, map, filter } from 'rubico'
+```javascript [playground]
+const { pipe, map, filter } = rubico
 
 const isOdd = number => number % 2 == 1
 
