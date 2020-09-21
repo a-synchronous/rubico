@@ -1,7 +1,7 @@
-## v1.5.16 - next release
+## v1.5.16 - latest
  * tap.if
 
-## v1.5.15 - latest
+## v1.5.15
  * get rewrite + benchmarks
  * pick rewrite + benchmarks
  * omit rewrite + benchmarks

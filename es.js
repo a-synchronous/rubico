@@ -1,4 +1,4 @@
-/* rubico v1.5.15
+/* rubico v1.5.16
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2020 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -268,6 +268,14 @@ const thunkify2 = (func, arg0, arg1) => () => func(arg0, arg1)
 const thunkify3 = (func, arg0, arg1, arg2) => () => func(arg0, arg1, arg2)
 
 /**
+ * @name thunkifyArgs
+ *
+ * @synopsis
+ * thunkifyArgs(func function, args Array) -> ()=>func(...args)
+ */
+const thunkifyArgs = (func, args) => () => func(...args)
+
+/**
  * @name memoizeCappedUnary
  *
  * @synopsis
@@ -325,9 +333,6 @@ const arrayExtend = function (array, values) {
 /**
  * @name arrayExtendMap
  *
- * @catchphrase
- * internal extend while mapping
- *
  * @synopsis
  * any -> value; any -> mapped
  *
@@ -337,6 +342,9 @@ const arrayExtend = function (array, values) {
  *   valuesIndex number,
  *   valuesMapper value=>mapped,
  * ) -> array
+ *
+ * @description
+ * internal extend while mapping
  */
 const arrayExtendMap = function (
   array, values, valuesMapper, valuesIndex,
@@ -480,25 +488,19 @@ const funcConcatSync = (
 /**
  * @name pipe
  *
- * @catchphrase
- * chain functions together
- *
  * @synopsis
- * pipe([
- *   args=>Promise|any,
- *   ...Array<any=>Promise|any>,
- * ])(args ...any) -> Promise|any
+ * pipe(
+ *   funcs Array<any=>Promise|any>,
+ * )(value any) -> Promise|any
  *
- * (any, T)=>Promise|any -> Reducer<T>
- *
- * Reducer=>Reducer -> Transducer
+ * Reducer = (any, any)=>Promise|any
  *
  * pipe(
- *   Array<Transducer>,
+ *   Array<Reducer=>Reducer>,
  * )(Reducer) -> composed Reducer
  *
  * @description
- * Chain together an array of functions as a pipe, each function passing its return value as the first argument to the next function until all functions executed. The final result is the result of the last function execution.
+ * Chain together an array of functions as a pipe, each function passing its return value as the first argument to the next function until all functions have executed. The final result is the return of the last function execution.
  *
  * ```javascript [playground]
  * console.log(
@@ -510,25 +512,7 @@ const funcConcatSync = (
  * ) // 11
  * ```
  *
- * When the first argument supplied to a pipe of functions is a non-generator function, it assumes transducer position and iterates through its functions in reverse. This is due to an implementation detail in transducers, and enables a left-to-right transducer API.
- *
- * ```coffeescript [specscript]
- * any -> T
- *
- * (any, T)=>Promise|any -> Reducer<T> // the standalone <T> means "generic of T"
- *
- * Reducer=>Reducer -> Transducer
- * ```
- *
- * A reducer is a function that takes a generic of any type T, a given instance of type T, and returns possibly a Promise of a generic of type T. A transducer is a function that takes a reducer and returns another reducer.
- *
- * ```coffeescript [specscript]
- * pipe(
- *   Array<Transducer>,
- * )(Reducer) -> composed Reducer
- * ```
- *
- * A pipe of transducers, when passed a reducer function, returns a new reducer function that applies the transducers in series, ending the chain with the argument reducer. Following this setup, a transduced reducer must be used in transducer position in conjunction with `reduce` to have a transducing effect. For more information on this behavior, see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
+ * When passed a reducer, a pipe of transducers composes the reducer such that the transducers are applied in series, finally calling the reducer to end the chain. The resulting reducer must be used in conjunction with `reduce` to have a transducing effect. For more information on this behavior, see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -577,7 +561,7 @@ const pipe = function (funcs) {
  * @synopsis
  * funcObjectAll(
  *   funcs Object<args=>Promise|any>
- * )(args ...any) -> objectAllFuncs args=>Promise|Object
+ * )(args ...any) -> objectAllFuncs ...args=>Promise|Object
  */
 const funcObjectAll = funcs => function objectAllFuncs(...args) {
   const result = {}
@@ -615,20 +599,17 @@ const funcAll = funcs => function allFuncs(...args) {
 /**
  * @name fork
  *
- * @catchphrase
- * parallelize functions
- *
  * @synopsis
  * fork(
- *   funcs Object<...args=>Promise|any>,
- * )(args ...any) -> Promise|Object
+ *   funcs Object<value=>Promise|any>,
+ * )(value any) -> Promise|Object
  *
  * fork(
- *   funcs Array<...args=>Promise|any>,
- * )(args ...any) -> Promise|Array
+ *   funcs Array<value=>Promise|any>,
+ * )(value any) -> Promise|Array
  *
  * @description
- * Parallelize multiple functions into a single function with concurrent execution with either an object or array result depending on the shape of the functions.
+ * Parallelize multiple functions with concurrent execution into either an object or array.
  *
  *  * `fork(Array<function>) -> Array` - an Array result is yielded for an Array of functions
  *  * `fork(Object<function>) -> Object` - an Object result is yielded for an Object of functions
@@ -676,8 +657,8 @@ const asyncFuncAllSeries = async function (funcs, args, result, funcsIndex) {
  * ...any -> args
  *
  * funcAllSeries(
- *   funcs Array<args=>any>,
- * ) -> allFuncsSeries args=>Promise|Array
+ *   funcs Array<...args=>any>,
+ * ) -> allFuncsSeries ...args=>Promise|Array
  *
  * @TODO .then quickscope
  */
@@ -699,9 +680,6 @@ const funcAllSeries = funcs => function allFuncsSeries(...args) {
 
 /**
  * @name fork.series
- *
- * @catchphrase
- * fork in series
  *
  * @synopsis
  * fork.series(
@@ -732,13 +710,10 @@ fork.series = funcAllSeries
 /**
  * @name assign
  *
- * @catchphrase
- * assign properties by resolver
- *
  * @synopsis
  * assign(
- *   funcs Object<object=>Promise|any>,
- * )(object Object) -> result Promise|Object
+ *   funcs Object<value=>Promise|any>,
+ * )(value Object) -> result Promise|Object
  *
  * @description
  * Lazily set properties on a target object by an input object of functions.
@@ -760,25 +735,24 @@ fork.series = funcAllSeries
  */
 const assign = function (funcs) {
   const allFuncs = funcObjectAll(funcs)
-  return function assignment(object) {
-    const result = allFuncs(object)
+  return function assignment(value) {
+    const result = allFuncs(value)
     return isPromise(result)
-      ? result.then(curry2(objectAssign, object, __))
-      : ({ ...object, ...result })
+      ? result.then(curry2(objectAssign, value, __))
+      : ({ ...value, ...result })
   }
 }
 
 /**
  * @name tap
  *
- * @catchphrase
- * spy on data in a pipe
- *
  * @synopsis
- * tap(function)(value any) -> Promise|value
+ * tap(
+ *   tapper value=>Promise|any,
+ * )(value any) -> value
  *
  * @description
- * Take a function and any value, call the function with the value, and return the original value. Useful for running side effects in function pipelines, e.g. logging out data to the console.
+ * Call a function with a value, returning the value.
  *
  * ```javascript [playground]
  * pipe([
@@ -790,22 +764,46 @@ const assign = function (funcs) {
  * ```
  */
 const tap = func => function tapping(...args) {
-  const point = args[0],
+  const result = args[0],
     call = func(...args)
-  return isPromise(call) ? call.then(always(point)) : point
+  return isPromise(call) ? call.then(always(result)) : result
 }
 
 /**
  * @name tapSync
  *
- * @catchphrase
- * synchronous tap
- *
  * @synopsis
  * tapSync(function)(args ...any) -> args[0]
+ */
+const tapSync = func => function tapping(...args) {
+  func(...args)
+  return args[0]
+}
+
+/**
+ * @name thunkConditional
+ *
+ * @synopsis
+ * thunkConditional(
+ *   boolean,
+ *   thunkA ()=>any,
+ *   thunkB ()=>any,
+ * ) -> any
+ */
+const thunkConditional = (
+  boolean, thunkA, thunkB,
+) => boolean ? thunkA() : thunkB()
+
+/**
+ * @name tap.sync
+ *
+ * @synopsis
+ * tap.sync(
+ *   tapper value=>any,
+ * )(value any) -> value
  *
  * @description
- * `tap` without Promise handling. Any Promises will terminate early.
+ * Synchronous tap
  *
  * ```javascript [playground]
  * pipe([
@@ -815,27 +813,19 @@ const tap = func => function tapping(...args) {
  *       // 27
  * ```
  */
-const tapSync = func => function tapping(...args) {
-  func(...args)
-  return args[0]
-}
-
 tap.sync = tapSync
 
 /**
  * @name tap.if
  *
- * @catchphrase
- * conditional tap
- *
  * @synopsis
- * tap.if(
- *   cond value=>boolean,
- *   func value=>Promise|any,
- * )(value any) -> value
+ * tap.if<args ...any>(
+ *   predicate ...args=>Promise|boolean,
+ *   func ...args=>Promise|any,
+ * )(...args) -> Promise|value
  *
  * @description
- * **tap.if** takes a condition `cond`, a function `func`, and an input `value`, returning the `result` as the unchanged `value`. If `cond` applied with `value` is falsy, `func` is not called; otherwise, `func` is called with `value`. `result` is a Promise if either `func` or `cond` is asynchronous.
+ * Conditional tap by predicate
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -852,9 +842,19 @@ tap.sync = tapSync
  *       // squared odd 9
  * ```
  *
- * @TODO
+ * @related tap
  */
-tap.if = (cond, func) => {}
+tap.if = (predicate, func) => function tappingIf(...args) {
+  const predication = predicate(...args)
+  if (isPromise(predication)) {
+    return predication.then(curry3(
+      thunkConditional, __, thunkifyArgs(tap(func), args), always(args[0])))
+  }
+  if (predication) {
+    func(...args)
+  }
+  return args[0]
+}
 
 /**
  * @name catcherApply
@@ -873,17 +873,14 @@ const catcherApply = function (catcher, err, args) {
 /**
  * @name tryCatch
  *
- * @catchphrase
- * try a function, catch with another
- *
  * @synopsis
  * tryCatch(
- *   tryer args=>Promise|any,
+ *   tryer ...args=>Promise|any,
  *   catcher (err Error|any, ...args)=>Promise|any,
  * )(args ...any) -> Promise|any
  *
  * @description
- * Try a tryer, catch with a catcher. On error or rejected Promise, call catcher with the error as the first argument followed by the original arguments.
+ * Try a tryer, catch with catcher. On error or rejected Promise, call catcher with the error as the first argument followed by any arguments.
  *
  * ```javascript [playground]
  * const errorThrower = tryCatch(
@@ -935,20 +932,6 @@ const asyncFuncSwitch = async function (funcs, args, funcsIndex) {
 }
 
 /**
- * @name thunkConditional
- *
- * @synopsis
- * thunkConditional(
- *   boolean,
- *   thunkA ()=>any,
- *   thunkB ()=>any,
- * ) -> any
- */
-const thunkConditional = (
-  boolean, thunkA, thunkB,
-) => boolean ? thunkA() : thunkB()
-
-/**
  * @name funcApply
  *
  * @synopsis
@@ -957,14 +940,48 @@ const thunkConditional = (
 const funcApply = (func, args) => func(...args)
 
 /**
- * @name funcSwitch
+ * @name switchCase
  *
  * @synopsis
- * funcSwitch(
- *   funcs Array<args=>Promise|any>,
- * )(args ...any) -> Promise|any
+ * switchCase(
+ *   funcs Array<
+ *     (predicate value=>Promise|boolean)
+ *       |(resolver value=>Promise|any)>,
+ * )(value any) -> resolved Promise|any
+ *
+ * @description
+ * Conditional operator for functions. Odd indexed functions should be resolvers, while even indexed functions excluding the last should be predicates. For an odd number of functions, the last even indexed function should be a default resolver function. Any predicates or resolvers may be asynchronous.
+ *
+ * ```javascript [playground]
+ * const fruitIsYellow = fruit => fruit.color == 'yellow'
+ *
+ * const fruitsGuesser = switchCase([
+ *   fruitIsYellow, fruit => fruit.name + ' is possibly a banana',
+ *   fruit => fruit.name + ' is probably not a banana',
+ * ])
+ *
+ * console.log(
+ *   fruitsGuesser({ name: 'plantain', color: 'yellow' }),
+ * ) // plantain is possibly a banana
+ * ```
+ *
+ * If an even number of functions is supplied, the last predicate should always return true.
+ *
+ * ```javascript [playground]
+ * const questionableIsOdd = switchCase([
+ *   number => number === 1, () => true,
+ *   number => number === 2, () => false,
+ *   number => number === 3, () => true,
+ *   number => number === 4, () => false,
+ *   number => number === 5, () => true,
+ *   () => true, number => number % 2 === 1,
+ * ])
+ *
+ * console.log(questionableIsOdd(1)) // true
+ * console.log(questionableIsOdd(6)) // false
+ * ```
  */
-const funcSwitch = funcs => function funcSwitching(...args) {
+const switchCase = funcs => function switchingCases(...args) {
   const lastIndex = funcs.length - 1
   let funcsIndex = -2
 
@@ -985,22 +1002,13 @@ const funcSwitch = funcs => function funcSwitching(...args) {
 }
 
 /**
- * @name switchCase
- *
- * @synopsis
- * switchCase(funcs)
- *
- * switchCase(switchers Array<function>)(args ...any) -> Promise|any
- */
-const switchCase = funcSwitch
-
-/**
  * @name arrayMap
  *
  * @synopsis
- * any -> A, any -> B
- *
- * arrayMap(array Array<A>, mapper A=>Promise|B) -> Promise|Array<B>
+ * arrayMap(
+ *   array Array<T>,
+ *   mapper T=>Promise|any,
+ * ) -> Promise|Array
  */
 const arrayMap = function (array, mapper) {
   const arrayLength = array.length,
@@ -1023,7 +1031,8 @@ const arrayMap = function (array, mapper) {
  *
  * @synopsis
  * objectMap(
- *   object Object, mapper function,
+ *   object Object<T>,
+ *   mapper T=>Promise|any,
  * ) -> Promise|Object
  */
 const objectMap = function (object, mapper) {
@@ -1042,12 +1051,10 @@ const objectMap = function (object, mapper) {
  * @name generatorFunctionMap
  *
  * @synopsis
- * any -> A, any -> B
- *
  * generatorFunctionMap(
- *   generatorFunc GeneratorFunction<A>,
- *   mapper A=>B,
- * ) -> GeneratorFunction<B>
+ *   generatorFunc ...any=>Generator<T>,
+ *   mapper T=>Promise|any,
+ * ) -> ...any=>Generator
  */
 const generatorFunctionMap = function (generatorFunc, mapper) {
   return function* mappingGeneratorFunc(...args) {
@@ -1062,8 +1069,9 @@ const generatorFunctionMap = function (generatorFunc, mapper) {
  *
  * @synopsis
  * const mappingIterator = new MappingIterator(
- *   iter Iterator, mapper function,
- * ) -> MappingIterator
+ *   iter Iterator<T>,
+ *   mapper T=>any,
+ * ) -> mappingIterator Iterator
  *
  * mappingIterator.next() -> { value: any, done: boolean }
  */
@@ -1088,12 +1096,10 @@ MappingIterator.prototype = {
  * @name asyncGeneratorFunctionMap
  *
  * @synopsis
- * any -> A, any -> B
- *
  * asyncGeneratorFunctionMap(
- *   asyncGeneratorFunc AsyncGeneratorFunction<A>,
- *   mapper A=>Promise|B,
- * ) -> AsyncGeneratorFunction<B>
+ *   asyncGeneratorFunc ...any=>AsyncGenerator<T>,
+ *   mapper T=>Promise|any,
+ * ) -> ...any=>AsyncGenerator
  */
 const asyncGeneratorFunctionMap = function (asyncGeneratorFunc, mapper) {
   return async function* mappingAsyncGeneratorFunc(...args) {
@@ -1116,14 +1122,14 @@ const toIteration = value => ({ value, done: false })
  *
  * @synopsis
  * mappingAsyncIterator = new MappingAsyncIterator(
- *   iter AsyncIterator,
- *   mapper function,
- * ) -> MappingAsyncIterator
+ *   asyncIter AsyncIterator<T>,
+ *   mapper T=>Promise|any,
+ * ) -> mappingAsyncIterator AsyncIterator
  *
  * mappingAsyncIterator.next() -> Promise<{ value: any, done: boolean }>
  */
-const MappingAsyncIterator = function (iter, mapper) {
-  this.iter = iter
+const MappingAsyncIterator = function (asyncIter, mapper) {
+  this.asyncIter = asyncIter
   this.mapper = mapper
 }
 
@@ -1132,7 +1138,7 @@ MappingAsyncIterator.prototype = {
     return this
   },
   async next() {
-    const iteration = await this.iter.next()
+    const iteration = await this.asyncIter.next()
     if (iteration.done) {
       return iteration
     }
@@ -1148,12 +1154,10 @@ MappingAsyncIterator.prototype = {
  * @name reducerMap
  *
  * @synopsis
- * any -> A, any -> B
- *
  * reducerMap(
- *   reducer (any, A)=>any,
- *   mapper A=>B,
- * ) -> mappingReducer (any, B)=>any
+ *   reducer (any, T)=>any,
+ *   mapper T=>Promise|any,
+ * ) -> mappingReducer (any, any)=>any
  */
 const reducerMap = (reducer, mapper) => function mappingReducer(result, value) {
   const mapped = mapper(value)
@@ -1165,35 +1169,30 @@ const reducerMap = (reducer, mapper) => function mappingReducer(result, value) {
 /**
  * @name map
  *
- * @catchphrase
- * linearly transform data
- *
  * @synopsis
  * map(
- *   mapper function,
+ *   mapper any=>Promise|any,
  * )(value any) -> result any
  *
- * Functor<T> = Array<T>|Object<T>
- *   |Iterator<T>|AsyncIterator<T>
- *   |{ map: (T=>any)=>this }
+ * Functor = Array|Object|Iterator|AsyncIterator|{ map: function }
  *
  * map(
- *   mapper any=>Promise|any,
- * )(Functor|any) -> Promise|Functor|any
+ *   mapper T=>Promise|any,
+ * )(Functor<T>) -> mappedFunctor Promise|Functor
  *
  * map(
- *   mapper (item any)=>any,
- * )(...any=>Iterator<item>) -> ...any=>Iterator<mapper(item)>
+ *   mapper T=>any,
+ * )(...any=>Iterator<T>) -> mappingGeneratorFunction ...any=>Iterator
  *
  * map(
- *   mapper (item any)=>Promise|any,
- * )(...any=>AsyncIterator<item>) -> ...any=>AsyncIterator<mapper(item)>
- *
- * Reducer<T> = (any, T)=>Promise|any
+ *   mapper T=>Promise|any,
+ * )(
+ *   ...any=>AsyncGenerator<T>,
+ * ) -> mappingAsyncGeneratorFunction ...any=>AsyncIterator
  *
  * map(
- *   mapper item=>Promise|any,
- * )(Reducer<item>) -> Reducer<mapper(item)>
+ *   mapper T=>Promise|any,
+ * )(reducer (any, T)=>Promise|any) -> mappingReducer (any, any)=>Promise|any
  *
  * @description
  * Apply a mapper concurrently to each item of a collection, returning a collection of the same type with all results. If order is implied by the collection, it is maintained in the result. Below are valid collections along with their iteration behavior.
@@ -1289,7 +1288,7 @@ const reducerMap = (reducer, mapper) => function mappingReducer(result, value) {
  *
  * @transducing
  *
- * TODO streamMap
+ * @TODO streamMap
  */
 const map = mapper => function mapping(value) {
   if (isArray(value)) {
@@ -1383,21 +1382,17 @@ const arrayMapSeries = function (array, mapper) {
 /**
  * @name map.series
  *
- * @catchphrase
- * map in series
- *
- * @synopsis
- * any -> A; any -> B
- *
- * map.series(mapper A=>Promise|B)(Array<A>) -> Promise|Array<B>
+ * map.series(
+ *   mapper any=>Promise|any,
+ * )(value Array) -> Promise|Array
  *
  * @description
- * `map` with serial execution of the mapper function with collection items.
+ * `map` with serial execution.
  *
  * ```javascript [playground]
- * const delayedLog = x => new Promise(function (resolve) {
+ * const delayedLog = number => new Promise(function (resolve) {
  *   setTimeout(function () {
- *     console.log(x)
+ *     console.log(number)
  *     resolve()
  *   }, 1000)
  * })
@@ -1487,16 +1482,11 @@ const arrayMapPool = function (array, mapper, concurrentLimit) {
 /**
  * @name map.pool
  *
- * @catchphrase
- * map with concurrent limit
- *
  * @synopsis
- * any -> A; any -> B
- *
  * map.pool(
- *   concurrentLimit number,
- *   mapper A=>B,
- * )(value Array<A>) -> Promise|Array<B>
+ *   maxConcurrency number,
+ *   mapper any=>Promise|any
+ * )(value Array) -> Promise|Array
  *
  * @description
  * `map` with a concurrency limit that specifies the maximum number of promises in flight at any given moment.
@@ -1526,12 +1516,10 @@ map.pool = (concurrencyLimit, mapper) => function concurrentPoolMapping(value) {
  * @name arrayMapWithIndex
  *
  * @synopsis
- * any -> A; any -> B
- *
  * arrayMapWithIndex(
- *   array Array<A>,
- *   mapper (A, index number, array Array<A>)=>Promise|B
- * ) -> Promise|Array<B>
+ *   array Array<T>,
+ *   mapper (item T, index number, array Array<T>)=>Promise|any
+ * ) -> Promise|Array
  */
 const arrayMapWithIndex = function (array, mapper) {
   const arrayLength = array.length,
@@ -1551,18 +1539,13 @@ const arrayMapWithIndex = function (array, mapper) {
 /**
  * @name map.withIndex
  *
- * @catchphrase
- * map with index
- *
  * @synopsis
- * any -> A; any -> B
- *
  * map.withIndex(
- *   mapper (A, index number, Array<A>)=>Promise|B,
- * )(Array<A>) -> Promise|Array<B>
+ *   mapper (item T, index number, Array<T>)=>Promise|any,
+ * )(Array<T>) -> Promise|Array
  *
  * @description
- * `map` with index and collection parameters additionally supplied to the mapper function each iteration.
+ * `map` with index and collection parameters additionally supplied to the mapper each iteration.
  *
  * ```javascript [playground]
  * const range = length => map.withIndex(
@@ -1826,8 +1809,6 @@ const asyncGeneratorFunctionFilter = function (asyncGeneratorFunction, predicate
  * @name FilteringAsyncIterator
  *
  * @synopsis
- * any -> T
- *
  * const filteringAsyncIterator = new FilteringAsyncIterator(
  *   iter AsyncIterator<T>,
  *   predicate T=>boolean,
@@ -1869,8 +1850,6 @@ FilteringAsyncIterator.prototype = {
  * @name reducerFilterByCondition
  *
  * @synopsis
- * T = any
- *
  * reducerFilterByCondition(
  *   reducer (any, T)=>Promise|any,
  *   result any,
@@ -1886,8 +1865,6 @@ const reducerFilterByCondition = (
  * @name reducerFilter
  *
  * @synopsis
- * any -> T
- *
  * reducerFilter(
  *   reducer (any, T)=>Promise|any,
  *   predicate T=>Promise|boolean,
@@ -1910,50 +1887,28 @@ const reducerFilter = (
  * exclude items by predicate
  *
  * @synopsis
- * any -> T
+ * filter(
+ *   predicate any=>Promise|boolean,
+ * )(value any) -> result Promise|any
  *
- * (any, T)=>Promise|any -> Reducer<T>
- *
- * { filter: (T=>boolean)=>this<T> } -> Filterable<T>
- *
- * filter(predicate T=>Promise|boolean)(
- *   value Array<T>,
- * ) -> Promise|Array<T>
+ * Filterable = Array|Object|Iterable|AsyncIterable|{ filter: function }
  *
  * filter(predicate T=>Promise|boolean)(
- *   value Object<T>,
- * ) -> Promise|Object<T>
+ *   value Filterable<T>) -> filtered Promise|Filterable<T>
  *
  * filter(predicate T=>boolean)(
- *   value GeneratorFunction<(args ...any)=>Generator<T>>,
- * ) -> GeneratorFunction<args=>Generator<T>>
+ *   generatorFunction ...args=>Generator<T>,
+ * ) -> filteredGeneratorFunction ...args=>Generator<T>
  *
  * filter(predicate T=>boolean)(
- *   value Iterator<T>,
- * ) -> Iterator<T>
+ *   asyncGeneratorFunction ...args=>AsyncGenerator<T>,
+ * ) -> filteredAsyncGeneratorFunction ...args=>AsyncGenerator<T>
  *
  * filter(predicate T=>Promise|boolean)(
- *   AsyncGeneratorFunction<(args ...any)=>AsyncGenerator<T>>
- * ) -> AsyncGeneratorFunction<args=>AsyncGenerator<T>>
- *
- * filter(predicate T=>Promise|boolean)(
- *   value AsyncIterator<T>,
- * ) -> AsyncIterator<T>
- *
- * filter(predicate T=>Promise|boolean)(
- *   value Reducer<T>,
- * ) -> Reducer<T>
- *
- * filter(predicate T=>boolean)(
- *   value Filterable<T>,
- * ) -> Filterable<T>
- *
- * filter(predicate T=>Promise|boolean)(
- *   value T,
- * ) -> Promise|T
+ *   reducer (any, T)=>Promise|any) -> filteringReducer (any, T)=>Promise|any
  *
  * @description
- * Exclude items from a collection based on the result of their concurrent execution with predicate function.
+ * Exclude items from a collection based on the results of their concurrent execution with the predicate. The predicate may be asynchronous.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -1967,9 +1922,9 @@ const reducerFilter = (
  * ) // { a: 1, c: 3, e: 5 }
  * ```
  *
- * Arrays are filtered by supplying each item of the array to the predicate, only including the item in the result if the evaluation is truthy. Objects are filtered by supplying the value associated with each key.
+ * Passing a generator function to `filter` returns a filtering generator function; all values that are normally yielded by a generator function that test falsy with the predicate are skipped by the returned filtering generator function.
  *
- * When filtering on arrays and objects, the predicate supplied to `filter` can be asynchronous.
+ * **Warning**: usage of an async predicate with generator functions or iterators may lead to undesirable behavior.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -1995,9 +1950,7 @@ const reducerFilter = (
  * }
  * ```
  *
- * Passing a generator function to `filter` returns a filtering generator function; all values that are normally yielded by a generator function that test falsy with the predicate are skipped by the returned filtering generator function. Passing any iterator, including a generator, to `filter` returns a filtering iterator; all `.next` calls with values that test falsy with the predicate are skipped by the returned filtering iterator.
- *
- * **Warning**: usage of an async predicate with generator functions or iterators may lead to undesirable behavior.
+ * In a similar vein to generators, `filter` also filters elements from async generators.
  *
  * ```javascript [playground]
  * const asyncIsOdd = async number => number % 2 == 1
@@ -2023,9 +1976,9 @@ const reducerFilter = (
  * }
  * ```
  *
- * In a similar vein to iterators and generator functions, `filter` filters elements from async generator functions and async iterators. All elements normally yielded by an async generator function that test falsy with the predicate are skipped by a filtering async generator function. All values normally returned by an async iterator's `.next` that test falsy under the predicate are also skipped by a filtering async iterator.
+ * Finally, `filter` creates filtering transducers. A reducer created from a filtering transducer skips items of a reducing operation if they test falsy under the predicate.
  *
- * The predicate can be asynchronous when filtering async iterators or async generator functions.
+ * Note: It is possible to use an asynchronous predicate when filtering a reducer, however the implementation of `reduce` must support asynchronous operations. This library provides such an implementation as `reduce`.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -2038,10 +1991,6 @@ const reducerFilter = (
  *   [1, 2, 3, 4, 5].reduce(concatOddNumbers, []),
  * ) // [1, 3, 5]
  * ```
- *
- * Finally, `filter` returns a filtering reducer when acting on a reducer. A filtering reducer skips items of a reducing operation if they test falsy under the predicate. In the example above, the filtering reducer `concatOddNumbers` only concatenates the odd numbers of `[1, 2, 3, 4, 5]` onto the result array by testing them against the predicate `isOdd`.
- *
- * It is possible to use an asynchronous predicate when filtering a reducer, however the implementation of `reduce` must support asynchronous operations. This library provides such an implementation as `reduce`.
  *
  * @execution concurrent
  *
@@ -2106,11 +2055,9 @@ const arrayExtendMapWithIndex = function (
  * @name arrayFilterWithIndex
  *
  * @synopsis
- * any -> T
- *
  * arrayFilterWithIndex(
  *   array Array<T>,
- *   predicate (T, index number, array)=>Promise|boolean,
+ *   predicate (item T, index number, array Array<T>)=>Promise|boolean,
  * ) -> result Promise|Array<T>
  */
 const arrayFilterWithIndex = function (array, predicate) {
@@ -2138,22 +2085,17 @@ const arrayFilterWithIndex = function (array, predicate) {
 /**
  * @name filter.withIndex
  *
- * @catchphrase
- * filter with index
- *
  * @synopsis
- * any -> T
- *
- * filter.withIndex(predicate T=>Promise|boolean)(
- *   value Array<T>,
- * ) -> Array<T>
+ * filter.withIndex(
+ *   predicate T=>Promise|boolean,
+ * )(value Array<T>) -> filteredArray Array<T>
  *
  * @description
- * `filter` with each predicate call supplemented by index and original reference parameters.
+ * `filter` with each predicate call supplemented by index and reference to original collection.
  *
  * ```javascript [playground]
  * const uniq = filter.withIndex(
- *   (item, index, array) => item != array[index + 1])
+ *   (item, index, array) => item !== array[index + 1])
  *
  * console.log(
  *   uniq([1, 1, 1, 2, 2, 2, 3, 3, 3]),
@@ -2192,8 +2134,6 @@ const asyncArrayReduce = async function (array, reducer, result, index) {
  * @name arrayReduce
  *
  * @synopsis
- * any -> T
- *
  * arrayReduce(
  *   array Array<T>,
  *   reducer (any, T)=>Promise|any,
@@ -2221,8 +2161,6 @@ const arrayReduce = function (array, reducer, result) {
  * @name asyncIteratorReduce
  *
  * @synopsis
- * any -> T
- *
  * asyncIteratorReduce(
  *   asyncIterator AsyncIterator<T>,
  *   reducer (any, T)=>Promise|any,
@@ -2250,8 +2188,6 @@ const asyncIteratorReduce = async function (asyncIterator, reducer, result) {
  * @name asyncGeneratorFunctionReduce
  *
  * @synopsis
- * any -> T
- *
  * asyncGeneratorFunctionReduce(
  *   asyncGeneratorFunc ...args=>AsyncGenerator<T>,
  *   reducer (any, T)=>any,
@@ -2268,8 +2204,6 @@ const asyncGeneratorFunctionReduce = (
  * @name iteratorReduce
  *
  * @synopsis
- * any -> T
- *
  * iteratorReduce(
  *   iterator Iterator<T>,
  *   reducer (any, T)=>Promise|any,
@@ -2300,8 +2234,6 @@ const iteratorReduce = function (iterator, reducer, result) {
  * @name generatorFunctionReduce
  *
  * @synopsis
- * any -> T
- *
  * generatorFunctionReduce(
  *   generatorFunc ...args=>AsyncGenerator<T>,
  *   reducer (any, T)=>Promise|any,
@@ -2318,8 +2250,6 @@ const generatorFunctionReduce = (
  * @name reducerConcat
  *
  * @synopsis
- * any -> T
- *
  * reducerConcat(
  *   reducerA (any, T)=>(intermediate Promise|any),
  *   reducerB (intermediate, T)=>Promise|any,
@@ -2338,8 +2268,6 @@ const reducerConcat = function (reducerA, reducerB) {
  * @name reducerConcatSync
  *
  * @synopsis
- * any -> T
- *
  * reducerConcatSync(
  *   reducerA (any, T)=>(intermediate any),
  *   reducerB (intermediate, T)=>any,
@@ -2354,8 +2282,6 @@ const reducerConcatSync = (
  * @name tacitGenericReduce
  *
  * @synopsis
- * any -> T
- *
  * tacitGenericReduce(
  *   reducer (any, T)=>any,
  *   result any,
@@ -2371,8 +2297,6 @@ const tacitGenericReduce = (
  * @name genericReduce
  *
  * @synopsis
- * any -> T
- *
  * (any, T)=>any -> Reducer<T>
  *
  * genericReduce(
@@ -2444,9 +2368,6 @@ var genericReduce = function (args, reducer, result) {
 
 /**
  * @name reduce
- *
- * @catchphrase
- * execute a reducer
  *
  * @synopsis
  * reduce(
@@ -2796,9 +2717,6 @@ const genericTransform = function (args, transducer, result) {
 /**
  * @name transform
  *
- * @catchphrase
- * execute a transducer by concatenation
- *
  * @synopsis
  * transform(
  *   transducer function,
@@ -2896,7 +2814,7 @@ const genericTransform = function (args, transducer, result) {
  *
  * Node.js WritableStream interfaces are consumed as well.
  *
- * ```javascript
+ * ```javascript [playground]
  * // this example is duplicated in rubico/examples/transformStreamRandomInts.js
  *
  * const { pipe, map, transform } = require('rubico')
@@ -3689,9 +3607,6 @@ const asyncGeneratorFunctionFlatMap = (
 /**
  * @name flatMap
  *
- * @catchphrase
- * map then flatten
- *
  * @synopsis
  * ```coffeescript [specscript]
  * flatMap(flatMapper function)(value any) -> result any
@@ -3705,26 +3620,26 @@ const asyncGeneratorFunctionFlatMap = (
  * Foldable = Iterable|AsyncIterable|{ reduce: function }
  *
  * flatMap(
- *   flatMapper item=>Promise|Monad|Foldable|any,
- * )(value Monad<item any>) -> result Monad
+ *   flatMapper T=>Promise|Monad|Foldable|any,
+ * )(value Monad<T>) -> result Monad
  *
  * flatMap(
- *   flatMapper item=>Promise|Monad|Foldable|any,
+ *   flatMapper T=>Promise|Monad|Foldable|any,
  * )(
- *   value (args ...any)=>Generator<item>,
+ *   value (args ...any)=>Generator<T>,
  * ) -> flatMappingGeneratorFunction ...args=>Generator
  *
  * flatMap(
- *   flatMapper item=>Promise|Monad|Foldable|any,
+ *   flatMapper T=>Promise|Monad|Foldable|any,
  * )(
- *   value (args ...any)=>AsyncGenerator<item>,
+ *   value (args ...any)=>AsyncGenerator<T>,
  * ) -> flatMappingAsyncGeneratorFunction ...args=>AsyncGenerator
  *
  * Reducer<T> = (any, T)=>Promise|any
  *
  * flatMap(
- *   flatMapper item=>Promise|Monad|Foldable|any,
- * )(value Reducer<item>) -> flatMappingReducer Reducer
+ *   flatMapper T=>Promise|Monad|Foldable|any,
+ * )(value Reducer<T>) -> flatMappingReducer Reducer
  * ```
  *
  * @description
@@ -3986,9 +3901,6 @@ const getByPath = function (object, path) {
 /**
  * @name get
  *
- * @catchphrase
- * access a property by path
- *
  * @synopsis
  * get(
  *   path string|Array|any,
@@ -4004,7 +3916,7 @@ const getByPath = function (object, path) {
  * ) // world
  * ```
  *
- * `get` accepts a default value to return if the property is not found. This default value may be a resolver of such value - rubico supplies this function with the input object.
+ * `get` accepts a default value to return if the property is not found. This default value may be a resolver of such value.
  *
  * ```javascript [playground]
  * console.log(
@@ -4054,14 +3966,11 @@ const get = (path, defaultValue) => function getter(value) {
 /**
  * @name pick
  *
- * @catchphrase
- * pick properties from an object
- *
  * @synopsis
- * pick(Array<string|Array|any>)(source Object) -> picked Object
+ * pick(Array<string>)(source Object) -> picked Object
  *
  * @description
- * Create a new object from a source object including only the properties from a provided array.
+ * Create a new object by including specific keys.
  *
  * ```javascript [playground]
  * console.log(
@@ -4090,14 +3999,11 @@ const pick = keys => function picking(source) {
 /**
  * @name omit
  *
- * @catchphrase
- * exclude properties from an object
- *
  * @synopsis
- * omit(Array<string|Array|any>)(source Object) -> omitted Object
+ * omit(Array<string>)(source Object) -> omitted Object
  *
  * @description
- * Create a new object excluding the keys from a provided array.
+ * Create a new object by excluding specific keys.
  *
  * ```javascript [playground]
  * console.log(
@@ -4302,18 +4208,19 @@ const foldableAnyReducer = predicate => function anyReducer(result, item) {
 /**
  * @name any
  *
- * @catchphrase
- * any items truthy
- *
  * @synopsis
- * any(predicate function)(value any) -> result Promise|boolean
+ * any(
+ *   predicate any=>Promise|boolean,
+ * )(value any) -> anyTruthy Promise|boolean
  *
  * Foldable = Iterable|AsyncIterable|{ reduce: function }
  *
- * any(predicate any=>Promise|boolean)(value Foldable) -> Promise|boolean
+ * any(
+ *   predicate any=>Promise|boolean
+ * )(value Foldable) -> Promise|boolean
  *
  * @description
- * Concurrently test a predicate across all items of a collection, returning true if any predication is truthy.
+ * Test a predicate concurrently across all items of a collection, returning true if any predication is truthy.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -4503,18 +4410,19 @@ const foldableAllReducer = predicate => function allReducer(result, item) {
 /**
  * @name all
  *
- * @catchphrase
- * all items truthy
- *
  * @synopsis
- * all(predicate function)(value all) -> result Promise|boolean
+ * all(
+ *   predicate any=>Promise|boolean,
+ * )(value any) -> allTruthy Promise|boolean
  *
  * Foldable = Iterable|AsyncIterable|{ reduce: function }
  *
- * all(predicate all=>Promise|boolean)(value Foldable) -> Promise|boolean
+ * all(
+ *   predicate T=>Promise|boolean,
+ * )(value Foldable<T>) -> Promise|boolean
  *
  * @description
- * Concurrently test a predicate across all items of a collection, returning true if all predications are truthy.
+ * Test a predicate concurrently across all items of a collection, returning true if all predications are truthy.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -4571,14 +4479,13 @@ const _not = value => !value
 /**
  * @name not
  *
- * @catchphrase
- * logical inversion
- *
  * @synopsis
- * not(predicate ...any=>Promise|boolean) -> logicalInverter ...any=>Promise|boolean
+ * not(
+ *   predicate ...any=>Promise|boolean,
+ * ) -> invertedPredicate ...any=>Promise|boolean
  *
  * @description
- * Logically invert a function by always logically inverting its return value. Predicate may be asynchronous.
+ * Logically invert a predicate (`!`) by always logically inverting its return value. Predicate may be asynchronous.
  *
  * ```javascript [playground]
  * console.log(
@@ -4603,9 +4510,6 @@ const notSync = func => function notSync(...args) {
 
 /**
  * @name not.sync
- *
- * @catchphrase
- * synchronous not
  *
  * @synopsis
  * not.sync(func ...any=>boolean) -> logicallyInverted ...any=>boolean
@@ -4653,16 +4557,13 @@ const _asyncAndInterlude = (
 /**
  * @name and
  *
- * @catchphrase
- * all predicates truthy
- *
  * @synopsis
  * and(
  *   predicates Array<value=>Promise|boolean>
  * )(value any) -> allTruthy Promise|boolean
  *
  * @description
- * Concurrently test an array of predicates against a single input, returning true if all of them test truthy. Predicates may be asynchronous.
+ * Test an array of predicates concurrently against a single input, returning true if all are truthy. Predicates may be asynchronous.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -4729,16 +4630,13 @@ const _asyncOrInterlude = (
 /**
  * @name or
  *
- * @catchphrase
- * any predicates truthy
- *
  * @synopsis
  * or(
  *   predicates Array<value=>Promise|boolean>
  * )(value any) -> anyTruthy Promise|boolean
  *
  * @description
- * Concurrently test an array of predicates against a single input, returning true if any of them test truthy. Predicates may be asynchronous.
+ * Test an array of predicates concurrently against a single input, returning true if any of them test truthy. Predicates may be asynchronous.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -4783,27 +4681,24 @@ const spread2 = func => function spreading2([arg0, arg1]) {
 }
 
 /**
- * @name strictEquals
+ * @name strictEqual
  *
  * @synopsis
- * strictEquals(a any, b any) -> boolean
+ * strictEqual(a any, b any) -> boolean
  */
-const strictEquals = (a, b) => a === b
+const strictEqual = (a, b) => a === b
 
 /**
  * @name eq
- *
- * @catchphrase
- * left strictly equals right
  *
  * @synopsis
  * eq(
  *   left (any=>Promise|boolean)|any,
  *   right (any=>Promise|boolean)|any,
- * ) -> strictEqualsBy (value any)=>Promise|boolean
+ * ) -> strictEqualBy (value any)=>Promise|boolean
  *
  * @description
- * Tacit, concurrent test for strict equality (`===`) between two values. Either parameter may be an asynchronous resolver.
+ * Test for strict equality (`===`) between two values. Either parameter may be an asynchronous resolver.
  *
  * ```javascript [playground]
  * const personIsGeorge = eq(person => person.name, 'George')
@@ -4819,36 +4714,36 @@ const eq = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
   if (isLeftResolver && isRightResolver) {
-    return function strictEqualsBy(value) {
+    return function strictEqualBy(value) {
       const leftResolve = left(value),
         rightResolve = right(value)
       const isLeftPromise = isPromise(leftResolve),
         isRightPromise = isPromise(rightResolve)
       if (isLeftPromise && isRightPromise) {
         return promiseAll(
-          [leftResolve, rightResolve]).then(spread2(strictEquals))
+          [leftResolve, rightResolve]).then(spread2(strictEqual))
       } else if (isLeftPromise) {
-        return leftResolve.then(curry2(strictEquals, __, rightResolve))
+        return leftResolve.then(curry2(strictEqual, __, rightResolve))
       } else if (isRightPromise) {
-        return rightResolve.then(curry2(strictEquals, leftResolve, __))
+        return rightResolve.then(curry2(strictEqual, leftResolve, __))
       }
       return leftResolve === rightResolve
     }
   }
 
   if (isLeftResolver) {
-    return function strictEqualsBy(value) {
+    return function strictEqualBy(value) {
       const leftResolve = left(value)
       return isPromise(leftResolve)
-        ? leftResolve.then(curry2(strictEquals, __, right))
+        ? leftResolve.then(curry2(strictEqual, __, right))
         : leftResolve === right
     }
   }
   if (isRightResolver) {
-    return function strictEqualsBy(value) {
+    return function strictEqualBy(value) {
       const rightResolve = right(value)
       return isPromise(rightResolve)
-        ? rightResolve.then(curry2(strictEquals, left, __))
+        ? rightResolve.then(curry2(strictEqual, left, __))
         : left === rightResolve
     }
   }
@@ -4866,9 +4761,6 @@ const greaterThan = (left, right) => left > right
 /**
  * @name gt
  *
- * @catchphrase
- * left greater than right
- *
  * @synopsis
  * gt(
  *   left (any=>Promise|boolean)|any,
@@ -4876,9 +4768,9 @@ const greaterThan = (left, right) => left > right
  * )(value any) -> greaterThanBy(value any)=>Promise|boolean
  *
  * @description
- * Tacit, concurrent test for left value greater than (`>`) right value. Either parameter may be an asynchronous resolver.
+ * Test for left value greater than (`>`) right value. Either parameter may be an asynchronous resolver.
  *
- * ```javascript
+ * ```javascript [playground]
  * const isOfLegalAge = gt(21, person => person.age)
  *
  * const juvenile = { age: 16 }
@@ -4916,7 +4808,7 @@ const gt = function (left, right) {
     }
   }
   if (isRightResolver) {
-    return function strictEqualsBy(value) {
+    return function strictEqualBy(value) {
       const rightResolve = right(value)
       return isPromise(rightResolve)
         ? rightResolve.then(curry2(greaterThan, left, __))
@@ -4937,9 +4829,6 @@ const lessThan = (left, right) => left < right
 /**
  * @name lt
  *
- * @catchphrase
- * left greater than right
- *
  * @synopsis
  * lt(
  *   left (any=>Promise|boolean)|any,
@@ -4947,9 +4836,9 @@ const lessThan = (left, right) => left < right
  * )(value any) -> lessThanBy(value any)=>Promise|boolean
  *
  * @description
- * Tacit, concurrent test for left value less than (`<`) right value. Either parameter may be an asynchronous resolver.
+ * Test for left value less than (`<`) right value. Either parameter may be an asynchronous resolver.
  *
- * ```javascript
+ * ```javascript [playground]
  * const identity = value => value
  *
  * const isLessThan3 = lt(identity, 3)
@@ -4989,7 +4878,7 @@ const lt = function (left, right) {
     }
   }
   if (isRightResolver) {
-    return function strictEqualsBy(value) {
+    return function strictEqualBy(value) {
       const rightResolve = right(value)
       return isPromise(rightResolve)
         ? rightResolve.then(curry2(lessThan, left, __))
@@ -5000,29 +4889,26 @@ const lt = function (left, right) {
 }
 
 /**
- * @name greaterThanOrEquals
+ * @name greaterThanOrEqualTo
  *
  * @synopsis
- * greaterThanOrEquals(left any, right any) -> boolean
+ * greaterThanOrEqualTo(left any, right any) -> boolean
  */
-const greaterThanOrEquals = (left, right) => left >= right
+const greaterThanOrEqualTo = (left, right) => left >= right
 
 /**
  * @name gte
- *
- * @catchphrase
- * left greater than or equals right
  *
  * @synopsis
  * gte(
  *   left (any=>Promise|boolean)|any,
  *   right (any=>Promise|boolean)|any,
- * )(value any) -> greaterThanEqualsBy(value any)=>Promise|boolean
+ * )(value any) -> greaterThanOrEqualToBy(value any)=>Promise|boolean
  *
  * @description
- * Tacit, concurrent test for left value greater than or equals (`>=`) right value. Either parameter may be an asynchronous resolver.
+ * Test for left value greater than or equal to (`>=`) right value. Either parameter may be an asynchronous resolver.
  *
- * ```javascript
+ * ```javascript [playground]
  * const identity = value => value
  *
  * const isAtLeast100 = gte(identity, 100)
@@ -5036,36 +4922,36 @@ const gte = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
   if (isLeftResolver && isRightResolver) {
-    return function greaterThanEqualsBy(value) {
+    return function greaterThanOrEqualToBy(value) {
       const leftResolve = left(value),
         rightResolve = right(value)
       const isLeftPromise = isPromise(leftResolve),
         isRightPromise = isPromise(rightResolve)
       if (isLeftPromise && isRightPromise) {
         return promiseAll(
-          [leftResolve, rightResolve]).then(spread2(greaterThanOrEquals))
+          [leftResolve, rightResolve]).then(spread2(greaterThanOrEqualTo))
       } else if (isLeftPromise) {
-        return leftResolve.then(curry2(greaterThanOrEquals, __, rightResolve))
+        return leftResolve.then(curry2(greaterThanOrEqualTo, __, rightResolve))
       } else if (isRightPromise) {
-        return rightResolve.then(curry2(greaterThanOrEquals, leftResolve, __))
+        return rightResolve.then(curry2(greaterThanOrEqualTo, leftResolve, __))
       }
       return leftResolve >= rightResolve
     }
   }
 
   if (isLeftResolver) {
-    return function greaterThanEqualsBy(value) {
+    return function greaterThanOrEqualToBy(value) {
       const leftResolve = left(value)
       return isPromise(leftResolve)
-        ? leftResolve.then(curry2(greaterThanOrEquals, __, right))
+        ? leftResolve.then(curry2(greaterThanOrEqualTo, __, right))
         : leftResolve >= right
     }
   }
   if (isRightResolver) {
-    return function strictEqualsBy(value) {
+    return function strictEqualBy(value) {
       const rightResolve = right(value)
       return isPromise(rightResolve)
-        ? rightResolve.then(curry2(greaterThanOrEquals, left, __))
+        ? rightResolve.then(curry2(greaterThanOrEqualTo, left, __))
         : left >= rightResolve
     }
   }
@@ -5073,18 +4959,15 @@ const gte = function (left, right) {
 }
 
 /**
- * @name lessThanOrEquals
+ * @name lessThanOrEqualTo
  *
  * @synopsis
- * lessThanOrEquals(left any, right any) -> boolean
+ * lessThanOrEqualTo(left any, right any) -> boolean
  */
-const lessThanOrEquals = (left, right) => left <= right
+const lessThanOrEqualTo = (left, right) => left <= right
 
 /**
  * @name lte
- *
- * @catchphrase
- * left greater than right
  *
  * @synopsis
  * lte(
@@ -5093,16 +4976,16 @@ const lessThanOrEquals = (left, right) => left <= right
  * )(value any) -> lessThanBy(value any)=>Promise|boolean
  *
  * @description
- * Tacit, concurrent test for left value less than or equals (`<=`) right value. Either parameter may be an asynchronous resolver.
+ * Test for left value less than or equal to (`<=`) right value. Either parameter may be an asynchronous resolver.
  *
- * ```javascript
+ * ```javascript [playground]
  * const identity = value => value
  *
- * const isLessThan3 = lte(identity, 3)
+ * const isLessThanOrEqualTo3 = lte(identity, 3)
  *
- * console.log(isLessThan3(1), true)
- * console.log(isLessThan3(3), false)
- * console.log(isLessThan3(5), false)
+ * console.log(isLessThanOrEqualTo3(1), true)
+ * console.log(isLessThanOrEqualTo3(3), true)
+ * console.log(isLessThanOrEqualTo3(5), false)
  * ```
  */
 const lte = function (left, right) {
@@ -5116,11 +4999,11 @@ const lte = function (left, right) {
         isRightPromise = isPromise(rightResolve)
       if (isLeftPromise && isRightPromise) {
         return promiseAll(
-          [leftResolve, rightResolve]).then(spread2(lessThanOrEquals))
+          [leftResolve, rightResolve]).then(spread2(lessThanOrEqualTo))
       } else if (isLeftPromise) {
-        return leftResolve.then(curry2(lessThanOrEquals, __, rightResolve))
+        return leftResolve.then(curry2(lessThanOrEqualTo, __, rightResolve))
       } else if (isRightPromise) {
-        return rightResolve.then(curry2(lessThanOrEquals, leftResolve, __))
+        return rightResolve.then(curry2(lessThanOrEqualTo, leftResolve, __))
       }
       return leftResolve <= rightResolve
     }
@@ -5130,15 +5013,15 @@ const lte = function (left, right) {
     return function lessThanBy(value) {
       const leftResolve = left(value)
       return isPromise(leftResolve)
-        ? leftResolve.then(curry2(lessThanOrEquals, __, right))
+        ? leftResolve.then(curry2(lessThanOrEqualTo, __, right))
         : leftResolve <= right
     }
   }
   if (isRightResolver) {
-    return function strictEqualsBy(value) {
+    return function strictEqualBy(value) {
       const rightResolve = right(value)
       return isPromise(rightResolve)
-        ? rightResolve.then(curry2(lessThanOrEquals, left, __))
+        ? rightResolve.then(curry2(lessThanOrEqualTo, left, __))
         : left <= rightResolve
     }
   }
