@@ -49,7 +49,7 @@ const {
 } = rubico
 ```
 
-These operators act sensibly on a wide range of vanilla JavaScript types to create declarative, highly reusable, and async-enabled compositions.
+These operators act sensibly on a wide range of vanilla JavaScript types to create declarative, reusable, and async-enabled compositions.
 
 ```javascript
 import { pipe, map } from 'rubico'
