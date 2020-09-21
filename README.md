@@ -49,10 +49,10 @@ const {
 } = rubico
 ```
 
-These operators act sensibly on a wide range of vanilla JavaScript types to create declarative, reusable, and async-enabled compositions.
+These operators act sensibly on a wide range of vanilla JavaScript types to create declarative, reusable, and async-enabled function compositions.
 
-```javascript
-import { pipe, map } from 'rubico'
+```javascript [playground]
+const { pipe, map } = rubico
 
 const toTodosUrl = id => 'https://jsonplaceholder.typicode.com/todos/' + id
 
