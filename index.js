@@ -852,16 +852,12 @@ tap.sync = tapSync
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
  *
- * pipe([
- *   tap.if(isOdd, number => {
- *     console.log('odd', number)
- *   }),
- *   number => number ** 2,
- *   tap.if(isOdd, number => {
- *     console.log('squared odd', number)
- *   }),
- * ])(3) // odd 3
- *       // squared odd 9
+ * const logIfOdd = tap.if(
+ *   isOdd,
+ *   number => console.log(number, 'is an odd number'))
+ *
+ * logIfOdd(2)
+ * logIfOdd(3) // 3 is an odd number
  * ```
  *
  * @related tap
