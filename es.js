@@ -1,4 +1,4 @@
-/* rubico v1.5.16
+/* rubico v1.5.17
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2020 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -89,6 +89,18 @@ const identity = value => value
 const add = (a, b) => a + b
 
 const range = (start, end) => Array.from({ length: end - start }, (x, i) => i + start)
+
+/**
+ * @name callPropUnary
+ *
+ * @synopsis
+ * callPropUnary(
+ *   value object,
+ *   property string,
+ *   arg0 any,
+ * ) -> value[property](arg0)
+ */
+const callPropUnary = (value, property, arg0) => value[property](arg0)
 
 const __ = Symbol('placeholder')
 
@@ -830,16 +842,12 @@ tap.sync = tapSync
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
  *
- * pipe([
- *   tap.if(isOdd, number => {
- *     console.log('odd', number)
- *   }),
- *   number => number ** 2,
- *   tap.if(isOdd, number => {
- *     console.log('squared odd', number)
- *   }),
- * ])(3) // odd 3
- *       // squared odd 9
+ * const logIfOdd = tap.if(
+ *   isOdd,
+ *   number => console.log(number, 'is an odd number'))
+ *
+ * logIfOdd(2)
+ * logIfOdd(3) // 3 is an odd number
  * ```
  *
  * @related tap
@@ -1024,6 +1032,24 @@ const arrayMap = function (array, mapper) {
     result[index] = resultItem
   }
   return isAsync ? promiseAll(result) : result
+}
+
+/**
+ * @name stringMap
+ *
+ * @synopsis
+ * stringMap(
+ *   string String<T>,
+ *   mapper T=>Promise|any,
+ * ) -> Promise|String
+ *
+ * @related stringFlatMap
+ */
+const stringMap = function (string, mapper) {
+  const result = arrayMap(string, mapper)
+  return isPromise(result)
+    ? result.then(curry3(callPropUnary, __, 'join', ''))
+    : result.join('')
 }
 
 /**
@@ -1293,6 +1319,9 @@ const reducerMap = (reducer, mapper) => function mappingReducer(result, value) {
 const map = mapper => function mapping(value) {
   if (isArray(value)) {
     return arrayMap(value, mapper)
+  }
+  if (isString(value)) {
+    return stringMap(value, mapper)
   }
   if (isFunction(value)) {
     if (isGeneratorFunction(value)) {
@@ -4280,18 +4309,6 @@ const any = predicate => function anyTruthy(value) {
   }
   return !!predicate(value)
 }
-
-/**
- * @name callPropUnary
- *
- * @synopsis
- * callPropUnary(
- *   value object,
- *   property string,
- *   arg0 any,
- * ) -> value[property](arg0)
- */
-const callPropUnary = (value, property, arg0) => value[property](arg0)
 
 /**
  * @name arrayAll
