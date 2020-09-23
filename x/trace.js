@@ -49,8 +49,6 @@ const funcConcat = (funcA, funcB) => function pipedFunction(...args) {
  * ])('hey') // hey
  *           // HEY
  * ```
- *
- * Additionally, lazy trace
  */
 const trace = function (...args) {
   const point = args[0]
