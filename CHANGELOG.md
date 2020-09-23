@@ -1,4 +1,7 @@
-## v1.5.16 - latest
+## v1.5.17 - latest
+ * fix: string mapping
+
+## v1.5.16
  * tap.if
 
 ## v1.5.15
