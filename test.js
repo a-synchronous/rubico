@@ -746,6 +746,36 @@ describe('rubico', () => {
       })
     })
 
+    describe('map(func A=>Promise|B)(Set<A>) -> Promise|Set<B>', () => {
+      it('func A=>B; B', async () => {
+        assert.deepEqual(
+          map(num => num ** 2)(new Set([1, 2, 3, 4, 5])),
+          new Set([1, 4, 9, 16, 25]),
+        )
+      })
+      it('func A=>Promise<B>; Promise<B>', async () => {
+        assert.deepEqual(
+          await map(async num => num ** 2)(new Set([1, 2, 3, 4, 5])),
+          new Set([1, 4, 9, 16, 25]),
+        )
+      })
+    })
+
+    describe('map(func A=>Promise|B)(Map<any, A>) -> Promise|Map<any, B>', () => {
+      it('func A=>B; B', async () => {
+        assert.deepEqual(
+          map(num => num ** 2)(new Map([['a', 1], ['b', 2], ['c', 3], ['d', 4], ['e', 5]])),
+          new Map([['a', 1], ['b', 4], ['c', 9], ['d', 16], ['e', 25]]),
+        )
+      })
+      it('func A=>Promise<B>; Promise<B>', async () => {
+        assert.deepEqual(
+          await map(async num => num ** 2)(new Map([['a', 1], ['b', 2], ['c', 3], ['d', 4], ['e', 5]])),
+          new Map([['a', 1], ['b', 4], ['c', 9], ['d', 16], ['e', 25]]),
+        )
+      })
+    })
+
     describe('map(func A=>Promise|B)(String<A>) -> Promise|String<B>', () => {
       it('func A=>B; B', async () => {
         assert.deepEqual(
