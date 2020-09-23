@@ -1,4 +1,7 @@
-## v1.5.17 - latest
+## v1.5.18 - latest
+ * fix: Set and Map mapping
+
+## v1.5.17
  * fix: string mapping
 
 ## v1.5.16
