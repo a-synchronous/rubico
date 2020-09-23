@@ -1,4 +1,4 @@
-/* rubico v1.5.17
+/* rubico v1.5.18
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2020 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -393,28 +393,6 @@ const setExtend = function (set, values) {
     return set
   }
   return set.add(values)
-}
-
-/**
- * @name setMap
- *
- * @synopsis
- * setMap(set Set, mapper function) -> result Set
- */
-const setMap = function (set, mapper) {
-  const result = new Set(),
-    promises = []
-  for (const item of set) {
-    const resultItem = mapper(item)
-    if (isPromise(resultItem)) {
-      promises.push(resultItem.then(curry2(setAdd, result, __)))
-    } else {
-      result.add(resultItem)
-    }
-  }
-  return promises.length == 0
-    ? result
-    : promiseAll(promises).then(always(result))
 }
 
 /**
@@ -1035,6 +1013,57 @@ const arrayMap = function (array, mapper) {
 }
 
 /**
+ * @name setMap
+ *
+ * @synopsis
+ * setMap(set Set, mapper function) -> result Set
+ */
+const setMap = function (set, mapper) {
+  const result = new Set(),
+    promises = []
+  for (const item of set) {
+    const resultItem = mapper(item)
+    if (isPromise(resultItem)) {
+      promises.push(resultItem.then(curry2(setAdd, result, __)))
+    } else {
+      result.add(resultItem)
+    }
+  }
+  return promises.length == 0
+    ? result
+    : promiseAll(promises).then(always(result))
+}
+
+// (map Map, key any, item any) -> map
+const mapSetItem = (map, key, item) => map.set(key, item)
+
+/**
+ * @name mapMap
+ *
+ * @synopsis
+ * mapMap<T>(
+ *   value Map<any, T>,
+ *   mapper T=>Promise|any,
+ * ) -> Promise|Map<any, any>
+ */
+const mapMap = function (value, mapper) {
+  const result = new Map(),
+    promises = []
+  for (const [key, item] of value) {
+    const resultItem = mapper(item)
+    if (isPromise(resultItem)) {
+      promises.push(resultItem.then(
+        curry3(mapSetItem, result, key, __)))
+    } else {
+      result.set(key, resultItem)
+    }
+  }
+  return promises.length == 0
+    ? result
+    : promiseAll(promises).then(always(result))
+}
+
+/**
  * @name stringMap
  *
  * @synopsis
@@ -1320,10 +1349,7 @@ const map = mapper => function mapping(value) {
   if (isArray(value)) {
     return arrayMap(value, mapper)
   }
-  if (isString(value)) {
-    return stringMap(value, mapper)
-  }
-  if (isFunction(value)) {
+  if (typeof value == 'function') {
     if (isGeneratorFunction(value)) {
       return generatorFunctionMap(value, mapper)
     }
@@ -1340,6 +1366,15 @@ const map = mapper => function mapping(value) {
     return symbolIterator in value
       ? new MappingIterator(value, mapper)
       : new MappingAsyncIterator(value, mapper)
+  }
+  if (typeof value == 'string' || value.constructor == String) {
+    return stringMap(value, mapper)
+  }
+  if (value.constructor == Set) {
+    return setMap(value, mapper)
+  }
+  if (value.constructor == Map) {
+    return mapMap(value, mapper)
   }
   if (value.constructor == Object) {
     return objectMap(value, mapper)
