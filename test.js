@@ -746,6 +746,21 @@ describe('rubico', () => {
       })
     })
 
+    describe('map(func A=>Promise|B)(String<A>) -> Promise|String<B>', () => {
+      it('func A=>B; B', async () => {
+        assert.deepEqual(
+          map(num => num ** 2)('12345'),
+          '1491625',
+        )
+      })
+      it('func A=>Promise<B>; Promise<B>', async () => {
+        assert.deepEqual(
+          await map(async num => num ** 2)('12345'),
+          '1491625',
+        )
+      })
+    })
+
     describe('map(func A=>Promise|B)(Object<A>) -> Promise|Object<B>', () => {
       it('func A=>B; B', async () => {
         assert.deepEqual(
