@@ -630,8 +630,8 @@ const funcAll = funcs => function allFuncs(...args) {
  * console.log(
  *   fork({
  *     greetings: fork([
- *       greeting => greeting + 'world',
- *       greeting => greeting + 'mom',
+ *       greeting => greeting + ' world',
+ *       greeting => greeting + ' mom',
  *     ]),
  *   })('hello'),
  * ) // { greetings: ['hello world', 'hello mom'] }
@@ -2585,11 +2585,8 @@ var genericReduce = function (args, reducer, result) {
  *   return state
  * }
  *
- * const emptyReducer = result => result
- *
  * const reducingABC = reduce(
- *   emptyReducer, () => ({}),
- * )(reducerA, reducerB, reducerC)
+ *   reducerA, () => ({}))(reducerB, reducerC)
  *
  * const actions = [{ type: 'A' }, { type: 'B' }, { type: 'C' }]
  *
@@ -3731,25 +3728,16 @@ const asyncGeneratorFunctionFlatMap = (
  * @description
  * Apply a function to each item of a collection, flattening any resulting collection. The result is always the same type as the input value with all items mapped and flattened. The following outlines behavior for various collections.
  *
- *   * Array - map items then flatten results into a new Array
- *   * String|string - map items then flatten (`+`) results into a new string
- *   * Set - map items then flatten results into a new Set
- *   * Uint8ClampedArray - map items then flatten results into a new Uint8ClampedArray
- *   * Uint8Array - map items then flatten results into a new Uint8Array
- *   * Int8Array - map items then flatten results into a new Int8Array
- *   * Uint16Array - map items then flatten results into a new Uint16Array
- *   * Int16Array - map items then flatten results into a new Int16Array
- *   * Uint32Array - map items then flatten results into a new Uint32Array
- *   * Int32Array - map items then flatten results into a new Int32Array
- *   * Float32Array - map items then flatten results into a new Float32Array
- *   * Float64Array - map items then flatten results into a new Float64Array
- *   * BigUint64Array - map items then flatten results into a new BigUint64Array
- *   * BigInt64Array - map items then flatten results into a new BigInt64Array
- *   * Buffer (Node.js) - map items then flatten results into a new Buffer
- *   * DuplexStream - Node.js stream.Duplex - map over stream items by async iteration, then call stream's `.write` to flatten
- *   * Object that implements `.chain` or `.flatMap` - either of these are called directly
- *   * Object - a plain Object, values are mapped then flattened into result by `Object.assign`
- *   * Reducer - a function to be used in a reducing operation. Items of a flatMapped reducing operation are mapped then flattened into the aggregate
+ *   * `Array` - map items then flatten results into a new `Array`
+ *   * `String|string` - map items then flatten (`+`) results into a new `string`
+ *   * `Set` - map items then flatten results into a new `Set`
+ *   * `TypedArray` - map items then flatten results into a new `TypedArray`
+ *   * `Buffer (Node.js)` - map items then flatten results into a new `Buffer`
+ *   * `stream.Duplex (Node.js)` - map over stream items by async iteration, then call stream's `.write` to flatten
+ *   * `{ chain: function }`, i.e. object that implements `.chain` - this function is called directly
+ *   * `{ flatMap: function }`, i.e. object that implements `.flatMap` - this function is called directly
+ *   * `Object` - a plain Object, values are mapped then flattened into result by `Object.assign`
+ *   * `Reducer` - a function to be used in a reducing operation. Items of a flatMapped reducing operation are mapped then flattened into the aggregate
  *
  * On arrays, map the flatMapper function with concurrent asynchronous execution, then flatten the result one depth.
  *
@@ -3810,14 +3798,14 @@ const asyncGeneratorFunctionFlatMap = (
  * flatMap(identity)([
  *   [1, 1],
  *   new Set([2, 2]),
- *   (function* { yield 3; yield 3 })(),
- *   (async function* { yield 4; yield 4 })(),
+ *   (function* () { yield 3; yield 3 })(),
+ *   (async function* () { yield 4; yield 4 })(),
  *   { a: 5, b: 5 },
  *   6,
  *   Promise.resolve(7),
  *   new Uint8Array([8]),
  * ]).then(console.log)
- * // [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 8]
+ * // [1, 1, 2, 3, 3, 5, 5, 6, 7, 8, 4, 4]
  * ```
  *
  * Purer functional programming is possible with flatMap operation on monads. A monad could be any object that implements `.chain` or `.flatMap`. When a flatMapping operation encounters a monad, it calls the monad's `.chain` method directly to flatten.
@@ -3834,7 +3822,7 @@ const asyncGeneratorFunctionFlatMap = (
  * flatMap(console.log)(Maybe('hello world')) // hello world
  * ```
  *
- * In addition to monads, `flatMap` provides much needed flexibility when working with transducers. A flatMapping transducer is like a mapping transducer except all items of a reducing operation are additionally flattened into the result.
+ * In addition to monads, `flatMap` provides much needed flexibility when working with transducers. A flatMapping transducer is like a mapping transducer except all items of the reducing operation are additionally flattened into the result.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1

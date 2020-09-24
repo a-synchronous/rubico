@@ -27,9 +27,6 @@ const funcConcat = (funcA, funcB) => function pipedFunction(...args) {
 /**
  * @name trace
  *
- * @catchphrase
- * console.log as a side effect
- *
  * @synopsis
  * any -> T
  *
@@ -40,9 +37,9 @@ const funcConcat = (funcA, funcB) => function pipedFunction(...args) {
  * trace(point !function, ...restArgs) -> point
  *
  * @description
- * **trace** is essentially `tap(console.log)` but with the extended functionality of lazy evaluation when called with a function.
+ * Log a value out to the console, returning the value. If the value is a function, treat is as a resolver and log lazily.
  *
- * ```javascript
+ * ```javascript [playground]
  * pipe([
  *   trace,
  *   trace(value => value.toUpperCase()),
