@@ -35,5 +35,11 @@ describe('size', () => {
     it('value \'\'; 0', async () => {
       assert.strictEqual(size(''), 0)
     })
+    it('value Number(10)', async () => {
+      assert.strictEqual(size(10), 1)
+    })
+    it('value NaN', async () => {
+      assert.strictEqual(size(NaN), 1)
+    })
   })
 })

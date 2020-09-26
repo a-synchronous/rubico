@@ -27,9 +27,9 @@ const objectKeysCount = object => {
  * ```
  */
 const size = value => typeof value == 'string' ? value.length
-  : typeof value == null ? 0
-  : 'length' in value ? value.length
-  : 'size' in value ? value.size
+  : value == null ? 0
+  : typeof value.length == 'number' ? value.length
+  : typeof value.size == 'number' ? value.size
   : value.constructor == Object ? objectKeysCount(value)
   : 1
 
