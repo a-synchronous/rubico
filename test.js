@@ -346,6 +346,12 @@ describe('rubico', () => {
     })
   })
 
+  describe('pipe.sync', () => {
+    it('chains regular functions together', async () => {
+      ase(pipe.sync([hi, ho])('yo'), 'yohiho')
+    })
+  })
+
   describe('fork', () => {
     it('maps input to array of sync functions', async () => {
       ade(fork([hi, hi, hi])('yo'), ['yohi', 'yohi', 'yohi'])

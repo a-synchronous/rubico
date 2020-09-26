@@ -531,26 +531,31 @@ const funcConcat = (
  *
  * @synopsis
  * funcConcatSync(funcA function, funcB function) -> pipedFunction function
+ */
 const funcConcatSync = (
   funcA, funcB,
 ) => function pipedFunction(...args) {
   return funcB(funcA(...args))
-} */
+}
 
 /**
  * @name pipe
  *
  * @synopsis
  * ```coffeescript [specscript]
- * pipe(
- *   funcs Array<any=>Promise|any>,
- * )(value any) -> Promise|any
+ * pipe<args ...any>(
+ *   funcs [
+ *     ...args=>Promise|any,
+ *     ...Array<any=>Promise|any>,
+ *   ],
+ * ) -> pipeline ...args=>Promise|any
  *
- * Reducer = (any, any)=>Promise|any
+ * Reducer<T> = (any, T)=>Promise|any
+ * Transducer = Reducer=>Reducer
  *
  * pipe(
- *   Array<Reducer=>Reducer>,
- * )(Reducer) -> composed Reducer
+ *   transducers Array<Transducer>,
+ * )(reducer Reducer) -> composed Reducer
  * ```
  *
  * @description
@@ -566,7 +571,7 @@ const funcConcatSync = (
  * ) // 11
  * ```
  *
- * When passed a reducer, a pipe of transducers composes the reducer such that the transducers are applied in series, finally calling the reducer to end the chain. The resulting reducer must be used in conjunction with `reduce` to have a transducing effect. For more information on this behavior, see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
+ * When passed a reducer, a pipe of transducers composes the reducer such that the transducers are applied in series, calling the reducer as the last step to end the chain. The resulting reducer must be used in conjunction with `reduce` to have a transducing effect. For more information on this behavior, see [this resource on transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -608,6 +613,34 @@ const pipe = function (funcs) {
     return functionPipeline(...args)
   }
 }
+
+// funcs Array<function> -> pipeline function
+const pipeSync = funcs => funcs.reduce(funcConcatSync)
+
+/**
+ * @name pipe.sync
+ *
+ * @synopsis
+ * ```coffeescript [specscript]
+ * pipe.sync<args ...any>(
+ *   funcs [
+ *     ...args=>any,
+ *     ...Array<any=>any>,
+ *   ],
+ * ) -> pipeline ...args=>any
+ * ```
+ *
+ * @description
+ * `pipe` that doesn't automatically resolve promises. This variant is a good option if more performance is desired or if manual promise handling is required.
+ *
+ * ```javascript [playground]
+ * pipe.sync([
+ *   Promise.resolve,
+ *   promise => promise.then(console.log)
+ * ])('hey') // hey
+ * ```
+ */
+pipe.sync = pipeSync
 
 /**
  * @name funcObjectAll
@@ -657,20 +690,17 @@ const funcAll = funcs => function allFuncs(...args) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * fork(
- *   funcs Object<value=>Promise|any>,
- * )(value any) -> Promise|Object
+ * fork<args ...any>(
+ *   funcs Object<...args=>Promise|any>,
+ * )(...args) -> result Promise|Object
  *
- * fork(
- *   funcs Array<value=>Promise|any>,
- * )(value any) -> Promise|Array
+ * fork<args ...any>(
+ *   funcs Array<...args=>Promise|any>,
+ * )(...args) -> result Promise|Array
  * ```
  *
  * @description
- * Parallelize multiple functions with concurrent execution into either an object or array.
- *
- *  * `fork(Array<function>) -> Array` - an Array result is yielded for an Array of functions
- *  * `fork(Object<function>) -> Object` - an Object result is yielded for an Object of functions
+ * A multi-purpose function, parallelizes multiple functions with concurrent execution into either an object, an array, or a nested mix of both. Has use cases in parallel execution and object composition.
  *
  * ```javascript [playground]
  * console.log(
@@ -775,12 +805,12 @@ fork.series = funcAllSeries
  * @synopsis
  * ```coffeescript [specscript]
  * assign(
- *   funcs Object<value=>Promise|any>,
- * )(value Object) -> result Promise|Object
+ *   funcs Object<source=>Promise|any>,
+ * )(source Object) -> resultsMergedWithSource Promise|Object
  * ```
  *
  * @description
- * Lazily set properties on a target object by an input object of functions.
+ * Compose an object from a source object merged with the evaluations of the property functions of a specifying object of functions. Functions of the specifying object of functions may be asynchronous.
  *
  * ```javascript [playground]
  * console.log(
@@ -812,18 +842,16 @@ const assign = function (funcs) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * tap(
- *   tapper value=>Promise|any,
- * )(value any) -> value
+ * tap(tapper value=>Promise|any)(value any) -> value
  * ```
  *
  * @description
- * Call a function with a value, returning the value.
+ * Call a function with a value, returning the value. Promises created by the tapper are resolved before returning the value.
  *
  * ```javascript [playground]
  * pipe([
  *   tap(console.log),
- *   value => value + 'bar'
+ *   value => value + 'bar',
  *   tap(console.log),
  * ])('foo') // 'foo'
  *           // 'foobar'
@@ -947,14 +975,14 @@ const catcherApply = function (catcher, err, args) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * tryCatch(
+ * tryCatch<args ...any>(
  *   tryer ...args=>Promise|any,
  *   catcher (err Error|any, ...args)=>Promise|any,
- * )(args ...any) -> Promise|any
+ * )(...args) -> result Promise|any
  * ```
  *
  * @description
- * Try a tryer, catch with catcher. On error or rejected Promise, call catcher with the error as the first argument followed by any arguments.
+ * Try a tryer, catch with catcher. On error or rejected Promise, call the catcher with the error followed by any arguments to the tryer.
  *
  * ```javascript [playground]
  * const errorThrower = tryCatch(
@@ -1022,11 +1050,9 @@ const funcApply = (func, args) => func(...args)
  *
  * @synopsis
  * ```coffeescript [specscript]
- * switchCase(
- *   funcs Array<
- *     (predicate value=>Promise|boolean)
- *       |(resolver value=>Promise|any)>,
- * )(value any) -> resolved Promise|any
+ * switchCase<args ...any>(
+ *   conditionalFunctions Array<...args=>Promise|boolean|any>
+ * )(...args) -> result Promise|any
  * ```
  *
  * @description
@@ -1342,29 +1368,27 @@ const reducerMap = (reducer, mapper) => function mappingReducer(result, value) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * map(
- *   mapper any=>Promise|any,
- * )(value any) -> result any
+ * Functor<T> = Array<T>|Object<T>
+ *   |Iterator<T>|AsyncIterator<T>|{ map: T=>any }
+ * Reducer<T> = (any, T)=>Promise|any
  *
- * Functor = Array|Object|Iterator|AsyncIterator|{ map: function }
- *
- * map(
+ * map<T>(
  *   mapper T=>Promise|any,
  * )(Functor<T>) -> mappedFunctor Promise|Functor
  *
- * map(
- *   mapper T=>any,
- * )(...any=>Iterator<T>) -> mappingGeneratorFunction ...any=>Iterator
+ * map<T>(
+ *   mapper T=>any, # note: only synchronous predicates allowed here
+ * )(generatorFunction GeneratorFunction<T>)
+ *   -> mappingGeneratorFunction GeneratorFunction
  *
- * map(
+ * map<T>(
  *   mapper T=>Promise|any,
- * )(
- *   ...any=>AsyncGenerator<T>,
- * ) -> mappingAsyncGeneratorFunction ...any=>AsyncIterator
+ * )(asyncGeneratorFunction AsyncGeneratorFunction<T>)
+ *   -> mappingAsyncGeneratorFunction AsyncGeneratorFunction
  *
- * map(
+ * map<T>(
  *   mapper T=>Promise|any,
- * )(reducer (any, T)=>Promise|any) -> mappingReducer (any, any)=>Promise|any
+ * )(reducer Reducer<T>) -> mappingReducer Reducer
  * ```
  *
  * @description
@@ -2086,25 +2110,27 @@ const reducerFilter = (
  *
  * @synopsis
  * ```coffeescript [specscript]
- * filter(
- *   predicate any=>Promise|boolean,
- * )(value any) -> result Promise|any
+ * Filterable<T> = Array<T>|Object<T>
+ *   |Iterable<T>|AsyncIterable<T>|{ filter: T=>boolean }
  *
- * Filterable = Array|Object|Iterable|AsyncIterable|{ filter: function }
+ * filter<T>(
+ *   predicate T=>Promise|boolean,
+ * )(value Filterable<T>) -> filtered Promise|Filterable<T>
  *
- * filter(predicate T=>Promise|boolean)(
- *   value Filterable<T>) -> filtered Promise|Filterable<T>
+ * filter<T>(
+ *   predicate T=>boolean, # note: only synchronous predicates allowed here
+ * )(generatorFunction GeneratorFunction<T>)
+ *   -> filteringGeneratorFunction GeneratorFunction<T>
  *
- * filter(predicate T=>boolean)(
- *   generatorFunction ...args=>Generator<T>,
- * ) -> filteredGeneratorFunction ...args=>Generator<T>
+ * filter<T>(
+ *   predicate T=>Promise|boolean,
+ * )(asyncGeneratorFunction AsyncGeneratorFunction<T>)
+ *   -> filteringAsyncGeneratorFunction AsyncGeneratorFunction<T>
  *
- * filter(predicate T=>boolean)(
- *   asyncGeneratorFunction ...args=>AsyncGenerator<T>,
- * ) -> filteredAsyncGeneratorFunction ...args=>AsyncGenerator<T>
- *
- * filter(predicate T=>Promise|boolean)(
- *   reducer (any, T)=>Promise|any) -> filteringReducer (any, T)=>Promise|any
+ * filter<T>(
+ *   predicate T=>Promise|boolean,
+ * )(reducer (any, T)=>Promise|any)
+ *   -> filteringReducer (any, T)=>Promise|any
  * ```
  *
  * @description
@@ -2596,34 +2622,27 @@ var genericReduce = function (args, reducer, result) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * reduce(
- *   reducer function,
- *   init function|any?,
- * )(collection any) -> Promise|any
- *
  * Foldable<T> = Iterable<T>|AsyncIterable<T>
  *   |{ reduce: (any, T)=>any }|Object<T>
+ * Reducer<T> = (any, T)=>Promise|any
+ * Transducer = Reducer=>Reducer
  *
  * reduce<T>(
- *   reducer Reducer,
+ *   reducer Reducer<T>,
  *   init (collection=>Promise|any)|any?,
  * )(collection Foldable<T>) -> Promise|any
  *
  * reduce<args ...any>(
  *   reducer Reducer,
  *   init (...args=>Promise|any)|any?,
- * )(
- *   generatorFunction (...args=>Generator)|(...args=>AsyncGenerator),
- * ) -> reducingFunction (...args)=>Promise|any
+ * )(value GeneratorFunction|AsyncGeneratorFunction)
+ *   -> reducingFunction ...args=>Promise|Semigroup|any
  *
- * Reducer<T> = (any, T)=>Promise|any
- *
- * reduce<T>(
- *   reducer Reducer<T>,
+ * reduce<args ...any>(
+ *   reducer Reducer,
  *   init (...args=>Promise|any)|any?,
- * )(
- *   anotherReducer Reducer<T>, moreReducers ...Reducer<T>
- * ) -> chainedReducingFunction (args ...any)=>Promise|any
+ * )(anotherReducer Reducer, moreReducers ...Reducer)
+ *   -> chainedReducingFunction ...args=>Promise|any
  * ```
  *
  * @description
@@ -2762,7 +2781,7 @@ const reduce = function (reducer, init) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * Reducer<T> = (any, T)=>any
+ * Reducer<T> = (any, T)=>Promise|any
  *
  * Transducer = Reducer=>Reducer
  *
@@ -2910,7 +2929,7 @@ const callConcat = function (object, values) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * Reducer<T> = (any, T)=>any
+ * Reducer<T> = (any, T)=>Promise|any
  *
  * Transducer = Reducer=>Reducer
  *
@@ -2962,44 +2981,29 @@ const genericTransform = function (args, transducer, result) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * transform(
- *   transducer function,
- *   init function|any,
- * )(...any) -> Promise|any
- *
  * Reducer<T> = (any, T)=>Promise|any
- *
  * Transducer = Reducer=>Reducer
- *
  * Semigroup = Array|string|Set|TypedArray
  *   |{ concat: function }|{ write: function }|Object
- *
  * Foldable = Iterable|AsyncIterable|{ reduce: function }|Object|any
  *
  * transform(
  *   transducer Transducer,
- *   init (collection=>Promise|Semigroup|any)
- *     |Semigroup
- *     |any,
- * )(collection Foldable) -> result Promise|Semigroup|any
+ *   init (collection=>Promise|Semigroup|any)|Semigroup|any,
+ * )(collection Foldable)
+ *   -> result Promise|Semigroup|any
  *
- * transform(
+ * transform<args ...any>(
  *   transducer Transducer,
- *   init (...args=>Promise|Semigroup|any)
- *     |Semigroup
- *     |any,
- * )(
- *   generatorFunction GeneratorFunction|AsyncGeneratorFunction,
- * ) -> reducingFunction (args ...any)=>Promise|Semigroup|any
+ *   init (...args=>Promise|Semigroup|any)|Semigroup|any,
+ * )(value GeneratorFunction|AsyncGeneratorFunction)
+ *   -> transformingFunction ...args=>Promise|Semigroup|any
  *
- * transform(
+ * transform<args ...any>(
  *   transducer Transducer,
- *   init (...args=>Promise|Semigroup|any)
- *     |Semigroup
- *     |any,
- * )(
- *   reducer Reducer, moreReducers ...Reducer
- * ) -> chainedReducingFunction (args ...any)=>Promise|any
+ *   init (...args=>Promise|Semigroup|any)|Semigroup|any,
+ * )(reducer Reducer, moreReducers ...Reducer)
+ *   -> chainedTransformingFunction ...args=>Promise|Semigroup|any
  * ```
  *
  * @description
@@ -3052,14 +3056,16 @@ const genericTransform = function (args, transducer, result) {
  *   ))
  * }
  *
- * transform(
- *   map(Math.abs), new Max(-Infinity),
- * )([-1, -2, -3, -4, -5]) // Max { 5 }
+ * console.log(
+ *   transform(
+ *     map(Math.abs), new Max(-Infinity),
+ *   )([-1, -2, -3, -4, -5]).number,
+ * ) // 5
  * ```
  *
  * Node.js WritableStream interfaces are consumed as well.
  *
- * ```javascript [playground]
+ * ```javascript
  * // this example is duplicated in rubico/examples/transformStreamRandomInts.js
  *
  * const { pipe, map, transform } = require('rubico')
@@ -3905,15 +3911,12 @@ const asyncGeneratorFunctionFlatMap = (
  *
  * @synopsis
  * ```coffeescript [specscript]
- * flatMap(flatMapper function)(value any) -> result any
- *
  * DuplexStream = { read: function, write: function }
- *
  * Monad = Array|String|Set
  *   |TypedArray|DuplexStream|Iterator|AsyncIterator
  *   |{ chain: function }|{ flatMap: function }|Object
- *
  * Foldable = Iterable|AsyncIterable|{ reduce: function }
+ * Reducer<T> = (any, T)=>Promise|any
  *
  * flatMap<T>(
  *   flatMapper T=>Promise|Monad|Foldable|any,
@@ -3921,17 +3924,8 @@ const asyncGeneratorFunctionFlatMap = (
  *
  * flatMap<T>(
  *   flatMapper T=>Promise|Monad|Foldable|any,
- * )(
- *   value (args ...any)=>Generator<T>,
- * ) -> flatMappingGeneratorFunction ...args=>Generator
- *
- * flatMap<T>(
- *   flatMapper T=>Promise|Monad|Foldable|any,
- * )(
- *   value (args ...any)=>AsyncGenerator<T>,
- * ) -> flatMappingAsyncGeneratorFunction ...args=>AsyncGenerator
- *
- * Reducer<T> = (any, T)=>Promise|any
+ * )(value GeneratorFunction<T>|AsyncGeneratorFunction<T>)
+ *   -> flatMappingGeneratorFunction GeneratorFunction<T>|AsyncGeneratorFunction<T>
  *
  * flatMap<T>(
  *   flatMapper T=>Promise|Monad|Foldable|any,
@@ -3967,7 +3961,7 @@ const asyncGeneratorFunctionFlatMap = (
  *   [1, 2, 3, 4, 5]).then(console.log) // [1, 1, 2, 2, 3, 3, 4, 4, 5, 5]
  * ```
  *
- * In general, collections returned by the flatMapper are flattened into the result by type-specific iteration and concatenation, while async iterables are muxed. Muxing, or asynchronously "mixing", is the process of combining multiple asynchronous sources into one source, with order determined by the asynchronous resolution of the individual items. This behavior is useful for working with asynchronous streams, e.g. of DOM events or requests.
+ * Collections returned by the flatMapper are flattened into the result by type-specific iteration and concatenation, while async iterables are muxed. Muxing, or asynchronously "mixing", is the process of combining multiple asynchronous sources into one source, with order determined by the asynchronous resolution of the individual items. This behavior is useful for working with asynchronous streams, e.g. of DOM events or requests.
  *
  * ```javascript [playground]
  * const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
@@ -4035,7 +4029,7 @@ const asyncGeneratorFunctionFlatMap = (
  * flatMap(console.log)(Maybe('hello world')) // hello world
  * ```
  *
- * In addition to monads, `flatMap` provides much needed flexibility when working with transducers. A flatMapping transducer is like a mapping transducer except all items of the reducing operation are additionally flattened into the result.
+ * In addition to monads, `flatMap` is a powerful option when working with transducers as well. A flatMapping transducer is like a mapping transducer except all items of the reducing operation are additionally flattened into the result.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -4198,8 +4192,8 @@ const getByPath = function (object, path) {
  * ```coffeescript [specscript]
  * get(
  *   path string|Array|any,
- *   defaultValue (value=>any)|any?,
- * )(value any) -> result any
+ *   defaultValue (object=>any)|any?,
+ * )(object) -> result any
  * ```
  *
  * @description
@@ -4263,7 +4257,7 @@ const get = (path, defaultValue) => function getter(value) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * pick(Array<string>)(source Object) -> picked Object
+ * pick<T>(Array<string>)(source Object<T>) -> picked Object<T>
  * ```
  *
  * @description
@@ -4298,7 +4292,7 @@ const pick = keys => function picking(source) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * omit(Array<string>)(source Object) -> omitted Object
+ * omit<T>(Array<string>)(source Object<T>) -> omitted Object<T>
  * ```
  *
  * @description
@@ -4525,15 +4519,12 @@ const foldableAnyReducer = predicate => function anyReducer(result, item) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * any(
- *   predicate any=>Promise|boolean,
- * )(value any) -> anyTruthy Promise|boolean
+ * Foldable<T> = Iterable<T>|AsyncIterable<T>
+ *   |{ reduce: (any, T)=>any }|Object<T>
  *
- * Foldable = Iterable|AsyncIterable|{ reduce: function }
- *
- * any(
- *   predicate any=>Promise|boolean
- * )(value Foldable) -> Promise|boolean
+ * any<T>(
+ *   predicate T=>Promise|boolean
+ * )(value Foldable<T>) -> anyTruthyByPredicate Promise|boolean
  * ```
  *
  * @description
@@ -4727,15 +4718,12 @@ const foldableAllReducer = predicate => function allReducer(result, item) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * all(
- *   predicate any=>Promise|boolean,
- * )(value any) -> allTruthy Promise|boolean
+ * Foldable<T> = Iterable<T>|AsyncIterable<T>
+ *   |{ reduce: (any, T)=>any }|Object<T>
  *
- * Foldable = Iterable|AsyncIterable|{ reduce: function }
- *
- * all(
+ * all<T>(
  *   predicate T=>Promise|boolean,
- * )(value Foldable<T>) -> Promise|boolean
+ * )(value Foldable<T>) -> allTruthyByPredicate Promise|boolean
  * ```
  *
  * @description
@@ -4807,6 +4795,8 @@ const _not = value => !value
  * Logically invert a predicate (`!`) by always logically inverting its return value. Predicate may be asynchronous.
  *
  * ```javascript [playground]
+ * const isOdd = number => number % 2 == 1
+ *
  * console.log(
  *   not(isOdd)(3),
  * ) // false
