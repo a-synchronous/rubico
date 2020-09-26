@@ -1,3 +1,6 @@
+## v1.5.20 - next release
+ * size rewrite + refresh benchmarks
+
 ## v1.5.19 - latest
  * pipe.sync
 
