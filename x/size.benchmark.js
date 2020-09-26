@@ -7,10 +7,10 @@ const R = require('ramda')
  * @name size
  *
  * @benchmark
- * array.length: 1e+6: 3.543ms
- * size(array): 1e+6: 7.058ms
- * _.size(array): 1e+6: 67.073ms
- * R.length(array): 1e+6: 203.822ms
+ * array.length: 1e+7: 12.207ms
+ * size(array): 1e+7: 12.931ms
+ * _.size(array): 1e+7: 581.128ms
+ * R.length(array): 1e+7: 1.887s
  */
 
 const array = [1, 2, 3, 4, 5]
@@ -19,10 +19,10 @@ const _size = _.size
 
 const RLength = R.length
 
-// timeInLoop('array.length', 1e6, () => array.length)
+// timeInLoop('array.length', 1e7, () => array.length)
 
-// timeInLoop('size(array)', 1e6, () => size(array))
+// timeInLoop('size(array)', 1e7, () => size(array))
 
-// timeInLoop('_.size(array)', 1e6, () => _size(array))
+// timeInLoop('_.size(array)', 1e7, () => _size(array))
 
-// timeInLoop('R.length(array)', 1e6, () => RLength(array))
+// timeInLoop('R.length(array)', 1e7, () => RLength(array))
