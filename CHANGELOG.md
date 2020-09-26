@@ -1,4 +1,7 @@
-## v1.5.18 - latest
+## v1.5.19 - latest
+ * pipe.sync
+
+## v1.5.18
  * fix: Set and Map mapping
 
 ## v1.5.17
