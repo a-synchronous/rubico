@@ -1,4 +1,4 @@
-/* rubico v1.5.18
+/* rubico v1.5.19
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2020 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -94,11 +94,13 @@ const range = (start, end) => Array.from({ length: end - start }, (x, i) => i + 
  * @name callPropUnary
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * callPropUnary(
  *   value object,
  *   property string,
  *   arg0 any,
  * ) -> value[property](arg0)
+ * ```
  */
 const callPropUnary = (value, property, arg0) => value[property](arg0)
 
@@ -122,6 +124,7 @@ const curry2ResolveArg1 = (
  * @name curry2
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * __ = Symbol('placeholder')
  *
  * curry2(
@@ -129,6 +132,7 @@ const curry2ResolveArg1 = (
  *   arg0 __|any,
  *   arg1 __|any,
  * ) -> function
+ * ```
  */
 const curry2 = function (baseFunc, arg0, arg1) {
   return arg0 == __
@@ -161,6 +165,7 @@ const curry3ResolveArg2 = (
  * @name curry3
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * __ = Symbol('placeholder')
  *
  * curry3(
@@ -169,6 +174,7 @@ const curry3ResolveArg2 = (
  *   arg1 __|any,
  *   arg2 __|any
  * ) -> function
+ * ```
  */
 const curry3 = function (baseFunc, arg0, arg1, arg2) {
   if (arg0 == __) {
@@ -212,6 +218,7 @@ const curry4ResolveArg3 = (
  * @name curry4
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * __ = Symbol('placeholder')
  *
  * curry4(
@@ -221,6 +228,7 @@ const curry4ResolveArg3 = (
  *   arg2 __|any,
  *   arg3 __|any,
  * ) -> function
+ * ```
  */
 const curry4 = function (baseFunc, arg0, arg1, arg2, arg3) {
   if (arg0 == __) {
@@ -239,7 +247,9 @@ const curry4 = function (baseFunc, arg0, arg1, arg2, arg3) {
  * @name always
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * always(value any) -> getter ()=>value
+ * ```
  */
 const always = value => function getter() { return value }
 
@@ -247,10 +257,12 @@ const always = value => function getter() { return value }
  * @name thunkify1
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * thunkify1(
  *   func function,
  *   arg0 any,
  * ) -> ()=>func(arg0)
+ * ```
  */
 const thunkify1 = (func, arg0) => () => func(arg0)
 
@@ -258,11 +270,13 @@ const thunkify1 = (func, arg0) => () => func(arg0)
  * @name thunkify2
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * thunkify2(
  *   func function,
  *   arg0 any,
  *   arg1 any,
  * ) -> ()=>func(arg0, arg1)
+ * ```
  */
 const thunkify2 = (func, arg0, arg1) => () => func(arg0, arg1)
 
@@ -270,12 +284,14 @@ const thunkify2 = (func, arg0, arg1) => () => func(arg0, arg1)
  * @name thunkify3
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * thunkify3(
  *   func function,
  *   arg0 any,
  *   arg1 any,
  *   arg2 any,
  * ) -> ()=>func(arg0, arg1, arg2)
+ * ```
  */
 const thunkify3 = (func, arg0, arg1, arg2) => () => func(arg0, arg1, arg2)
 
@@ -283,7 +299,9 @@ const thunkify3 = (func, arg0, arg1, arg2) => () => func(arg0, arg1, arg2)
  * @name thunkifyArgs
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * thunkifyArgs(func function, args Array) -> ()=>func(...args)
+ * ```
  */
 const thunkifyArgs = (func, args) => () => func(...args)
 
@@ -291,7 +309,9 @@ const thunkifyArgs = (func, args) => () => func(...args)
  * @name memoizeCappedUnary
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * memoizeCappedUnary(func function, cap number) -> memoized function
+ * ```
  *
  * @todo explore Map reimplementation
  */
@@ -316,7 +336,9 @@ const memoizeCappedUnary = function (func, cap) {
  * @name _arrayExtend
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * _arrayExtend(array Array, values Array) -> array
+ * ```
  */
 const _arrayExtend = function (array, values) {
   const arrayLength = array.length,
@@ -332,7 +354,9 @@ const _arrayExtend = function (array, values) {
  * @name arrayExtend
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * arrayExtend(array Array, values Array) -> array
+ * ```
  */
 const arrayExtend = function (array, values) {
   if (isArray(values)) {
@@ -346,6 +370,7 @@ const arrayExtend = function (array, values) {
  * @name arrayExtendMap
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * any -> value; any -> mapped
  *
  * arrayExtendMap(
@@ -354,6 +379,7 @@ const arrayExtend = function (array, values) {
  *   valuesIndex number,
  *   valuesMapper value=>mapped,
  * ) -> array
+ * ```
  *
  * @description
  * internal extend while mapping
@@ -373,7 +399,9 @@ const arrayExtendMap = function (
  * @name setAdd
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * setAdd(set Set, item any) -> set
+ * ```
  */
 const setAdd = (set, item) => set.add(item)
 
@@ -381,7 +409,9 @@ const setAdd = (set, item) => set.add(item)
  * @name setExtend
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * setExtend(set, values Set|any) -> set
+ * ```
  *
  * @related arrayExtend
  */
@@ -399,7 +429,9 @@ const setExtend = function (set, values) {
  * @name then
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * then(value any, func value=>(result any)) -> result
+ * ```
  */
 const then = (value, func) => isPromise(value) ? value.then(func) : func(value)
 
@@ -407,7 +439,9 @@ const then = (value, func) => isPromise(value) ? value.then(func) : func(value)
  * @name promiseObjectAll
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * promiseObjectAll(object<Promise|any>) -> Promise<object>
+ * ```
  */
 const promiseObjectAll = object => new Promise(function (resolve) {
   const result = {}
@@ -432,7 +466,9 @@ const promiseObjectAll = object => new Promise(function (resolve) {
  * @name SyncThenable
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * new SyncThenable(value any) -> SyncThenable
+ * ```
  */
 const SyncThenable = function (value) { this.value = value }
 
@@ -440,7 +476,9 @@ const SyncThenable = function (value) { this.value = value }
  * @name SyncThenable.prototype.then
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * new SyncThenable(value any).then(func function) -> any
+ * ```
  */
 SyncThenable.prototype.then = function (func) { return func(this.value) }
 
@@ -448,12 +486,14 @@ SyncThenable.prototype.then = function (func) { return func(this.value) }
  * @name funcConcat
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * any -> A, any -> B, any -> C
  *
  * funcConcat(
  *   funcA (args ...any)=>(intermediate any),
  *   funcB intermediate=>(result any)
  * ) -> pipedFunction ...args=>result
+ * ```
  */
 const funcConcat = (
   funcA, funcB,
@@ -469,25 +509,32 @@ const funcConcat = (
  *
  * @synopsis
  * funcConcatSync(funcA function, funcB function) -> pipedFunction function
+ */
 const funcConcatSync = (
   funcA, funcB,
 ) => function pipedFunction(...args) {
   return funcB(funcA(...args))
-} */
+}
 
 /**
  * @name pipe
  *
  * @synopsis
- * pipe(
- *   funcs Array<any=>Promise|any>,
- * )(value any) -> Promise|any
+ * ```coffeescript [specscript]
+ * pipe<args ...any>(
+ *   funcs [
+ *     ...args=>Promise|any,
+ *     ...Array<any=>Promise|any>,
+ *   ],
+ * ) -> pipeline ...args=>Promise|any
  *
- * Reducer = (any, any)=>Promise|any
+ * Reducer<T> = (any, T)=>Promise|any
+ * Transducer = Reducer=>Reducer
  *
  * pipe(
- *   Array<Reducer=>Reducer>,
- * )(Reducer) -> composed Reducer
+ *   transducers Array<Transducer>,
+ * )(reducer Reducer) -> composed Reducer
+ * ```
  *
  * @description
  * Chain together an array of functions as a pipe, each function passing its return value as the first argument to the next function until all functions have executed. The final result is the return of the last function execution.
@@ -502,7 +549,7 @@ const funcConcatSync = (
  * ) // 11
  * ```
  *
- * When passed a reducer, a pipe of transducers composes the reducer such that the transducers are applied in series, finally calling the reducer to end the chain. The resulting reducer must be used in conjunction with `reduce` to have a transducing effect. For more information on this behavior, see [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
+ * When passed a reducer, a pipe of transducers composes the reducer such that the transducers are applied in series, calling the reducer as the last step to end the chain. The resulting reducer must be used in conjunction with `reduce` to have a transducing effect. For more information on this behavior, see [this resource on transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -545,13 +592,43 @@ const pipe = function (funcs) {
   }
 }
 
+// funcs Array<function> -> pipeline function
+const pipeSync = funcs => funcs.reduce(funcConcatSync)
+
+/**
+ * @name pipe.sync
+ *
+ * @synopsis
+ * ```coffeescript [specscript]
+ * pipe.sync<args ...any>(
+ *   funcs [
+ *     ...args=>any,
+ *     ...Array<any=>any>,
+ *   ],
+ * ) -> pipeline ...args=>any
+ * ```
+ *
+ * @description
+ * `pipe` that doesn't automatically resolve promises. This variant is a good option if more performance is desired or if manual promise handling is required.
+ *
+ * ```javascript [playground]
+ * pipe.sync([
+ *   Promise.resolve,
+ *   promise => promise.then(console.log)
+ * ])('hey') // hey
+ * ```
+ */
+pipe.sync = pipeSync
+
 /**
  * @name funcObjectAll
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * funcObjectAll(
  *   funcs Object<args=>Promise|any>
  * )(args ...any) -> objectAllFuncs ...args=>Promise|Object
+ * ```
  */
 const funcObjectAll = funcs => function objectAllFuncs(...args) {
   const result = {}
@@ -568,11 +645,11 @@ const funcObjectAll = funcs => function objectAllFuncs(...args) {
  * @name funcAll
  *
  * @synopsis
- * ...any -> args
- *
- * funcAll(
+ * ```coffeescript [specscript]
+ * funcAll<args ...any>(
  *   funcs Array<args=>Promise|any>
  * ) -> allFuncs args=>Promise|Array
+ * ```
  */
 const funcAll = funcs => function allFuncs(...args) {
   const funcsLength = funcs.length,
@@ -590,26 +667,25 @@ const funcAll = funcs => function allFuncs(...args) {
  * @name fork
  *
  * @synopsis
- * fork(
- *   funcs Object<value=>Promise|any>,
- * )(value any) -> Promise|Object
+ * ```coffeescript [specscript]
+ * fork<args ...any>(
+ *   funcs Object<...args=>Promise|any>,
+ * )(...args) -> result Promise|Object
  *
- * fork(
- *   funcs Array<value=>Promise|any>,
- * )(value any) -> Promise|Array
+ * fork<args ...any>(
+ *   funcs Array<...args=>Promise|any>,
+ * )(...args) -> result Promise|Array
+ * ```
  *
  * @description
- * Parallelize multiple functions with concurrent execution into either an object or array.
- *
- *  * `fork(Array<function>) -> Array` - an Array result is yielded for an Array of functions
- *  * `fork(Object<function>) -> Object` - an Object result is yielded for an Object of functions
+ * A multi-purpose function, parallelizes multiple functions with concurrent execution into either an object, an array, or a nested mix of both. Has use cases in parallel execution and object composition.
  *
  * ```javascript [playground]
  * console.log(
  *   fork({
  *     greetings: fork([
- *       greeting => greeting + 'world',
- *       greeting => greeting + 'mom',
+ *       greeting => greeting + ' world',
+ *       greeting => greeting + ' mom',
  *     ]),
  *   })('hello'),
  * ) // { greetings: ['hello world', 'hello mom'] }
@@ -623,12 +699,14 @@ const fork = funcs => isArray(funcs) ? funcAll(funcs) : funcObjectAll(funcs)
  * @name asyncFuncAllSeries
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * asyncFuncAllSeries(
  *   funcs Array<function>,
  *   args Array,
  *   result Array,
  *   funcsIndex number,
  * ) -> result
+ * ```
  *
  * @TODO benchmark vs regular promise handling
  */
@@ -644,11 +722,11 @@ const asyncFuncAllSeries = async function (funcs, args, result, funcsIndex) {
  * @name funcAllSeries
  *
  * @synopsis
- * ...any -> args
- *
- * funcAllSeries(
+ * ```coffeescript [specscript]
+ * funcAllSeries<args ...any>(
  *   funcs Array<...args=>any>,
  * ) -> allFuncsSeries ...args=>Promise|Array
+ * ```
  *
  * @TODO .then quickscope
  */
@@ -672,9 +750,11 @@ const funcAllSeries = funcs => function allFuncsSeries(...args) {
  * @name fork.series
  *
  * @synopsis
- * fork.series(
- *   funcs Array<args=>Promise|any>,
- * )(args ...any) -> Promise|Array
+ * ```coffeescript [specscript]
+ * fork.series<args ...any>(
+ *   funcs Array<...args=>Promise|any>,
+ * )(...args) -> Promise|Array
+ * ```
  *
  * @description
  * `fork` with serial execution.
@@ -701,12 +781,14 @@ fork.series = funcAllSeries
  * @name assign
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * assign(
- *   funcs Object<value=>Promise|any>,
- * )(value Object) -> result Promise|Object
+ *   funcs Object<source=>Promise|any>,
+ * )(source Object) -> resultsMergedWithSource Promise|Object
+ * ```
  *
  * @description
- * Lazily set properties on a target object by an input object of functions.
+ * Compose an object from a source object merged with the evaluations of the property functions of a specifying object of functions. Functions of the specifying object of functions may be asynchronous.
  *
  * ```javascript [playground]
  * console.log(
@@ -737,17 +819,17 @@ const assign = function (funcs) {
  * @name tap
  *
  * @synopsis
- * tap(
- *   tapper value=>Promise|any,
- * )(value any) -> value
+ * ```coffeescript [specscript]
+ * tap(tapper value=>Promise|any)(value any) -> value
+ * ```
  *
  * @description
- * Call a function with a value, returning the value.
+ * Call a function with a value, returning the value. Promises created by the tapper are resolved before returning the value.
  *
  * ```javascript [playground]
  * pipe([
  *   tap(console.log),
- *   value => value + 'bar'
+ *   value => value + 'bar',
  *   tap(console.log),
  * ])('foo') // 'foo'
  *           // 'foobar'
@@ -763,7 +845,9 @@ const tap = func => function tapping(...args) {
  * @name tapSync
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * tapSync(function)(args ...any) -> args[0]
+ * ```
  */
 const tapSync = func => function tapping(...args) {
   func(...args)
@@ -774,11 +858,13 @@ const tapSync = func => function tapping(...args) {
  * @name thunkConditional
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * thunkConditional(
  *   boolean,
  *   thunkA ()=>any,
  *   thunkB ()=>any,
  * ) -> any
+ * ```
  */
 const thunkConditional = (
   boolean, thunkA, thunkB,
@@ -788,9 +874,11 @@ const thunkConditional = (
  * @name tap.sync
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * tap.sync(
  *   tapper value=>any,
  * )(value any) -> value
+ * ```
  *
  * @description
  * Synchronous tap
@@ -809,10 +897,12 @@ tap.sync = tapSync
  * @name tap.if
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * tap.if<args ...any>(
  *   predicate ...args=>Promise|boolean,
  *   func ...args=>Promise|any,
  * )(...args) -> Promise|value
+ * ```
  *
  * @description
  * Conditional tap by predicate
@@ -846,11 +936,13 @@ tap.if = (predicate, func) => function tappingIf(...args) {
  * @name catcherApply
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * catcherApply(
  *   catcher function,
  *   err Error|any,
  *   args Array,
  * ) -> catcher(err, ...args)
+ * ```
  */
 const catcherApply = function (catcher, err, args) {
   return catcher(err, ...args)
@@ -860,13 +952,15 @@ const catcherApply = function (catcher, err, args) {
  * @name tryCatch
  *
  * @synopsis
- * tryCatch(
+ * ```coffeescript [specscript]
+ * tryCatch<args ...any>(
  *   tryer ...args=>Promise|any,
  *   catcher (err Error|any, ...args)=>Promise|any,
- * )(args ...any) -> Promise|any
+ * )(...args) -> result Promise|any
+ * ```
  *
  * @description
- * Try a tryer, catch with catcher. On error or rejected Promise, call catcher with the error as the first argument followed by any arguments.
+ * Try a tryer, catch with catcher. On error or rejected Promise, call the catcher with the error followed by any arguments to the tryer.
  *
  * ```javascript [playground]
  * const errorThrower = tryCatch(
@@ -898,11 +992,13 @@ const tryCatch = (tryer, catcher) => function tryCatcher(...args) {
  * @name asyncFuncSwitch
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * asyncFuncSwitch(
  *   funcs Array<args=>Promise|any>,
  *   args Array,
  *   funcsIndex number,
  * ) -> Promise|any
+ * ```
  *
  * @TODO isPromise conditional await
  * @TODO benchmark vs regular promise handling
@@ -921,7 +1017,9 @@ const asyncFuncSwitch = async function (funcs, args, funcsIndex) {
  * @name funcApply
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * funcApply(func function, args Array) -> func(...args)
+ * ```
  */
 const funcApply = (func, args) => func(...args)
 
@@ -929,11 +1027,11 @@ const funcApply = (func, args) => func(...args)
  * @name switchCase
  *
  * @synopsis
- * switchCase(
- *   funcs Array<
- *     (predicate value=>Promise|boolean)
- *       |(resolver value=>Promise|any)>,
- * )(value any) -> resolved Promise|any
+ * ```coffeescript [specscript]
+ * switchCase<args ...any>(
+ *   conditionalFunctions Array<...args=>Promise|boolean|any>
+ * )(...args) -> result Promise|any
+ * ```
  *
  * @description
  * Conditional operator for functions. Odd indexed functions should be resolvers, while even indexed functions excluding the last should be predicates. For an odd number of functions, the last even indexed function should be a default resolver function. Any predicates or resolvers may be asynchronous.
@@ -991,10 +1089,12 @@ const switchCase = funcs => function switchingCases(...args) {
  * @name arrayMap
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * arrayMap(
  *   array Array<T>,
  *   mapper T=>Promise|any,
  * ) -> Promise|Array
+ * ```
  */
 const arrayMap = function (array, mapper) {
   const arrayLength = array.length,
@@ -1016,7 +1116,9 @@ const arrayMap = function (array, mapper) {
  * @name setMap
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * setMap(set Set, mapper function) -> result Set
+ * ```
  */
 const setMap = function (set, mapper) {
   const result = new Set(),
@@ -1041,10 +1143,12 @@ const mapSetItem = (map, key, item) => map.set(key, item)
  * @name mapMap
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * mapMap<T>(
  *   value Map<any, T>,
  *   mapper T=>Promise|any,
  * ) -> Promise|Map<any, any>
+ * ```
  */
 const mapMap = function (value, mapper) {
   const result = new Map(),
@@ -1067,10 +1171,12 @@ const mapMap = function (value, mapper) {
  * @name stringMap
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * stringMap(
  *   string String<T>,
  *   mapper T=>Promise|any,
  * ) -> Promise|String
+ * ```
  *
  * @related stringFlatMap
  */
@@ -1085,10 +1191,12 @@ const stringMap = function (string, mapper) {
  * @name objectMap
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * objectMap(
  *   object Object<T>,
  *   mapper T=>Promise|any,
  * ) -> Promise|Object
+ * ```
  */
 const objectMap = function (object, mapper) {
   const result = {}
@@ -1106,10 +1214,12 @@ const objectMap = function (object, mapper) {
  * @name generatorFunctionMap
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * generatorFunctionMap(
  *   generatorFunc ...any=>Generator<T>,
  *   mapper T=>Promise|any,
  * ) -> ...any=>Generator
+ * ```
  */
 const generatorFunctionMap = function (generatorFunc, mapper) {
   return function* mappingGeneratorFunc(...args) {
@@ -1123,10 +1233,12 @@ const generatorFunctionMap = function (generatorFunc, mapper) {
  * @name MappingIterator
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * const mappingIterator = new MappingIterator(
  *   iter Iterator<T>,
  *   mapper T=>any,
  * ) -> mappingIterator Iterator
+ * ```
  *
  * mappingIterator.next() -> { value: any, done: boolean }
  */
@@ -1151,10 +1263,12 @@ MappingIterator.prototype = {
  * @name asyncGeneratorFunctionMap
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * asyncGeneratorFunctionMap(
  *   asyncGeneratorFunc ...any=>AsyncGenerator<T>,
  *   mapper T=>Promise|any,
  * ) -> ...any=>AsyncGenerator
+ * ```
  */
 const asyncGeneratorFunctionMap = function (asyncGeneratorFunc, mapper) {
   return async function* mappingAsyncGeneratorFunc(...args) {
@@ -1168,7 +1282,9 @@ const asyncGeneratorFunctionMap = function (asyncGeneratorFunc, mapper) {
  * @name toIteration
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * toIteration(value any) -> { value, done: false }
+ * ```
  */
 const toIteration = value => ({ value, done: false })
 
@@ -1176,12 +1292,14 @@ const toIteration = value => ({ value, done: false })
  * @name MappingAsyncIterator
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * mappingAsyncIterator = new MappingAsyncIterator(
  *   asyncIter AsyncIterator<T>,
  *   mapper T=>Promise|any,
  * ) -> mappingAsyncIterator AsyncIterator
  *
  * mappingAsyncIterator.next() -> Promise<{ value: any, done: boolean }>
+ * ```
  */
 const MappingAsyncIterator = function (asyncIter, mapper) {
   this.asyncIter = asyncIter
@@ -1209,10 +1327,12 @@ MappingAsyncIterator.prototype = {
  * @name reducerMap
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * reducerMap(
  *   reducer (any, T)=>any,
  *   mapper T=>Promise|any,
  * ) -> mappingReducer (any, any)=>any
+ * ```
  */
 const reducerMap = (reducer, mapper) => function mappingReducer(result, value) {
   const mapped = mapper(value)
@@ -1225,29 +1345,29 @@ const reducerMap = (reducer, mapper) => function mappingReducer(result, value) {
  * @name map
  *
  * @synopsis
- * map(
- *   mapper any=>Promise|any,
- * )(value any) -> result any
+ * ```coffeescript [specscript]
+ * Functor<T> = Array<T>|Object<T>
+ *   |Iterator<T>|AsyncIterator<T>|{ map: T=>any }
+ * Reducer<T> = (any, T)=>Promise|any
  *
- * Functor = Array|Object|Iterator|AsyncIterator|{ map: function }
- *
- * map(
+ * map<T>(
  *   mapper T=>Promise|any,
  * )(Functor<T>) -> mappedFunctor Promise|Functor
  *
- * map(
- *   mapper T=>any,
- * )(...any=>Iterator<T>) -> mappingGeneratorFunction ...any=>Iterator
+ * map<T>(
+ *   mapper T=>any, # note: only synchronous predicates allowed here
+ * )(generatorFunction GeneratorFunction<T>)
+ *   -> mappingGeneratorFunction GeneratorFunction
  *
- * map(
+ * map<T>(
  *   mapper T=>Promise|any,
- * )(
- *   ...any=>AsyncGenerator<T>,
- * ) -> mappingAsyncGeneratorFunction ...any=>AsyncIterator
+ * )(asyncGeneratorFunction AsyncGeneratorFunction<T>)
+ *   -> mappingAsyncGeneratorFunction AsyncGeneratorFunction
  *
- * map(
+ * map<T>(
  *   mapper T=>Promise|any,
- * )(reducer (any, T)=>Promise|any) -> mappingReducer (any, any)=>Promise|any
+ * )(reducer Reducer<T>) -> mappingReducer Reducer
+ * ```
  *
  * @description
  * Apply a mapper concurrently to each item of a collection, returning a collection of the same type with all results. If order is implied by the collection, it is maintained in the result. Below are valid collections along with their iteration behavior.
@@ -1386,12 +1506,14 @@ const map = mapper => function mapping(value) {
  * @name asyncArrayMapSeries
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * asyncArrayMapSeries(
  *   array Array,
  *   mapper function,
  *   result Array,
  *   index number,
  * ) -> result
+ * ```
  */
 const asyncArrayMapSeries = async function (array, mapper, result, index) {
   const arrayLength = array.length
@@ -1405,11 +1527,13 @@ const asyncArrayMapSeries = async function (array, mapper, result, index) {
  * @name setProperty
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * setProperty(
  *   object Object,
  *   property string,
  *   value any,
  * ) -> object
+ * ```
  */
 const setProperty = function (object, property, value) {
   object[property] = value
@@ -1420,11 +1544,9 @@ const setProperty = function (object, property, value) {
  * @name arrayMapSeries
  *
  * @synopsis
- * any -> A, any -> B
- *
- * arrayMapSeries(array Array<A>, mapper A=>B) -> result Array<B>
- *
- * @TODO .then quickscope
+ * ```coffeescript [specscript]
+ * arrayMapSeries<T>(array Array<T>, mapper T=>any) -> result Array
+ * ```
  */
 const arrayMapSeries = function (array, mapper) {
   const arrayLength = array.length,
@@ -1478,6 +1600,7 @@ map.series = mapper => function serialMapping(value) {
  * @name asyncArrayMapPool
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * asyncArrayMapPool(
  *   array Array<A>,
  *   mapper A=>B,
@@ -1486,6 +1609,7 @@ map.series = mapper => function serialMapping(value) {
  *   index number,
  *   promises Set<Promise>,
  * ) -> result
+ * ```
  */
 const asyncArrayMapPool = async function (
   array, mapper, concurrencyLimit, result, index, promises,
@@ -1514,13 +1638,13 @@ const asyncArrayMapPool = async function (
  * arrayMapPool
  *
  * @synopsis
- * any -> A; any -> B
- *
- * arrayMapPool(
- *   array Array<A>,
- *   mapper A=>B,
+ * ```coffeescript [specscript]
+ * arrayMapPool<T>(
+ *   array Array<T>,
+ *   mapper T=>any,
  *   concurrentLimit number,
- * ) -> result Promise|Array<B>
+ * ) -> result Promise|Array
+ * ```
  */
 const arrayMapPool = function (array, mapper, concurrentLimit) {
   const arrayLength = array.length,
@@ -1547,10 +1671,12 @@ const arrayMapPool = function (array, mapper, concurrentLimit) {
  * @name map.pool
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * map.pool(
  *   maxConcurrency number,
  *   mapper any=>Promise|any
  * )(value Array) -> Promise|Array
+ * ```
  *
  * @description
  * `map` with a concurrency limit that specifies the maximum number of promises in flight at any given moment.
@@ -1580,10 +1706,12 @@ map.pool = (concurrencyLimit, mapper) => function concurrentPoolMapping(value) {
  * @name arrayMapWithIndex
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * arrayMapWithIndex(
  *   array Array<T>,
  *   mapper (item T, index number, array Array<T>)=>Promise|any
  * ) -> Promise|Array
+ * ```
  */
 const arrayMapWithIndex = function (array, mapper) {
   const arrayLength = array.length,
@@ -1604,9 +1732,11 @@ const arrayMapWithIndex = function (array, mapper) {
  * @name map.withIndex
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * map.withIndex(
  *   mapper (item T, index number, Array<T>)=>Promise|any,
  * )(Array<T>) -> Promise|Array
+ * ```
  *
  * @description
  * `map` with index and collection parameters additionally supplied to the mapper each iteration.
@@ -1676,12 +1806,14 @@ console.log(
  * @name arrayFilterByConditions
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * arrayFilterByConditions(
  *   array Array,
  *   result Array,
  *   index number,
  *   conditions Array<boolean>,
  * ) -> result
+ * ```
  */
 const arrayFilterByConditions = function (
   array, result, index, conditions,
@@ -1702,12 +1834,12 @@ const arrayFilterByConditions = function (
  * @name arrayFilter
  *
  * @synopsis
- * any -> T
- *
- * arrayFilter(
+ * ```coffeescript [specscript]
+ * arrayFilter<T>(
  *   array Array<T>,
  *   predicate T=>Promise|boolean,
  * ) -> result Promise|Array<T>
+ * ```
  */
 const arrayFilter = function (array, predicate) {
   const arrayLength = array.length,
@@ -1735,12 +1867,14 @@ const arrayFilter = function (array, predicate) {
  * @name transferPropertyByCondition
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * transferPropertyByCondition(
  *   objectA object,
  *   objectB object,
  *   key string,
  *   condition boolean,
  * ) -> ()
+ * ```
  */
 const transferPropertyByCondition = function (
   target, source, key, condition,
@@ -1754,12 +1888,12 @@ const transferPropertyByCondition = function (
  * @name objectFilter
  *
  * @synopsis
- * any -> T
- *
- * objectFilter(
+ * ```coffeescript [specscript]
+ * objectFilter<T>(
  *   object Object<T>,
  *   predicate T=>boolean,
  * ) -> result Object<T>
+ * ```
  */
 const objectFilter = function (object, predicate) {
   const result = {},
@@ -1784,14 +1918,12 @@ const objectFilter = function (object, predicate) {
  * @name generatorFunctionFilter
  *
  * @synopsis
- * any -> T
- *
- * (args ...any)=>Generator<T> -> GeneratorFunction<args, T>
- *
+ * ```coffeescript [specscript]
  * generatorFunctionFilter(
  *   generatorFunction GeneratorFunction<args, T>
  *   predicate T=>boolean,
  * ) -> filteringGeneratorFunction GeneratorFunction<args, T>
+ * ```
  */
 const generatorFunctionFilter = function (generatorFunction, predicate) {
   return function* filteringGeneratorFunction(...args) {
@@ -1807,14 +1939,14 @@ const generatorFunctionFilter = function (generatorFunction, predicate) {
  * @name FilteringIterator
  *
  * @synopsis
- * any -> T
- *
+ * ```coffeescript [specscript]
  * filteringIterator = new FilteringIterator(
  *   iter Iterator<T>,
  *   predicate T=>boolean,
  * )
  *
  * filteringIterator.next() -> { value: any, done: boolean }
+ * ```
  */
 const FilteringIterator = function (iter, predicate) {
   this.iter = iter
@@ -1845,14 +1977,12 @@ FilteringIterator.prototype = {
  * @name asyncGeneratorFunctionFilter
  *
  * @synopsis
- * any -> T
- *
- * (args ...any)=>AsyncGenerator<T> -> AsyncGeneratorFunction<args, T>
- *
+ * ```coffeescript [specscript]
  * asyncGeneratorFunctionFilter(
  *   asyncGeneratorFunction AsyncGeneratorFunction<args, T>,
  *   predicate T=>boolean,
  * ) -> filteringAsyncGeneratorFunction AsyncGeneratorFunction<args, T>
+ * ```
  */
 const asyncGeneratorFunctionFilter = function (asyncGeneratorFunction, predicate) {
   return async function* filteringAsyncGeneratorFunction(...args) {
@@ -1873,12 +2003,14 @@ const asyncGeneratorFunctionFilter = function (asyncGeneratorFunction, predicate
  * @name FilteringAsyncIterator
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * const filteringAsyncIterator = new FilteringAsyncIterator(
  *   iter AsyncIterator<T>,
  *   predicate T=>boolean,
  * ) -> FilteringAsyncIterator<T>
  *
  * filteringAsyncIterator.next() -> { value: Promise, done: boolean }
+ * ```
  */
 const FilteringAsyncIterator = function (iter, predicate) {
   this.iter = iter
@@ -1914,12 +2046,14 @@ FilteringAsyncIterator.prototype = {
  * @name reducerFilterByCondition
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * reducerFilterByCondition(
  *   reducer (any, T)=>Promise|any,
  *   result any,
  *   item T,
  *   condition boolean,
  * ) -> any
+ * ```
  */
 const reducerFilterByCondition = (
   reducer, result, item, condition,
@@ -1929,10 +2063,12 @@ const reducerFilterByCondition = (
  * @name reducerFilter
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * reducerFilter(
  *   reducer (any, T)=>Promise|any,
  *   predicate T=>Promise|boolean,
  * ) -> filteringReducer (result any, item T)=>Promise|any
+ * ```
  */
 const reducerFilter = (
   reducer, predicate,
@@ -1951,25 +2087,29 @@ const reducerFilter = (
  * exclude items by predicate
  *
  * @synopsis
- * filter(
- *   predicate any=>Promise|boolean,
- * )(value any) -> result Promise|any
+ * ```coffeescript [specscript]
+ * Filterable<T> = Array<T>|Object<T>
+ *   |Iterable<T>|AsyncIterable<T>|{ filter: T=>boolean }
  *
- * Filterable = Array|Object|Iterable|AsyncIterable|{ filter: function }
+ * filter<T>(
+ *   predicate T=>Promise|boolean,
+ * )(value Filterable<T>) -> filtered Promise|Filterable<T>
  *
- * filter(predicate T=>Promise|boolean)(
- *   value Filterable<T>) -> filtered Promise|Filterable<T>
+ * filter<T>(
+ *   predicate T=>boolean, # note: only synchronous predicates allowed here
+ * )(generatorFunction GeneratorFunction<T>)
+ *   -> filteringGeneratorFunction GeneratorFunction<T>
  *
- * filter(predicate T=>boolean)(
- *   generatorFunction ...args=>Generator<T>,
- * ) -> filteredGeneratorFunction ...args=>Generator<T>
+ * filter<T>(
+ *   predicate T=>Promise|boolean,
+ * )(asyncGeneratorFunction AsyncGeneratorFunction<T>)
+ *   -> filteringAsyncGeneratorFunction AsyncGeneratorFunction<T>
  *
- * filter(predicate T=>boolean)(
- *   asyncGeneratorFunction ...args=>AsyncGenerator<T>,
- * ) -> filteredAsyncGeneratorFunction ...args=>AsyncGenerator<T>
- *
- * filter(predicate T=>Promise|boolean)(
- *   reducer (any, T)=>Promise|any) -> filteringReducer (any, T)=>Promise|any
+ * filter<T>(
+ *   predicate T=>Promise|boolean,
+ * )(reducer (any, T)=>Promise|any)
+ *   -> filteringReducer (any, T)=>Promise|any
+ * ```
  *
  * @description
  * Exclude items from a collection based on the results of their concurrent execution with the predicate. The predicate may be asynchronous.
@@ -2095,12 +2235,14 @@ const filter = predicate => function filtering(value) {
  * internal extend while mapping with index
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * arrayExtendMapWithIndex(
  *   array Array<B>,
  *   values Array<A>,
  *   valuesMapper (A, valuesIndex number, values)=>B,
  *   valuesIndex number,
  * ) -> array
+ * ```
  */
 const arrayExtendMapWithIndex = function (
   array, values, valuesMapper, valuesIndex,
@@ -2119,10 +2261,12 @@ const arrayExtendMapWithIndex = function (
  * @name arrayFilterWithIndex
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * arrayFilterWithIndex(
  *   array Array<T>,
  *   predicate (item T, index number, array Array<T>)=>Promise|boolean,
  * ) -> result Promise|Array<T>
+ * ```
  */
 const arrayFilterWithIndex = function (array, predicate) {
   const arrayLength = array.length,
@@ -2150,9 +2294,11 @@ const arrayFilterWithIndex = function (array, predicate) {
  * @name filter.withIndex
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * filter.withIndex(
  *   predicate T=>Promise|boolean,
  * )(value Array<T>) -> filteredArray Array<T>
+ * ```
  *
  * @description
  * `filter` with each predicate call supplemented by index and reference to original collection.
@@ -2179,12 +2325,14 @@ filter.withIndex = predicate => function filteringWithIndex(value) {
  * @name asyncArrayReduce
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * asyncArrayReduce(
  *   array Array,
  *   reducer function,
  *   result any,
  *   index number,
  * ) -> result
+ * ```
  */
 const asyncArrayReduce = async function (array, reducer, result, index) {
   const arrayLength = array.length
@@ -2198,11 +2346,13 @@ const asyncArrayReduce = async function (array, reducer, result, index) {
  * @name arrayReduce
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * arrayReduce(
  *   array Array<T>,
  *   reducer (any, T)=>Promise|any,
  *   result any,
  * ) -> result
+ * ```
  */
 const arrayReduce = function (array, reducer, result) {
   const arrayLength = array.length
@@ -2225,11 +2375,13 @@ const arrayReduce = function (array, reducer, result) {
  * @name asyncIteratorReduce
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * asyncIteratorReduce(
  *   asyncIterator AsyncIterator<T>,
  *   reducer (any, T)=>Promise|any,
  *   result any,
  * ) -> result any
+ * ```
  */
 const asyncIteratorReduce = async function (asyncIterator, reducer, result) {
   let iteration = await asyncIterator.next()
@@ -2252,11 +2404,13 @@ const asyncIteratorReduce = async function (asyncIterator, reducer, result) {
  * @name asyncGeneratorFunctionReduce
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * asyncGeneratorFunctionReduce(
  *   asyncGeneratorFunc ...args=>AsyncGenerator<T>,
  *   reducer (any, T)=>any,
  *   result any,
  * ) -> (...any args)=>any
+ * ```
  */
 const asyncGeneratorFunctionReduce = (
   asyncGeneratorFunc, reducer, result,
@@ -2268,11 +2422,13 @@ const asyncGeneratorFunctionReduce = (
  * @name iteratorReduce
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * iteratorReduce(
  *   iterator Iterator<T>,
  *   reducer (any, T)=>Promise|any,
  *   result any,
  * ) -> result
+ * ```
  */
 const iteratorReduce = function (iterator, reducer, result) {
   let iteration = iterator.next()
@@ -2298,11 +2454,13 @@ const iteratorReduce = function (iterator, reducer, result) {
  * @name generatorFunctionReduce
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * generatorFunctionReduce(
  *   generatorFunc ...args=>AsyncGenerator<T>,
  *   reducer (any, T)=>Promise|any,
  *   result any,
  * ) -> (...any args)=>any
+ * ```
  */
 const generatorFunctionReduce = (
   generatorFunc, reducer, result,
@@ -2314,10 +2472,12 @@ const generatorFunctionReduce = (
  * @name reducerConcat
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * reducerConcat(
  *   reducerA (any, T)=>(intermediate Promise|any),
  *   reducerB (intermediate, T)=>Promise|any,
  * ) -> pipedReducer (any, T)=>Promise|any
+ * ```
  */
 const reducerConcat = function (reducerA, reducerB) {
   return function pipedReducer(result, item) {
@@ -2346,10 +2506,12 @@ const reducerConcatSync = (
  * @name tacitGenericReduce
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * tacitGenericReduce(
  *   reducer (any, T)=>any,
  *   result any,
  * ) -> reducing ...any=>result
+ * ```
  */
 const tacitGenericReduce = (
   reducer, result,
@@ -2361,13 +2523,16 @@ const tacitGenericReduce = (
  * @name genericReduce
  *
  * @synopsis
- * (any, T)=>any -> Reducer<T>
+ * ```coffeescript [specscript]
+ * Foldable<T> = Iterable<T>|AsyncIterable<T>
+ *   |{ reduce: (any, T)=>any }|Object<T>
  *
- * genericReduce(
- *   args [collection <T>, ...any],
+ * genericReduce<T>(
+ *   args [collection Foldable<T>, ...any],
  *   reducer (any, T)=>any,
- *   result undefined|any,
+ *   result any?,
  * ) -> result
+ * ```
  *
  * @related genericReduceConcurrent
  *
@@ -2434,33 +2599,29 @@ var genericReduce = function (args, reducer, result) {
  * @name reduce
  *
  * @synopsis
- * reduce(
- *   reducer function,
- *   init function|any?,
- * )(...any) -> Promise|any
+ * ```coffeescript [specscript]
+ * Foldable<T> = Iterable<T>|AsyncIterable<T>
+ *   |{ reduce: (any, T)=>any }|Object<T>
+ * Reducer<T> = (any, T)=>Promise|any
+ * Transducer = Reducer=>Reducer
  *
- * Foldable = Iterable|AsyncIterable|{ reduce: function }|Object|any
- *
- * reduce(
- *   reducer Reducer,
+ * reduce<T>(
+ *   reducer Reducer<T>,
  *   init (collection=>Promise|any)|any?,
- * )(collection Foldable) -> Promise|any
+ * )(collection Foldable<T>) -> Promise|any
  *
- * reduce(
+ * reduce<args ...any>(
  *   reducer Reducer,
  *   init (...args=>Promise|any)|any?,
- * )(
- *   generatorFunction (...args=>Generator)|(...args=>AsyncGenerator),
- * ) -> reducingFunction (args ...any)=>Promise|any
+ * )(value GeneratorFunction|AsyncGeneratorFunction)
+ *   -> reducingFunction ...args=>Promise|Semigroup|any
  *
- * Reducer = (any, T)=>Promise|any
- *
- * reduce(
+ * reduce<args ...any>(
  *   reducer Reducer,
  *   init (...args=>Promise|any)|any?,
- * )(
- *   anotherReducer Reducer, moreReducers ...Reducer
- * ) -> chainedReducingFunction (args ...any)=>Promise|any
+ * )(anotherReducer Reducer, moreReducers ...Reducer)
+ *   -> chainedReducingFunction ...args=>Promise|any
+ * ```
  *
  * @description
  * Execute a reducer for each item of a collection, resulting in a single output value.
@@ -2563,11 +2724,8 @@ var genericReduce = function (args, reducer, result) {
  *   return state
  * }
  *
- * const emptyReducer = result => result
- *
  * const reducingABC = reduce(
- *   emptyReducer, () => ({}),
- * )(reducerA, reducerB, reducerC)
+ *   reducerA, () => ({}))(reducerB, reducerC)
  *
  * const actions = [{ type: 'A' }, { type: 'B' }, { type: 'C' }]
  *
@@ -2600,7 +2758,8 @@ const reduce = function (reducer, init) {
  * @name emptyTransform
  *
  * @synopsis
- * Reducer = (any, T)=>any
+ * ```coffeescript [specscript]
+ * Reducer<T> = (any, T)=>Promise|any
  *
  * Transducer = Reducer=>Reducer
  *
@@ -2609,6 +2768,7 @@ const reduce = function (reducer, init) {
  *   transducer Transducer,
  *   result any,
  * ) -> result
+ * ```
  */
 const emptyTransform = function (args, transducer, result) {
   const nil = genericReduce(args, transducer(identity), null)
@@ -2619,10 +2779,12 @@ const emptyTransform = function (args, transducer, result) {
  * @name _binaryExtend
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * _binaryExtend(
  *   typedArray TypedArray,
  *   array Array|TypedArray,
  * ) -> concatenatedTypedArray
+ * ```
  */
 const _binaryExtend = function (typedArray, array) {
   const offset = typedArray.length
@@ -2636,10 +2798,12 @@ const _binaryExtend = function (typedArray, array) {
  * @name binaryExtend
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * binaryExtend(
  *   typedArray TypedArray,
  *   array Array|TypedArray|any,
  * ) -> concatenatedTypedArray
+ * ```
  */
 const binaryExtend = function (typedArray, array) {
   if (isArray(array) || isBinary(array)) {
@@ -2652,11 +2816,13 @@ const binaryExtend = function (typedArray, array) {
  * @name streamAppender
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * streamAppender(stream Writable) -> appender (
  *   chunk string|Buffer|Uint8Array|any,
  *   encoding string|undefined,
  *   callback function|undefined,
  * )=>stream
+ * ```
  */
 const streamAppender = stream => function appender(
   chunk, encoding, callback,
@@ -2669,9 +2835,11 @@ const streamAppender = stream => function appender(
  * @name streamExtendExecutor
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * streamExtendExecutor(
  *   resultStream Writable, stream Readable,
  * ) -> executor (resolve function, reject function)=>()
+ * ```
  *
  * @note optimizes function creation within streamExtend
  */
@@ -2687,9 +2855,11 @@ const streamExtendExecutor = (
  * @name _streamExtend
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * _streamExtend(
  *   resultStream Writable, stream Readable,
  * ) -> writableStream
+ * ```
  */
 const _streamExtend = (
   resultStream, stream,
@@ -2699,6 +2869,7 @@ const _streamExtend = (
  * @name streamExtend
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * Writable = { write: function }
  *
  * Readable = { pipe: function }
@@ -2707,6 +2878,7 @@ const _streamExtend = (
  *   stream Writable,
  *   values Readable|any,
  * ) -> stream
+ * ```
  *
  * @note support `.read` maybe
  */
@@ -2722,7 +2894,9 @@ const streamExtend = function (stream, values) {
  * @name callConcat
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * callConcat(object Object, values any) -> object
+ * ```
  */
 const callConcat = function (object, values) {
   return object.concat(values)
@@ -2732,7 +2906,8 @@ const callConcat = function (object, values) {
  * @name genericTransform
  *
  * @synopsis
- * Reducer<T> = (any, T)=>any
+ * ```coffeescript [specscript]
+ * Reducer<T> = (any, T)=>Promise|any
  *
  * Transducer = Reducer=>Reducer
  *
@@ -2744,6 +2919,7 @@ const callConcat = function (object, values) {
  *   transducer Transducer,
  *   result Semigroup|any,
  * ) -> result
+ * ```
  */
 const genericTransform = function (args, transducer, result) {
   if (isArray(result)) {
@@ -2782,44 +2958,31 @@ const genericTransform = function (args, transducer, result) {
  * @name transform
  *
  * @synopsis
- * transform(
- *   transducer function,
- *   init function|any,
- * )(...any) -> Promise|any
- *
- * Reducer = (any, T)=>Promise|any
- *
+ * ```coffeescript [specscript]
+ * Reducer<T> = (any, T)=>Promise|any
  * Transducer = Reducer=>Reducer
- *
  * Semigroup = Array|string|Set|TypedArray
  *   |{ concat: function }|{ write: function }|Object
- *
  * Foldable = Iterable|AsyncIterable|{ reduce: function }|Object|any
  *
  * transform(
  *   transducer Transducer,
- *   init (collection=>Promise|Semigroup|any)
- *     |Semigroup
- *     |any,
- * )(collection Foldable) -> result Promise|Semigroup|any
+ *   init (collection=>Promise|Semigroup|any)|Semigroup|any,
+ * )(collection Foldable)
+ *   -> result Promise|Semigroup|any
  *
- * transform(
+ * transform<args ...any>(
  *   transducer Transducer,
- *   init (...args=>Promise|Semigroup|any)
- *     |Semigroup
- *     |any,
- * )(
- *   generatorFunction GeneratorFunction|AsyncGeneratorFunction,
- * ) -> reducingFunction (args ...any)=>Promise|Semigroup|any
+ *   init (...args=>Promise|Semigroup|any)|Semigroup|any,
+ * )(value GeneratorFunction|AsyncGeneratorFunction)
+ *   -> transformingFunction ...args=>Promise|Semigroup|any
  *
- * transform(
+ * transform<args ...any>(
  *   transducer Transducer,
- *   init (...args=>Promise|Semigroup|any)
- *     |Semigroup
- *     |any,
- * )(
- *   reducer Reducer, moreReducers ...Reducer
- * ) -> chainedReducingFunction (args ...any)=>Promise|any
+ *   init (...args=>Promise|Semigroup|any)|Semigroup|any,
+ * )(reducer Reducer, moreReducers ...Reducer)
+ *   -> chainedTransformingFunction ...args=>Promise|Semigroup|any
+ * ```
  *
  * @description
  * Execute a transducer for each item of a collection, concatenating results into the accumulator. The initial value may be a function, in which case it is treated as a resolver.
@@ -2871,14 +3034,16 @@ const genericTransform = function (args, transducer, result) {
  *   ))
  * }
  *
- * transform(
- *   map(Math.abs), new Max(-Infinity),
- * )([-1, -2, -3, -4, -5]) // Max { 5 }
+ * console.log(
+ *   transform(
+ *     map(Math.abs), new Max(-Infinity),
+ *   )([-1, -2, -3, -4, -5]).number,
+ * ) // 5
  * ```
  *
  * Node.js WritableStream interfaces are consumed as well.
  *
- * ```javascript [playground]
+ * ```javascript
  * // this example is duplicated in rubico/examples/transformStreamRandomInts.js
  *
  * const { pipe, map, transform } = require('rubico')
@@ -2961,6 +3126,7 @@ const transform = function (transducer, init) {
  * @name flatteningTransducer
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * flatteningTransducer(concat Reducer) -> flatteningReducer Reducer
  *
  * DuplexStream = { read: function, write: function }
@@ -2976,6 +3142,7 @@ const transform = function (transducer, init) {
  * Reducer<T> = (any, T)=>Promise|any
  *
  * flatteningTransducer(concat Reducer) -> flatteningReducer FlatteningReducer
+ * ```
  *
  * @execution series
  */
@@ -2989,7 +3156,9 @@ const flatteningTransducer = concat => function flatteningReducer(
  * @name asyncIteratorForEach
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * asyncIteratorForEach(asyncIterator AsyncIterable, callback function) -> ()
+ * ```
  */
 const asyncIteratorForEach = async function (asyncIterator, callback) {
   for await (const item of asyncIterator) {
@@ -3001,7 +3170,9 @@ const asyncIteratorForEach = async function (asyncIterator, callback) {
  * @name arrayPush
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * arrayPush(array, item) => array.push(item)
+ * ```
  */
 const arrayPush = function (array, item) {
   array.push(item)
@@ -3012,11 +3183,13 @@ const arrayPush = function (array, item) {
  * @name monadArrayFlatten
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * Monad = Array|String|Set
  *   |TypedArray|DuplexStream|Iterator|AsyncIterator
  *   |{ chain: function }|{ flatMap: function }|Object
  *
  * monadArrayFlatten(array Array<Monad|Foldable|any>) -> Array
+ * ```
  *
  * @related genericReduceConcurrent
  */
@@ -3076,6 +3249,7 @@ const monadArrayFlatten = function (array) {
  * @name arrayFlatMap
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * DuplexStream = { read: function, write: function }
  *
  * Monad = Array|String|Set
@@ -3088,6 +3262,7 @@ const monadArrayFlatten = function (array) {
  *   array Array,
  *   flatMapper item=>Promise|Monad|Foldable|any,
  * ) -> Array
+ * ```
  */
 const arrayFlatMap = function (array, flatMapper) {
   const monadArray = arrayMap(array, flatMapper)
@@ -3100,7 +3275,9 @@ const arrayFlatMap = function (array, flatMapper) {
  * @name monadObjectFlatten
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * monadObjectFlatten(object Object) -> Object
+ * ```
  */
 const monadObjectFlatten = function (object) {
   const promises = [],
@@ -3146,6 +3323,7 @@ const monadObjectFlatten = function (object) {
  * @name objectFlatMap
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * DuplexStream = { read: function, write: function }
  *
  * Monad = Array|String|Set
@@ -3158,6 +3336,7 @@ const monadObjectFlatten = function (object) {
  *   object Object,
  *   flatMapper item=>Promise|Monad|Foldable|any,
  * ) -> Object
+ * ```
  *
  * @related objectReduceConcurrent
  */
@@ -3172,7 +3351,9 @@ const objectFlatMap = function (object, flatMapper) {
  * @name monadSetFlatten
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * monadSetFlatten(set Set<Monad|Foldable|any>) -> Set
+ * ```
  */
 const monadSetFlatten = function (set) {
   const size = set.size,
@@ -3228,6 +3409,7 @@ const monadSetFlatten = function (set) {
  * @name setFlatMap
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * DuplexStream = { read: function, write: function }
  *
  * Monad = Array|String|Set
@@ -3240,6 +3422,7 @@ const monadSetFlatten = function (set) {
  *   set Set,
  *   flatMapper item=>Promise|Monad|Foldable|any,
  * ) -> Set
+ * ```
  */
 const setFlatMap = function (set, flatMapper) {
   const monadSet = setMap(set, flatMapper)
@@ -3252,7 +3435,9 @@ const setFlatMap = function (set, flatMapper) {
  * @name arrayJoin
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * arrayJoin(array Array, delimiter string) -> string
+ * ```
  */
 const arrayJoin = (array, delimiter) => array.join(delimiter)
 
@@ -3260,9 +3445,11 @@ const arrayJoin = (array, delimiter) => array.join(delimiter)
  * @name monadArrayFlattenToString
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * monadArrayFlattenToString(
  *   array Array<Monad|Foldable|any>,
  * ) -> string
+ * ```
  */
 const monadArrayFlattenToString = funcConcat(
   monadArrayFlatten, curry2(arrayJoin, __, ''))
@@ -3271,6 +3458,7 @@ const monadArrayFlattenToString = funcConcat(
  * @name stringFlatMap
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * DuplexStream = { read: function, write: function }
  *
  * Monad = Array|String|Set
@@ -3283,6 +3471,7 @@ const monadArrayFlattenToString = funcConcat(
  *   string,
  *   flatMapper item=>Promise|Monad|Foldable|any,
  * ) -> string
+ * ```
  *
  * @related arrayFlatMap
  */
@@ -3297,12 +3486,14 @@ const stringFlatMap = function (string, flatMapper) {
  * @name streamWrite
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * streamWrite(
  *   stream Writable,
  *   chunk string|Buffer|Uint8Array|any,
  *   encoding string|undefined,
  *   callback function|undefined,
  * ) -> stream
+ * ```
  */
 const streamWrite = function (stream, chunk, encoding, callback) {
   stream.write(chunk, encoding, callback)
@@ -3313,6 +3504,7 @@ const streamWrite = function (stream, chunk, encoding, callback) {
  * @name streamFlatten
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * Monad = Array|String|Set
  *   |TypedArray|DuplexStream|Iterator|AsyncIterator
  *   |{ chain: function }|{ flatMap: function }|Object
@@ -3320,6 +3512,7 @@ const streamWrite = function (stream, chunk, encoding, callback) {
  * Foldable = Iterable|AsyncIterable|{ reduce: function }
  *
  * streamFlatExtend(stream DuplexStream, item Monad|Foldable|any) -> stream
+ * ```
  */
 const streamFlatExtend = function (stream, item) {
   const resultStreamWrite = curry2(streamWrite, stream, __),
@@ -3369,6 +3562,7 @@ const streamFlatExtend = function (stream, item) {
  * @name streamFlatMap
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * DuplexStream = { read: function, write: function }
  *
  * Monad = Array|String|Set
@@ -3381,6 +3575,7 @@ const streamFlatExtend = function (stream, item) {
  *   stream DuplexStream,
  *   flatMapper item=>Promise|Monad|Foldable|any,
  * ) -> stream
+ * ```
  *
  * @related monadArrayFlatten
  */
@@ -3412,7 +3607,9 @@ const streamFlatMap = async function (stream, flatMapper) {
  * @name arrayJoinToBinary
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * arrayJoinToBinary(array Array, init TypedArray|Buffer) -> TypedArray|Buffer
+ * ```
  */
 const arrayJoinToBinary = function (array, init) {
   const length = array.length
@@ -3428,6 +3625,7 @@ const arrayJoinToBinary = function (array, init) {
  * @name monadArrayFlattenToBinary
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * Monad = Array|String|Set
  *   |TypedArray|DuplexStream|Iterator|AsyncIterator
  *   |{ chain: function }|{ flatMap: function }|Object
@@ -3438,6 +3636,7 @@ const arrayJoinToBinary = function (array, init) {
  *   array Array<Monad|Foldable|any>,
  *   result TypedAray|Buffer,
  * ) -> TypedArray|Buffer
+ * ```
  */
 const monadArrayFlattenToBinary = function (array, result) {
   const flattened = monadArrayFlatten(array)
@@ -3450,6 +3649,7 @@ const monadArrayFlattenToBinary = function (array, result) {
  * @name binaryFlatMap
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * DuplexStream = { read: function, write: function }
  *
  * Monad = Array|String|Set
@@ -3462,6 +3662,7 @@ const monadArrayFlattenToBinary = function (array, result) {
  *   stream DuplexStream,
  *   flatMapper item=>Promise|Monad|Foldable|any,
  * ) -> stream
+ * ```
  */
 const binaryFlatMap = function (binary, flatMapper) {
   const monadArray = arrayMap(binary, flatMapper),
@@ -3478,10 +3679,12 @@ const binaryFlatMap = function (binary, flatMapper) {
  * @name generatorFunctionFlatMap
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * generatorFunctionFlatMap(
  *   generatorFunction GeneratorFunction,
  *   flatMapper item=>Promise|Monad|Foldable|any,
  * ) -> flatMappingGeneratorFunction GeneratorFunction
+ * ```
  */
 const generatorFunctionFlatMap = (
   generatorFunction, flatMapper,
@@ -3493,6 +3696,7 @@ const generatorFunctionFlatMap = (
  * @name reducerFlatMap
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * DuplexStream = { read: function, write: function }
  *
  * Monad = Array|String|Set
@@ -3505,6 +3709,7 @@ const generatorFunctionFlatMap = (
  *   reducer (any, T)=>Promise|any,
  *   flatMapper item=>Promise|Monad|Foldable|any,
  * )
+ * ```
  *
  * @related forEachReduceConcurrent
  *
@@ -3526,9 +3731,12 @@ const reducerFlatMap = (
 /**
  * @name FlatMappingIterator
  *
- * @synopsis new FlatMappingIterator(
+ * @synopsis
+ * ```coffeescript [specscript]
+ * new FlatMappingIterator(
  *   iterator Iterator, flatMapper function,
  * ) -> FlatMappingIterator { next, SymbolIterator }
+ * ```
  */
 const FlatMappingIterator = function (iterator, flatMapper) {
   this.iterator = iterator
@@ -3546,9 +3754,11 @@ FlatMappingIterator.prototype = {
    * @name FlatMappingIterator.prototype.next
    *
    * @synopsis
+   * ```coffeescript [specscript]
    * new FlatMappingIterator(
    *   iterator Iterator, flatMapper function
    * ).next() -> { value: any, done: boolean }
+   * ```
    */
   next() {
     if (this.bufferIndex < this.buffer.length) {
@@ -3580,9 +3790,11 @@ FlatMappingIterator.prototype = {
  * @name FlatMappingAsyncIterator
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * new FlatMappingAsyncIterator(
  *   asyncIterator AsyncIterator, flatMapper function,
  * ) -> FlatMappingAsyncIterator AsyncIterator
+ * ```
  *
  * @execution concurrent
  *
@@ -3609,9 +3821,11 @@ FlatMappingAsyncIterator.prototype = {
    * @name FlatMappingAsyncIterator.prototype.next
    *
    * @synopsis
+   * ```coffeescript [specscript]
    * new FlatMappingAsyncIterator(
    *   asyncIterator AsyncIterator, flatMapper function,
    * ).next() -> Promise<{ value, done }>
+   * ```
    *
    * @note
    * Promises
@@ -3654,10 +3868,12 @@ FlatMappingAsyncIterator.prototype = {
  * @name asyncGeneratorFunctionFlatMap
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * asyncGeneratorFunctionFlatMap(
  *   generatorFunction GeneratorFunction,
  *   flatMapper item=>Promise|Monad|Foldable|any,
  * ) -> flatMappingAsyncGeneratorFunction GeneratorFunction
+ * ```
  *
  * @related streamFlatMap
  */
@@ -3673,35 +3889,23 @@ const asyncGeneratorFunctionFlatMap = (
  *
  * @synopsis
  * ```coffeescript [specscript]
- * flatMap(flatMapper function)(value any) -> result any
- *
  * DuplexStream = { read: function, write: function }
- *
  * Monad = Array|String|Set
  *   |TypedArray|DuplexStream|Iterator|AsyncIterator
  *   |{ chain: function }|{ flatMap: function }|Object
- *
  * Foldable = Iterable|AsyncIterable|{ reduce: function }
+ * Reducer<T> = (any, T)=>Promise|any
  *
- * flatMap(
+ * flatMap<T>(
  *   flatMapper T=>Promise|Monad|Foldable|any,
  * )(value Monad<T>) -> result Monad
  *
- * flatMap(
+ * flatMap<T>(
  *   flatMapper T=>Promise|Monad|Foldable|any,
- * )(
- *   value (args ...any)=>Generator<T>,
- * ) -> flatMappingGeneratorFunction ...args=>Generator
+ * )(value GeneratorFunction<T>|AsyncGeneratorFunction<T>)
+ *   -> flatMappingGeneratorFunction GeneratorFunction<T>|AsyncGeneratorFunction<T>
  *
- * flatMap(
- *   flatMapper T=>Promise|Monad|Foldable|any,
- * )(
- *   value (args ...any)=>AsyncGenerator<T>,
- * ) -> flatMappingAsyncGeneratorFunction ...args=>AsyncGenerator
- *
- * Reducer<T> = (any, T)=>Promise|any
- *
- * flatMap(
+ * flatMap<T>(
  *   flatMapper T=>Promise|Monad|Foldable|any,
  * )(value Reducer<T>) -> flatMappingReducer Reducer
  * ```
@@ -3709,25 +3913,16 @@ const asyncGeneratorFunctionFlatMap = (
  * @description
  * Apply a function to each item of a collection, flattening any resulting collection. The result is always the same type as the input value with all items mapped and flattened. The following outlines behavior for various collections.
  *
- *   * Array - map items then flatten results into a new Array
- *   * String|string - map items then flatten (`+`) results into a new string
- *   * Set - map items then flatten results into a new Set
- *   * Uint8ClampedArray - map items then flatten results into a new Uint8ClampedArray
- *   * Uint8Array - map items then flatten results into a new Uint8Array
- *   * Int8Array - map items then flatten results into a new Int8Array
- *   * Uint16Array - map items then flatten results into a new Uint16Array
- *   * Int16Array - map items then flatten results into a new Int16Array
- *   * Uint32Array - map items then flatten results into a new Uint32Array
- *   * Int32Array - map items then flatten results into a new Int32Array
- *   * Float32Array - map items then flatten results into a new Float32Array
- *   * Float64Array - map items then flatten results into a new Float64Array
- *   * BigUint64Array - map items then flatten results into a new BigUint64Array
- *   * BigInt64Array - map items then flatten results into a new BigInt64Array
- *   * Buffer (Node.js) - map items then flatten results into a new Buffer
- *   * DuplexStream - Node.js stream.Duplex - map over stream items by async iteration, then call stream's `.write` to flatten
- *   * Object that implements `.chain` or `.flatMap` - either of these are called directly
- *   * Object - a plain Object, values are mapped then flattened into result by `Object.assign`
- *   * Reducer - a function to be used in a reducing operation. Items of a flatMapped reducing operation are mapped then flattened into the aggregate
+ *   * `Array` - map items then flatten results into a new `Array`
+ *   * `String|string` - map items then flatten (`+`) results into a new `string`
+ *   * `Set` - map items then flatten results into a new `Set`
+ *   * `TypedArray` - map items then flatten results into a new `TypedArray`
+ *   * `Buffer (Node.js)` - map items then flatten results into a new `Buffer`
+ *   * `stream.Duplex (Node.js)` - map over stream items by async iteration, then call stream's `.write` to flatten
+ *   * `{ chain: function }`, i.e. object that implements `.chain` - this function is called directly
+ *   * `{ flatMap: function }`, i.e. object that implements `.flatMap` - this function is called directly
+ *   * `Object` - a plain Object, values are mapped then flattened into result by `Object.assign`
+ *   * `Reducer` - a function to be used in a reducing operation. Items of a flatMapped reducing operation are mapped then flattened into the aggregate
  *
  * On arrays, map the flatMapper function with concurrent asynchronous execution, then flatten the result one depth.
  *
@@ -3744,7 +3939,7 @@ const asyncGeneratorFunctionFlatMap = (
  *   [1, 2, 3, 4, 5]).then(console.log) // [1, 1, 2, 2, 3, 3, 4, 4, 5, 5]
  * ```
  *
- * In general, collections returned by the flatMapper are flattened into the result by type-specific iteration and concatenation, while async iterables are muxed. Muxing, or asynchronously "mixing", is the process of combining multiple asynchronous sources into one source, with order determined by the asynchronous resolution of the individual items. This behavior is useful for working with asynchronous streams, e.g. of DOM events or requests.
+ * Collections returned by the flatMapper are flattened into the result by type-specific iteration and concatenation, while async iterables are muxed. Muxing, or asynchronously "mixing", is the process of combining multiple asynchronous sources into one source, with order determined by the asynchronous resolution of the individual items. This behavior is useful for working with asynchronous streams, e.g. of DOM events or requests.
  *
  * ```javascript [playground]
  * const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
@@ -3788,14 +3983,14 @@ const asyncGeneratorFunctionFlatMap = (
  * flatMap(identity)([
  *   [1, 1],
  *   new Set([2, 2]),
- *   (function* { yield 3; yield 3 })(),
- *   (async function* { yield 4; yield 4 })(),
+ *   (function* () { yield 3; yield 3 })(),
+ *   (async function* () { yield 4; yield 4 })(),
  *   { a: 5, b: 5 },
  *   6,
  *   Promise.resolve(7),
  *   new Uint8Array([8]),
  * ]).then(console.log)
- * // [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 8]
+ * // [1, 1, 2, 3, 3, 5, 5, 6, 7, 8, 4, 4]
  * ```
  *
  * Purer functional programming is possible with flatMap operation on monads. A monad could be any object that implements `.chain` or `.flatMap`. When a flatMapping operation encounters a monad, it calls the monad's `.chain` method directly to flatten.
@@ -3812,7 +4007,7 @@ const asyncGeneratorFunctionFlatMap = (
  * flatMap(console.log)(Maybe('hello world')) // hello world
  * ```
  *
- * In addition to monads, `flatMap` provides much needed flexibility when working with transducers. A flatMapping transducer is like a mapping transducer except all items of a reducing operation are additionally flattened into the result.
+ * In addition to monads, `flatMap` is a powerful option when working with transducers as well. A flatMapping transducer is like a mapping transducer except all items of the reducing operation are additionally flattened into the result.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -3900,7 +4095,9 @@ const pathStringSplitRegex = /[.|[|\]]+/
  * @name memoizedCappedPathStringSplit
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * memoizedCappedPathStringSplit(pathString string) -> Array<string>
+ * ```
  *
  * @note
  * a[0].b.c
@@ -3930,7 +4127,9 @@ const memoizedCappedPathStringSplit = memoizeCappedUnary(pathStringSplit, 500)
  * @name pathToArray
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * pathToArray(path Array|string|object)
+ * ```
  */
 const pathToArray = function (path) {
   if (typeof path == 'string' || path.constructor == String) {
@@ -3946,7 +4145,9 @@ const pathToArray = function (path) {
  * @name getByPath
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * getByPath(object Object, path string|Array|any) -> any
+ * ```
  */
 const getByPath = function (object, path) {
   const pathArray = pathToArray(path),
@@ -3966,10 +4167,12 @@ const getByPath = function (object, path) {
  * @name get
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * get(
  *   path string|Array|any,
- *   defaultValue (value=>any)|any?,
- * )(value any) -> result any
+ *   defaultValue (object=>any)|any?,
+ * )(object) -> result any
+ * ```
  *
  * @description
  * Access properties on objects. `get(property)` creates a function that, when supplied an object, returns the value on the object associated with `property`.
@@ -4031,7 +4234,9 @@ const get = (path, defaultValue) => function getter(value) {
  * @name pick
  *
  * @synopsis
- * pick(Array<string>)(source Object) -> picked Object
+ * ```coffeescript [specscript]
+ * pick<T>(Array<string>)(source Object<T>) -> picked Object<T>
+ * ```
  *
  * @description
  * Create a new object by including specific keys.
@@ -4064,7 +4269,9 @@ const pick = keys => function picking(source) {
  * @name omit
  *
  * @synopsis
- * omit(Array<string>)(source Object) -> omitted Object
+ * ```coffeescript [specscript]
+ * omit<T>(Array<string>)(source Object<T>) -> omitted Object<T>
+ * ```
  *
  * @description
  * Create a new object by excluding specific keys.
@@ -4093,7 +4300,9 @@ const omit = keys => function omitting(source) {
  * @name promiseInFlight
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * promiseInFlight(basePromise<T>) -> Promise<[T, basePromise<T>]>
+ * ```
  */
 const promiseInFlight = function (basePromise) {
   const promise = basePromise.then(res => [res, promise])
@@ -4104,12 +4313,14 @@ const promiseInFlight = function (basePromise) {
  * @name asyncArrayAny
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * asyncArrayAny(
  *   array Array,
  *   predicate any=>Promise|boolean,
  *   index number,
  *   promisesInFlight Set<Promise>,
  * ) -> boolean
+ * ```
  */
 const asyncArrayAny = async function (
   array, predicate, index, promisesInFlight,
@@ -4138,10 +4349,12 @@ const asyncArrayAny = async function (
  * @name arrayAny
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * arrayAny(
  *   array Array,
  *   predicate any=>Promise|boolean,
  * ) -> boolean
+ * ```
  */
 const arrayAny = function (array, predicate) {
   const length = array.length
@@ -4163,6 +4376,7 @@ const arrayAny = function (array, predicate) {
  * @name asyncIteratorAny
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * asyncIteratorAny(
  *   iterator Iterator|AsyncIterator,
  *   predicate any=>Promise|boolean,
@@ -4170,6 +4384,7 @@ const arrayAny = function (array, predicate) {
  *   promisesInFlight Set<Promise>,
  *   maxConcurrency number=20,
  * ) -> boolean
+ * ```
  */
 const asyncIteratorAny = async function (
   iterator, predicate, promisesInFlight, maxConcurrency = 20,
@@ -4212,10 +4427,12 @@ const asyncIteratorAny = async function (
  * @name iteratorAny
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * iteratorAny(
  *   iterator Iterator,
  *   predicate any=>Promise|boolean,
  * ) -> boolean
+ * ```
  */
 const iteratorAny = function (iterator, predicate) {
   for (const item of iterator) {
@@ -4235,7 +4452,9 @@ const iteratorAny = function (iterator, predicate) {
  * @name objectValuesGenerator
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * objectValuesGenerator(object Object<T>) -> Generator<T>
+ * ```
  */
 const objectValuesGenerator = function* (object) {
   for (const key in object) {
@@ -4248,7 +4467,9 @@ const objectValuesGenerator = function* (object) {
  * @name _foldableAnyReducer
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * _foldableAnyReducer(predicate any=> boolean, result boolean, item any) -> boolean
+ * ```
  */
 const _foldableAnyReducer = (predicate, result, item) => result ? true : predicate(item)
 
@@ -4256,9 +4477,11 @@ const _foldableAnyReducer = (predicate, result, item) => result ? true : predica
  * @name foldableAnyReducer
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * foldableAnyReducer(
  *   predicate any=>boolean,
  * ) -> reducer(result boolean, item any)=>boolean
+ * ```
  *
  * @related foldableAllReducer
  */
@@ -4273,15 +4496,14 @@ const foldableAnyReducer = predicate => function anyReducer(result, item) {
  * @name any
  *
  * @synopsis
- * any(
- *   predicate any=>Promise|boolean,
- * )(value any) -> anyTruthy Promise|boolean
+ * ```coffeescript [specscript]
+ * Foldable<T> = Iterable<T>|AsyncIterable<T>
+ *   |{ reduce: (any, T)=>any }|Object<T>
  *
- * Foldable = Iterable|AsyncIterable|{ reduce: function }
- *
- * any(
- *   predicate any=>Promise|boolean
- * )(value Foldable) -> Promise|boolean
+ * any<T>(
+ *   predicate T=>Promise|boolean
+ * )(value Foldable<T>) -> anyTruthyByPredicate Promise|boolean
+ * ```
  *
  * @description
  * Test a predicate concurrently across all items of a collection, returning true if any predication is truthy.
@@ -4349,7 +4571,9 @@ const any = predicate => function anyTruthy(value) {
  * @name arrayAll
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * arrayAll(array Array, predicate ...any=>boolean) -> boolean
+ * ```
  */
 const arrayAll = function (array, predicate) {
   const arrayLength = array.length,
@@ -4372,7 +4596,9 @@ const arrayAll = function (array, predicate) {
  * @name iteratorAll
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * iteratorAll(iterator Iterator, predicate ...any=>boolean) -> boolean
+ * ```
  */
 const iteratorAll = function (iterator, predicate) {
   const promises = []
@@ -4393,7 +4619,9 @@ const iteratorAll = function (iterator, predicate) {
  * @name asyncIteratorAll
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * asyncIteratorAll(asyncIterator AsyncIterator, predicate ...any=>boolean) -> boolean
+ * ```
  *
  * @related asyncIteratorAny
  */
@@ -4438,7 +4666,9 @@ const asyncIteratorAll = async function (
  * @name _foldableAllReducer
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * _foldableAllReducer(predicate any=> boolean, result boolean, item any) -> boolean
+ * ```
  */
 const _foldableAllReducer = (predicate, result, item) => result ? predicate(item) : false
 
@@ -4446,9 +4676,11 @@ const _foldableAllReducer = (predicate, result, item) => result ? predicate(item
  * @name foldableAllReducer
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * foldableAllReducer(
  *   predicate any=>boolean,
  * ) -> reducer(result boolean, item any)=>boolean
+ * ```
  *
  * @related foldableAnyReducer
  */
@@ -4463,15 +4695,14 @@ const foldableAllReducer = predicate => function allReducer(result, item) {
  * @name all
  *
  * @synopsis
- * all(
- *   predicate any=>Promise|boolean,
- * )(value any) -> allTruthy Promise|boolean
+ * ```coffeescript [specscript]
+ * Foldable<T> = Iterable<T>|AsyncIterable<T>
+ *   |{ reduce: (any, T)=>any }|Object<T>
  *
- * Foldable = Iterable|AsyncIterable|{ reduce: function }
- *
- * all(
+ * all<T>(
  *   predicate T=>Promise|boolean,
- * )(value Foldable<T>) -> Promise|boolean
+ * )(value Foldable<T>) -> allTruthyByPredicate Promise|boolean
+ * ```
  *
  * @description
  * Test a predicate concurrently across all items of a collection, returning true if all predications are truthy.
@@ -4532,14 +4763,18 @@ const _not = value => !value
  * @name not
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * not(
  *   predicate ...any=>Promise|boolean,
  * ) -> invertedPredicate ...any=>Promise|boolean
+ * ```
  *
  * @description
  * Logically invert a predicate (`!`) by always logically inverting its return value. Predicate may be asynchronous.
  *
  * ```javascript [playground]
+ * const isOdd = number => number % 2 == 1
+ *
  * console.log(
  *   not(isOdd)(3),
  * ) // false
@@ -4554,7 +4789,9 @@ const not = func => function logicalInverter(...args) {
  * @name notSync
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * notSync(func ...any=>boolean) -> logicallyInverted ...any=>boolean
+ * ```
  */
 const notSync = func => function notSync(...args) {
   return !func(...args)
@@ -4564,7 +4801,9 @@ const notSync = func => function notSync(...args) {
  * @name not.sync
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * not.sync(func ...any=>boolean) -> logicallyInverted ...any=>boolean
+ * ```
  *
  * @description
  * Logically invert a function without promise handling.
@@ -4581,10 +4820,12 @@ not.sync = notSync
  * @name asyncAnd
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * asyncAnd(
  *   predicates Array<value=>Promise|boolean>
  *   value any,
  * ) -> allTruthy boolean
+ * ```
  */
 const asyncAnd = async function (predicates, value) {
   const length = predicates.length
@@ -4610,9 +4851,11 @@ const _asyncAndInterlude = (
  * @name and
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * and(
  *   predicates Array<value=>Promise|boolean>
  * )(value any) -> allTruthy Promise|boolean
+ * ```
  *
  * @description
  * Test an array of predicates concurrently against a single input, returning true if all are truthy. Predicates may be asynchronous.
@@ -4654,10 +4897,12 @@ const and = predicates => function allPredicates(value) {
  * @name asyncOr
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * asyncOr(
  *   predicates Array<value=>Promise|boolean>
  *   value any,
  * ) -> allTruthy boolean
+ * ```
  */
 const asyncOr = async function (predicates, value) {
   const length = predicates.length
@@ -4683,9 +4928,11 @@ const _asyncOrInterlude = (
  * @name or
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * or(
  *   predicates Array<value=>Promise|boolean>
  * )(value any) -> anyTruthy Promise|boolean
+ * ```
  *
  * @description
  * Test an array of predicates concurrently against a single input, returning true if any of them test truthy. Predicates may be asynchronous.
@@ -4724,9 +4971,11 @@ const or = predicates => function anyPredicates(value) {
  * @name spread2
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * spread2(func function) -> spreading2 (
  *   arg0 any, arg1 any,
  * )=>func(arg0, arg1)
+ * ```
  */
 const spread2 = func => function spreading2([arg0, arg1]) {
   return func(arg0, arg1)
@@ -4736,7 +4985,9 @@ const spread2 = func => function spreading2([arg0, arg1]) {
  * @name strictEqual
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * strictEqual(a any, b any) -> boolean
+ * ```
  */
 const strictEqual = (a, b) => a === b
 
@@ -4744,10 +4995,12 @@ const strictEqual = (a, b) => a === b
  * @name eq
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * eq(
  *   left (any=>Promise|boolean)|any,
  *   right (any=>Promise|boolean)|any,
  * ) -> strictEqualBy (value any)=>Promise|boolean
+ * ```
  *
  * @description
  * Test for strict equality (`===`) between two values. Either parameter may be an asynchronous resolver.
@@ -4806,7 +5059,9 @@ const eq = function (left, right) {
  * @name greaterThan
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * greaterThan(left any, right any) -> boolean
+ * ```
  */
 const greaterThan = (left, right) => left > right
 
@@ -4814,10 +5069,12 @@ const greaterThan = (left, right) => left > right
  * @name gt
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * gt(
  *   left (any=>Promise|boolean)|any,
  *   right (any=>Promise|boolean)|any,
  * )(value any) -> greaterThanBy(value any)=>Promise|boolean
+ * ```
  *
  * @description
  * Test for left value greater than (`>`) right value. Either parameter may be an asynchronous resolver.
@@ -4874,7 +5131,9 @@ const gt = function (left, right) {
  * @name lessThan
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * lessThan(left any, right any) -> boolean
+ * ```
  */
 const lessThan = (left, right) => left < right
 
@@ -4882,10 +5141,12 @@ const lessThan = (left, right) => left < right
  * @name lt
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * lt(
  *   left (any=>Promise|boolean)|any,
  *   right (any=>Promise|boolean)|any,
  * )(value any) -> lessThanBy(value any)=>Promise|boolean
+ * ```
  *
  * @description
  * Test for left value less than (`<`) right value. Either parameter may be an asynchronous resolver.
@@ -4944,7 +5205,9 @@ const lt = function (left, right) {
  * @name greaterThanOrEqualTo
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * greaterThanOrEqualTo(left any, right any) -> boolean
+ * ```
  */
 const greaterThanOrEqualTo = (left, right) => left >= right
 
@@ -4952,10 +5215,12 @@ const greaterThanOrEqualTo = (left, right) => left >= right
  * @name gte
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * gte(
  *   left (any=>Promise|boolean)|any,
  *   right (any=>Promise|boolean)|any,
  * )(value any) -> greaterThanOrEqualToBy(value any)=>Promise|boolean
+ * ```
  *
  * @description
  * Test for left value greater than or equal to (`>=`) right value. Either parameter may be an asynchronous resolver.
@@ -5014,7 +5279,9 @@ const gte = function (left, right) {
  * @name lessThanOrEqualTo
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * lessThanOrEqualTo(left any, right any) -> boolean
+ * ```
  */
 const lessThanOrEqualTo = (left, right) => left <= right
 
@@ -5022,10 +5289,12 @@ const lessThanOrEqualTo = (left, right) => left <= right
  * @name lte
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * lte(
  *   left (any=>Promise|boolean)|any,
  *   right (any=>Promise|boolean)|any,
  * )(value any) -> lessThanBy(value any)=>Promise|boolean
+ * ```
  *
  * @description
  * Test for left value less than or equal to (`<=`) right value. Either parameter may be an asynchronous resolver.
