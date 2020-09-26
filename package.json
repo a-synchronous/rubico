@@ -1,7 +1,7 @@
 {
   "name": "rubico",
   "version": "1.5.19",
-  "description": "🏞 [a]synchronous functional programming",
+  "description": "[a]synchronous functional programming",
   "author": "Richard Tong",
   "license": "MIT",
   "main": "index.js",
