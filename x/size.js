@@ -1,11 +1,13 @@
 'use strict'
 
-const Instance = require('../monad/Instance')
-const Struct = require('../monad/Struct')
-
-const { isString } = Instance
-
-const structSize = Struct.size
+// object => numKeys number
+const objectKeysCount = object => {
+  let numKeys = 0
+  for (const _ in object) {
+    numKeys += 1
+  }
+  return numKeys
+}
 
 /**
  * @name size
@@ -24,6 +26,11 @@ const structSize = Struct.size
  *   size([1, 2, 3]),
  * ) // 3
  */
-const size = x => isString(x) ? x.length : structSize(x)
+const size = value => typeof value == 'string' ? value.length
+  : typeof value == null ? 0
+  : 'length' in value ? value.length
+  : 'size' in value ? value.size
+  : value.constructor == Object ? objectKeysCount(value)
+  : 1
 
 module.exports = size
