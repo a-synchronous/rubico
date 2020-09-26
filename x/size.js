@@ -13,18 +13,18 @@ const objectKeysCount = object => {
  * @name size
  *
  * @synopsis
- * size(value String|Array|Object|Set|Map) -> number
- *
- * @catchphrase
- * Get the size of a collection
+ * ```coffeescript [specscript]
+ * size(value any) -> number
+ * ```
  *
  * @description
- * `size` accepts a String, Array, Object, Set, or Map and returns its current size in items as a number.
+ * Get the count of items in a value.
  *
- * @example
+ * ```javascript [playground]
  * console.log(
  *   size([1, 2, 3]),
  * ) // 3
+ * ```
  */
 const size = value => typeof value == 'string' ? value.length
   : typeof value == null ? 0

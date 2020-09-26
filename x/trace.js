@@ -28,16 +28,16 @@ const funcConcat = (funcA, funcB) => function pipedFunction(...args) {
  * @name trace
  *
  * @synopsis
- * any -> T
+ * ```coffeescript [specscript]
+ * trace(value any) -> value
  *
- * trace(
- *   reducer (any, ...any)=>Promise|any
- * ) -> tracingReducer (any, ...any)=>Promise|any,
- *
- * trace(point !function, ...restArgs) -> point
+ * trace<args ...any>(
+ *   resolver ...args=>Promise|any
+ * ) -> lazyTracer ...args=>Promise|args[0],
+ * ```
  *
  * @description
- * Log a value out to the console, returning the value. If the value is a function, treat is as a resolver and log lazily.
+ * Log a value out to the console, returning the value. If the value is a function, treat it as a resolver.
  *
  * ```javascript [playground]
  * pipe([
