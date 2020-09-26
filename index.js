@@ -635,7 +635,7 @@ const pipeSync = funcs => funcs.reduce(funcConcatSync)
  *
  * ```javascript [playground]
  * pipe.sync([
- *   Promise.resolve,
+ *   value => Promise.resolve(value),
  *   promise => promise.then(console.log)
  * ])('hey') // hey
  * ```
@@ -842,7 +842,9 @@ const assign = function (funcs) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * tap(tapper value=>Promise|any)(value any) -> value
+ * tap(
+ *   tapper value=>Promise|any,
+ * )(value any) -> value
  * ```
  *
  * @description
@@ -1590,9 +1592,12 @@ const arrayMapSeries = function (array, mapper) {
 /**
  * @name map.series
  *
- * map.series(
- *   mapper any=>Promise|any,
- * )(value Array) -> Promise|Array
+ * @synopsis
+ * ```coffeescript [specscript]
+ * map.series<T>(
+ *   mapper T=>Promise|any,
+ * )(value Array<T>) -> Promise|Array
+ * ```
  *
  * @description
  * `map` with serial execution.
