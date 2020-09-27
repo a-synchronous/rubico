@@ -1,5 +1,6 @@
 const objectToString = require('./objectToString')
-const asyncGeneratorFunctionTag = require('./asyncGeneratorFunctionTag')
+
+const asyncGeneratorFunctionTag = '[object AsyncGeneratorFunction]'
 
 /**
  * @name isAsyncGeneratorFunction

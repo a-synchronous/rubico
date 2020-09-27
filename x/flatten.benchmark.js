@@ -21,4 +21,4 @@ const nested = [[1], 2, [[3]]]
 
 // timeInLoop('R.unnest', 1e5, () => { R.unnest(nested) })
 
-//timeInLoop('_.flatten', 1e5, () => { _.flatten(nested) })
+// timeInLoop('_.flatten', 1e5, () => { _.flatten(nested) })

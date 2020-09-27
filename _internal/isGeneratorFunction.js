@@ -1,5 +1,6 @@
 const objectToString = require('./objectToString')
-const generatorFunctionTag = require('./generatorFunctionTag')
+
+const generatorFunctionTag = '[object GeneratorFunction]'
 
 /**
  * @name isGeneratorFunction

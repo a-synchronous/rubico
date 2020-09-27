@@ -1,29 +1,15 @@
+const isArray = require('./isArray')
+const objectValues = require('./objectValues')
 const isGeneratorFunction = require('./isGeneratorFunction')
 const isAsyncGeneratorFunction = require('./isAsyncGeneratorFunction')
 const iteratorReduce = require('./iteratorReduce')
-
-const symbolIterator = Symbol.iterator
-
-const symbolAsyncIterator = Symbol.asyncIterator
-
-const isArray = Array.isArray
-
-/**
- * @name tacitGenericReduce
- *
- * @synopsis
- * ```coffeescript [specscript]
- * tacitGenericReduce(
- *   reducer (any, T)=>any,
- *   result any,
- * ) -> reducing ...any=>result
- * ```
- */
-const tacitGenericReduce = (
-  reducer, result,
-) => function reducing(...args) {
-  return genericReduce(args, reducer, result)
-}
+const symbolIterator = require('./symbolIterator')
+const symbolAsyncIterator = require('./symbolAsyncIterator')
+const __ = require('./placeholder')
+const curryArgs3 = require('./curryArgs3')
+const arrayReduce = require('./arrayReduce')
+const generatorFunctionReduce = require('./generatorFunctionReduce')
+const reducerConcat = require('./reducerConcat')
 
 /**
  * @name genericReduce
@@ -55,15 +41,20 @@ var genericReduce = function (args, reducer, result) {
     return arrayReduce(collection, reducer, result)
   }
   if (typeof collection == 'function') {
-    if (isGeneratorFunction(collection)) {
+    if (
+      isGeneratorFunction(collection) || isAsyncGeneratorFunction(collection)
+    ) {
       return generatorFunctionReduce(collection, reducer, result)
     }
-    if (isAsyncGeneratorFunction(collection)) {
-      return asyncGeneratorFunctionReduce(collection, reducer, result)
-    }
+    const combinedReducer = args.length == 0
+      ? reducer
+      : args.reduce(reducerConcat, reducer)
+    return curryArgs3(genericReduce, __, combinedReducer, result)
+    /*
     return tacitGenericReduce(
       args.length == 0 ? reducer : args.reduce(reducerConcat, reducer),
       result)
+      */
   }
   if (collection == null) {
     return result === undefined
@@ -72,16 +63,19 @@ var genericReduce = function (args, reducer, result) {
   }
 
   if (typeof collection.next == 'function') {
+    return iteratorReduce(collection, reducer, result)
+    /*
     return symbolIterator in collection
       ? iteratorReduce(collection, reducer, result)
       : asyncIteratorReduce(collection, reducer, result)
+      */
   }
   if (typeof collection[symbolIterator] == 'function') {
     return iteratorReduce(
       collection[symbolIterator](), reducer, result)
   }
   if (typeof collection[symbolAsyncIterator] == 'function') {
-    return asyncIteratorReduce(
+    return iteratorReduce(
       collection[symbolAsyncIterator](), reducer, result)
   }
   if (typeof collection.reduce == 'function') {
@@ -100,18 +94,5 @@ var genericReduce = function (args, reducer, result) {
     ? reducer(collection)
     : reducer(result, collection)
 }
-
-/**
- * @name genericReduce.tacit
- *
- * @synopsis
- * ```coffeescript [specscript]
- * genericReduce.tacit(
- *   reducer (any, T)=>any,
- *   result any,
- * ) -> reducing ...any=>result
- * ```
- */
-genericReduce.tacit = tacitGenericReduce
 
 module.exports = genericReduce
