@@ -9,26 +9,23 @@ const genericReduce = require('./_internal/genericReduce')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * Foldable<T> = Iterable<T>|AsyncIterable<T>
- *   |{ reduce: (any, T)=>any }|Object<T>
  * Reducer<T> = (any, T)=>Promise|any
- * Transducer = Reducer=>Reducer
+ * Foldable<T> = Iterable<T>|AsyncIterable<T>|{ reduce: Reducer<T> }|Object<T>
  *
- * reduce<T>(
+ * reduce<
+ *   T any,
+ *   args ...any,
  *   reducer Reducer<T>,
- *   init (collection=>Promise|any)|any?,
- * )(collection Foldable<T>) -> Promise|any
+ *   init (...args=>Promise|any)|any,
+ *   value Foldable<T>
+ *   generatorFunction ...args=>Generator<Promise|T>,
+ *   moreReducers ...Reducer<T>
+ * >(reducer, init?)(value) -> reduced Promise|any
  *
- * reduce<args ...any>(
- *   reducer Reducer,
- *   init (...args=>Promise|any)|any?,
- * )(value GeneratorFunction|AsyncGeneratorFunction)
- *   -> reducingFunction ...args=>Promise|Semigroup|any
+ * reduce(reducer, init?)(generatorFunction)
+ *   -> reducingFunction ...args=>Promise|any
  *
- * reduce<args ...any>(
- *   reducer Reducer,
- *   init (...args=>Promise|any)|any?,
- * )(anotherReducer Reducer, moreReducers ...Reducer)
+ * reduce(reducer, init?)(...moreReducers)
  *   -> chainedReducingFunction ...args=>Promise|any
  * ```
  *
@@ -158,6 +155,7 @@ const genericReduce = require('./_internal/genericReduce')
  *
  * @TODO reduce.concurrent
  */
+
 const reduce = function (reducer, init) {
   if (typeof init == 'function') {
     return function reducing(...args) {

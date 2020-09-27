@@ -4,7 +4,34 @@ const curry3 = require('./curry3')
 const curry4 = require('./curry4')
 const isPromise = require('./isPromise')
 const objectSet = require('./objectSet')
-const arrayMapSeriesAsync = require('./arrayMapSeriesAsync')
+
+/**
+ * @name arrayMapSeriesAsync
+ *
+ * @synopsis
+ * ```coffeescript [specscript]
+ * arrayMapSeriesAsync<
+ *   T any,
+ *   array Array<T>,
+ *   mapper T=>Promise|any,
+ *   result Array,
+ *   index number,
+ * >(array, mapper, result Array, index) -> Promise|result
+ * ```
+ *
+ * @description
+ * Apply a mapper in series to each item of an array, returning a Promise of an array of results. `mapper` can be asynchronous.
+ */
+const arrayMapSeriesAsync = async function (
+  array, mapper, result, index,
+) {
+  const arrayLength = array.length
+  while (++index < arrayLength) {
+    const resultItem = mapper(array[index])
+    result[index] = isPromise(resultItem) ? await resultItem : resultItem
+  }
+  return result
+}
 
 /**
  * @name arrayMapSeries

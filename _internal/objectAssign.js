@@ -4,12 +4,12 @@
  * @synopsis
  * ```coffeescript [specscript]
  * objectAssign<
- *   target object, sourceObjects ...object,
- * >(target, ...sourceObjects) -> target
+ *   targetObject Object, sourceObjects ...Object,
+ * >(targetObject, ...sourceObjects) -> merged Object
  * ```
  *
  * @description
- * `Object.assign` without the `.`
+ * Dereferenced `Object.assign`
  */
 const objectAssign = Object.assign
 
