@@ -5,18 +5,17 @@ const { isArray, isString } = Instance
 
 const possiblePromiseArgs = PossiblePromise.args
 
-/*
- * @name
- * first
+/**
+ * @name first
  *
  * @synopsis
- * first(x Promise<string>|string) -> firstChar string
+ * ```coffeescript [specscript]
+ * first(value any) -> value[0]
+ * ```
  *
- * first(x Promise<Array>|Array) -> firstItem any
- *
- * @catchphrase
- * Get the first item from an orderable collection
+ * @description
+ * Get the first item of a value
  */
-const first = x => x == null ? undefined : x[0]
+const first = value => value == null ? undefined : value[0]
 
 module.exports = first
