@@ -713,7 +713,7 @@ describe('rubico', () => {
     it('throws a TypeError if passed a non array', async () => {
       assert.throws(
         () => switchCase('hey')(),
-        new TypeError('funcs[funcsIndex] is not a function'),
+        new TypeError('predicate is not a function'),
       )
     })
     it('does not throw if passed an even number of functions', async () => {
@@ -731,7 +731,7 @@ describe('rubico', () => {
     it('throws a TypeError if any item of the funcs array is not a function', async () => {
       assert.throws(
         () => switchCase([() => true, 'hey', () => true, () => 'ho', () => 'hi'])(),
-        new TypeError('funcs[(funcsIndex + 1)] is not a function'),
+        new TypeError('resolver is not a function'),
       )
     })
   })
@@ -1162,6 +1162,85 @@ describe('rubico', () => {
         assert.equal(total, 6)
       })
     })
+
+    describe('filter(predicate T=>Promise|boolean)(Set<T>) -> Promise|Set<T>', () => {
+      it('predicate T=>Promise|boolean', async () => {
+        const isOdd = number => number % 2 == 1
+        const variadicAsyncIsOdd = number => number % 2 == 1 ? Promise.resolve(true) : false
+        assert.deepEqual(
+          filter(isOdd)(new Set([1, 2, 3, 4, 5])),
+          new Set([1, 3, 5]),
+        )
+        assert.deepEqual(
+          await filter(async(isOdd))(new Set([1, 2, 3, 4, 5])),
+          new Set([1, 3, 5]),
+        )
+        assert.deepEqual(
+          await filter(variadicAsyncIsOdd)(new Set([1, 2, 3, 4, 5])),
+          new Set([1, 3, 5]),
+        )
+      })
+    })
+
+    describe('filter(predicate T=>Promise|boolean)(Map<any=>T>) -> Promise|Map<any=>T>', () => {
+      it('predicate T=>Promise|boolean', async () => {
+        const isOdd = number => number % 2 == 1
+        const variadicAsyncIsOdd = number => number % 2 == 1 ? Promise.resolve(true) : false
+        const numbersMap = new Map([['a', 1], ['b', 2], ['c', 3], ['d', 4], ['e', 5]])
+        const oddNumbersMap = new Map([['a', 1], ['c', 3], ['e', 5]])
+        assert.deepEqual(
+          filter(isOdd)(numbersMap),
+          oddNumbersMap,
+        )
+        assert.deepEqual(
+          await filter(async(isOdd))(numbersMap),
+          oddNumbersMap,
+        )
+        assert.deepEqual(
+          await filter(variadicAsyncIsOdd)(numbersMap),
+          oddNumbersMap,
+        )
+      })
+    })
+
+    describe('filter(predicate T=>Promise|boolean)(String<T>) -> Promise|String<T>', () => {
+      it('predicate T=>Promise|boolean', async () => {
+        const isOdd = number => Number(number) % 2 == 1
+        const variadicAsyncIsOdd = number => Number(number) % 2 == 1 ? Promise.resolve(true) : false
+        assert.deepEqual(
+          filter(isOdd)('12345'),
+          '135',
+        )
+        assert.deepEqual(
+          await filter(async(isOdd))('12345'),
+          '135',
+        )
+        assert.deepEqual(
+          await filter(variadicAsyncIsOdd)('12345'),
+          '135',
+        )
+      })
+
+      it('predicate T=>Promise|boolean', async () => {
+        const isOdd = number => number % 2 == 1
+        const variadicAsyncIsOdd = number => number % 2 == 1 ? Promise.resolve(true) : false
+        const numbersMap = new Map([['a', 1], ['b', 2], ['c', 3], ['d', 4], ['e', 5]])
+        const oddNumbersMap = new Map([['a', 1], ['c', 3], ['e', 5]])
+        assert.deepEqual(
+          filter(isOdd)(numbersMap),
+          oddNumbersMap,
+        )
+        assert.deepEqual(
+          await filter(async(isOdd))(numbersMap),
+          oddNumbersMap,
+        )
+        assert.deepEqual(
+          await filter(variadicAsyncIsOdd)(numbersMap),
+          oddNumbersMap,
+        )
+      })
+    })
+
     describe('filter(predicate T=>Promise|boolean)(Object<T>) -> Promise|Object<T>', () => {
       it('predicate T=>boolean', async () => {
         const isOdd = number => number % 2 == 1
@@ -1578,7 +1657,6 @@ reduce(
         (reducingFunc, reducer) => reducingFunc(reducer),
         () => reduce(result => result, 0),
       )(reducers)
-      assert.strictEqual(combinedReducingFunction.name, 'reducing')
       assert.strictEqual(combinedReducingFunction([1, 2, 3, 4, 5]), 15)
     })
     it('reduce meta concatenation', async () => {
@@ -2959,11 +3037,11 @@ flatMap(
       })
 
       it('value undefined', async () => {
-        assert.strictEqual(flatMap(() => 'hey')(undefined), undefined)
-        assert.strictEqual(flatMap(() => 'hey')(), undefined)
+        assert.strictEqual(flatMap(() => 'hey')(undefined), 'hey')
+        assert.strictEqual(flatMap(() => 'hey')(), 'hey')
       })
       it('value null', async () => {
-        assert.strictEqual(flatMap(() => 'hey')(null), null)
+        assert.strictEqual(flatMap(() => 'hey')(null), 'hey')
       })
 
       it('value GeneratorFunction', async () => {

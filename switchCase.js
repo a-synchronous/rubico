@@ -1,44 +1,16 @@
-const isPromise = require('./_internal/isPromise')
-const funcApply = require('./_internal/funcApply')
-const curry2 = require('./_internal/curry2')
-const curry3 = require('./_internal/curry3')
-const thunkify1 = require('./_internal/thunkify1')
-const thunkify3 = require('./_internal/thunkify3')
-const thunkConditional = require('./_internal/thunkConditional')
-
-/**
- * @name asyncFuncSwitch
- *
- * @synopsis
- * ```coffeescript [specscript]
- * asyncFuncSwitch(
- *   funcs Array<args=>Promise|any>,
- *   args Array,
- *   funcsIndex number,
- * ) -> Promise|any
- * ```
- *
- * @TODO isPromise conditional await
- * @TODO benchmark vs regular promise handling
- */
-const asyncFuncSwitch = async function (funcs, args, funcsIndex) {
-  const lastIndex = funcs.length - 1
-  while ((funcsIndex += 2) < lastIndex) {
-    if (await funcs[funcsIndex](...args)) {
-      return funcs[funcsIndex + 1](...args)
-    }
-  }
-  return funcs[funcsIndex](...args)
-}
+const funcConditional = require('./_internal/funcConditional')
 
 /**
  * @name switchCase
  *
  * @synopsis
  * ```coffeescript [specscript]
- * switchCase<args ...any>(
- *   conditionalFunctions Array<...args=>Promise|boolean|any>
- * )(...args) -> result Promise|any
+ * switchCase<
+ *   args ...any,
+ *   predicate ...args=>Promise|boolean,
+ *   resolver ...args=>Promise|any,
+ *   conditionalFunctions Array<predicate|resolver>,
+ * >(conditionalFunctions)(...args) -> resolved Promise|any
  * ```
  *
  * @description
@@ -74,23 +46,7 @@ const asyncFuncSwitch = async function (funcs, args, funcsIndex) {
  * ```
  */
 const switchCase = funcs => function switchingCases(...args) {
-  const lastIndex = funcs.length - 1
-  let funcsIndex = -2
-
-  while ((funcsIndex += 2) < lastIndex) {
-    const shouldReturnNext = funcs[funcsIndex](...args)
-    if (isPromise(shouldReturnNext)) {
-      return shouldReturnNext.then(curry3(
-        thunkConditional,
-        __,
-        thunkify1(curry2(funcApply, funcs[funcsIndex + 1], __), args),
-        thunkify3(asyncFuncSwitch, funcs, args, funcsIndex)))
-    }
-    if (shouldReturnNext) {
-      return funcs[funcsIndex + 1](...args)
-    }
-  }
-  return funcs[funcsIndex](...args)
+  return funcConditional(funcs, args, -2)
 }
 
 module.exports = switchCase

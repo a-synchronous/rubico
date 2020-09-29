@@ -1,9 +1,4 @@
 const symbolIterator = require('./symbolIterator')
-const symbolAsyncIterator = require('./symbolAsyncIterator')
-const iterationMap = require('./iterationMap')
-const isPromise = require('./isPromise')
-const __ = require('./placeholder')
-const curry2 = require('./curry2')
 
 /**
  * @name MappingIterator
@@ -24,27 +19,18 @@ const curry2 = require('./curry2')
  *
  * Note: consuming the mapping iterator also consumes the source iterator.
  */
-const MappingIterator = function (iterator, mapper) {
-  const __iterationMap = curry2(iterationMap, __, mapper)
-  return {
-    toString() {
-      return '[object MappingIterator]'
-    },
-    [symbolAsyncIterator]() {
-      return this
-    },
-    [symbolIterator]() {
-      return this
-    },
-    next() {
-      const iteration = iterator.next()
-      return isPromise(iteration) ? iteration.then(__iterationMap)
-        : iteration.done ? iteration
-        : { value: mapper(iteration.value), done: false }
-    },
-  }
-}
-
-console.log(MappingIterator().toString())
+const MappingIterator = (iterator, mapper) => ({
+  toString() {
+    return '[object MappingIterator]'
+  },
+  [symbolIterator]() {
+    return this
+  },
+  next() {
+    const iteration = iterator.next()
+    return iteration.done ? iteration
+      : { value: mapper(iteration.value), done: false }
+  },
+})
 
 module.exports = MappingIterator

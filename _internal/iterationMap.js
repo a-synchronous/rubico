@@ -1,3 +1,6 @@
+const NextIteration = require('./NextIteration')
+const isPromise = require('./isPromise')
+
 /**
  * @name iterationMap
  *
@@ -11,7 +14,14 @@
  * @description
  * Apply a mapper to an iteration. Noop if iteration is done.
  */
-const iterationMap = (iteration, mapper) =>
-  iteration.done ? iteration : { value: mapper(iteration.value), done: false }
+const iterationMap = function (iteration, mapper) {
+  if (iteration.done) {
+    return iteration
+  }
+  const mappedValue = mapper(iteration.value)
+  return isPromise(mappedValue)
+    ? mappedValue.then(NextIteration)
+    : { value: mappedValue, done: false }
+}
 
 module.exports = iterationMap

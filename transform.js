@@ -8,26 +8,27 @@ const genericTransform = require('./_internal/genericTransform')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * Reducer = (any, any)=>Promise|any
- * Semigroup = Array|string|Set|TypedArray
- *   |{ concat: function }|{ write: function }|Object
- * Foldable = Iterable|AsyncIterable|{ reduce: function }|Object|any
+ * Reducer<T> = (any, T)=>Promise|any
+ * Semigroup<T> = Array<T>|String<T>|Set<T>|TypedArray<T>
+ *   |{ concat: Reducer<T> }|{ write: Reducer<T> }|Object<T>
+ * Foldable<T> = Iterable<T>|AsyncIterable<T>
+ *   |{ reduce: Reducer<T>=>any }|Object<T>
  *
  * transform<
  *   T any,
  *   args ...any,
  *   transducer Reducer=>Reducer,
- *   init (...args=>Promise|Semigroup)|Semigroup,
- *   value Foldable<T>
+ *   init (...args=>Promise|Semigroup<T>)|Semigroup<T>,
+ *   foldable Foldable<T>,
  *   generatorFunction ...args=>Generator<Promise|T>,
  *   reducers ...Reducer<T>,
- * >(transducer, init?)(value) -> result Promise|Semigroup
+ * >(transducer, init?)(foldable) -> transformed Promise|Semigroup
  *
  * transform(transducer, init?)(generatorFunction)
- *   -> transformingFunction ...args=>Promise|Semigroup
+ *   -> transformingFunction ...args=>Promise|Semigroup<T>
  *
  * transform(transducer, init?)(...reducers)
- *   -> chainedTransformingFunction ...args=>Promise|Semigroup
+ *   -> chainedTransformingFunction ...args=>Promise|Semigroup<T>
  * ```
  *
  * @description

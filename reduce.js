@@ -10,17 +10,18 @@ const genericReduce = require('./_internal/genericReduce')
  * @synopsis
  * ```coffeescript [specscript]
  * Reducer<T> = (any, T)=>Promise|any
- * Foldable<T> = Iterable<T>|AsyncIterable<T>|{ reduce: Reducer<T> }|Object<T>
+ * Foldable<T> = Iterable<T>|AsyncIterable<T>
+ *   |{ reduce: Reducer<T>=>any }|Object<T>
  *
  * reduce<
  *   T any,
  *   args ...any,
  *   reducer Reducer<T>,
  *   init (...args=>Promise|any)|any,
- *   value Foldable<T>
+ *   foldable Foldable<T>
  *   generatorFunction ...args=>Generator<Promise|T>,
  *   moreReducers ...Reducer<T>
- * >(reducer, init?)(value) -> reduced Promise|any
+ * >(reducer, init?)(foldable) -> reduced Promise|any
  *
  * reduce(reducer, init?)(generatorFunction)
  *   -> reducingFunction ...args=>Promise|any

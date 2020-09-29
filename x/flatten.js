@@ -1,11 +1,9 @@
-const flatMap = require('../flatMap')
+const isArray = require('../_internal/isArray')
 const arrayFlatten = require('../_internal/arrayFlatten')
 const setFlatten = require('../_internal/setFlatten')
-
-const isArray = Array.isArray
-const identity = value => value
-
-const flatMapIdentity = flatMap(identity)
+const objectFlatten = require('../_internal/objectFlatten')
+const identity = require('../_internal/identity')
+const flatMap = require('../flatMap')
 
 /**
  * @name flatten
@@ -43,8 +41,23 @@ const flatMapIdentity = flatMap(identity)
  * ]).then(console.log)
  * // [1, 1, 2, 3, 3, 5, 5, 6, 7, 8, 4, 4]
  * ```
+ *
+ * TODO flatten for each type
  */
-const flatten = value => isArray(value) ? arrayFlatten(value)
-  : value == null ? value
-  : value.constructor == Set ? setFlatten(value)
-  : flatMapIdentity(value)
+const flatten = function (value) {
+  if (isArray(value)) {
+    return arrayFlatten(value)
+  }
+  if (value == null) {
+    return value
+  }
+  if (value.constructor == Set) {
+    return setFlatten(value)
+  }
+  if (value.constructor == Object) {
+    return objectFlatten(value)
+  }
+  return flatMap(identity)(value)
+}
+
+module.exports = flatten

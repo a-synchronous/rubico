@@ -1,24 +1,25 @@
-const isGeneratorFunction = require('./isGeneratorFunction')
-const isAsyncGeneratorFunction = require('./isAsyncGeneratorFunction')
+const funcConcat = require('./_internal/funcConcat')
+const funcConcatSync = require('./_internal/funcConcatSync')
+const isGeneratorFunction = require('./_internal/isGeneratorFunction')
+const isAsyncGeneratorFunction = require('./_internal/isAsyncGeneratorFunction')
 
 /**
  * @name pipe
  *
  * @synopsis
  * ```coffeescript [specscript]
- * pipe<args ...any>(
+ * Reducer<T> = (any, T)=>Promise|any
+ *
+ * pipe<
+ *   args ...any,
  *   funcs [
  *     ...args=>Promise|any,
  *     ...Array<any=>Promise|any>,
  *   ],
- * ) -> pipeline ...args=>Promise|any
+ *   transducers Array<Reducer=>Reducer>,
+ * >(funcs) -> pipeline ...args=>Promise|any
  *
- * Reducer<T> = (any, T)=>Promise|any
- * Transducer = Reducer=>Reducer
- *
- * pipe(
- *   transducers Array<Transducer>,
- * )(reducer Reducer) -> composed Reducer
+ * pipe(transducers) -> composition ...args=>Promise|any
  * ```
  *
  * @description

@@ -1,3 +1,5 @@
+const MappingIterator = require('./_internal/MappingIterator')
+const MappingAsyncIterator = require('./_internal/MappingAsyncIterator')
 const isArray = require('./_internal/isArray')
 const isGeneratorFunction = require('./_internal/isGeneratorFunction')
 const isAsyncGeneratorFunction = require('./_internal/isAsyncGeneratorFunction')
@@ -5,7 +7,6 @@ const arrayMap = require('./_internal/arrayMap')
 const generatorFunctionMap = require('./_internal/generatorFunctionMap')
 const asyncGeneratorFunctionMap = require('./_internal/asyncGeneratorFunctionMap')
 const reducerMap = require('./_internal/reducerMap')
-const MappingIterator = require('./_internal/MappingIterator')
 const stringMap = require('./_internal/stringMap')
 const setMap = require('./_internal/setMap')
 const mapMap = require('./_internal/mapMap')
@@ -13,33 +14,29 @@ const objectMap = require('./_internal/objectMap')
 const arrayMapSeries = require('./_internal/arrayMapSeries')
 const arrayMapPool = require('./_internal/arrayMapPool')
 const arrayMapWithIndex = require('./_internal/arrayMapWithIndex')
+const symbolIterator = require('./_internal/symbolIterator')
 
 /**
  * @name map
  *
  * @synopsis
  * ```coffeescript [specscript]
- * Functor<T> = Array<T>|Object<T>
- *   |Iterator<T>|AsyncIterator<T>|{ map: T=>any }
+ * Functor<T> = Array<T>|Object<T>|Iterator<T>|AsyncIterator<T>|{ map: T=>any }
  * Reducer<T> = (any, T)=>Promise|any
  *
- * map<T>(
+ * map<
+ *   T any,
  *   mapper T=>Promise|any,
- * )(Functor<T>) -> mappedFunctor Promise|Functor
+ *   functor Functor<T>
+ *   args ...any,
+ *   generatorFunction ...args=>Generator<Promise|T>,
+ *   reducer Reducer<T>,
+ * >(mapper)(functor) -> mapped Promise|Functor
  *
- * map<T>(
- *   mapper T=>any, # note: only synchronous predicates allowed here
- * )(generatorFunction GeneratorFunction<T>)
- *   -> mappingGeneratorFunction GeneratorFunction
+ * map(mapper)(generatorFunction) ->
+ *   mappingGeneratorFunction ...args=>Generator<Promise>
  *
- * map<T>(
- *   mapper T=>Promise|any,
- * )(asyncGeneratorFunction AsyncGeneratorFunction<T>)
- *   -> mappingAsyncGeneratorFunction AsyncGeneratorFunction
- *
- * map<T>(
- *   mapper T=>Promise|any,
- * )(reducer Reducer<T>) -> mappingReducer Reducer
+ * map(mapper)(reducer) -> mappingReducer Reducer
  * ```
  *
  * @description
@@ -157,7 +154,9 @@ const map = mapper => function mapping(value) {
   }
 
   if (typeof value.next == 'function') {
-    return MappingIterator(value, mapper)
+    return symbolIterator in value
+      ? MappingIterator(value, mapper)
+      : MappingAsyncIterator(value, mapper)
   }
   if (typeof value == 'string' || value.constructor == String) {
     return stringMap(value, mapper)
@@ -216,11 +215,11 @@ map.series = mapper => function mappingInSeries(value) {
  * @synopsis
  * ```coffeescript [specscript]
  * map.pool<
+ *   maxConcurrency number,
  *   T any,
  *   mapper T=>Promise|any,
  *   array Array<T>,
- *   maxConcurrency number,
- * >(maxConcurrency, mapper)(array) -> Promise|Array
+ * >(maxConcurrency, mapper)(array) -> mapped Promise|Array
  * ```
  *
  * @description
@@ -254,14 +253,14 @@ map.pool = (concurrencyLimit, mapper) => function concurrentPoolMapping(value) {
  * ```coffeescript [specscript]
  * map.withIndex<
  *   T any,
- *   array Array<T>,
  *   index number,
+ *   array Array<T>,
  *   indexedMapper (T, index, array)=>Promise|any,
- * >(indexedMapper)(array) -> mappedWithIndex Promise|Array
+ * >(indexedMapper)(array) -> mapped Promise|Array
  * ```
  *
  * @description
- * `map` with index and collection parameters additionally supplied to the mapper each iteration.
+ * `map` with an indexed mapper.
  *
  * ```javascript [playground]
  * const range = length => map.withIndex(

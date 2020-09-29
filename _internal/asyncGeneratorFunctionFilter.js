@@ -1,4 +1,4 @@
-const isPromise = require('./isPromise')
+const FilteringAsyncIterator = require('./FilteringAsyncIterator')
 
 /**
  * @name asyncGeneratorFunctionFilter
@@ -20,16 +20,7 @@ const isPromise = require('./isPromise')
 const asyncGeneratorFunctionFilter = (
   asyncGeneratorFunction, predicate,
 ) => async function* filteringAsyncGeneratorFunction(...args) {
-  for await (const item of asyncGeneratorFunction(...args)) {
-    const shouldIncludeItem = predicate(item)
-    if (
-      isPromise(shouldIncludeItem)
-        ? await shouldIncludeItem
-        : shouldIncludeItem
-    ) {
-      yield item
-    }
-  }
+  yield* FilteringAsyncIterator(asyncGeneratorFunction(...args), predicate)
 }
 
 module.exports = asyncGeneratorFunctionFilter

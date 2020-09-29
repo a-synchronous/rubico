@@ -1,4 +1,5 @@
 const FilteringIterator = require('./_internal/FilteringIterator')
+const FilteringAsyncIterator = require('./_internal/FilteringAsyncIterator')
 const isArray = require('./_internal/isArray')
 const isGeneratorFunction = require('./_internal/isGeneratorFunction')
 const isAsyncGeneratorFunction = require('./_internal/isAsyncGeneratorFunction')
@@ -11,6 +12,7 @@ const setFilter = require('./_internal/setFilter')
 const mapFilter = require('./_internal/mapFilter')
 const objectFilter = require('./_internal/objectFilter')
 const arrayFilterWithIndex = require('./_internal/arrayFilterWithIndex')
+const symbolIterator = require('./_internal/symbolIterator')
 
 /**
  * @name filter
@@ -21,30 +23,26 @@ const arrayFilterWithIndex = require('./_internal/arrayFilterWithIndex')
  * @synopsis
  * ```coffeescript [specscript]
  * Filterable<T> = Array<T>|Object<T>
- *   |Iterable<T>|AsyncIterable<T>|{ filter: T=>boolean }
+ *   |Iterable<T>|AsyncIterable<T>|{ filter: (T=>boolean)=>any }
+ * Reducer<T> = (any, T)=>Promise|any
  *
- * filter<T>(
+ * filter<
+ *   T any,
  *   predicate T=>Promise|boolean,
- * )(value Filterable<T>) -> filtered Promise|Filterable<T>
+ *   filterable Filterable<T>,
+ *   args ...any,
+ *   generatorFunction ...args=>Generator<Promise|T>,
+ *   reducer Reducer<T>,
+ * >(predicate)(filterable) -> filtered Promise|Filterable<T>
  *
- * filter<T>(
- *   predicate T=>boolean, # note: only synchronous predicates allowed here
- * )(generatorFunction GeneratorFunction<T>)
- *   -> filteringGeneratorFunction GeneratorFunction<T>
+ * filter(predicate)(generatorFunction) ->
+ *   filteringGeneratorFunction ...args=>Generator<Promise|T>
  *
- * filter<T>(
- *   predicate T=>Promise|boolean,
- * )(asyncGeneratorFunction AsyncGeneratorFunction<T>)
- *   -> filteringAsyncGeneratorFunction AsyncGeneratorFunction<T>
- *
- * filter<T>(
- *   predicate T=>Promise|boolean,
- * )(reducer (any, T)=>Promise|any)
- *   -> filteringReducer (any, T)=>Promise|any
+ * filter(predicate)(reducer) -> filteringReducer Reducer<T>
  * ```
  *
  * @description
- * Exclude items from a collection based on the results of their concurrent execution with the predicate. The predicate may be asynchronous.
+ * Exclude items based on the results of their concurrent execution with a predicate.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -59,8 +57,6 @@ const arrayFilterWithIndex = require('./_internal/arrayFilterWithIndex')
  * ```
  *
  * Passing a generator function to `filter` returns a filtering generator function; all values that are normally yielded by a generator function that test falsy with the predicate are skipped by the returned filtering generator function.
- *
- * **Warning**: usage of an async predicate with generator functions or iterators may lead to undesirable behavior.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -149,6 +145,11 @@ const filter = predicate => function filtering(value) {
     return value
   }
 
+  if (typeof value.next == 'function') {
+    return symbolIterator in value
+      ? FilteringIterator(value, predicate)
+      : FilteringAsyncIterator(value, predicate)
+  }
   if (typeof value == 'string' || value.constructor == String) {
     return stringFilter(value, predicate)
   }
@@ -160,9 +161,6 @@ const filter = predicate => function filtering(value) {
   }
   if (value.constructor == Object) {
     return objectFilter(value, predicate)
-  }
-  if (typeof value.next == 'function') {
-    return FilteringIterator(value, predicate)
   }
   return typeof value.filter == 'function' ? value.filter(predicate) : value
 }

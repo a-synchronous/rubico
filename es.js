@@ -1289,41 +1289,6 @@ const asyncGeneratorFunctionMap = function (asyncGeneratorFunc, mapper) {
 const toIteration = value => ({ value, done: false })
 
 /**
- * @name MappingAsyncIterator
- *
- * @synopsis
- * ```coffeescript [specscript]
- * mappingAsyncIterator = new MappingAsyncIterator(
- *   asyncIter AsyncIterator<T>,
- *   mapper T=>Promise|any,
- * ) -> mappingAsyncIterator AsyncIterator
- *
- * mappingAsyncIterator.next() -> Promise<{ value: any, done: boolean }>
- * ```
- */
-const MappingAsyncIterator = function (asyncIter, mapper) {
-  this.asyncIter = asyncIter
-  this.mapper = mapper
-}
-
-MappingAsyncIterator.prototype = {
-  [symbolAsyncIterator]() {
-    return this
-  },
-  async next() {
-    const iteration = await this.asyncIter.next()
-    if (iteration.done) {
-      return iteration
-    }
-
-    const mapped = this.mapper(iteration.value)
-    return isPromise(mapped)
-      ? mapped.then(toIteration)
-      : { value: mapped, done: false }
-  }
-}
-
-/**
  * @name reducerMap
  *
  * @synopsis

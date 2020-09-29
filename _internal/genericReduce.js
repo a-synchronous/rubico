@@ -3,12 +3,15 @@ const objectValues = require('./objectValues')
 const isGeneratorFunction = require('./isGeneratorFunction')
 const isAsyncGeneratorFunction = require('./isAsyncGeneratorFunction')
 const iteratorReduce = require('./iteratorReduce')
+const asyncIteratorReduce = require('./asyncIteratorReduce')
 const symbolIterator = require('./symbolIterator')
 const symbolAsyncIterator = require('./symbolAsyncIterator')
 const __ = require('./placeholder')
+const curry2 = require('./curry2')
 const curryArgs3 = require('./curryArgs3')
 const arrayReduce = require('./arrayReduce')
 const generatorFunctionReduce = require('./generatorFunctionReduce')
+const asyncGeneratorFunctionReduce = require('./asyncGeneratorFunctionReduce')
 const reducerConcat = require('./reducerConcat')
 
 /**
@@ -41,10 +44,11 @@ var genericReduce = function (args, reducer, result) {
     return arrayReduce(collection, reducer, result)
   }
   if (typeof collection == 'function') {
-    if (
-      isGeneratorFunction(collection) || isAsyncGeneratorFunction(collection)
-    ) {
+    if (isGeneratorFunction(collection)) {
       return generatorFunctionReduce(collection, reducer, result)
+    }
+    if (isAsyncGeneratorFunction(collection)) {
+      return asyncGeneratorFunctionReduce(collection, reducer, result)
     }
     const combinedReducer = args.length == 0
       ? reducer
@@ -63,19 +67,16 @@ var genericReduce = function (args, reducer, result) {
   }
 
   if (typeof collection.next == 'function') {
-    return iteratorReduce(collection, reducer, result)
-    /*
     return symbolIterator in collection
       ? iteratorReduce(collection, reducer, result)
       : asyncIteratorReduce(collection, reducer, result)
-      */
   }
   if (typeof collection[symbolIterator] == 'function') {
     return iteratorReduce(
       collection[symbolIterator](), reducer, result)
   }
   if (typeof collection[symbolAsyncIterator] == 'function') {
-    return iteratorReduce(
+    return asyncIteratorReduce(
       collection[symbolAsyncIterator](), reducer, result)
   }
   if (typeof collection.reduce == 'function') {

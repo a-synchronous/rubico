@@ -1,6 +1,10 @@
 const isPromise = require('./_internal/isPromise')
 const always = require('./_internal/always')
 const tapSync = require('./_internal/tapSync')
+const thunkifyArgs = require('./_internal/thunkifyArgs')
+const thunkConditional = require('./_internal/thunkConditional')
+const curry3 = require('./_internal/curry3')
+const __ = require('./_internal/placeholder')
 
 /**
  * @name tap

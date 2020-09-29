@@ -28,7 +28,7 @@ const arrayFilterWithIndex = function (array, predicate) {
     resultIndex = -1
   while (++index < arrayLength) {
     const item = array[index],
-      shouldIncludeItem = predicate(item)
+      shouldIncludeItem = predicate(item, index, array)
     if (isPromise(shouldIncludeItem)) {
       return promiseAll(
         arrayExtendMapWithIndex(

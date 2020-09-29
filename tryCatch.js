@@ -1,25 +1,7 @@
 const isPromise = require('./_internal/isPromise')
 const __ = require('./_internal/placeholder')
 const curry3 = require('./_internal/curry3')
-
-/**
- * @name catcherApply
- *
- * @synopsis
- * ```coffeescript [specscript]
- * catcherApply<
- *   args ...any,
- *   err Error|any,
- *   catcher (err, ...args)=>any,
- * >(catcher, err, args) -> catcher(err, ...args)
- * ```
- *
- * @description
- * Apply an error and arguments to a catcher.
- */
-const catcherApply = function (catcher, err, args) {
-  return catcher(err, ...args)
-}
+const catcherApply = require('./_internal/catcherApply')
 
 /**
  * @name tryCatch

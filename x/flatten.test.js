@@ -21,8 +21,7 @@ describe('flatten', () => {
     )
   })
   it('flatten(object); Iterator<object>', async () => {
-    const iter = flatten({ a: 1 })
-    const arr = [...iter]
-    assert.deepEqual(arr, [{ a: 1 }])
+    const object = flatten({ _: { a: 1 }, __: { b: 2, c: 3 } })
+    assert.deepEqual(object, { a: 1, b: 2, c: 3 })
   })
 })

@@ -2,7 +2,8 @@ const isPromise = require('./isPromise')
 const promiseAll = require('./promiseAll')
 const always = require('./always')
 const __ = require('./placeholder')
-const curry2 = require('./curry2')
+const curry3 = require('./curry3')
+const callPropUnary = require('./callPropUnary')
 
 /**
  * @name setMap
@@ -25,7 +26,8 @@ const setMap = function (set, mapper) {
   for (const item of set) {
     const resultItem = mapper(item)
     if (isPromise(resultItem)) {
-      promises.push(resultItem.then(curry2(setAdd, result, __)))
+      // promises.push(resultItem.then(curry2(setAdd, result, __)))
+      promises.push(resultItem.then(curry3(callPropUnary, result, 'add', __)))
     } else {
       result.add(resultItem)
     }

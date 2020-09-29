@@ -1,3 +1,4 @@
+const isPromise = require('./_internal/isPromise')
 const objectAssign = require('./_internal/objectAssign')
 const __ = require('./_internal/placeholder')
 const curry2 = require('./_internal/curry2')
@@ -8,9 +9,10 @@ const funcObjectAll = require('./_internal/funcObjectAll')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * assign(
- *   funcs Object<source=>Promise|any>,
- * )(source Object) -> resultsMergedWithSource Promise|Object
+ * assign<
+ *   source Object,
+ *   funcsObject Object<source=>Promise|any>,
+ * >(funcsObject)(source) -> resultsMergedWithSource Promise|Object
  * ```
  *
  * @description

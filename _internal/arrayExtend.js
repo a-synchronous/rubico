@@ -1,3 +1,5 @@
+const isArray = require('./isArray')
+
 /**
  * @name _arrayExtend
  *

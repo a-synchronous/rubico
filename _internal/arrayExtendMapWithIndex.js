@@ -22,19 +22,16 @@ const isPromise = require('./isPromise')
  * Extend an array with values from a mapping operation.
  */
 const arrayExtendMapWithIndex = function (
-  array, values, mapper, index,
+  array, values, valuesMapper, valuesIndex,
 ) {
   const valuesLength = values.length
-  let arrayIndex = array.length - 1,
-    isAsync = false
-  while (++index < valuesLength) {
-    const nextItem = mapper(values[index], index, values)
-    if (isPromise(nextItem)) {
-      isAsync = true
-    }
-    array[++arrayIndex] = nextItem
+  let arrayIndex = array.length - 1
+
+  while (++valuesIndex < valuesLength) {
+    array[++arrayIndex] = valuesMapper(
+      values[valuesIndex], valuesIndex, values)
   }
-  return isAsync ? promiseAll(array) : array
+  return array
 }
 
 module.exports = arrayExtendMapWithIndex

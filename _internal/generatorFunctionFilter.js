@@ -1,3 +1,5 @@
+const FilteringIterator = require('./FilteringIterator')
+
 /**
  * @name generatorFunctionFilter
  *
@@ -20,11 +22,7 @@
 const generatorFunctionFilter = (
   generatorFunction, predicate,
 ) => function* filteringGeneratorFunction(...args) {
-  for (const item of generatorFunction(...args)) {
-    if (predicate(item)) {
-      yield item
-    }
-  }
+  yield* FilteringIterator(generatorFunction(...args), predicate)
 }
 
 module.exports = generatorFunctionFilter

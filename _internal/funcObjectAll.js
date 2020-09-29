@@ -1,4 +1,5 @@
 const isPromise = require('./isPromise')
+const promiseObjectAll = require('./promiseObjectAll')
 
 /**
  * @name funcObjectAll

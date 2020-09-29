@@ -14,6 +14,7 @@ const arrayExtend = require('./arrayExtend')
 const binaryExtend = require('./binaryExtend')
 const streamExtend = require('./streamExtend')
 const setExtend = require('./setExtend')
+const callConcat = require('./callConcat')
 
 /**
  * @name genericTransformToNull
@@ -72,8 +73,7 @@ const genericTransform = function (args, transducer, result) {
     return genericReduce(args, transducer(add), result)
   }
   if (typeof result.concat == 'function') {
-    const __reducer = curry3(callPropUnary, result, 'concat', __)
-    return genericReduce(args, transducer(__reducer), result)
+    return genericReduce(args, transducer(callConcat), result)
   }
   if (typeof result.write == 'function') {
     return genericReduce(args, transducer(streamExtend), result)

@@ -31,7 +31,7 @@ const reducerFilter = (
       thunkConditional,
       __,
       thunkify2(reducer, result, item),
-      always(result))),
+      always(result)))
     : shouldInclude ? reducer(result, item) : result
 }
 

@@ -1,9 +1,12 @@
 const isPromise = require('./isPromise')
+const thunkify4 = require('./thunkify4')
 const thunkConditional = require('./thunkConditional')
 const __ = require('./placeholder')
-const curry4 = require('./curry4')
+const curry3 = require('./curry3')
 const noop = require('./noop')
 const always = require('./always')
+const callPropBinary = require('./callPropBinary')
+const promiseAll = require('./promiseAll')
 
 /**
  * @name mapFilter
@@ -30,15 +33,16 @@ const mapFilter = function (map, predicate) {
   for (const [key, item] of map) {
     const predication = predicate(item)
     if (isPromise(predication)) {
-      promises.push(predication.then(thunkConditional(
+      promises.push(predication.then(curry3(thunkConditional,
         __,
-        curry4(callPropBinary, result, 'set', key, __),
+        thunkify4(callPropBinary, result, 'set', key, item),
         noop)))
     } else if (predication) {
       result.set(key, item)
     }
   }
-  return promises.length == 0 ? result : promises.then(always(result))
+  return promises.length == 0 ? result
+    : promiseAll(promises).then(always(result))
 }
 
 module.exports = mapFilter

@@ -1,36 +1,41 @@
 const __ = require('./placeholder')
-const curry2 = require('./curry2')
+const curry3 = require('./curry3')
+const getArg1 = require('./getArg1')
+const identity = require('./identity')
+const isArray = require('./isArray')
+const isPromise = require('./isPromise')
+const promiseAll = require('./promiseAll')
+const callPropUnary = require('./callPropUnary')
+const funcConcatSync = require('./funcConcatSync')
 const asyncIteratorForEach = require('./asyncIteratorForEach')
-
-const identity = value => value
-const isPromise = value => value != null && typeof value.then == 'function'
-const isArray = Array.isArray
-const symbolIterator = Symbol.iterator
-const symbolAsyncIterator = Symbol.asyncIterator
-const promiseAll = Promise.all.bind(Promise)
-const arrayPush = (array, item) => array.push(item)
+const symbolIterator = require('./symbolIterator')
+const symbolAsyncIterator = require('./symbolAsyncIterator')
 
 /**
  * @name arrayFlatten
  *
  * @synopsis
  * ```coffeescript [specscript]
- * Monad = Array|String|Set
- *   |TypedArray|DuplexStream|Iterator|AsyncIterator
- *   |{ chain: function }|{ flatMap: function }|Object
+ * Stream<T> = { read: ()=>T, write: T=>() }
+ * Monad<T> = Array<T>|String<T>|Set<T>
+ *   |TypedArray<T>|Stream<T>|Iterator<Promise|T>
+ *   |{ chain: T=>Monad<T> }|{ flatMap: T=>Monad<T> }|Object<T>
+ * Reducer<T> = (any, T)=>Promise|any
+ * Foldable<T> = Iterable<T>|AsyncIterable<T>|{ reduce: Reducer<T> }|Object<T>
  *
- * arrayFlatten(array Array<Monad|Foldable|any>) -> Array
+ * arrayFlatten<
+ *   T any,
+ *   array Array<Monad<T>|Foldable<T>|T>
+ * >(array) -> Array<T>
  * ```
- *
- * @related genericReduceConcurrent
  */
 const arrayFlatten = function (array) {
   const length = array.length,
     promises = [],
     result = [],
-    resultPushReducer = (_, subItem) => result.push(subItem),
-    resultPush = curry2(arrayPush, result, __),
-    getResult = () => result
+    getResult = () => result,
+    resultPush = curry3(callPropUnary, result, 'push', __),
+    resultPushReducer = funcConcatSync(getArg1, resultPush)
   let index = -1
 
   while (++index < length) {

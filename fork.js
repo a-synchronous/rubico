@@ -8,13 +8,13 @@ const funcAllSeries = require('./_internal/funcAllSeries')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * fork<args ...any>(
- *   funcs Object<...args=>Promise|any>,
- * )(...args) -> result Promise|Object
+ * fork<
+ *   args ...any,
+ *   funcsArray Array<...args=>Promise|any>,
+ *   funcsObject Object<...args=>Promise|any>,
+ * >(funcsArray)(...args) -> Promise|Array
  *
- * fork<args ...any>(
- *   funcs Array<...args=>Promise|any>,
- * )(...args) -> result Promise|Array
+ * fork(funcsObject)(...args) -> Promise|Object
  * ```
  *
  * @description

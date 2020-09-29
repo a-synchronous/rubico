@@ -1,21 +1,29 @@
 const __ = require('./placeholder')
-const curry2 = require('./curry2')
+const curry3 = require('./curry3')
+const identity = require('./identity')
+const isPromise = require('./isPromise')
+const isArray = require('./isArray')
+const promiseAll = require('./promiseAll')
 const asyncIteratorForEach = require('./asyncIteratorForEach')
-
-const identity = value => value
-const isPromise = value => value != null && typeof value.then == 'function'
-const isArray = Array.isArray
-const symbolIterator = Symbol.iterator
-const symbolAsyncIterator = Symbol.asyncIterator
-const promiseAll = Promise.all.bind(Promise)
-const setAdd = (set, item) => set.add(item)
+const symbolIterator = require('./symbolIterator')
+const symbolAsyncIterator = require('./symbolAsyncIterator')
+const callPropUnary = require('./callPropUnary')
 
 /**
  * @name setFlatten
  *
  * @synopsis
  * ```coffeescript [specscript]
- * setFlatten(set Set<Monad|Foldable|any>) -> Set
+ * Stream<T> = { read: ()=>T, write: T=>() }
+ * Monad<T> = Array<T>|String<T>|Set<T>
+ *   |TypedArray<T>|Stream<T>|Iterator<Promise|T>
+ *   |{ chain: T=>Monad<T> }|{ flatMap: T=>Monad<T> }|Object<T>
+ * Reducer<T> = (any, T)=>Promise|any
+ * Foldable<T> = Iterable<T>|AsyncIterable<T>|{ reduce: Reducer<T> }|Object<T>
+ *
+ * setFlatten<T>(
+ *   set Set<Monad<T>|Foldable<T>|T>,
+ * ) -> flattened Set<T>
  * ```
  */
 const setFlatten = function (set) {
@@ -23,7 +31,7 @@ const setFlatten = function (set) {
     promises = [],
     result = new Set(),
     resultAddReducer = (_, subItem) => result.add(subItem),
-    resultAdd = curry2(setAdd, result, __),
+    resultAdd = curry3(callPropUnary, result, 'add', __),
     getResult = () => result
 
   for (const item of set) {
@@ -63,9 +71,7 @@ const setFlatten = function (set) {
       result.add(item)
     }
   }
-  return promises.length == 0
-    ? result
-    : promiseAll(promises).then(getResult)
+  return promises.length == 0 ? result : promiseAll(promises).then(getResult)
 }
 
 module.exports = setFlatten
