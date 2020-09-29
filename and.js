@@ -1,6 +1,9 @@
 const isPromise = require('./_internal/isPromise')
 const curry3 = require('./_internal/curry3')
 const __ = require('./_internal/placeholder')
+const thunkConditional = require('./_internal/thunkConditional')
+const thunkify3 = require('./_internal/thunkify3')
+const always = require('./_internal/always')
 
 /**
  * @name asyncAnd
@@ -10,12 +13,12 @@ const __ = require('./_internal/placeholder')
  * asyncAnd(
  *   predicates Array<value=>Promise|boolean>
  *   value any,
+ *   index number,
  * ) -> allTruthy boolean
  * ```
  */
-const asyncAnd = async function (predicates, value) {
+const asyncAnd = async function (predicates, value, index) {
   const length = predicates.length
-  let index = -1
   while (++index < length) {
     let predication = predicates[index](value)
     if (isPromise(predication)) {
@@ -27,11 +30,6 @@ const asyncAnd = async function (predicates, value) {
   }
   return true
 }
-
-// handles the first predication before asyncAnd
-const _asyncAndInterlude = (
-  predicates, value, firstPredication,
-) => firstPredication ? asyncAnd(predicates, value) : false
 
 /**
  * @name and
@@ -71,7 +69,11 @@ const and = predicates => function allPredicates(value) {
   while (++index < length) {
     const predication = predicates[index](value)
     if (isPromise(predication)) {
-      return predication.then(curry3(_asyncAndInterlude, predicates, value, __))
+      return predication.then(curry3(
+        thunkConditional,
+        __,
+        thunkify3(asyncAnd, predicates, value, index),
+        always(false)))
     }
     if (!predication) {
       return false
