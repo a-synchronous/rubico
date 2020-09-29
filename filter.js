@@ -160,10 +160,13 @@ const filter = predicate => function filtering(value) {
   if (value.constructor == Map) {
     return mapFilter(value, predicate)
   }
+  if (typeof value.filter == 'function') {
+    return value.filter(predicate)
+  }
   if (value.constructor == Object) {
     return objectFilter(value, predicate)
   }
-  return typeof value.filter == 'function' ? value.filter(predicate) : value
+  return value
 }
 
 /**

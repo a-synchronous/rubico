@@ -1203,6 +1203,19 @@ describe('rubico', () => {
       })
     })
 
+    describe('filter(predicate T=>Promise|boolean)({ filter: function }) -> Promise|any', () => {
+      it('predicate T=>Promise|boolean', async () => {
+        const myFilterable = { filter: () => 'hey' }
+        assert.strictEqual(filter(isOdd)(myFilterable), 'hey')
+      })
+    })
+
+    describe('filter(predicate T=>Promise|boolean)(number) -> number', () => {
+      it('id', async () => {
+        assert.strictEqual(filter(isOdd)(1), 1)
+      })
+    })
+
     describe('filter(predicate T=>Promise|boolean)(String<T>) -> Promise|String<T>', () => {
       it('predicate T=>Promise|boolean', async () => {
         const isOdd = number => Number(number) % 2 == 1
