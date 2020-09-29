@@ -8,17 +8,17 @@ const funcAllSeries = require('./_internal/funcAllSeries')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * fork<
- *   args ...any,
+ * var args ...any,
  *   funcsArray Array<...args=>Promise|any>,
- *   funcsObject Object<...args=>Promise|any>,
- * >(funcsArray)(...args) -> Promise|Array
+ *   funcsObject Object<...args=>Promise|any>
  *
- * fork(funcsObject)(...args) -> Promise|Object
+ * fork(funcsArray)(...args) -> parallelized Promise|Array
+ *
+ * fork(funcsObject)(...args) -> parallelized Promise|Object
  * ```
  *
  * @description
- * A multi-purpose function, parallelizes multiple functions with concurrent execution into either an object, an array, or a nested mix of both. Has use cases in parallel execution and object composition.
+ * A multi-purpose function. Parallelizes multiple functions with concurrent execution into either an object, an array, or a nested mix of both. Has use cases in parallel execution and object composition.
  *
  * ```javascript [playground]
  * console.log(
@@ -40,9 +40,10 @@ const fork = funcs => isArray(funcs) ? funcAll(funcs) : funcObjectAll(funcs)
  *
  * @synopsis
  * ```coffeescript [specscript]
- * fork.series<args ...any>(
- *   funcs Array<...args=>Promise|any>,
- * )(...args) -> Promise|Array
+ * var args ...any,
+ *   funcs Array<...args=>Promise|any>
+ *
+ * fork.series(funcs)(...args) => forkedInSeries Promise|Array
  * ```
  *
  * @description

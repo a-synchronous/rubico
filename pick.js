@@ -3,10 +3,10 @@
  *
  * @synopsis
  * ```coffeescript [specscript]
- * pick<
- *   keys Array<string>,
- *   source Object,
- * >(keys)(source) -> picked Object
+ * var keys Array<string>,
+ *   source Object
+ *
+ * pick(keys)(source) -> picked Object
  * ```
  *
  * @description

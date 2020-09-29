@@ -11,14 +11,17 @@ const __ = require('./_internal/placeholder')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * lte(
- *   left (any=>Promise|boolean)|any,
- *   right (any=>Promise|boolean)|any,
- * )(value any) -> lessThanBy(value any)=>Promise|boolean
+ * var value any,
+ *   leftCompare any,
+ *   rightCompare any,
+ *   left (value=>Promise|leftCompare)|leftCompare,
+ *   right (value=>Promise|rightCompare)|rightCompare
+ *
+ * lte(left, right)(value) -> Promise|boolean
  * ```
  *
  * @description
- * Test for left value less than or equal to (`<=`) right value. Either parameter may be an asynchronous resolver.
+ * Test if a left value is less than or equal (`<=`) to a right value. Either parameter may be an actual value.
  *
  * ```javascript [playground]
  * const identity = value => value

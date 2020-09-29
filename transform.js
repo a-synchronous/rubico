@@ -11,24 +11,24 @@ const genericTransform = require('./_internal/genericTransform')
  * Reducer<T> = (any, T)=>Promise|any
  * Semigroup<T> = Array<T>|String<T>|Set<T>|TypedArray<T>
  *   |{ concat: Reducer<T> }|{ write: Reducer<T> }|Object<T>
- * Foldable<T> = Iterable<T>|AsyncIterable<T>
- *   |{ reduce: Reducer<T>=>any }|Object<T>
+ * Foldable<T> = Iterable<T>|AsyncIterable<T>|{ reduce: Reducer<T>=>any }|Object<T>
  *
- * transform<
- *   T any,
+ * var T any,
  *   args ...any,
  *   transducer Reducer=>Reducer,
  *   init (...args=>Promise|Semigroup<T>)|Semigroup<T>,
  *   foldable Foldable<T>,
- *   generatorFunction ...args=>Generator<Promise|T>,
- *   reducers ...Reducer<T>,
- * >(transducer, init?)(foldable) -> transformed Promise|Semigroup
+ *   generatorFunction ...args=>Generator<T>,
+ *   asyncGeneratorFunction ...args=>AsyncGenerator<T>,
+ *   reducers ...Reducer<T>
  *
- * transform(transducer, init?)(generatorFunction)
- *   -> transformingFunction ...args=>Promise|Semigroup<T>
+ * transform(transducer, init?)(foldable) -> Promise|Semigroup
  *
- * transform(transducer, init?)(...reducers)
- *   -> chainedTransformingFunction ...args=>Promise|Semigroup<T>
+ * transform(transducer, init?)(generatorFunction) -> ...args=>Promise|Semigroup
+ *
+ * transform(transducer, init?)(asyncGeneratorFunction) -> ...args=>Promise|Semigroup
+ *
+ * transform(transducer, init?)(...reducers) -> ...args=>Promise|Semigroup
  * ```
  *
  * @description
@@ -88,7 +88,7 @@ const genericTransform = require('./_internal/genericTransform')
  *
  * Here is a transformation of an async generator to a Node.js writable stream, `process.stdout`.
  *
- * ```javascript
+ * ```javascript [node]
  * // this example is duplicated in rubico/examples/transformStreamRandomInts.js
  *
  * const { pipe, map, transform } = require('rubico')

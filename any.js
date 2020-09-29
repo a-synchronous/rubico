@@ -16,13 +16,15 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  * Foldable<T> = Iterable<T>|AsyncIterable<T>
  *   |{ reduce: Reducer<T>=>any }|Object<T>
  *
- * any<T>(
+ * var T any,
  *   predicate T=>Promise|boolean,
- * )(value Foldable<T>) -> anyTruthyByPredicate Promise|boolean
+ *   foldable Foldable<T>
+ *
+ * any(predicate)(foldable) -> Promise|boolean
  * ```
  *
  * @description
- * Test a predicate concurrently across all items of a collection, returning true if any predication is truthy.
+ * Test a predicate concurrently across all items of a collection, returning true if any test truthy.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -32,7 +34,7 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  * ) // true
  * ```
  *
- * The predicate may return a Promise, while the value may be an asynchronous stream.
+ * The value may be an asynchronous stream.
  *
  * ```javascript [playground]
  * const toTodosUrl = id => 'https://jsonplaceholder.typicode.com/todos/' + id

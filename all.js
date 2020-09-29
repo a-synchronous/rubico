@@ -11,12 +11,15 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  *
  * @synopsis
  * ```coffeescript [specscript]
+ * Reducer<T> = (any, T)=>Promise|any
  * Foldable<T> = Iterable<T>|AsyncIterable<T>
- *   |{ reduce: (any, T)=>any }|Object<T>
+ *   |{ reduce: Reducer<T>=>any }|Object<T>
  *
- * all<T>(
+ * var T any,
  *   predicate T=>Promise|boolean,
- * )(value Foldable<T>) -> allTruthyByPredicate Promise|boolean
+ *   foldable Foldable<T>
+ *
+ * all(predicate)(foldable) -> Promise|boolean
  * ```
  *
  * @description
@@ -34,7 +37,7 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  * ) // true
  * ```
  *
- * The predicate may return a Promise, while the value may be an asynchronous stream.
+ * The value may be an asynchronous stream.
  *
  * ```javascript [playground]
  * const asyncNumbers = async function* () {

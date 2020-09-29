@@ -22,23 +22,24 @@ const symbolIterator = require('./_internal/symbolIterator')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * Filterable<T> = Array<T>|Object<T>
- *   |Iterable<T>|AsyncIterable<T>|{ filter: (T=>boolean)=>any }
+ * Filterable<T> = Array<T>|Object<T>|Iterable<T>|AsyncIterable<T>|{ filter: (T=>boolean)=>any }
  * Reducer<T> = (any, T)=>Promise|any
  *
- * filter<
- *   T any,
+ * var T any,
  *   predicate T=>Promise|boolean,
  *   filterable Filterable<T>,
  *   args ...any,
  *   generatorFunction ...args=>Generator<Promise|T>,
- *   reducer Reducer<T>,
- * >(predicate)(filterable) -> filtered Promise|Filterable<T>
+ *   asyncGeneratorFunction ...args=>AsyncGenerator<T>,
+ *   reducer Reducer<T>
  *
- * filter(predicate)(generatorFunction) ->
- *   filteringGeneratorFunction ...args=>Generator<Promise|T>
+ * filter(predicate)(filterable) -> Promise|Filterable<T>
  *
- * filter(predicate)(reducer) -> filteringReducer Reducer<T>
+ * filter(predicate)(generatorFunction) -> ...args=>Generator<T>
+ *
+ * filter(predicate)(asyncGeneratorFunction) -> ...args=>AsyncGenerator<T>
+ *
+ * filter(predicate)(reducer) -> Reducer<T>
  * ```
  *
  * @description
@@ -170,9 +171,12 @@ const filter = predicate => function filtering(value) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * filter.withIndex(
- *   predicate T=>Promise|boolean,
- * )(value Array<T>) -> filteredArray Array<T>
+ * var T any,
+ *   index number,
+ *   array Array<T>,
+ *   indexedPredicate (T, index, array)=>Promise|boolean
+ *
+ * filter.withIndex(indexedPredicate)(array) -> Array<T>
  * ```
  *
  * @description

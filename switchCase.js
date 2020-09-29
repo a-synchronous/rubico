@@ -5,12 +5,12 @@ const funcConditional = require('./_internal/funcConditional')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * switchCase<
- *   args ...any,
+ * var args ...any,
  *   predicate ...args=>Promise|boolean,
  *   resolver ...args=>Promise|any,
- *   conditionalFunctions Array<predicate|resolver>,
- * >(conditionalFunctions)(...args) -> resolved Promise|any
+ *   conditionalFunctions Array<predicate|resolver>
+ *
+ * switchCase(conditionalFunctions)(...args) -> Promise|any
  * ```
  *
  * @description

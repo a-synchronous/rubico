@@ -8,14 +8,14 @@ const _not = value => !value
  *
  * @synopsis
  * ```coffeescript [specscript]
- * not<
- *   args ...any,
- *   predicate ...args=>Promise|boolean,
- * >(predicate)(...args) -> negated boolean
+ * var args ...any,
+ *   predicate ...args=>Promise|boolean
+ *
+ * not(predicate)(...args) -> boolean
  * ```
  *
  * @description
- * Negate a predicate (`!`) by negating its return value.
+ * Negate a predicate (`!`)
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -51,9 +51,10 @@ const notSync = func => function notSync(...args) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * not.sync<args ...any>(
- *   predicate ...args=>boolean,
- * ) -> negated ...args=>boolean
+ * var args ...any,
+ *   syncPredicate ...args=>boolean
+ *
+ * not.sync(syncPredicate)(...args) -> boolean
  * ```
  *
  * @description

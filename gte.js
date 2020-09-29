@@ -11,14 +11,17 @@ const __ = require('./_internal/placeholder')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * gte(
- *   left (any=>Promise|boolean)|any,
- *   right (any=>Promise|boolean)|any,
- * )(value any) -> greaterThanOrEqualBy(value any)=>Promise|boolean
+ * var value any,
+ *   leftCompare any,
+ *   rightCompare any,
+ *   left (value=>Promise|leftCompare)|leftCompare,
+ *   right (value=>Promise|rightCompare)|rightCompare
+ *
+ * gte(left, right)(value) -> Promise|boolean
  * ```
  *
  * @description
- * Test for left value greater than or equal to (`>=`) right value. Either parameter may be an asynchronous resolver.
+ * Test if a left value is greater than or equal (`>=`) to a right value. Either parameter may be an actual value.
  *
  * ```javascript [playground]
  * const identity = value => value

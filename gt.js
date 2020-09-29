@@ -11,14 +11,17 @@ const __ = require('./_internal/placeholder')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * gt(
- *   left (any=>Promise|boolean)|any,
- *   right (any=>Promise|boolean)|any,
- * )(value any) -> greaterThanBy(value any)=>Promise|boolean
+ * var value any,
+ *   leftCompare any,
+ *   rightCompare any,
+ *   left (value=>Promise|leftCompare)|leftCompare,
+ *   right (value=>Promise|rightCompare)|rightCompare
+ *
+ * gt(left, right)(value) -> Promise|boolean
  * ```
  *
  * @description
- * Test for left value greater than (`>`) right value. Either parameter may be an asynchronous resolver.
+ * Test if a left value is greater than (`>`) a right value. Either parameter may be an actual value.
  *
  * ```javascript [playground]
  * const isOfLegalAge = gt(21, person => person.age)

@@ -10,24 +10,24 @@ const genericReduce = require('./_internal/genericReduce')
  * @synopsis
  * ```coffeescript [specscript]
  * Reducer<T> = (any, T)=>Promise|any
- * Foldable<T> = Iterable<T>|AsyncIterable<T>
- *   |{ reduce: Reducer<T>=>any }|Object<T>
+ * Foldable<T> = Iterable<T>|AsyncIterable<T>|{ reduce: Reducer<T>=>any }|Object<T>
  *
- * reduce<
- *   T any,
+ * var T any,
  *   args ...any,
  *   reducer Reducer<T>,
  *   init (...args=>Promise|any)|any,
  *   foldable Foldable<T>
  *   generatorFunction ...args=>Generator<Promise|T>,
+ *   asyncGeneratorFunction ...args=>AsyncGenerator<T>,
  *   moreReducers ...Reducer<T>
- * >(reducer, init?)(foldable) -> reduced Promise|any
  *
- * reduce(reducer, init?)(generatorFunction)
- *   -> reducingFunction ...args=>Promise|any
+ * reduce(reducer, init?)(foldable) -> Promise|any
  *
- * reduce(reducer, init?)(...moreReducers)
- *   -> chainedReducingFunction ...args=>Promise|any
+ * reduce(reducer, init?)(generatorFunction) -> ...args=>Promise|any
+ *
+ * reduce(reducer, init?)(asyncGeneratorFunction) -> ...args=>Promise|any
+ *
+ * reduce(reducer, init?)(...moreReducers) -> ...args=>Promise|any
  * ```
  *
  * @description
@@ -51,7 +51,7 @@ const genericReduce = require('./_internal/genericReduce')
  * ) // 15
  * ```
  *
- * Note: For memory and performance, this library makes no assumptions about immutability. Exercise care when handling references for this initial value, as it could be mutated.
+ * Note: For memory and performance, this library makes no assumptions about immutability. Handle references for this initial value with care, as they could be mutated.
  *
  * If the initialization parameter is a function, it is treated as a resolver and called with the input arguments to resolve an initial value for the accumulator.
  *

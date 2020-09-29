@@ -3,10 +3,10 @@
  *
  * @synopsis
  * ```coffeescript [specscript]
- * omit<
- *   keys Array<string>,
- *   source Object,
- * >(keys)(source) -> omitted Object
+ * var keys Array<string>,
+ *   source Object
+ *
+ * omit(keys)(source) -> omitted Object
  * ```
  *
  * @description

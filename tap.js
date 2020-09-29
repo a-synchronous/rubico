@@ -11,10 +11,10 @@ const __ = require('./_internal/placeholder')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * tap<
- *   args ...any,
- *   tapper ...args=>Promise|any,
- * >(tapper)(...args) -> Promise|args[0]
+ * var args ...any,
+ *   tapper ...args=>Promise|any
+ *
+ * tap(tapper)(...args) -> Promise|args[0]
  * ```
  *
  * @description
@@ -40,10 +40,10 @@ const tap = func => function tapping(...args) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * tap.sync<
- *   args ...any,
- *   tapper ...args=>any,
- * >(tapper)(...args) -> args[0]
+ * var args ...any,
+ *   tapper ...args=>any
+ *
+ * tap.sync(tapper)(...args) -> args[0]
  * ```
  *
  * @description
@@ -51,8 +51,8 @@ const tap = func => function tapping(...args) {
  *
  * ```javascript [playground]
  * pipe([
- *   tap.sync(number => console.log('square', number ** 2))
- *   tap.sync(number => console.log('cube', number ** 3))
+ *   tap.sync(number => console.log('square', number ** 2)),
+ *   tap.sync(number => console.log('cube', number ** 3)),
  * ])(3) // 9
  *       // 27
  * ```
@@ -64,11 +64,11 @@ tap.sync = tapSync
  *
  * @synopsis
  * ```coffeescript [specscript]
- * tap.if<
- *   args ...any,
+ * var args ...any,
  *   predicate ...args=>Promise|boolean,
- *   tapper ...args=>Promise|any,
- * >(predicate, tapper) -> tapping ...args=>Promise|args[0]
+ *   tapper ...args=>Promise|any
+ *
+ * tap.if(predicate, tapper)(...args) -> Promise|args[0]
  * ```
  *
  * @description

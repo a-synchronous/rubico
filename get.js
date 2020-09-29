@@ -79,11 +79,11 @@ const getByPath = function (value, path) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * get<
- *   value any,
+ * var value any,
  *   path string|number|Array<string|number>,
- *   defaultValue (value=>any)|any,
- * >(path, defaultValue?) -> getter value=>any
+ *   defaultValue (value=>any)|any
+ *
+ * get(path, defaultValue?) -> getter value=>any
  * ```
  *
  * @description
@@ -95,7 +95,7 @@ const getByPath = function (value, path) {
  * ) // world
  * ```
  *
- * It is possible to return a default value on not found by supplying a the value or resolver of such value as the second parameter to `get`.
+ * It is possible to return a default value on not found by supplying the value or resolver of such value as the second parameter.
  *
  * ```javascript [playground]
  * console.log(

@@ -29,36 +29,36 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  * Foldable<T> = Iterable<T>|AsyncIterable<T>
  *   |{ reduce: Reducer<T>=>any }|Object<T>
  *
- * flatMap<
- *   T any,
+ * var T any,
  *   flatMapper T=>Promise|Monad<T>|Foldable<T>|T,
  *   monad Monad<T>,
  *   args ...any,
  *   generatorFunction ...args=>Generator<Promise|T>,
- *   reducer Reducer<T>,
- * >(flatMapper)(monad) -> anotherMonad Monad<T>
+ *   asyncGeneratorFunction ...args=>AsyncGenerator<T>,
+ *   reducer Reducer<T>
  *
- * flatMap(flatMapper)(generatorFunction) ->
- *   flatMappingGeneratorFunction ...args=>Generator<Promise|T>
+ * flatMap(flatMapper)(monad) -> Monad<T>
  *
- * flatMap(flatMapper)(reducer) -> flatMappingReducer Reducer<T>
+ * flatMap(flatMapper)(generatorFunction) -> ...args=>Generator<T>
+ *
+ * flatMap(flatMapper)(asyncGeneratorFunction) -> ...args=>AsyncGenerator<T>
+ *
+ * flatMap(flatMapper)(reducer) -> Reducer<T>
  * ```
  *
  * @description
- * Apply a function to each item of a collection, flattening any resulting collection. The result is always the same type as the input value with all items mapped and flattened. The following outlines behavior for various collections.
+ * Apply a flatMapper to each item of a collection, flattening all results into a new collection of the same type. The following outlines the flattening behavior for various collections.
  *
- *   * `Array` - map items then flatten results into a new `Array`
- *   * `String|string` - map items then flatten (`+`) results into a new `string`
- *   * `Set` - map items then flatten results into a new `Set`
- *   * `TypedArray` - map items then flatten results into a new `TypedArray`
- *   * `Buffer (Node.js)` - map items then flatten results into a new `Buffer`
- *   * `stream.Duplex (Node.js)` - map over stream items by async iteration, then call stream's `.write` to flatten
- *   * `{ chain: function }`, i.e. object that implements `.chain` - this function is called directly
- *   * `{ flatMap: function }`, i.e. object that implements `.flatMap` - this function is called directly
- *   * `Object` - a plain Object, values are mapped then flattened into result by `Object.assign`
- *   * `Reducer` - a function to be used in a reducing operation. Items of a flatMapped reducing operation are mapped then flattened into the aggregate
- *
- * On arrays, map the flatMapper function with concurrent asynchronous execution, then flatten the result one depth.
+ *   * `Array` - concatenate results into a new `Array`
+ *   * `String|string` - `+` results into a new `string`
+ *   * `Set` - add results into a new `Set`
+ *   * `TypedArray` - set items in a new `TypedArray`
+ *   * `Buffer (Node.js)` - set items in a new `Buffer`
+ *   * `stream.Duplex (Node.js)` - call stream's `.write`
+ *   * `{ chain: function }` - call object's `.chain`
+ *   * `{ flatMap: function }` - call object's `.flatMap`
+ *   * `Object` - assign all results into a new object
+ *   * `Reducer` - execute the reducer for each item per item of a reducing operation
  *
  * ```javascript [playground]
  * const duplicate = number => [number, number]
@@ -73,7 +73,7 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  *   [1, 2, 3, 4, 5]).then(console.log) // [1, 1, 2, 2, 3, 3, 4, 4, 5, 5]
  * ```
  *
- * Collections returned by the flatMapper are flattened into the result by type-specific iteration and concatenation, while async iterables are muxed. Muxing, or asynchronously "mixing", is the process of combining multiple asynchronous sources into one source, with order determined by the asynchronous resolution of the individual items. This behavior is useful for working with asynchronous streams, e.g. of DOM events or requests.
+ * `flatMap` muxes async iterables. Muxing, or asynchronously "mixing", is the process of combining multiple asynchronous sources into one source, with order determined by the asynchronous resolution of the individual items.
  *
  * ```javascript [playground]
  * const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
@@ -99,17 +99,18 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  * // ['foo', 'bar', 'baz', 'foo', 'bar', 'baz', 'foo', 'bar', 'baz']
  * ```
  *
- * Upon flatMapper execution, flatten any collection return into the result.
+ * The following list defines concatenation behavior recognized by `flatMap` for individual items being flattened.
  *
- *   * Iterable - items are concatenated into the result
- *   * Iterator/Generator - items are concatenated into the result. Source is consumed.
- *   * Object that implements `.reduce` - this function is called directly for flattening
- *   * Object that implements `.chain` or `.flatMap` - either of these is called directly to flatten
- *   * any other Object - values are flattened
- *   * AsyncIterable - items are muxed by asynchronous resolution
- *   * AsyncIterator/AsyncGenerator - items are muxed by asynchronous resolution. Source is consumed.
+ *   * `Iterable` - items are iterated into the result
+ *   * `Iterator/Generator` - items are iterated into the result, source is consumed
+ *   * `{ reduce: function }` - call object's `.reduce` with result's concatenation function
+ *   * `{ chain: function }` - call object's `.chain` with result's concatenation function
+ *   * `{ flatMap: function }` - call object's `.flatMap` with result's concatentation function
+ *   * `Object` - values are flattened
+ *   * `AsyncIterable` - items are muxed into the result
+ *   * `AsyncIterator/AsyncGenerator` - items are muxed into the result, source is consumed
  *
- * All other types are left in the result as they are.
+ * All other types are added into the result as they are.
  *
  * ```javascript [playground]
  * const identity = value => value
@@ -127,7 +128,7 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  * // [1, 1, 2, 3, 3, 5, 5, 6, 7, 8, 4, 4]
  * ```
  *
- * Purer functional programming is possible with flatMap operation on monads. A monad could be any object that implements `.chain` or `.flatMap`. When a flatMapping operation encounters a monad, it calls the monad's `.chain` method directly to flatten.
+ * `flatMap` supports purer functional programming with monads. A monad is any object that defines a method `.chain` or `.flatMap` ([Fantasy Land](https://github.com/fantasyland/fantasy-land#monad)) that takes some item and returns a monad.
  *
  * ```javascript [playground]
  * const Maybe = value => ({
@@ -136,12 +137,26 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  *   },
  * })
  *
- * flatMap(console.log)(Maybe(null))
+ * const userbase = new Map([
+ *   ['1', { _id: '1', name: 'George' }],
+ *   ['2', { _id: '2', name: 'Jane' }],
+ *   ['3', { _id: '3', name: 'Jim' }],
+ * ])
  *
- * flatMap(console.log)(Maybe('hello world')) // hello world
+ * const getUserByID = async userID => userbase.get(userID)
+ *
+ * const logUserByID = pipe([
+ *   getUserByID,
+ *   Maybe,
+ *   flatMap(console.log),
+ * ])
+ *
+ * logUserByID('5')
+ *
+ * logUserByID('1') // { _id: '1', name: 'George' }
  * ```
  *
- * In addition to monads, `flatMap` is a powerful option when working with transducers as well. A flatMapping transducer is like a mapping transducer except all items of the reducing operation are additionally flattened into the result.
+ * Additionally, `flatMap` is a powerful option when working with transducers. A flatMapping transducer is like a mapping transducer except all items of the reducing operation are additionally flattened into the result.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1

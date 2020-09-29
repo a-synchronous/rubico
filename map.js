@@ -24,31 +24,32 @@ const symbolIterator = require('./_internal/symbolIterator')
  * Functor<T> = Array<T>|Object<T>|Iterator<T>|AsyncIterator<T>|{ map: T=>any }
  * Reducer<T> = (any, T)=>Promise|any
  *
- * map<
- *   T any,
+ * var T any,
  *   mapper T=>Promise|any,
  *   functor Functor<T>
  *   args ...any,
- *   generatorFunction ...args=>Generator<Promise|T>,
- *   reducer Reducer<T>,
- * >(mapper)(functor) -> mapped Promise|Functor
+ *   generatorFunction ...args=>Generator<T>,
+ *   asyncGeneratorFunction ...args=>AsyncGenerator<T>,
+ *   reducer Reducer<T>
  *
- * map(mapper)(generatorFunction) ->
- *   mappingGeneratorFunction ...args=>Generator<Promise>
+ * map(mapper)(functor) -> Promise|Functor
  *
- * map(mapper)(reducer) -> mappingReducer Reducer
+ * map(mapper)(generatorFunction) -> ...args=>Generator
+ *
+ * map(mapper)(asyncGeneratorFunction) -> ...args=>AsyncGenerator
+ *
+ * map(mapper)(reducer) -> Reducer
  * ```
  *
  * @description
- * Apply a mapper concurrently to each item of a collection, returning a collection of the same type with all results. If order is implied by the collection, it is maintained in the result. Below are valid collections along with their iteration behavior.
+ * Apply a mapper concurrently to each item of a collection, returning the results in a collection of the same type. If order is implied by the collection, it is maintained in the result. Below are valid collections along with their iteration behavior.
  *
  *  * `Array` - iterate values by index
  *  * `Object` - iterate object values
+ *  * `Map` - iterate Map values (not entries)
  *  * `Iterator`/`Generator` - iterate by calling `.next`
- *  * `AsyncIterator`/`AsyncGenerator` - iterate by calling `.next`, then awaiting. Mapper is still applied concurrently.
- *  * `{ map: mapper (T=>any)=>this }` - literal functor - call `.map` directly with mapper.
- *
- * For all other types, the mapper is applied directly to the data parameter.
+ *  * `AsyncIterator`/`AsyncGenerator` - iterate by calling `.next`
+ *  * `{ map: function }` - call `.map` directly
  *
  * ```javascript [playground]
  * const square = number => number ** 2
@@ -58,21 +59,19 @@ const symbolIterator = require('./_internal/symbolIterator')
  * ) // [1, 4, 9, 16, 25]
  *
  * console.log(
- *   map(square)({ a: 1, b: 2, c: 3 }),
- * ) // { a: 1, b: 4, c: 9 }
+ *   map(square)(new Map([['a', 1], ['b', 2], ['c', 3], ['d', 4], ['e', 5]])),
+ * ) // Map { 'a' => 1, 'b' => 4, 'c' => 9, 'd' => 16, 'e' => 25 }
  *
  * console.log(
- *   map(square)(3)
- * ) // 9
+ *   map(square)({ a: 1, b: 2, c: 3, d: 4, e: 5 }),
+ * ) // { a: 1, b: 4, c: 9, d: 16, e: 25 }
  * ```
  *
  * Functions are regarded as resolvers. Each of the following calls, when passed to a mapping function `map(mapper)`, creates a function with all items of its return transformed by the mapper.
  *
- *  * `...any=>Iterator` or `GeneratorFunction` - items of the iterator are mapped into a new iterator. Warning: using an async mapper in a synchronous generator function is not recommended and could lead to unexpected behavior.
- *  * `...any=>AsyncIterator` or `AsyncGeneratorFunction` - items of the async iterator are mapped into a new async iterator. Async result items are awaited in a new async iterator. Async mapper functions are valid.
- *  * `Reducer<T> = (any, T)=>Promise|any` - when combined with `reduce` or any implementation thereof, items of the reducing operation are transformed by the mapper function. If an async mapper function is desired here, it is possible with rubico `reduce`.
- *
- * With mapping generator functions and mapping async generator functions, transformations on iterators and their async counterparts are simple to compose.
+ *  * `GeneratorFunction` - items of the iterator are mapped into a new iterator. Warning: using an async mapper in a synchronous generator function is not recommended and could lead to unexpected behavior.
+ *  * `AsyncGeneratorFunction` - items of the async iterator are mapped into a new async iterator. Async result items are awaited in a new async iterator. Async mapper functions are valid.
+ *  * `Reducer` - items of a reducing operation are transformed by the mapper function. Fully asynchronous transducing operations are possible with a mapping reducer and `reduce`.
  *
  * ```javascript [playground]
  * const capitalize = string => string.toUpperCase()
@@ -94,7 +93,7 @@ const symbolIterator = require('./_internal/symbolIterator')
  *
  * Function laziness is extended to reducer functions as [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
  *
- * ```javascript [theme=default]
+ * ```coffeescript [specscript]
  * Reducer<T> = (any, T)=>Promise|any
  *
  * Transducer = Reducer=>Reducer
@@ -178,11 +177,11 @@ const map = mapper => function mapping(value) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * map.series<
- *   T any,
+ * var T any,
  *   mapper T=>Promise|any,
- *   array Array<T>,
- * >(mapper)(array) -> mappedInSeries Promise|Array
+ *   array Array<T>
+ *
+ * map.series(mapper)(array) -> Promise|Array
  * ```
  *
  * @description
@@ -214,12 +213,12 @@ map.series = mapper => function mappingInSeries(value) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * map.pool<
- *   maxConcurrency number,
+ * var maxConcurrency number,
  *   T any,
  *   mapper T=>Promise|any,
- *   array Array<T>,
- * >(maxConcurrency, mapper)(array) -> mapped Promise|Array
+ *   array Array<T>
+ *
+ * map.pool(maxConcurrency, mapper)(array) -> Promise|Array
  * ```
  *
  * @description
@@ -251,12 +250,12 @@ map.pool = (concurrencyLimit, mapper) => function concurrentPoolMapping(value) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * map.withIndex<
- *   T any,
+ * var T any,
  *   index number,
  *   array Array<T>,
- *   indexedMapper (T, index, array)=>Promise|any,
- * >(indexedMapper)(array) -> mapped Promise|Array
+ *   indexedMapper (T, index, array)=>Promise|any
+ *
+ * map.withIndex(indexedMapper)(array) -> Promise|Array
  * ```
  *
  * @description

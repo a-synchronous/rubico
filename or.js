@@ -38,13 +38,14 @@ const _asyncOrInterlude = (
  *
  * @synopsis
  * ```coffeescript [specscript]
- * or(
+ * var value any,
  *   predicates Array<value=>Promise|boolean>
- * )(value any) -> anyTruthy Promise|boolean
+ *
+ * or(predicates)(value) -> Promise|boolean
  * ```
  *
  * @description
- * Test an array of predicates concurrently against a single input, returning true if any of them test truthy. Predicates may be asynchronous.
+ * Test an array of predicates concurrently against a single input, returning true if any of them test truthy.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1

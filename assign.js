@@ -9,14 +9,14 @@ const funcObjectAll = require('./_internal/funcObjectAll')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * assign<
- *   source Object,
- *   funcsObject Object<source=>Promise|any>,
- * >(funcsObject)(source) -> resultsMergedWithSource Promise|Object
+ * var source Object,
+ *   funcsObject Object<source=>Promise|any>
+ *
+ * assign(funcsObject)(source) -> resultsMergedWithSource Promise|Object
  * ```
  *
  * @description
- * Compose an object from a source object merged with the evaluations of the property functions of a specifying object of functions. Functions of the specifying object of functions may be asynchronous.
+ * Compose an object from a source object merged with the evaluations of a specifying object of functions. Functions of the specifying object may return Promises.
  *
  * ```javascript [playground]
  * console.log(

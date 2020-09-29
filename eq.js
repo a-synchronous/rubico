@@ -11,14 +11,17 @@ const __ = require('./_internal/placeholder')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * eq(
- *   left (any=>Promise|boolean)|any,
- *   right (any=>Promise|boolean)|any,
- * ) -> strictEqualBy (value any)=>Promise|boolean
+ * var value any,
+ *   leftCompare any,
+ *   rightCompare any,
+ *   left (value=>Promise|leftCompare)|leftCompare,
+ *   right (value=>Promise|rightCompare)|rightCompare
+ *
+ * eq(left, right)(value) -> Promise|boolean
  * ```
  *
  * @description
- * Test for strict equality (`===`) between two values. Either parameter may be an asynchronous resolver.
+ * Test for strict equality (`===`) between the returns of two functions. Either parameter may be an actual value.
  *
  * ```javascript [playground]
  * const personIsGeorge = eq(person => person.name, 'George')
