@@ -38,7 +38,7 @@ When you import this library, you obtain the freedom that comes from having thos
 
 rubico is a module of twenty-four operators for [a]synchronous functional programming in JavaScript.
 
-```javascript [theme=default]
+```javascript
 const {
   pipe, fork, assign,
   tap, tryCatch, switchCase,
@@ -92,17 +92,17 @@ Advanced functions may be found in `rubico/x`.
 
 # Installation
 with `npm`
-```bash [theme=default]
+```bash
 npm i rubico
 ```
 
 browser script, global `rubico`
-```html [theme=default]
+```html
 <script src="https://unpkg.com/rubico"></script>
 ```
 
 browser module
-```javascript [theme=default]
+```javascript
 import rubico from 'https://unpkg.com/rubico/es.js'
 ```
 
