@@ -3802,6 +3802,9 @@ eq(
       ase(await gt(1, async x => x)(0), true)
       ase(await gt(1, async x => x)(1), false)
       ase(await gt(1, async x => x)(2), false)
+      ase(await gt(async x => x, 0)(1), true)
+      ase(await gt(async x => x, 1)(1), false)
+      ase(await gt(async x => x, 2)(1), false)
     })
     it('[sync] gt(valueA, valueB)(x) === (valueA > valueB)', async () => {
       ase(gt(1, 0)('ayylmao'), true)
