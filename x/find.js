@@ -10,6 +10,7 @@ const asyncIteratorFind = require('../_internal/asyncIteratorFind')
  * @name find
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * Foldable<T> = Iterable<T>|AsyncIterable<T>|{ reduce: (any, T)=>any }|Object<T>
  *
  * var T any,
@@ -18,11 +19,14 @@ const asyncIteratorFind = require('../_internal/asyncIteratorFind')
  *   result Promise|T|undefined
  *
  * find(predicate)(foldable) -> result
+ * ```
  *
- * @catchphrase
+ * @description
  * Get the first item in a foldable collection that matches a predicate.
  *
- * ```javascript [playground]
+ * ```javascript [node]
+ * const find = require('rubico/x/find')
+ *
  * const users = [
  *   { name: 'John', age: 16 },
  *   { name: 'Jill', age: 32 },

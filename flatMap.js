@@ -128,7 +128,7 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  * // [1, 1, 2, 3, 3, 5, 5, 6, 7, 8, 4, 4]
  * ```
  *
- * `flatMap` supports purer functional programming with monads. A monad is any object that defines a method `.chain` or `.flatMap` ([Fantasy Land](https://github.com/fantasyland/fantasy-land#monad)) that takes some item and returns a monad.
+ * `flatMap` supports purer functional programming with monads. A monad is any object that defines a method `.chain` or `.flatMap` that takes some item and returns a monad.
  *
  * ```javascript [playground]
  * const Maybe = value => ({

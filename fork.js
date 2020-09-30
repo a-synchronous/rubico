@@ -18,7 +18,7 @@ const funcAllSeries = require('./_internal/funcAllSeries')
  * ```
  *
  * @description
- * A multi-purpose function. Parallelizes multiple functions with concurrent execution into either an object, an array, or a nested mix of both. Has use cases in parallel execution and object composition.
+ * A multi-purpose function. Parallelizes multiple functions with concurrent execution into either an object, an array, or a nested mix of both.
  *
  * ```javascript [playground]
  * console.log(

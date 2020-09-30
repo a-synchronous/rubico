@@ -47,7 +47,7 @@ const tap = func => function tapping(...args) {
  * ```
  *
  * @description
- * Synchronous tap
+ * Synchronous `tap`
  *
  * ```javascript [playground]
  * pipe([

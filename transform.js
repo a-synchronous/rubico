@@ -57,7 +57,7 @@ const genericTransform = require('./_internal/genericTransform')
  * ) // Uint8Array(3) [ 1, 9, 25 ]
  * ```
  *
- * A `Semigroup` is any type with some notion of concatenation. The Fantasy Land Specification ([github](https://github.com/fantasyland/fantasy-land#semigroup)) defines this properly as having a `.concat` method. The following have some notion of concatenation.
+ * A `Semigroup` is any type with some notion of concatenation. This could manifest in a `.concat` method.
  *  * `Array` - `result.concat(values)`
  *  * `string` - `result + values`
  *  * `Set` - `result.add(...values)`

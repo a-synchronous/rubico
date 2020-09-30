@@ -6,15 +6,20 @@ const funcConditional = require('./_internal/funcConditional')
  * @synopsis
  * ```coffeescript [specscript]
  * var args ...any,
+ *   result any,
  *   predicate ...args=>Promise|boolean,
- *   resolver ...args=>Promise|any,
- *   conditionalFunctions Array<predicate|resolver>
+ *   resolver ...args=>Promise|result,
+ *   defaultResolver ...args=>Promise|result,
+ *   conditionalFunctions [
+ *     ...Array<predicate|resolver>,
+ *     defaultResolver,
+ *   ]
  *
- * switchCase(conditionalFunctions)(...args) -> Promise|any
+ * switchCase(conditionalFunctions)(...args) -> Promise|result
  * ```
  *
  * @description
- * Conditional operator for functions. Odd indexed functions should be resolvers, while even indexed functions excluding the last should be predicates. For an odd number of functions, the last even indexed function should be a default resolver function. Any predicates or resolvers may be asynchronous.
+ * Conditional operator for functions. Cases are defined as pairings of `predicate` and `resolver`, with the exception of the last, default case.
  *
  * ```javascript [playground]
  * const fruitIsYellow = fruit => fruit.color == 'yellow'
