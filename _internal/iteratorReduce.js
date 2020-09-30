@@ -7,12 +7,12 @@ const isPromise = require('./isPromise')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * iteratorReduceAsync<
- *   T any,
- *   iterator Iterator<T>|AsyncIterator<T>,
+ * var T any,
+ *   iterator Iterator<T>,
  *   reducer (any, T)=>Promise|any,
- *   result any?,
- * >(iterator, reducer, result) -> Promise<result>
+ *   result any,
+ *
+ * iteratorReduceAsync(iterator, reducer, result) -> Promise
  * ```
  *
  * @description
@@ -22,29 +22,16 @@ const iteratorReduceAsync = async function (
   iterator, reducer, result,
 ) {
   let iteration = iterator.next()
-  if (isPromise(iteration)) {
-    iteration = await iteration
-  }
   if (iteration.done) {
     return result
   }
 
-  if (result === undefined) {
-    result = iteration.value
-    iteration = iterator.next()
-    if (isPromise(iteration)) {
-      iteration = await iteration
-    }
-  }
   while (!iteration.done) {
     result = reducer(result, iteration.value)
     if (isPromise(result)) {
       result = await result
     }
     iteration = iterator.next()
-    if (isPromise(iteration)) {
-      iteration = await iteration
-    }
   }
   return result
 }
@@ -54,11 +41,12 @@ const iteratorReduceAsync = async function (
  *
  * @synopsis
  * ```coffeescript [specscript]
- * iteratorReduce<T>(
- *   iterator Iterator<Promise|T>,
+ * var T any,
+ *   iterator Iterator<T>,
  *   reducer (any, T)=>Promise|any,
  *   result any,
- * ) -> Promise|result
+ *
+ * iteratorReduce(iterator, reducer, result?) -> Promise|any
  * ```
  *
  * @description

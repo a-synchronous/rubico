@@ -50,15 +50,11 @@ var genericReduce = function (args, reducer, result) {
     if (isAsyncGeneratorFunction(collection)) {
       return asyncGeneratorFunctionReduce(collection, reducer, result)
     }
-    const combinedReducer = args.length == 0
-      ? reducer
-      : args.reduce(reducerConcat, reducer)
-    return curryArgs3(genericReduce, __, combinedReducer, result)
-    /*
-    return tacitGenericReduce(
-      args.length == 0 ? reducer : args.reduce(reducerConcat, reducer),
+    return curryArgs3(
+      genericReduce,
+      __,
+      args.reduce(reducerConcat, reducer),
       result)
-      */
   }
   if (collection == null) {
     return result === undefined

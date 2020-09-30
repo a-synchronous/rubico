@@ -1,6 +1,7 @@
 const isArray = require('./_internal/isArray')
 const arrayAll = require('./_internal/arrayAll')
 const iteratorAll = require('./_internal/iteratorAll')
+const asyncIteratorAll = require('./_internal/asyncIteratorAll')
 const objectValues = require('./_internal/objectValues')
 const reducerAll = require('./_internal/reducerAll')
 const symbolIterator = require('./_internal/symbolIterator')
@@ -63,7 +64,7 @@ const all = predicate => function allTruthy(value) {
     return iteratorAll(value[symbolIterator](), predicate)
   }
   if (typeof value[symbolAsyncIterator] == 'function') {
-    return iteratorAll(value[symbolAsyncIterator](), predicate)
+    return asyncIteratorAll(value[symbolAsyncIterator](), predicate, new Set())
   }
   if (typeof value.reduce == 'function') {
     return value.reduce(reducerAll(predicate), true)

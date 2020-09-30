@@ -19,7 +19,9 @@ const funcObjectAll = funcs => function objectAllFuncs(...args) {
   let isAsync = false
   for (const key in funcs) {
     const resultItem = funcs[key](...args)
-    if (isPromise(resultItem)) isAsync = true
+    if (!isAsync && isPromise(resultItem)) {
+      isAsync = true
+    }
     result[key] = resultItem
   }
   return isAsync ? promiseObjectAll(result) : result
