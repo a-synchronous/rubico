@@ -75,16 +75,7 @@ describe('defaultsDeep', () => {
     )
     assert.deepEqual(x, { a: 1 })
   })
-  it('throws TypeError on defaultsDeep(defaultCollection); defaultCollection is not an Array or Object', async () => {
-    assert.throws(
-      () => defaultsDeep(0),
-      new TypeError('defaultsDeep(defaultCollection); defaultCollection is not a Struct'),
-    )
-  })
-  it('throws TypeError on defaultsDeep(...)(x); x invalid', async () => {
-    assert.throws(
-      () => defaultsDeep({})(),
-      new TypeError('defaultsDeep(...)(x); x invalid'),
-    )
+  it('identity for non object or array values', async () => {
+    assert.strictEqual(defaultsDeep({ b: 'yo' })(1), 1)
   })
 })

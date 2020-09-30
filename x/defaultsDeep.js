@@ -30,37 +30,31 @@ const structDefaultsDeep = (defaultCollection, checkingFunc, x) => {
   return y
 }
 
-/*
+// value any => boolean
+const isDefined = value => value != null
+
+/**
  * @name
  * defaultsDeep
  *
  * @synopsis
- * defaultsDeep(
- *   defaultCollection Array|Object,
- *   checkingFunc Optional<any=>boolean>,
- * )(x Promise<Array|Object>|Array|Object) -> deeplyDefaulted Array|Object
+ * var defaultCollection Array|Object,
+ *   value Array|Object
  *
- * @catchphrase
- * Deeply supply default values to an Object or Array
+ * defaultsDeep(defaultCollection)(value) -> Array|Object
  *
  * @example
  * console.log(
  *   defaultsDeep({ a: 1 })({ b: 2, c: 3 }),
  * ) // { a: 1, b: 2, c: 3 }
  */
-const defaultsDeep = (defaultCollection, checkingFunc = Instance.isInstance) => {
-  if (!isStruct(defaultCollection)) {
-    throw new TypeError([
-      'defaultsDeep(defaultCollection)',
-      'defaultCollection is not a Struct',
-    ].join('; '))
+const defaultsDeep = (
+  defaultCollection, checkingFunc = isDefined,
+) => function (value) {
+  if (isStruct(value)) {
+    return structDefaultsDeep(defaultCollection, checkingFunc, value)
   }
-  return x => {
-    if (isStruct(x)) {
-      return structDefaultsDeep(defaultCollection, checkingFunc, x)
-    }
-    throw new TypeError('defaultsDeep(...)(x); x invalid')
-  }
+  return value
 }
 
 module.exports = defaultsDeep
