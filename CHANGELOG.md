@@ -2,7 +2,8 @@
  * project structure reorganization around `_internal/`
  * new generated documentation format
  * size rewrite + refresh benchmarks
- * `find` works on all foldables
+ * find works on all foldables
+ * forEach rewrite + benchmarks
 
 ## v1.5.19 - latest
  * pipe.sync
