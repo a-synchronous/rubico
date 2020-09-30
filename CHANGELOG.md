@@ -1,5 +1,8 @@
-## v1.5.20 - next release
+## v1.6 - next release
+ * project structure reorganization around `_internal/`
+ * new generated documentation format
  * size rewrite + refresh benchmarks
+ * `find` works on all foldables
 
 ## v1.5.19 - latest
  * pipe.sync
