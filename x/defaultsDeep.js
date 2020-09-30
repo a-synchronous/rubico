@@ -34,19 +34,26 @@ const structDefaultsDeep = (defaultCollection, checkingFunc, x) => {
 const isDefined = value => value != null
 
 /**
- * @name
- * defaultsDeep
+ * @name defaultsDeep
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * var defaultCollection Array|Object,
  *   value Array|Object
  *
  * defaultsDeep(defaultCollection)(value) -> Array|Object
+ * ```
  *
- * @example
+ * @description
+ * Deeply provide an array or object with default values based on a default array or object.
+ *
+ * ```javascript [node]
+ * const defaultsDeep = require('rubico/x/defaultsDeep')
+ *
  * console.log(
  *   defaultsDeep({ a: 1 })({ b: 2, c: 3 }),
  * ) // { a: 1, b: 2, c: 3 }
+ * ```
  */
 const defaultsDeep = (
   defaultCollection, checkingFunc = isDefined,
