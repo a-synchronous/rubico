@@ -69,31 +69,40 @@ describe('find', () => {
     )
   })
 
-  it('throws TypeError for find(nonFunction)', async () => {
-    assert.throws(
-      () => find('hey'),
-      new TypeError('find(f); f is not a function'),
-    )
+  const is3 = number => number == 3
+  const async = func => async function asyncFunc(...args) {
+    return func(...args)
+  }
+  it('Array<T>', async () => {
+    assert.strictEqual(find(is3)([1, 2, 3, 4, 5]), 3)
+    assert.strictEqual(await find(async(is3))([1, 2, 3, 4, 5]), 3)
   })
-
-  it('find(...)(null); throw TypeError', async () => {
-    assert.throws(
-      () => find(() => true)(null),
-      new TypeError('find(...)(x); x invalid'),
-    )
+  it('Iterator<T>', async () => {
+    const NumbersGenerator = function* () { for (let i = 1; i <= 5; i++) yield i }
+    assert.strictEqual(find(is3)(NumbersGenerator()), 3)
+    assert.strictEqual(await find(async(is3))(NumbersGenerator()), 3)
   })
-
-  it('find(...)(undefined); throw TypeError', async () => {
-    assert.throws(
-      () => find(() => true)(undefined),
-      new TypeError('find(...)(x); x invalid'),
-    )
+  it('AsyncIterator<T>', async () => {
+    const AsyncNumbersGenerator = async function* () { for (let i = 1; i <= 5; i++) yield i }
+    assert.strictEqual(await find(is3)(AsyncNumbersGenerator()), 3)
+    assert.strictEqual(await find(async(is3))(AsyncNumbersGenerator()), 3)
   })
-
-  it('find(...)(invalid); throw TypeError', async () => {
-    assert.throws(
-      () => find(() => true)(1),
-      new TypeError('find(...)(x); x invalid'),
-    )
+  it('{ find: function }', async () => {
+    const implementsFind = { find: () => 'hey' }
+    assert.strictEqual(find(is3)(implementsFind), 'hey')
+  })
+  it('Object<T>', async () => {
+    const numbersObject = { a: 1, b: 2, c: 3, d: 4, e: 5 }
+    assert.strictEqual(find(is3)(numbersObject), 3)
+    assert.strictEqual(await find(async(is3))(numbersObject), 3)
+  })
+  it('null', async () => {
+    assert.strictEqual(find(is3)(null), undefined)
+  })
+  it('undefined', async () => {
+    assert.strictEqual(find(is3)(undefined), undefined)
+  })
+  it('1', async () => {
+    assert.strictEqual(find(is3)(1), undefined)
   })
 })

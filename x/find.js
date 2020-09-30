@@ -1,50 +1,59 @@
-const Instance = require('../monad/Instance')
+const isArray = require('../_internal/isArray')
+const symbolIterator = require('../_internal/symbolIterator')
+const symbolAsyncIterator = require('../_internal/symbolAsyncIterator')
+const objectValues = require('../_internal/objectValues')
+const arrayFind = require('../_internal/arrayFind')
+const iteratorFind = require('../_internal/iteratorFind')
+const asyncIteratorFind = require('../_internal/asyncIteratorFind')
 
-const { isFunction, isPromise, isIterable, isObject } = Instance
-
-const asyncFindIterator = async (f, iter) => {
-  for (const xi of iter) {
-    if (await f(xi)) return xi
-  }
-  return undefined
-}
-
-const findIterator = (f, iter) => {
-  for (const xi of iter) {
-    const ok = f(xi)
-    if (isPromise(ok)) return ok.then(res => (
-      res ? xi : asyncFindIterator(f, iter)))
-    if (ok) return xi
-  }
-  return undefined
-}
-
-const objectValuesIterator = function*(x) {
-  for (const k in x) {
-    yield x[k]
-  }
-}
-
-const symbolIterator = Symbol.iterator
-
-/*
+/**
  * @name find
  *
  * @synopsis
- * find(f function)(x Promise<Iterable>|Iterable) -> found any
+ * Foldable<T> = Iterable<T>|AsyncIterable<T>|{ reduce: (any, T)=>any }|Object<T>
+ *
+ * var T any,
+ *   predicate T=>Promise|boolean,
+ *   foldable Foldable<T>,
+ *   result Promise|T|undefined
+ *
+ * find(predicate)(foldable) -> result
  *
  * @catchphrase
- * Get the first item from a collection that matches a condition
+ * Get the first item in a foldable collection that matches a predicate.
+ *
+ * ```javascript [playground]
+ * const users = [
+ *   { name: 'John', age: 16 },
+ *   { name: 'Jill', age: 32 },
+ *   { name: 'George', age: 51 },
+ * ]
+ *
+ * console.log(
+ *   find(user => user.age > 50)(users),
+ * ) // { name: 'George', age: 51 }
+ * ```
  */
-const find = f => {
-  if (!isFunction(f)) {
-    throw new TypeError('find(f); f is not a function')
+const find = predicate => function finding(value) {
+  if (isArray(value)) {
+    return arrayFind(value, predicate)
   }
-  return x => {
-    if (isIterable(x)) return findIterator(f, x[symbolIterator]())
-    if (isObject(x)) return findIterator(f, objectValuesIterator(x))
-    throw new TypeError('find(...)(x); x invalid')
+  if (value == null) {
+    return undefined
   }
+  if (typeof value[symbolIterator] == 'function') {
+    return iteratorFind(value[symbolIterator](), predicate)
+  }
+  if (typeof value[symbolAsyncIterator] == 'function') {
+    return asyncIteratorFind(value[symbolAsyncIterator](), predicate)
+  }
+  if (typeof value.find == 'function') {
+    return value.find(predicate)
+  }
+  if (value.constructor == Object) {
+    return arrayFind(objectValues(value), predicate)
+  }
+  return undefined
 }
 
 module.exports = find
