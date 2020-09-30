@@ -17,14 +17,21 @@ const {
 const isSameStruct = (a, b) => (isStruct(a) && isStruct(b)
   && a.constructor == b.constructor)
 
-/*
+/**
  * @name isDeepEqual
  *
  * @synopsis
- * isDeepEqual(structA any, structB any) -> boolean
+ * ```coffeescript [specscript]
+ * isDeepEqual(struct)
  *
- * @catchphrase
+ * isDeepEqual(structA any, structB any) -> boolean
+ * ```
+ *
+ * @description
  * Checks if two values are deeply equal
+ *
+ * @TODO example
+ * @TODO refactor to _internal
  */
 const isDeepEqual = (structA, structB) => {
   if (isSameStruct(structA, structB)) {

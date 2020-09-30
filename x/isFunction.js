@@ -1,10 +1,8 @@
-const { isFunction } = require('../monad/Instance')
-
-/*
+/**
  * @name isFunction
  *
  * @synopsis
- * isFunction(x any) -> boolean
+ * isFunction(value any) -> boolean
  *
  * @catchphrase
  * Tell if Function
@@ -19,4 +17,6 @@ const { isFunction } = require('../monad/Instance')
  *   isFunction(add),
  * ) // true
  */
+const isFunction = value => typeof value == 'function'
+
 module.exports = isFunction

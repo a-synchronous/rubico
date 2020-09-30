@@ -13,6 +13,8 @@ const { isStruct, size: structSize } = Struct
  *
  * @catchphrase
  * Check if a struct or string is empty
+ *
+ * @TODO refactor to _internal
  */
 const isEmpty = function (value) {
   if (isString(value)) {

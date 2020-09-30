@@ -54,6 +54,8 @@ const isDefined = value => value != null
  *   defaultsDeep({ a: 1 })({ b: 2, c: 3 }),
  * ) // { a: 1, b: 2, c: 3 }
  * ```
+ *
+ * @TODO refactor to _internal
  */
 const defaultsDeep = (
   defaultCollection, checkingFunc = isDefined,
