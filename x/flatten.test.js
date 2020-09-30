@@ -24,4 +24,18 @@ describe('flatten', () => {
     const object = flatten({ _: { a: 1 }, __: { b: 2, c: 3 } })
     assert.deepEqual(object, { a: 1, b: 2, c: 3 })
   })
+  it('flatten(null)', async () => {
+    assert.strictEqual(flatten(null), null)
+  })
+  it('flatten(undefined)', async () => {
+    assert.strictEqual(flatten(undefined), undefined)
+  })
+  it('flatteningReducer', async () => {
+    const add = (a, b) => a + b
+    const flatteningAdd = flatten(add)
+    assert.strictEqual(
+      [[1], [2], [3], [4], [5]].reduce(flatteningAdd, 0),
+      15,
+    )
+  })
 })

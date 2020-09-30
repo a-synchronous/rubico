@@ -3,15 +3,15 @@ const promiseAll = require('./promiseAll')
 const always = require('./always')
 
 /**
- * @name iteratorForEach
+ * @name arrayForEach
  *
  * @synopsis
  * ```coffeescript [specscript]
  * var T any,
- *   iterator Iterator<T>,
+ *   array Array<T>,
  *   callback T=>()
  *
- * iteratorForEach(iterator, callback) -> ()
+ * arrayForEach(array, callback) -> ()
  * ```
  *
  * @description
@@ -19,15 +19,17 @@ const always = require('./always')
  *
  * Note: iterator is consumed
  */
-const iteratorForEach = function (iterator, callback) {
-  const promises = []
-  for (const item of iterator) {
-    const operation = callback(item)
+const arrayForEach = function (array, callback) {
+  const length = array.length,
+    promises = []
+  let index = -1
+  while (++index < length) {
+    const operation = callback(array[index])
     if (isPromise(operation)) {
       promises.push(operation)
     }
   }
-  return promises.length == 0 ? iterator : promiseAll(promises).then(always(iterator))
+  return promises.length == 0 ? array : promiseAll(promises).then(always(array))
 }
 
-module.exports = iteratorForEach
+module.exports = arrayForEach

@@ -41,5 +41,11 @@ describe('size', () => {
     it('value NaN', async () => {
       assert.strictEqual(size(NaN), 1)
     })
+    it('value null', async () => {
+      assert.strictEqual(size(null), 0)
+    })
+    it('value undefined', async () => {
+      assert.strictEqual(size(undefined), 0)
+    })
   })
 })

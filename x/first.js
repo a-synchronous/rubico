@@ -1,20 +1,23 @@
-const PossiblePromise = require('../monad/PossiblePromise')
-const Instance = require('../monad/Instance')
-
-const { isArray, isString } = Instance
-
-const possiblePromiseArgs = PossiblePromise.args
-
 /**
  * @name first
  *
  * @synopsis
  * ```coffeescript [specscript]
- * first(value any) -> value[0]
+ * var value Array|string
+ *
+ * first(value) -> any
  * ```
  *
  * @description
- * Get the first item of a value
+ * Get the first item of a collection
+ *
+ * ```javascript [node]
+ * const first = require('rubico/x/first')
+ *
+ * console.log(first([1, 2, 3])) // 1
+ * console.log(first('abc')) // 'a'
+ * console.log(first([])) // undefined
+ * ```
  */
 const first = value => value == null ? undefined : value[0]
 
