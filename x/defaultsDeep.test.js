@@ -2,7 +2,7 @@ const assert = require('assert')
 const defaultsDeep = require('./defaultsDeep')
 
 describe('defaultsDeep', () => {
-  it('deeply assigns defaults', async () => {
+  it.only('deeply assigns defaults', async () => {
     assert.deepEqual(
       defaultsDeep({
         a: 1,
@@ -18,6 +18,13 @@ describe('defaultsDeep', () => {
         b: { c: 2, d: 3 },
         e: [0, 0, { a: 1, b: 2 }],
       },
+    )
+  })
+  it.only('retains extra elements from original if not found on default', async () => {
+    const array = [{ a: 1 }, 0, 0]
+    assert.deepEqual(
+      defaultsDeep([{ a: 1, b: 2, c: 3 }])(array),
+      [{ a: 1, b: 2, c: 3 }, 0, 0],
     )
   })
   it('accepts array default', async () => {
