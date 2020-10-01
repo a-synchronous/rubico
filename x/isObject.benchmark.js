@@ -14,7 +14,7 @@ const _ = require('lodash')
  * _.isObject({}): 1e+7: 14.536ms
  */
 
-timeInLoop('isObject({})', 1e7, () => isObject({}))
+// timeInLoop('isObject({})', 1e7, () => isObject({}))
 
 const _isObject = _.isObject
 
