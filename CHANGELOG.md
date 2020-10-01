@@ -4,6 +4,7 @@
  * size rewrite + refresh benchmarks
  * find works on all foldables
  * forEach rewrite + benchmarks
+ * defaultsDeep rewrite + refresh benchmarks
 
 ## v1.5.19 - latest
  * pipe.sync
