@@ -2,7 +2,23 @@ const assert = require('assert')
 const defaultsDeep = require('./defaultsDeep')
 
 describe('defaultsDeep', () => {
-  it.only('deeply assigns defaults', async () => {
+  it('default array', async () => {
+    assert.deepEqual(
+      defaultsDeep([1, 2, 3])([3]),
+      [3, 2, 3],
+    )
+    assert.deepEqual(
+      defaultsDeep([[1], 2, 3])([[]]),
+      [[1], 2, 3],
+    )
+  })
+  it('null', async () => {
+    assert.strictEqual(defaultsDeep([[1], 2, 3])(null), null)
+  })
+  it('undefined', async () => {
+    assert.strictEqual(defaultsDeep([[1], 2, 3])(undefined), undefined)
+  })
+  it('deeply assigns defaults', async () => {
     assert.deepEqual(
       defaultsDeep({
         a: 1,
@@ -20,7 +36,7 @@ describe('defaultsDeep', () => {
       },
     )
   })
-  it.only('retains extra elements from original if not found on default', async () => {
+  it('retains extra elements from original if not found on default', async () => {
     const array = [{ a: 1 }, 0, 0]
     assert.deepEqual(
       defaultsDeep([{ a: 1, b: 2, c: 3 }])(array),
@@ -61,17 +77,6 @@ describe('defaultsDeep', () => {
     assert.strictEqual(
       defaultsDeep({ b: 'yo' })({ a: () => 'hey' }).a(),
       'hey',
-    )
-  })
-  it('accepts custom checking function', async () => {
-    assert.deepEqual(
-      defaultsDeep({ a: 1, b: { c: 2, d: 3 } })({ a: 0, b: { c: 0, d: 1 } }),
-      { a: 0, b: { c: 0, d: 1 } },
-    )
-    const isTruthy = x => !!x
-    assert.deepEqual(
-      defaultsDeep({ a: 1, b: { c: 2, d: 3 } }, isTruthy)({ a: 0, b: { c: 0, d: 1 } }),
-      { a: 1, b: { c: 2, d: 1 } },
     )
   })
   it('does not mutate input parameter', async () => {
