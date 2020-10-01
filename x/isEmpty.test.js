@@ -17,4 +17,16 @@ describe('isEmpty', () => {
   it('false for everything else', async () => {
     assert.strictEqual(isEmpty(0), false)
   })
+  it('new Set()', async () => {
+    assert.strictEqual(isEmpty(new Set()), true)
+  })
+  it('new Map()', async () => {
+    assert.strictEqual(isEmpty(new Map()), true)
+  })
+  it('null', async () => {
+    assert.strictEqual(isEmpty(null), true)
+  })
+  it('undefined', async () => {
+    assert.strictEqual(isEmpty(undefined), true)
+  })
 })
