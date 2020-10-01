@@ -10,10 +10,17 @@ const R = require('ramda')
  * isDeepEqual(arr, arrCopy): 1e+5: 101.307ms
  * _.isEqual(arr, arrCopy): 1e+5: 149.487ms
  * R.equals(arr, arrCopy): 1e+5: 1.538s
- *
  * isDeepEqual(arr, arrDiff): 1e+5: 22.642ms
  * _.isEqual(arr, arrDiff): 1e+5: 76.985ms
  * R.equals(arr, arrDiff): 1e+5: 456.832ms
+ *
+ * richytong [2020-10-01]
+ * isDeepEqual(arr, arrCopy): 1e+5: 28.929ms
+ * _.isEqual(arr, arrCopy): 1e+5: 151.338ms
+ * R.equals(arr, arrCopy): 1e+5: 1.579s
+ * isDeepEqual(arr, arrDiff): 1e+5: 12.552ms
+ * _.isEqual(arr, arrDiff): 1e+5: 76.846ms
+ * R.equals(arr, arrDiff): 1e+5: 467.502ms
  */
 
 const arr = [1, [2], [[3]]]
