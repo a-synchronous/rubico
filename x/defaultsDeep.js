@@ -75,19 +75,19 @@ const objectDefaultsDeepFromObject = function (object, defaultObject) {
  * Deeply assign default values to an array or object by an array or object of possibly nested default values.
  *
  * ```javascript [node]
- * const defaultGeorge = defaultsDeep({
+ * const defaultUser = defaultsDeep({
  *   name: 'placeholder',
- *   images: [,
+ *   images: [
  *     { url: 'https://via.placeholder.com/150' },
  *     { url: 'https://via.placeholder.com/150' },
  *     { url: 'https://via.placeholder.com/150' },
  *   ],
- * })({
- *   name: 'George',
- *   images: ['https://via.placeholder.com/150/0000FF/808080%20?Text=Digital.com'],
  * })
  *
- * console.log(defaultGeorge)
+ * console.log(defaultUser({
+ *   name: 'George',
+ *   images: [{ url: 'https://via.placeholder.com/150/0000FF/808080%20?Text=Digital.com' }],
+ * }))
  * // {
  * //   name: 'George',
  * //   images: [
