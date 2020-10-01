@@ -10,25 +10,33 @@ const flatMap = require('../flatMap')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * DuplexStream = { read: function, write: function }
- * Monad = Array|String|Set
- *   |TypedArray|DuplexStream|Iterator|AsyncIterator
- *   |{ chain: function }|{ flatMap: function }|Object
- * Foldable = Iterable|AsyncIterable|{ reduce: function }
+ * Stream<T> = { read: ()=>T, write: T=>() }
+ * Monad<T> = Array<T>|String<T>|Set<T>
+ *   |TypedArray<T>|Stream<T>|Iterator<T>|AsyncIterator<T>
+ *   |{ chain: T=>Monad<T> }|{ flatMap: T=>Monad<T> }|Object<T>
  * Reducer<T> = (any, T)=>Promise|any
+ * Foldable<T> = Iterable<T>|AsyncIterable<T>|{ reduce: Reducer<T>=>any }|Object<T>
  *
- * flatten<T>(value Monad<T>) -> result Monad
+ * var T any,
+ *   monad Monad<Monad<T>|Foldable<T>|T>,
+ *   args ...any,
+ *   generatorFunction ...args=>Generator<Monad<T>|Foldable<T>|T>,
+ *   asyncGeneratorFunction ...args=>AsyncGenerator<Monad<T>|Foldable<T>|T>,
+ *   reducer Reducer<Monad<T>|Foldable<T>|T>
  *
- * flatten<T>(value GeneratorFunction<T>|AsyncGeneratorFunction<T>)
- *   -> flatteningGeneratorFunction GeneratorFunction<T>|AsyncGeneratorFunction<T>
+ * flatten(monad) -> Monad<T>
  *
- * flatten<T>(value Reducer<T>) -> flatteningReducer Reducer
+ * flatten(generatorFunction) -> ...args=>Generator<T>
+ *
+ * flatten(asyncGeneratorFunction) -> ...args=>AsyncGenerator<T>
+ *
+ * flatten(reducer) -> Reducer<T>
  * ```
  *
  * @description
- * Flatten a collection. The equivalent of `flatMap(identity)`.
+ * Flatten a collection. The equivalent of `flatMap(identity)`. Works in transducer position.
  *
- * ```javascript
+ * ```javascript [node]
  * flatten([
  *   [1, 1],
  *   new Set([2, 2]),
@@ -40,9 +48,15 @@ const flatMap = require('../flatMap')
  *   new Uint8Array([8]),
  * ]).then(console.log)
  * // [1, 1, 2, 3, 3, 5, 5, 6, 7, 8, 4, 4]
+ *
+ * const add = (a, b) => a + b
+ *
+ * console.log(
+ *   [[1], [2], [3], [4], [5]].reduce(flatten(add), 0),
+ * ) // 15
  * ```
  *
- * TODO flatten for each type
+ * @TODO flatten for each type
  */
 const flatten = function (value) {
   if (isArray(value)) {

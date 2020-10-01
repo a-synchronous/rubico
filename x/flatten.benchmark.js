@@ -11,11 +11,20 @@ const _ = require('lodash')
  * flatten: 1e+5: 25.87ms
  * R.unnest: 1e+5: 147.448ms
  * _.flatten: 1e+5: 27.811ms
+ *
+ * richytong 2020-10-01
+ * flatten: 1e+5: 19.306ms
+ * R.unnest: 1e+5: 145.089ms
+ * _.flatten: 1e+5: 27.995ms
  */
 
 const nested = [[1], 2, [[3]]]
 
 // timeInLoop('[...].flat(1)', 1e5, () => { nested.flat(1) })
+
+// console.log(flatten(nested))
+// console.log(R.unnest(nested))
+// console.log(_.flatten(nested))
 
 // timeInLoop('flatten', 1e5, () => { flatten(nested) })
 
