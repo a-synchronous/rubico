@@ -32,6 +32,10 @@ describe('isDeepEqual', () => {
       { a: 1, b: [1, 2] },
     ), false)
     assert.strictEqual(isDeepEqual(
+      { a: 1, b: new Set([]) },
+      { a: 1, b: new Set([1, 2, 3]) },
+    ), false)
+    assert.strictEqual(isDeepEqual(
       { a: 1, b: new Set([1, 2, 3]) },
       { a: 1, b: new Set([1, 2, 3]) },
     ), true)

@@ -1,49 +1,114 @@
-const PossiblePromise = require('../monad/PossiblePromise')
-const Instance = require('../monad/Instance')
-const Struct = require('../monad/Struct')
+const isArray = require('../_internal/isArray')
+const objectKeysLength = require('../_internal/objectKeysLength')
+const symbolIterator = require('../_internal/symbolIterator')
 
-const possiblePromiseArgs = PossiblePromise.args
-
-const {
-  isStruct,
-  entries: structEntries,
-  get: structGet,
-} = Struct
-
-/*
+/**
+ * @name areIteratorsDeepEqual
+ *
  * @synopsis
- * isSameStruct(a any, b any) -> boolean
+ * areIteratorsDeepEqual(left Iterator, right Iterator) -> boolean
  */
-const isSameStruct = (a, b) => (isStruct(a) && isStruct(b)
-  && a.constructor == b.constructor)
+const areIteratorsDeepEqual = function (leftIterator, rightIterator) {
+  let leftIteration = leftIterator.next(),
+    rightIteration = rightIterator.next()
+  if (leftIteration.done != rightIteration.done) {
+    return false
+  }
+  while (!leftIteration.done) {
+    if (!isDeepEqual(leftIteration.value, rightIteration.value)) {
+      return false
+    }
+    leftIteration = leftIterator.next()
+    rightIteration = rightIterator.next()
+  }
+  return rightIteration.done
+}
+
+/**
+ * @name areObjectsDeepEqual
+ *
+ * @synopsis
+ * areObjectsDeepEqual(left Object, right Object) -> boolean
+ */
+const areObjectsDeepEqual = function (leftObject, rightObject) {
+  const leftKeysLength = objectKeysLength(leftObject),
+    rightKeysLength = objectKeysLength(rightObject)
+  if (leftKeysLength != rightKeysLength) {
+    return false
+  }
+  for (const key in leftObject) {
+    if (!isDeepEqual(leftObject[key], rightObject[key])) {
+      return false
+    }
+  }
+  return true
+}
+
+/**
+ * @name areArraysDeepEqual
+ *
+ * @synopsis
+ * areArraysDeepEqual(left Array, right Array) -> boolean
+ */
+const areArraysDeepEqual = function (leftArray, rightArray) {
+  const length = leftArray.length
+  if (rightArray.length != length) {
+    return false
+  }
+  let index = -1
+  while (++index < length) {
+    if (!isDeepEqual(leftArray[index], rightArray[index])) {
+      return false
+    }
+  }
+  return true
+}
 
 /**
  * @name isDeepEqual
  *
  * @synopsis
  * ```coffeescript [specscript]
- * isDeepEqual(struct)
+ * Nested = Array<Array|Object|any>|Object<Array|Object|any>
  *
- * isDeepEqual(structA any, structB any) -> boolean
+ * var left Nested,
+ *   right Nested
+ *
+ * isDeepEqual(left, right) -> boolean
  * ```
  *
  * @description
- * Checks if two values are deeply equal
+ * Check two values for deep strict equality.
  *
- * @TODO example
- * @TODO refactor to _internal
+ * ```javascript [node]
+ * console.log(
+ *   isDeepEqual({ a: 1, b: 2, c: [3] }, { a: 1, b: 2, c: [3] }),
+ * ) // true
+ *
+ * console.log(
+ *   isDeepEqual({ a: 1, b: 2, c: [3] }, { a: 1, b: 2, c: [5] }),
+ * ) // false
+ * ```
  */
-const isDeepEqual = (structA, structB) => {
-  if (isSameStruct(structA, structB)) {
-    for (const [index, value] of structEntries(structB)) {
-      if (!isDeepEqual(structGet(structA, index), value)) return false
-    }
-    for (const [index, value] of structEntries(structA)) {
-      if (!isDeepEqual(structGet(structB, index), value)) return false
-    }
-    return true
+const isDeepEqual = function (leftItem, rightItem) {
+  if (isArray(leftItem) && isArray(rightItem)) {
+    return areArraysDeepEqual(leftItem, rightItem)
+  } else if (
+    typeof leftItem == 'object' && typeof rightItem == 'object'
+      && leftItem.constructor == rightItem.constructor
+      && typeof leftItem[symbolIterator] == 'function'
+      && typeof rightItem[symbolIterator] == 'function'
+  ) {
+    return areIteratorsDeepEqual(
+      leftItem[symbolIterator](), rightItem[symbolIterator]())
+  } else if (leftItem == null || rightItem == null) {
+    return leftItem === rightItem
+  } else if (
+    leftItem.constructor == Object && rightItem.constructor == Object
+  ) {
+    return areObjectsDeepEqual(leftItem, rightItem)
   }
-  return structA === structB
+  return leftItem === rightItem
 }
 
 module.exports = isDeepEqual
