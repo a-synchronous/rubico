@@ -73,9 +73,13 @@ describe('find', () => {
   const async = func => async function asyncFunc(...args) {
     return func(...args)
   }
+  const variadicAsyncIs3 = number => number == 3 ? Promise.resolve(true) : false
+  const variadicAsyncIs3_ = number => number == 3 ? true : Promise.resolve(false)
   it('Array<T>', async () => {
     assert.strictEqual(find(is3)([1, 2, 3, 4, 5]), 3)
     assert.strictEqual(await find(async(is3))([1, 2, 3, 4, 5]), 3)
+    assert.strictEqual(await find(variadicAsyncIs3)([1, 2, 3, 4, 5]), 3)
+    assert.strictEqual(await find(variadicAsyncIs3_)([1, 2, 3, 4, 5]), 3)
   })
   it('Iterator<T>', async () => {
     const NumbersGenerator = function* () { for (let i = 1; i <= 5; i++) yield i }
@@ -84,8 +88,11 @@ describe('find', () => {
   })
   it('AsyncIterator<T>', async () => {
     const AsyncNumbersGenerator = async function* () { for (let i = 1; i <= 5; i++) yield i }
+    const emptyAsyncGenerator = async function* () {}
     assert.strictEqual(await find(is3)(AsyncNumbersGenerator()), 3)
     assert.strictEqual(await find(async(is3))(AsyncNumbersGenerator()), 3)
+    assert.strictEqual(await find(is3)(emptyAsyncGenerator()), undefined)
+    assert.strictEqual(await find(async(is3))(emptyAsyncGenerator()), undefined)
   })
   it('{ find: function }', async () => {
     const implementsFind = { find: () => 'hey' }

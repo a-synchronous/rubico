@@ -17,9 +17,9 @@ const promiseRace = require('./promiseRace')
  * ) -> Promise<boolean>
  */
 const asyncIteratorAll = async function (
-  iterator, predicate, promisesInFlight, maxConcurrency = 20,
+  asyncIterator, predicate, promisesInFlight, maxConcurrency = 20,
 ) {
-  let iteration = await iterator.next()
+  let iteration = await asyncIterator.next()
   while (!iteration.done) {
     if (promisesInFlight.size >= maxConcurrency) {
       const [predication, promise] = await promiseRace(promisesInFlight)
@@ -35,10 +35,7 @@ const asyncIteratorAll = async function (
     } else if (!predication) {
       return false
     }
-    iteration = iterator.next()
-    if (isPromise(iteration)) {
-      iteration = await iteration
-    }
+    iteration = await asyncIterator.next()
   }
   while (promisesInFlight.size > 0) {
     const [predication, promise] = await promiseRace(promisesInFlight)
