@@ -1,50 +1,42 @@
 # Transducers
-Transducers enable composable and memory efficient wrangling of very large or infinite streams of data. Say you had `veryBigData` in an array:
+Transducers enable composable and memory efficient wrangling of very large or infinite sets of data. Say you wanted to square just the odd numbers from 1 - 1000.
 
-```javascript
-const veryBigData = [/* many items in here */]
+```javascript [playground]
+const isOdd = number => number % 2 == 1
 
-const veryBigFilteredData = veryBigData.filter(data => data.isBig === true)
+const square = number => number ** 2
 
-const veryBigProcessedData = veryBigFilteredData.map(memoryIntensiveProcess)
+const manyNumbers = Array.from({ length: 1000 }, (_, i) => i)
 
-console.log(veryBigProcessedData) // massive console.log
+console.log(
+  manyNumbers
+    .filter(isOdd)
+    .map(square),
+) // [1, 9, 25, 36, 49, ...]
 ```
 
 <br />
 
-The above is not very memory efficient because of the intermediate arrays `veryBigFilteredData` and `veryBigProcessedData`. We're also logging out a large quantity of data at once to the console.
-
-With rubico, you could express the above transformation as a single pass without incurring a memory penalty.
+`manyNumbers` above goes through two batch transformations from `.filter` and `.map`. It is not very memory efficient. With transducers, you could express the above transformation as a single pass without incurring a memory penalty.
 
 <br />
 
-```javascript
-const dataIsBig = data => data.isBig
+```javascript [playground]
+const isOdd = number => number % 2 == 1
 
-const Stdout = {
-  concat(...args) {
-    console.log(...args)
-    return this
-  }
-}
+const square = number => number ** 2
 
-const veryBigData = [/* many items in here */]
+const manyNumbers = Array.from({ length: 1000 }, (_, i) => i)
 
-transform(
-  pipe([
-    filter(dataIsBig),
-    map(memoryIntensiveProcess),
-  ]),
-  Stdout, // console.log by Stdout.concat
-)(veryBigData) // -> Stdout
+const squaredOdds = pipe([
+  filter(isOdd),
+  map(square),
+])
+
+console.log(
+  transform(squaredOdds, [])(manyNumbers),
+) // [1, 9, 25, 36, 49, ...]
 ```
-
-<br />
-
-The pipeline expressed by `pipe(...)` understands it is in transducer position, and behaves as a transducer, writing each data point to the console via `Stdout.concat`. By defining a self-referencing `.concat`, `Stdout` is regarded by `transform` as a Semigroup ([fantasy-land](https://github.com/fantasyland/fantasy-land#semigroup)). In general, `transform` acts on any vanilla JavaScript type with a notion of concatenation.
-
-<br />
 
 ```coffeescript [specscript]
 Reducer<T> = (any, T)=>Promise|any
@@ -54,7 +46,7 @@ Transducer = Reducer=>Reducer
 
 <br />
 
-A `Reducer` is a function that takes two arguments - one accumulator, and some item of a reducing operation - and returns anything. By default in rubico's `reduce`, Promises returned from reducers are resolved before supplying their value to the next iteration.
+A `Reducer` is a function that takes an accumulator and some item of a reducing operation and returns anything.
 
 A `Transducer` is a function that takes a Reducer and returns another Reducer. This signature enables declarative, lazy processing of the items of a reducing operation. It also enables creating chained reducers by passing reducers to pipes of transducers. Imagine dominos falling over.
 
@@ -64,23 +56,21 @@ A `Transducer` is a function that takes a Reducer and returns another Reducer. T
 
 <br />
 
-The reducer that sets off a chain of transducers is called last. Because of this implementation detail, rubico's `pipe` will behave as `compose` when passed a reducer. You can use `pipe` to create chained functionality for reducers - `pipe` will read left to right in all cases.
+The reducer that sets off a chain of transducers is called last. Because of this implementation detail, `pipe` will behave as `compose` when passed a reducer. You can use `pipe` to create chained functionality for reducers - `pipe` will read left to right in all cases.
 
-The following functions comprise the entirety of rubico's core transducer API.
+The following operators are the core building blocks of rubico's transducer API. It is possible to perform the full spectrum of tranducer transformations with just these.
 
  * `map` - map a function over items of a reducing operation
  * `filter` - filter out items from a reducing operation
  * `flatMap` - additionally flatten the result of a mapping of a function over items of a reducing operation
 
-Note: the above functions also eagerly transform non-function values like Arrays.
+Due to rubico's polymorphism, transducers must be used with reducing implementations to have a transducing effect. This library provides async-capable implementations as `transform` and `reduce`, though it's entirely possible to execute a synchronous transducer with `Array.prototype.reduce`.
 
-The following example show correct usage of the transducer API.
+The following example shows the function pipeline `squaredOdds` used as a transducer.
 
 <br />
 
-```javascript
-import { pipe, map, filter, transform } from 'rubico'
-
+```javascript [playground]
 const square = number => number ** 2
 
 const isOdd = number => number % 2 == 1
@@ -90,36 +80,26 @@ const squaredOdds = pipe([
   map(square),
 ])
 
-transform(
-  squaredOdds, [],
-)([1, 2, 3, 4, 5]) // [1, 9, 25]
+const manyNumbers = Array.from({ length: 1000 }, (_, i) => i)
 
-transform(
-  squaredOdds, '',
-)([1, 2, 3, 4, 5]) // '1925'
+console.log(
+  transform(squaredOdds, [])(manyNumbers),
+) // [1, 9, 25, 36, 49, ...]
 
-transform(
-  squaredOdds, new Set(),
-)([1, 2, 3, 4, 5]) // Set { 1, 9, 25 }
+const arrayConcat = (array, value) => array.concat(value)
 
-transform(
-  squaredOdds, new Uint8Array(0),
-)([1, 2, 3, 4, 5]) // Uint8Array(3) [1, 9, 25]
-
-transform(
-  squaredOdds, null,
-)([1, 2, 3, 4, 5]) // null
+console.log(
+  manyNumbers.reduce(squaredOdds(arrayConcat), []),
+) // [1, 9, 25, 36, 49, ...]
 ```
 
 <br />
 
-The following example depicts an eager version of the above transformation - it does not use the transducer API.
+The below is an eager version of the above - `squaredOdds` is not a transducer below because it is not used with a reducing operation.
 
 <br />
 
-```javascript
-import { pipe, map, filter } from 'rubico'
-
+```javascript [playground]
 const square = number => number ** 2
 
 const isOdd = number => number % 2 == 1
@@ -129,35 +109,17 @@ const squaredOdds = pipe([
   map(square),
 ])
 
-squaredOdds([1, 2, 3, 4, 5]) // [1, 9, 25]
+const manyNumbers = Array.from({ length: 1000 }, (_, i) => i)
+
+console.log(
+  squaredOdds(manyNumbers),
+) // [1, 9, 25, 36, 49, ...]
 ```
 
 <br />
 
-By default, `concat` is the last step of a transforming operation. If customization of this functionality is required beyond the defaults for `transform`, `reduce` is another viable provider of rubico's transducer API. The only difference between `reduce` and `transform` is that you must provide the final concatenation step for `reduce`.
-
-<br />
-
-```javascript
-import { pipe, map, filter, reduce } from 'rubico'
-
-const square = number => number ** 2
-
-const isOdd = number => number % 2 == 1
-
-const arrayConcat = (array, values) => array.concat(values)
-
-const squaredOdds = pipe([
-  filter(isOdd),
-  map(square),
-])
-
-reduce(
-  squaredOdds(arrayConcat), [],
-)([1, 2, 3, 4, 5]) // [1, 9, 25]
-```
-
-<br />
+Dominos photo credits:
+ * https://www.pngkit.com/view/u2w7e6u2y3o0o0y3_junior-alex-berlaga-helps-set-dominoes-world-records/
 
 Further reading:
  * https://tgvashworth.com/2014/08/31/csp-and-transducers.html
