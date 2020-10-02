@@ -29,11 +29,8 @@ const reducerFlatMap = (
 ) => function flatMappingReducer(result, value) {
   const monad = flatMapper(value)
   return isPromise(monad)
-    ? monad.then(curryArgs3(
-      genericReduce, __, reducerFlatten(reducer), result))
-    : genericReduce([monad],
-      reducerFlatten(reducer),
-      result)
+    ? monad.then(curryArgs3(genericReduce, __, reducerFlatten(reducer), result))
+    : genericReduce([monad], reducerFlatten(reducer), result)
 }
 
 module.exports = reducerFlatMap
