@@ -57,7 +57,7 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  *   * `{ chain: function }` - call object's `.chain`
  *   * `{ flatMap: function }` - call object's `.flatMap`
  *   * `Object` - assign all results into a new object
- *   * `Reducer` - execute the reducer for each item per item of a reducing operation
+ *   * `Reducer` - execute the reducer per item of the items of a reducing operation
  *
  * ```javascript [playground]
  * const duplicate = number => [number, number]
