@@ -106,13 +106,13 @@ const arrayUniqWith = function (array, comparator) {
  * ```coffeescript [specscript]
  * var T any,
  *   arrayOfArrays Array<Array<T>>,
- *   comparator (T, T)=>Promise|T
+ *   comparator (T, T)=>Promise|boolean
  *
  * unionWith(comparator)(arrayOfArrays) -> Array<T>
  * ```
  *
  * @description
- * Create an array of unique values from an array of arrays in order.
+ * Create an array of unique values from an array of arrays with uniqueness determined by a comparator. The comparator is a function that returns a boolean value, `true` if two given values are distinct.
  *
  * ```javascript [node]
  * console.log(
