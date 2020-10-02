@@ -7,6 +7,7 @@
  * defaultsDeep rewrite + refresh benchmarks
  * flatten rewrite + refresh benchmarks
  * isDeepEqual rewrite + refresh benchmarks
+ * unionWith rewrite + refresh benchmarks
 
 ## v1.5.19 - latest
  * pipe.sync
