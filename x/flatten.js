@@ -34,7 +34,7 @@ const flatMap = require('../flatMap')
  * ```
  *
  * @description
- * Flatten a collection. The equivalent of `flatMap(identity)`. Works in transducer position.
+ * Flatten a collection. Works in transducer position.
  *
  * ```javascript [node]
  * flatten([
