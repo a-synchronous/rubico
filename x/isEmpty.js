@@ -8,7 +8,7 @@ const objectKeysLength = require('../_internal/objectKeysLength')
  * isEmpty(value any) -> boolean
  * ```
  *
- * @catchphrase
+ * @description
  * Check if a value is empty.
  *
  * ```javascript [node]

@@ -69,7 +69,7 @@ const areArraysDeepEqual = function (leftArray, rightArray) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * Nested = Array<Array|Object|any>|Object<Array|Object|any>
+ * Nested<T> = Array<Array<T>|Object<T>|Iterable<T>|T>|Object<Array<T>|Object<T>|Iterable<T>|T>
  *
  * var left Nested,
  *   right Nested

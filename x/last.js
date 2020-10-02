@@ -1,6 +1,5 @@
 /**
- * @name
- * last
+ * @name last
  *
  * @synopsis
  * ```coffeescript [specscript]

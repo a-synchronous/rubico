@@ -36,13 +36,25 @@ const symbolAsyncIterator = require('../_internal/symbolAsyncIterator')
  * ```
  *
  * @description
- * Execute a callback for each item of a collection, returning a Promise if any execution is asynchronous.
+ * Execute a callback for each item of a collection, returning a Promise if any execution is asynchronous. Effectively `callback => map(tap)(callback)`. Also works in transducer position.
  *
  * ```javascript [node]
- * const forEach = require('rubico/x/forEach')
- *
  * forEach(console.log)([1, 2, 3, 4, 5]) // 1 2 3 4 5
  * forEach(console.log)({ a: 1, b: 2, c: 3 }) // 1 2 3
+ *
+ * const add = (a, b) => a + b
+ *
+ * const logNumber = number => console.log('got number', number)
+ *
+ * const numbers = [1, 2, 3, 4, 5]
+ * const result = numbers.reduce(forEach(logNumber)(add), 0)
+ * // got number 1
+ * // got number 2
+ * // got number 3
+ * // got number 4
+ * // got number 5
+ *
+ * console.log('result', result) // result 10
  * ```
  */
 const forEach = callback => function executingCallbackForEach(value) {

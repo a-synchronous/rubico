@@ -2,20 +2,20 @@
  * @name isFunction
  *
  * @synopsis
+ * ```coffeescript [specscript]
  * isFunction(value any) -> boolean
- *
- * @catchphrase
- * Tell if Function
+ * ```
  *
  * @description
- * `isFunction` accepts anything and returns true if that thing is a Function
+ * Determine whether a value is a function.
  *
- * @example
+ * ```javascript [node]
  * const add = (a, b) => a + b
  *
  * console.log(
  *   isFunction(add),
  * ) // true
+ * ```
  */
 const isFunction = value => typeof value == 'function'
 

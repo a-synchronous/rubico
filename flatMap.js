@@ -26,8 +26,7 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  *   |TypedArray<T>|Stream<T>|Iterator<T>|AsyncIterator<T>
  *   |{ chain: T=>Monad<T> }|{ flatMap: T=>Monad<T> }|Object<T>
  * Reducer<T> = (any, T)=>Promise|any
- * Foldable<T> = Iterable<T>|AsyncIterable<T>
- *   |{ reduce: Reducer<T>=>any }|Object<T>
+ * Foldable<T> = Iterable<T>|AsyncIterable<T>|{ reduce: Reducer<T>=>any }|Object<T>
  *
  * var T any,
  *   flatMapper T=>Promise|Monad<T>|Foldable<T>|T,

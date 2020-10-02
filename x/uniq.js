@@ -1,25 +1,25 @@
-const Instance = require('../monad/Instance');
-
-const { isArray } = Instance;
-
-const { reduce } = require('../index');
+const isArray = require('../_internal/isArray')
+const reduce = require('../reduce')
 
 /**
  * @name uniq
  *
  * @synopsis
- * <T any>uniq(arr Array<T>) -> uniqArr Array<T>
+ * ```coffeescript [specscript]
+ * var T any,
+ *   array Array<T>
  *
- * @catchphrase
- * Get unique values of a collection
+ * uniq(array) -> Array
+ * ```
  *
  * @description
- * `uniq` takes an Array of items and returns an Array of items containing only the unique items of that Array.
+ * Get an array of unique values from an array.
  *
- * @example
+ * ```javascript [node]
  * console.log(
  *   uniq([1, 2, 2, 3]),
  * ) // [1, 2, 3]
+ * ```
  */
 const uniq = arr => {
   if (!isArray(arr)) throw Error('uniq(arr): arr is not an array');

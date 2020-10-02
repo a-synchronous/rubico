@@ -1,45 +1,27 @@
-const { tap } = require('..')
+const funcConcat = require('../_internal/funcConcat')
+const tapSync = require('../_internal/tapSync')
 
-const consoleLog = console.log
-
-const tapConsoleLog = tap(consoleLog)
-
-const isPromise = value => value != null && typeof value.then == 'function'
-
-/**
- * @name funcConcat
- *
- * @synopsis
- * any -> A, any -> B, any -> C
- *
- * funcConcat(
- *   funcA (args ...any)=>(intermediate any),
- *   funcB intermediate=>(result any)
- * ) -> pipedFunction ...args=>result
- */
-const funcConcat = (funcA, funcB) => function pipedFunction(...args) {
-  const intermediate = funcA(...args)
-  return isPromise(intermediate)
-    ? intermediate.then(funcB)
-    : funcB(intermediate)
-}
+// ...any => ()
+const tapLog = tapSync(console.log)
 
 /**
  * @name trace
  *
  * @synopsis
  * ```coffeescript [specscript]
- * trace(value any) -> value
+ * var args ...any,
+ *   resolved any,
+ *   resolver ...args=>resolved
  *
- * trace<args ...any>(
- *   resolver ...args=>Promise|any
- * ) -> lazyTracer ...args=>Promise|args[0],
+ * trace(...args) -> args[0]
+ *
+ * trace(resolver)(...args) -> resolved
  * ```
  *
  * @description
  * Log a value out to the console, returning the value. If the value is a function, treat it as a resolver.
  *
- * ```javascript [playground]
+ * ```javascript [node]
  * pipe([
  *   trace,
  *   trace(value => value.toUpperCase()),
@@ -48,11 +30,11 @@ const funcConcat = (funcA, funcB) => function pipedFunction(...args) {
  * ```
  */
 const trace = function (...args) {
-  const point = args[0]
-  if (typeof point == 'function') {
-    return funcConcat(point, tapConsoleLog)
+  const arg0 = args[0]
+  if (typeof arg0 == 'function') {
+    return funcConcat(arg0, tapLog)
   }
-  return tapConsoleLog(...args)
+  return tapLog(...args)
 }
 
 module.exports = trace

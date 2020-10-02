@@ -1,11 +1,12 @@
 const __ = require('./placeholder')
-const curry3 = require('./curry3')
+const arrayPush = require('./arrayPush')
+const always = require('./always')
+const curry2 = require('./curry2')
 const getArg1 = require('./getArg1')
 const identity = require('./identity')
 const isArray = require('./isArray')
 const isPromise = require('./isPromise')
 const promiseAll = require('./promiseAll')
-const callPropUnary = require('./callPropUnary')
 const funcConcatSync = require('./funcConcatSync')
 const asyncIteratorForEach = require('./asyncIteratorForEach')
 const symbolIterator = require('./symbolIterator')
@@ -32,10 +33,7 @@ const symbolAsyncIterator = require('./symbolAsyncIterator')
 const arrayFlatten = function (array) {
   const length = array.length,
     promises = [],
-    result = [],
-    getResult = () => result,
-    resultPush = curry3(callPropUnary, result, 'push', __),
-    resultPushReducer = funcConcatSync(getArg1, resultPush)
+    result = []
   let index = -1
 
   while (++index < length) {
@@ -53,20 +51,21 @@ const arrayFlatten = function (array) {
         result.push(subItem)
       }
     } else if (typeof item[symbolAsyncIterator] == 'function') {
-      promises.push(
-        asyncIteratorForEach(item[symbolAsyncIterator](), resultPush))
+      promises.push(asyncIteratorForEach(
+        item[symbolAsyncIterator](), curry2(arrayPush, result, __)))
     } else if (typeof item.chain == 'function') {
       const monadValue = item.chain(identity)
       isPromise(monadValue)
-        ? promises.push(monadValue.then(resultPush))
+        ? promises.push(monadValue.then(curry2(arrayPush, result, __)))
         : result.push(monadValue)
     } else if (typeof item.flatMap == 'function') {
       const monadValue = item.flatMap(identity)
       isPromise(monadValue)
-        ? promises.push(monadValue.then(resultPush))
+        ? promises.push(monadValue.then(curry2(arrayPush, result, __)))
         : result.push(monadValue)
     } else if (typeof item.reduce == 'function') {
-      const folded = item.reduce(resultPushReducer, null)
+      const folded = item.reduce(funcConcatSync(
+        getArg1, curry2(arrayPush, result, __)), null)
       isPromise(folded) && promises.push(folded)
     } else if (item.constructor == Object) {
       for (const key in item) {
@@ -78,7 +77,7 @@ const arrayFlatten = function (array) {
   }
   return promises.length == 0
     ? result
-    : promiseAll(promises).then(getResult)
+    : promiseAll(promises).then(always(result))
 }
 
 module.exports = arrayFlatten

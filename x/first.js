@@ -12,8 +12,6 @@
  * Get the first item of a collection
  *
  * ```javascript [node]
- * const first = require('rubico/x/first')
- *
  * console.log(first([1, 2, 3])) // 1
  * console.log(first('abc')) // 'a'
  * console.log(first([])) // undefined
