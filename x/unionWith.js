@@ -1,258 +1,135 @@
-const PossiblePromise = require('../monad/PossiblePromise')
-const Instance = require('../monad/Instance')
-const Mux = require('../monad/Mux')
-const { switchCase, reduce, flatMap, any } = require('..')
-const is = require('./is')
-
-const { isArray, isSet, isFunction, isPromise } = Instance
-
-const symbolIterator = Symbol.iterator
-
-const symbolAsyncIterator = Symbol.asyncIterator
-
-const possiblePromiseThen = PossiblePromise.then
-
-const {
-  isAsyncSequence,
-  concat: muxConcat,
-  flatten: muxFlatten,
-} = Mux
+const isArray = require('../_internal/isArray')
+const isPromise = require('../_internal/isPromise')
+const promiseAll = require('../_internal/promiseAll')
+const __ = require('../_internal/placeholder')
+const curry3 = require('../_internal/curry3')
+const thunkify2 = require('../_internal/thunkify2')
+const thunkify4 = require('../_internal/thunkify4')
+const funcConcatSync = require('../_internal/funcConcatSync')
+const callPropUnary = require('../_internal/callPropUnary')
+const thunkConditional = require('../_internal/thunkConditional')
+const arrayFlatten = require('../_internal/arrayFlatten')
+const arrayPush = require('../_internal/arrayPush')
+const noop = require('../_internal/noop')
 
 /**
- * @name arrayPush
+ * @name arrayIncludesWith
  *
  * @synopsis
- * arrayPush(arr Array, value any) -> undefined
- */
-const arrayPush = (arr, value) => {
-  arr[arr.length] = value
-}
-
-/**
- * @name setAdd
- *
- * @synopsis
- * setAdd(set Set, value any) -> undefined
- */
-const setAdd = (set, value) => {
-  set.add(value)
-}
-
-/**
- * @name asyncExistsWith
- *
- * @synopsis
- * <T any>asyncExistsWith(
- *   predicate (T, T)=>Promise<boolean>,
+ * ```coffeescript [specscript]
+ * var T any,
+ *   array Array<T>,
  *   value T,
- *   iter Iterable<T>,
- * ) -> doesValueExistInResultByPredicate Promise<boolean>
- */
-const asyncExistsWith = async (predicate, member, iter) => {
-  for (const item of iter) {
-    if (await predicate(item, member)) return true
-  }
-  return false
-}
-
-/**
- * @name existsWith
+ *   comparator (T, T)=>boolean
  *
- * @synopsis
- * <T any>existsWith(
- *   predicate (T, T)=>boolean,
- *   member T,
- *   iter Iterable<T>,
- * ) -> doesValueExistInResultByPredicate boolean
+ * arrayIncludesWith
+ * ```
  */
-const existsWith = (predicate, member, iter) => {
-  const iterNext = iter.next.bind(iter)
-  while (true) {
-    const { value, done } = iterNext()
-    if (done) return false
-    const exists = predicate(member, value)
-    if (isPromise(exists)) return exists.then(res => (
-      res ? true : asyncExistsWith(predicate, member, iter)))
-    if (exists) return true
-  }
-}
-
-/**
- * @name asyncGenericUnionWithGeneric
- *
- * @synopsis
- * <T any>asyncGenericUnionWithGeneric(
- *   predicate (T, T)=>boolean,
- *   iter Iterator<T>,
- *   result Iterable<T>,
- *   setter (result Iterable<T>, T)=>(),
- * ) -> result Promise|Iterable<T>
- */
-const asyncGenericUnionWithGeneric = async (predicate, iter, result, setter) => {
-  const iterNext = iter.next.bind(iter)
-  while (true) {
-    const { value, done } = await iterNext()
-    if (done) return result
-    if (await existsWith(predicate, value, result[symbolIterator]())) continue
-    setter(result, value)
-  }
-}
-
-/**
- * @name genericUnionWithGeneric
- *
- * @synopsis
- * <T any>genericUnionWithGeneric(
- *   predicate (T, T)=>boolean,
- *   iter Iterator<T>,
- *   result Iterable<T>,
- *   setter (result Iterable<T>, T)=>(),
- * ) -> result Promise|Iterable<T>
- *
- * @NOTE no asyncIterators in this version
- */
-const genericUnionWithGeneric = (predicate, iter, result, setter) => {
-  const iterNext = iter.next.bind(iter)
-  const next = iterNext()
-
-  /* if (isPromise(next)) return next.then(({ value, done }) => {
-    if (done) return result
-    setter(result, value)
-    return asyncGenericUnionWithGeneric(predicate, iter, result, setter)
-  }) */
-
-  const { value, done } = next
-  if (done) return result
-  setter(result, value)
-  while (true) {
-    const { value, done } = iterNext()
-    if (done) return result
-    const exists = existsWith(predicate, value, result[symbolIterator]())
-    if (isPromise(exists)) return exists.then(res => {
-      if (!res) setter(result, value)
-      return asyncGenericUnionWithGeneric(predicate, iter, result, setter)
-    })
-    if (exists) continue
-    setter(result, value)
-  }
-}
-
-/* const iteratorUnionWithArray = (predicate, iter) => {
-  const result = []
-  for (const value of iter) {
-    const exists = existsWith(predicate, value, result)
-    if (isPromise(exists)) {
-      const iterCopy = [...iter][symbolIterator]() // TODO: investigate this workaround. iter is empty inside the .then block
-                                                   // there may be a bug with for const of
-      return exists.then(res => {
-        if (!res) arrayPush(result, value)
-        return asyncIteratorUnionWithArray(predicate, iterCopy, result)
-      })
+const arrayIncludesWith = function (array, value, comparator) {
+  const length = array.length,
+    promises = []
+  let index = -1
+  while (++index < length) {
+    const predication = comparator(value, array[index])
+    if (isPromise(predication)) {
+      promises.push(predication)
+    } else if (predication) {
+      return true
     }
-    if (exists) continue
-    arrayPush(result, value)
+  }
+  return promises.length == 0 ? false
+    : promiseAll(promises).then(curry3(callPropUnary, __, 'some', Boolean))
+}
+
+/**
+ * @name arrayUniqWithAsync
+ *
+ * @synopsis
+ * ```coffeescript [specscript]
+ * var T any,
+ *   array Array<T>,
+ *   comparator (T, T)=>Promise|boolean
+ *
+ * arrayUniqWithAsync(array, comparator) -> Promise<Array<T>>
+ * ```
+ */
+const arrayUniqWithAsync = async function (array, comparator, result, index) {
+  const length = array.length
+  while (++index < length) {
+    const item = array[index],
+      itemAlreadyExists = arrayIncludesWith(result, item, comparator)
+    if (!(
+      isPromise(itemAlreadyExists) ? await itemAlreadyExists : itemAlreadyExists
+    )) {
+      result.push(item)
+    }
   }
   return result
-} */
+}
 
 /**
- * @name iteratorUnionWithIterator
+ * @name arrayUniqWith
  *
  * @synopsis
- * <T any>iteratorUnionWithIterator(
- *   predicate (T, T)=>boolean
- *   iter Iterator<T>
- * ) -> Iterator<T>
-const iteratorUnionWithIterator = function*(predicate, iter) {
-  const yielded = [], iterNext = iter.next.bind(iter)
-  for (const value of iter) {
-    if (existsWith(predicate, value, yielded[symbolIterator]())) continue
-    arrayPush(yielded, value)
-    yield value
-  }
-} */
-
-/* const iteratorUnionWithIterator = function*(predicate, iter) {
-  const yielded = [], iterNext = iter.next.bind(iter)
-  while (true) {
-    const { value, done } = iterNext()
-    if (done) return
-    if (existsWith(predicate, value, yielded[symbolIterator]())) continue
-    arrayPush(yielded, value)
-    yield value
-  }
-} */
-
-/**
- * @name asyncIteratorUnionWithAsyncIterator
+ * ```coffeescript [specscript]
+ * var T any,
+ *   array Array<T>,
+ *   comparator (T, T)=>Promise|boolean
  *
- * @synopsis
- * <T any>asyncIteratorUnionWithAsyncIterator(
- *   predicate (T, T)=>boolean
- *   iter AsyncIterator<T>
- * ) -> AsyncIterator<T>
-const asyncIteratorUnionWithAsyncIterator = async function*(predicate, iter) {
-  const yielded = []
-  for await (const value of iter) {
-    if (await existsWith(predicate, value, yielded[symbolIterator]())) continue
-    arrayPush(yielded, value)
-    yield value
+ * arrayUniqWith(array, comparator) -> Promise|Array<T>
+ * ```
+ *
+ * @TODO rubico/x/uniqWith
+ */
+const arrayUniqWith = function (array, comparator) {
+  const length = array.length,
+    result = []
+  let index = -1
+  while (++index < length) {
+    const item = array[index],
+      itemAlreadyExists = arrayIncludesWith(result, item, comparator)
+    if (isPromise(itemAlreadyExists)) {
+      return itemAlreadyExists.then(funcConcatSync(
+        curry3(thunkConditional, __, noop, thunkify2(arrayPush, result, item)),
+        thunkify4(arrayUniqWithAsync, array, comparator, result, index)))
+    } else if (!itemAlreadyExists) {
+      result.push(item)
+    }
   }
-} */
+  return result
+}
 
 /**
  * @name unionWith
  *
  * @synopsis
- * Iterable|GeneratorFunction -> SyncSequence
- * AsyncIterable|AsyncGeneratorFunction -> AsyncSequence
- * SyncSequence|AsyncSequence -> Sequence
+ * ```coffeescript [specscript]
+ * var T any,
+ *   arrayOfArrays Array<Array<T>>,
+ *   comparator (T, T)=>Promise|T
  *
- * <T any>unionWith(
- *   predicate (T, T)=>Promise<boolean>|boolean,
- * )(values Array<Sequence<T>|T>|T) -> result Promise<Array<T>>|Array<T>
- *
- * <T any>unionWith(
- *   predicate (T, T)=>Promise<boolean>|boolean,
- * )(values Set<Sequence<T>|T>|T) -> result Promise<Set<T>>|Set<T>
- *
- * <T any>unionWith(
- *   predicate (T, T)=>boolean,
- * )(values SyncSequence<SyncSequence<T>|T>|T) -> result Iterator<T>
- *
- * <T any>unionWith(
- *   predicate (T, T)=>Promise<boolean>|boolean,
- * )(values Sequence<Sequence<T>|T>|T) -> result AsyncIterator<T>
- *
- * @catchphrase
- * Unite disparate collections with a predicate
+ * unionWith(comparator)(arrayOfArrays) -> Array<T>
+ * ```
  *
  * @description
- * `unionWith` accepts a binary function `predicate` and any Sequence `values` and returns a flattened collection with all sub items `T` of the Sequence `values` uniq'd by `predicate`. The binary function `predicate` takes two arguments that represent two given sub items `T` and returns an expression that evaluates to true if those two given sub items are the same. A Sequence of values can be an Iterable, GeneratorFunction, AsyncIterable, or AsyncGeneratorFunction. The possible return values of `unionWith` are:
- *  * Array - for Array `values`
- *  * Set - for Set `values`
- *  * Iterator - for Iterables beyond Array and Set, such as GeneratorFunctions
- *  * AsyncIterator - for AsyncIterables and AsyncGeneratorFunctions
+ * Create an array of unique values from an array of arrays in order.
+ *
+ * ```javascript [node]
+ * console.log(
+ *   unionWith(isDeepEqual)([
+ *     [{ a: 1 }, { b: 2 }, { a: 1 }],
+ *     [{ b: 2 }, { b: 2 }, { b: 2 }],
+ *   ]),
+ * ) // [{ a: 1 }, { b: 2 }]
+ * ```
+ *
+ * @TODO setUnionWith
  */
-const unionWith = predicate => values => {
-  if (values == null) return []
-  if (isArray(values)) return genericUnionWithGeneric(
-    predicate, muxFlatten(values)[symbolIterator](), [], arrayPush)
-  if (isSet(values)) return genericUnionWithGeneric(
-    predicate, muxFlatten(values)[symbolIterator](), new Set(), setAdd)
-  return [values]
+const unionWith = comparator => function unioning(value) {
+  if (isArray(value)) {
+    return arrayUniqWith(arrayFlatten(value), comparator)
+  }
+  throw new TypeError(`${value} is not an Array`)
 }
-
-/* unionWith = predicate => values => { // TODO: performance is a problem for generators vs Arrays. Would be nice to
-                                        //       figure out a way to get good Array performance even with support for full muxes
-  if (isArray(values)) return genericUnionWithGeneric(
-    predicate, muxConcat(values), [], arrayPush)
-  if (isSet(values)) return genericUnionWithGeneric(
-    predicate, muxConcat(values), new Set(), setAdd)
-  const iter = muxConcat(values)
-  return (iter[symbolIterator]
-    ? iteratorUnionWithIterator(predicate, iter)
-    : asyncIteratorUnionWithAsyncIterator(predicate, iter))
-} */
 
 module.exports = unionWith

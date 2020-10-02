@@ -6,6 +6,8 @@ const { isSequence } = Mux
 
 describe('unionWith', () => {
   describe('<T any>unionWith(predicate (T, T)=>Promise<boolean>|boolean)(values Array<Sequence<T>|T>|T) -> result Promise<Array<T>>|Array<T>', () => {
+    const variadicAsyncPluckStrictEqual = (a, b) => a.a === b.a ? Promise.resolve(true) : false
+    const variadicAsyncPluckStrictEqual2 = (a, b) => a.a === b.a ? true : Promise.resolve(false)
     it('create a flattened unique array with uniques given by a binary predicate', async () => {
       assert.deepEqual(
         unionWith((a, b) => a.a === b.a)([
@@ -33,6 +35,22 @@ describe('unionWith', () => {
         ]),
         [{ a: 1 }, { a: 2 }, { a: 3 }, { b: 5 }, { a: 5 }]
       )
+      assert.deepEqual(
+        await unionWith(variadicAsyncPluckStrictEqual)([
+          [{ a: 1 }, { a: 2 }],
+          [{ a: 2 }, { a: 3 }],
+          [{ b: 5 }, { a: 5 }],
+        ]),
+        [{ a: 1 }, { a: 2 }, { a: 3 }, { b: 5 }, { a: 5 }]
+      )
+      assert.deepEqual(
+        await unionWith(variadicAsyncPluckStrictEqual2)([
+          [{ a: 1 }, { a: 2 }],
+          [{ a: 2 }, { a: 3 }],
+          [{ b: 5 }, { a: 5 }],
+        ]),
+        [{ a: 1 }, { a: 2 }, { a: 3 }, { b: 5 }, { a: 5 }]
+      )
     })
     it('empty', async () => {
       assert.deepEqual(
@@ -53,17 +71,18 @@ describe('unionWith', () => {
     it('throws TypeError on unionWith(nonFunction)', async () => {
       assert.throws(
         () => unionWith('hey')([1, 2, 3]),
-        new TypeError('predicate is not a function')
+        new TypeError('comparator is not a function')
       )
     })
-    it('unionWith(...)({}) -> Iterator<[{}]>', async () => {
-      const iter = unionWith((a, b) => true)({})
-      const arr = [...iter]
-      assert.deepEqual(arr, [{}])
+    it('throws TypeError on unionWith(...)(nonArray)', async () => {
+      assert.throws(
+        () => unionWith(() => {})(new Set([1, 2, 3])),
+        new TypeError('[object Set] is not an Array')
+      )
     })
   })
 
-  describe('<T any>unionWith(predicate (T, T)=>Promise<boolean>|boolean)(values Set<Sequence<T>|T>|T) -> result Promise<Set<T>>|Set<T>', () => {
+  describe.skip('<T any>unionWith(predicate (T, T)=>Promise<boolean>|boolean)(values Set<Sequence<T>|T>|T) -> result Promise<Set<T>>|Set<T>', () => {
     it('predicate () => false; values Set<[1, 2, 3]>; result Set<[1, 2, 3]>', async () => {
       assert.deepEqual(
         unionWith(() => false)(new Set([1, 2, 3])),
@@ -205,7 +224,7 @@ describe('unionWith', () => {
     })
   })
 
-  describe('misc', () => {
+  describe.skip('misc', () => {
     it('unionWith(NaN)', async () => {
       assert(typeof unionWith(NaN) == 'function')
     })
