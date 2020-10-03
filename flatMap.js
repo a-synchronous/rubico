@@ -74,7 +74,7 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  *   [1, 2, 3, 4, 5]).then(console.log) // [1, 1, 2, 2, 3, 3, 4, 4, 5, 5]
  * ```
  *
- * In general, `flatMap` muxes anything asynchronous. Muxing, or asynchronously "mixing", is the process of combining multiple asynchronous sources into one source, with order determined by the asynchronous resolution of the individual items.
+ * A flatMapping operation concatenates onto the result synchronous values and muxes any asynchronous values. Muxing, or asynchronously "mixing", is the process of combining multiple asynchronous sources into one source, with order determined by the asynchronous resolution of the individual items.
  *
  * ```javascript [playground]
  * const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
@@ -100,12 +100,7 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  * // ['foo', 'bar', 'baz', 'foo', 'bar', 'baz', 'foo', 'bar', 'baz']
  * ```
  *
- * The list below defines muxing behavior for asynchronous sources as a result of flatMapper execution.
- *
- *   * `AsyncIterable` - mux into the result all items of the async iterator produced by `item[Symbol.asyncIterator]`
- *   * `AsyncIterator/AsyncGenerator` - mux items of the item into the result
- *
- * Flattening order is generally sequential with the exception of async.
+ * In general, flattening is by order of concatenation with the exception of async iterables, which are muxed. Below, the two `4`s are asynchronous and are pushed onto the result after all the synchronous values have been flattened.
  *
  * ```javascript [playground]
  * const identity = value => value

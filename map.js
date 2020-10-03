@@ -21,7 +21,8 @@ const symbolIterator = require('./_internal/symbolIterator')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * Functor<T> = Array<T>|Object<T>|Iterator<T>|AsyncIterator<T>|{ map: T=>any }
+ * Functor<T> = Array<T>|Object<T>|Set<T>|Map<T>
+ *   |Iterator<T>|AsyncIterator<T>|{ map: (T=>any)=>any }
  * Reducer<T> = (any, T)=>Promise|any
  *
  * var T any,
@@ -42,14 +43,15 @@ const symbolIterator = require('./_internal/symbolIterator')
  * ```
  *
  * @description
- * Apply a mapper concurrently to each item of a collection, returning the results in a collection of the same type. If order is implied by the collection, it is maintained in the result. Below are valid collections along with their iteration behavior.
+ * Apply a mapper concurrently to each item of a functor, returning the results in a functor of the same type. If order is implied by the collection, it is maintained in the result. The following list describes `map` behavior with vanilla JavaScript functors.
  *
- *  * `Array` - iterate values by index
- *  * `Object` - iterate object values
- *  * `Map` - iterate Map values (not entries)
- *  * `Iterator`/`Generator` - iterate by calling `.next`
- *  * `AsyncIterator`/`AsyncGenerator` - iterate by calling `.next`
- *  * `{ map: function }` - call `.map` directly
+ *  * `Array` - apply a mapper to items, returning a new array of results
+ *  * `Object` - apply a mapper to object values, returning a new object of results
+ *  * `Set` - apply a mapper to Set items, returning a new `Set` of results
+ *  * `Map` - apply a mapper to Map values (not entries), returning a new `Map` of results
+ *  * `Iterator`/`Generator` - return an iterator that applies a mapper to each iteration's value, yielding mapped iterations
+ *  * `AsyncIterator`/`AsyncGenerator` - return an async iterator that applies a mapper to each async iteration's value, yielding Promises of a mapped iterations
+ *  * `{ map: function }` - call `.map` directly with mapper
  *
  * ```javascript [playground]
  * const square = number => number ** 2
@@ -67,11 +69,13 @@ const symbolIterator = require('./_internal/symbolIterator')
  * ) // { a: 1, b: 4, c: 9, d: 16, e: 25 }
  * ```
  *
- * Functions are regarded as resolvers. Each of the following calls, when passed to a mapping function `map(mapper)`, creates a function with all items of its return transformed by the mapper.
+ * `map` recognizes three types of functions in functor position:
  *
- *  * `GeneratorFunction` - items of the iterator are mapped into a new iterator. Warning: using an async mapper in a synchronous generator function is not recommended and could lead to unexpected behavior.
- *  * `AsyncGeneratorFunction` - items of the async iterator are mapped into a new async iterator. Async result items are awaited in a new async iterator. Async mapper functions are valid.
- *  * `Reducer` - items of a reducing operation are transformed by the mapper function. Fully asynchronous transducing operations are possible with a mapping reducer and `reduce`.
+ *  * Generator Functions `function* () {}` - `map(mapper)(generatorFunction)` creates a generator function that generates generators of mapped values. Async mappers are yielded synchronously and may lead to unexpected results here.
+ *  * Async Generator Functions `async function* () {}` - `map(mapper)(asyncGeneratorFunction)` creates an async generator function that generates async generators of mapped values. Promises produced by async mappers are resolved.
+ *  * Reducers `(accumulator, item)=>accumulator` - `map(mapper)(reducer)` creates a transducer that, when called with another reducer, creates a mapping step for each item of the reducer's reducing operation. Promises produced by async mappers are resolved.
+ *
+ * Use mapping generator functions to create lazy computations executed at iteration time.
  *
  * ```javascript [playground]
  * const capitalize = string => string.toUpperCase()
@@ -91,7 +95,7 @@ const symbolIterator = require('./_internal/symbolIterator')
  * console.log([...ABCIter]) // ['A', 'B', 'C']
  * ```
  *
- * Function laziness is extended to reducer functions as [transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
+ * Create a mapping transducer by supplying `map` with a reducer. A reducer is a variadic function that depicts a relationship between an accumulator and any number of arguments. A transducer is a function that accepts a reducer as an argument and returns another reducer.
  *
  * ```coffeescript [specscript]
  * Reducer<T> = (any, T)=>Promise|any
@@ -99,7 +103,7 @@ const symbolIterator = require('./_internal/symbolIterator')
  * Transducer = Reducer=>Reducer
  * ```
  *
- * A reducer is a variadic function like the one supplied to `Array.prototype.reduce`, but without the index and reference to the accumulated result per call. A transducer is a function that accepts a reducer function as an argument and returns another reducer function, which enables chaining functionality for reducers. `map` is core to this mechanism, and provides a way to create transducers with mapper functions.
+ * The transducer signature enables chaining functionality for reducers. `map` is core to this mechanism, and provides a way via transducers to transform items of reducers. To `map`, reducers are just another category.
  *
  * ```javascript [playground]
  * const square = number => number ** 2

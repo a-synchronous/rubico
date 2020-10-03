@@ -41,7 +41,7 @@ const genericReduce = require('./_internal/genericReduce')
  * ) // 5
  * ```
  *
- * If an optional initialization parameter is supplied, the result starts as that parameter rather than the first item of the collection.
+ * If an optional initialization parameter is supplied, the result starts as that parameter rather than the first item of the collection. For memory and performance, this library makes no assumptions about immutability. Handle references for this initial value with care, as they could be mutated.
  *
  * ```javascript [playground]
  * const add = (a, b) => a + b
@@ -51,9 +51,7 @@ const genericReduce = require('./_internal/genericReduce')
  * ) // 15
  * ```
  *
- * Note: For memory and performance, this library makes no assumptions about immutability. Handle references for this initial value with care, as they could be mutated.
- *
- * If the initialization parameter is a function, it is treated as a resolver and called with the input arguments to resolve an initial value for the accumulator.
+ * If the initialization parameter is a function, it is treated as a resolver and called with the input arguments to resolve an initial value for the accumulator at execution time.
  *
  * ```javascript [playground]
  * const concatSquares = (array, value) => array.concat(value ** 2)
@@ -65,7 +63,7 @@ const genericReduce = require('./_internal/genericReduce')
  * ) // [1, 4, 9, 16, 25]
  * ```
  *
- * Additionally, reducers can be asynchronous, while data parameters can be asynchronous streams.
+ * Fully asynchronous reducing operations are possible with asynchronous reducers and asynchronous data streams.
  *
  * ```javascript [playground]
  * const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))

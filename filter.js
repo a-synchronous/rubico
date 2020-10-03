@@ -22,7 +22,8 @@ const symbolIterator = require('./_internal/symbolIterator')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * Filterable<T> = Array<T>|Object<T>|Iterable<T>|AsyncIterable<T>|{ filter: (T=>boolean)=>any }
+ * Filterable<T> = Array<T>|Object<T>|Set<T>|Map<T>
+ *   |Iterator<T>|AsyncIterator<T>|{ filter: (T=>boolean)=>any }
  * Reducer<T> = (any, T)=>Promise|any
  *
  * var T any,
@@ -43,7 +44,14 @@ const symbolIterator = require('./_internal/symbolIterator')
  * ```
  *
  * @description
- * Exclude items based on the results of their concurrent execution with a predicate.
+ * Filter out items from a filterable based on the results of their concurrent executions with a predicate. `filter` recognizes several vanilla JavaScript types as filterables.
+ *
+ *  * `Array` - filter array items by predicate
+ *  * `Object` - filter object values by predicate
+ *  * `Set` - filter Set values by predicate
+ *  * `Map` - filter Map values by predicate (not entries)
+ *  * `Iterator` - skip iterations by predicate
+ *  * `AsyncIterator` - skip async iterations by predicate
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -55,26 +63,30 @@ const symbolIterator = require('./_internal/symbolIterator')
  * console.log(
  *   filter(isOdd)({ a: 1, b: 2, c: 3, d: 4, e: 5 }),
  * ) // { a: 1, c: 3, e: 5 }
+ *
+ * console.log(
+ *   filter(isOdd)(new Set([1, 2, 3, 4, 5])),
+ * ) // Set { 1, 3, 5 }
  * ```
  *
- * Passing a generator function to `filter` returns a filtering generator function; all values that are normally yielded by a generator function that test falsy with the predicate are skipped by the returned filtering generator function.
+ * Passing a generator function to `filter` in filterable position returns a generator function that produces filtering generators; all values that are normally yielded by a generator that test falsy by the predicate are skipped by a filtering generator.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
  *
- * const numbers = function* () {
+ * const numbersGeneratorFunction = function* () {
  *   yield 1; yield 2; yield 3; yield 4; yield 5
  * }
  *
- * const oddNumbers = filter(isOdd)(numbers)
+ * const oddNumbersGeneratorFunction = filter(isOdd)(numbersGeneratorFunction)
  *
- * for (const number of oddNumbers()) {
+ * for (const number of oddNumbersGeneratorFunction()) {
  *   console.log(number) // 1
  *                       // 3
  *                       // 5
  * }
  *
- * const oddNumbersGenerator = filter(isOdd)(numbers())
+ * const oddNumbersGenerator = filter(isOdd)(numbersGeneratorFunction())
  *
  * for (const number of oddNumbersGenerator) {
  *   console.log(number) // 1
@@ -83,24 +95,24 @@ const symbolIterator = require('./_internal/symbolIterator')
  * }
  * ```
  *
- * In a similar vein to generators, `filter` also filters elements from async generators.
+ * In a similar vein to generator functions, passing an async generator function in filterable position creates an async generator function of filtered async generators. Each filtered async generator skips async iterations with values that test falsy by the predicate.
  *
  * ```javascript [playground]
  * const asyncIsOdd = async number => number % 2 == 1
  *
- * const asyncNumbers = async function* () {
+ * const asyncNumbersGeneratorFunction = async function* () {
  *   yield 1; yield 2; yield 3; yield 4; yield 5
  * }
  *
- * const asyncOddNumbers = filter(asyncIsOdd)(asyncNumbers)
+ * const asyncOddNumbersGeneratorFunction = filter(asyncIsOdd)(asyncNumbersGeneratorFunction)
  *
- * for await (const number of asyncOddNumbers()) {
+ * for await (const number of asyncOddNumbersGeneratorFunction()) {
  *   console.log(number) // 1
  *                       // 3
  *                       // 5
  * }
  *
- * const asyncOddNumbersGenerator = filter(asyncIsOdd)(asyncNumbers())
+ * const asyncOddNumbersGenerator = filter(asyncIsOdd)(asyncNumbersGeneratorFunction())
  *
  * for await (const number of asyncOddNumbersGenerator) {
  *   console.log(number) // 1
@@ -109,9 +121,7 @@ const symbolIterator = require('./_internal/symbolIterator')
  * }
  * ```
  *
- * Finally, `filter` creates filtering transducers. A reducer created from a filtering transducer skips items of a reducing operation if they test falsy under the predicate.
- *
- * Note: It is possible to use an asynchronous predicate when filtering a reducer, however the implementation of `reduce` must support asynchronous operations. This library provides such an implementation as `reduce`.
+ * A reducer in filterable position creates a filtering reducer - one that skips items of the reducer's reducing operation if they test falsy by the predicate. It is possible to use an asynchronous predicate when filtering a reducer, however the implementation of `reduce` must support asynchronous operations. This library provides such an implementation as `reduce`.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1

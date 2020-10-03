@@ -1,5 +1,6 @@
-# Transducers
-Transducers enable composable and memory efficient wrangling of very large or infinite sets of data. Say you wanted to square just the odd numbers from 1 - 1000.
+## Transducers Crash Course
+
+Transducers enable composable and memory efficient wrangling of very large or even infinite sets of data. Say you wanted to square the odd numbers from one to one thousand.
 
 ```javascript [playground]
 const isOdd = number => number % 2 == 1
@@ -17,7 +18,9 @@ console.log(
 
 <br />
 
-`manyNumbers` above goes through two batch transformations from `.filter` and `.map`. It is not very memory efficient. With transducers, you could express the above transformation as a single pass without incurring a memory penalty.
+In the above example, `manyNumbers` goes through two batch transformations from `.filter` and `.map` - this is not so memory efficient.
+
+With transducers, you could express the above transformation as a single pass without incurring a memory penalty.
 
 <br />
 
@@ -46,9 +49,9 @@ Transducer = Reducer=>Reducer
 
 <br />
 
-A `Reducer` is a function that takes an accumulator and some item of a reducing operation and returns anything.
+A `Reducer` is a function that defines a relationship between an accumulator and any number of items, and is usually used with some reducing implementation, e.g. `Array.prototype.reduce`.
 
-A `Transducer` is a function that takes a Reducer and returns another Reducer. This signature enables declarative, lazy processing of the items of a reducing operation. It also enables creating chained reducers by passing reducers to pipes of transducers. Imagine dominos falling over.
+A `Transducer` is a function that takes a `Reducer` and returns another `Reducer`. Transducers enable chaining functionality on reducers - pass a reducer to a pipe of transducers to create a reducer with chained functionality. Imagine dominos falling over.
 
 <br />
 
@@ -56,15 +59,15 @@ A `Transducer` is a function that takes a Reducer and returns another Reducer. T
 
 <br />
 
-The reducer that sets off a chain of transducers is called last. Because of this implementation detail, `pipe` will behave as `compose` when passed a reducer. You can use `pipe` to create chained functionality for reducers - `pipe` will read left to right in all cases.
+Note: Since the reducer that sets off a pipeline of transducers is called last, `pipe` behaves as `compose` and chains functions in reverse when a reducer is passed in data position. This decision is purly for API, and allows for all function pipelines created with `pipe`, even those of transducers, to read left to right.
 
 The following operators are the core building blocks of rubico's transducer API. It is possible to perform the full spectrum of tranducer transformations with just these.
 
- * `map` - map a function over items of a reducing operation
- * `filter` - filter out items from a reducing operation
- * `flatMap` - additionally flatten the result of a mapping of a function over items of a reducing operation
+ * `map` - apply a mapper to each item of a reducing operation
+ * `filter` - filter out items of a reducing operation by predicate
+ * `flatMap` - apply a flatMapper to each item of a reducing operation, flattening each item of the result into the accumulator.
 
-Due to rubico's polymorphism, transducers must be used with reducing implementations to have a transducing effect. This library provides async-capable implementations as `transform` and `reduce`, though it's entirely possible to execute a synchronous transducer with `Array.prototype.reduce`.
+A transducer must be used with a reducing implementation to have a transducing effect. This library provides async-capable implementations as `transform` and `reduce`, though it's entirely possible to execute a synchronous transducer with `Array.prototype.reduce`.
 
 The following example shows the function pipeline `squaredOdds` used as a transducer.
 
@@ -93,11 +96,7 @@ console.log(
 ) // [1, 9, 25, 36, 49, ...]
 ```
 
-<br />
-
-The below is an eager version of the above - `squaredOdds` is not a transducer below because it is not used with a reducing operation.
-
-<br />
+Due to rubico's polymorphic nature, any transducer not used in a reduce implementation is capable of eager transforomations. Below is an eager version of the above transformation.
 
 ```javascript [playground]
 const square = number => number ** 2
@@ -116,9 +115,13 @@ console.log(
 ) // [1, 9, 25, 36, 49, ...]
 ```
 
-<br />
+I'll leave you today with three places where transducers shine:
+ 1. chaining transforming operations
+ 2. transforming items of async iterables or potentially infinite sources
+ 3. modifying the functionality into an existing reducing operation
 
-Dominos photo credits:
+
+Photo credits:
  * https://www.pngkit.com/view/u2w7e6u2y3o0o0y3_junior-alex-berlaga-helps-set-dominoes-world-records/
 
 Further reading:

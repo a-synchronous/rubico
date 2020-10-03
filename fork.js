@@ -18,7 +18,7 @@ const funcAllSeries = require('./_internal/funcAllSeries')
  * ```
  *
  * @description
- * A multi-purpose function. Parallelizes multiple functions with concurrent execution into either an object, an array, or a nested mix of both.
+ * Run an array or object of functions in parallel, returning an array or object result.
  *
  * ```javascript [playground]
  * console.log(
@@ -29,6 +29,27 @@ const funcAllSeries = require('./_internal/funcAllSeries')
  *     ]),
  *   })('hello'),
  * ) // { greetings: ['hello world', 'hello mom'] }
+ * ```
+ *
+ * Use `fork` to simultaneously compose objects and handle async.
+ *
+ * ```javascript [playground]
+ * const identity = value => value
+ *
+ * const userbase = new Map()
+ * userbase.set('1', { _id: 1, name: 'George' })
+ *
+ * const getUserByID = async id => userbase.get(id)
+ *
+ * pipe([
+ *   fork({
+ *     id: identity,
+ *     user: getUserByID,
+ *   }),
+ *   tap(({ id, user }) => {
+ *     console.log(`Got user ${JSON.stringify(user)} by id ${id}`)
+ *   }),
+ * ])('1')
  * ```
  *
  * @execution concurrent

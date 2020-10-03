@@ -16,14 +16,15 @@ const isAsyncGeneratorFunction = require('./_internal/isAsyncGeneratorFunction')
  *     ...Array<any=>Promise|any>,
  *   ],
  *   transducers Array<Reducer=>Reducer>
+ *   reducer Reducer,
  *
- * pipe(funcs) -> pipeline ...args=>Promise|any
+ * pipe(funcs)(...args) -> Promise|any
  *
- * pipe(transducers) -> chainedTransducer Reducer=>Reducer
+ * pipe(transducers)(reducer) -> Reducer
  * ```
  *
  * @description
- * Chain together an array of functions as a pipe, each function passing its return value as the first argument to the next function until all functions have executed. The final result is the return of the last function execution.
+ * Create a function pipeline, where each function passes its return value as a single argument to the next function until all functions have executed. The result of a pipeline execution is the return of its last function.
  *
  * ```javascript [playground]
  * console.log(
@@ -35,7 +36,7 @@ const isAsyncGeneratorFunction = require('./_internal/isAsyncGeneratorFunction')
  * ) // 11
  * ```
  *
- * When passed a reducer, a pipe of transducers composes the reducer such that the transducers are applied in series, calling the reducer as the last step to end the chain. The resulting reducer must be used in conjunction with `reduce` to have a transducing effect. For more information on this behavior, see [this resource on transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
+ * When passed a reducer in argument position, a function pipeline composes the reducer such that the transducers are applied in series, calling the reducer as the last step to end the chain. The resulting reducer has chained transducing functionality; note however that it must be used in conjunction with `transform` or `reduce` to have a transducing effect. For more information on this behavior, see [this resource on transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
