@@ -6,7 +6,6 @@
 
 ![Node.js CI](https://github.com/a-synchronous/rubico/workflows/Node.js%20CI/badge.svg?branch=master)
 [![codecov](https://codecov.io/gh/a-synchronous/rubico/branch/master/graph/badge.svg)](https://codecov.io/gh/a-synchronous/rubico)
-[![Known Vulnerabilities](https://snyk.io/test/github/a-synchronous/rubico/badge.svg)](https://snyk.io/test/github/a-synchronous/rubico)
 
 ### [a]synchronous functional programming
 
