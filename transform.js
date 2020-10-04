@@ -110,7 +110,7 @@ const genericTransform = require('./_internal/genericTransform')
  * )(streamRandomInts()) // 9216576529289484980147613249169774446246768649...
  * ```
  *
- * `transform`, like `reduce`, supports reducer combination. This has a use case in state management, where, for a state object, incoming objects are merged.
+ * `transform`, like `reduce`, supports reducer combination. This variant of state management automatically assigns (`Object.assign`) pipeline objects into the aggregate state object.
  *
  * ```javascript [playground]
  * const reducerA = async (state, action) => {
