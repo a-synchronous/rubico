@@ -36,7 +36,7 @@ const isAsyncGeneratorFunction = require('./_internal/isAsyncGeneratorFunction')
  * ) // 11
  * ```
  *
- * When passed a reducer in argument position, a function pipeline composes the reducer such that the transducers are applied in series, calling the reducer as the last step to end the chain. The resulting reducer has chained transducing functionality; note however that it must be used in conjunction with `transform` or `reduce` to have a transducing effect. For more information on this behavior, see [this resource on transducers](https://github.com/a-synchronous/rubico/blob/master/TRANSDUCERS.md).
+ * When passed a reducer in argument position, a function pipeline composes the reducer such that the transducers are applied in series, calling the reducer as the last step to end the chain. The resulting reducer has chained transducing functionality; note however that it must be used in conjunction with `transform` or `reduce` to have a transducing effect. For more information on this behavior, see [this blog post on transducers](https://rubico.land/blog/2020/10/02/transducers-crash-course).
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
