@@ -83,13 +83,6 @@ For different but semanticaly related functionality, rubico exposes additional m
 
 Advanced functions may be found in `rubico/x`.
 
-# Getting Started
- 1. [check out the docs](https://doc.rubico.land)
- 2. [take the tour](https://tour.rubico.land)
- 3. use rubico in a project
- 4. at your leisure, [peruse the awesome resources](#awesome-resources)
- 5. [help with rubico](https://github.com/a-synchronous/rubico/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
-
 # Installation
 with `npm`
 ```bash
