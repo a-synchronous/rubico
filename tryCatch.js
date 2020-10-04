@@ -18,8 +18,6 @@ const catcherApply = require('./_internal/catcherApply')
  * @description
  * Try a `tryer`, catch with `catcher`. On error or rejected promise, call the `catcher` with the error followed by any arguments to the tryer.
  *
- * Note: if the return value is to be used in a future computation, be sure to account for that in both the `tryer` and the `catcher`
- *
  * ```javascript [playground]
  * const errorThrower = tryCatch(
  *   message => {
