@@ -31,7 +31,7 @@ const genericReduce = require('./_internal/genericReduce')
  * ```
  *
  * @description
- * Execute a reducer for each item of a collection, resulting in a single output value.
+ * Execute a reducer for each item of a collection, returning a single output value.
  *
  * ```javascript [playground]
  * const max = (a, b) => a > b ? a : b
