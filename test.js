@@ -1183,6 +1183,15 @@ describe('rubico', () => {
           new TypeError('invalid is not an Object')
         )
       })
+
+      it('throws a TypeError if value argument is an array', async () => {
+        assert.throws(
+          () => {
+            map.own(() => true)([])
+          },
+          new TypeError(' is not an Object')
+        )
+      })
     })
   })
 
