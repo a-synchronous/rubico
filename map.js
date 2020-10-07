@@ -291,17 +291,16 @@ map.withIndex = mapper => function mappingWithIndex(value) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * map.own<
- *   T any,
+ * var T any,
  *   object Object<T>,
- *   mapper T=>Promise|any,
- * >(object, mapper) -> Promise|Object
+ *   mapper T=>Promise|any
  *
  * map.own(mapper)(object) -> Promise|Object
  * ```
  *
  * @description
- * `map` over an object's own properties
+ * `map` over an object's own properties.
+ *
  * ```javascript [playground]
  * const Person = function (name) {
  *   this.name = name
