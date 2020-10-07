@@ -316,7 +316,7 @@ map.withIndex = mapper => function mappingWithIndex(value) {
  *
  * const square = number => number ** 2
  * console.log(
- *  map.own(square)(david)
+ *   map.own(square)(david)
  * ) // { name: NaN, a: 1, b: 4, c: 9 }
  * ```
  */
