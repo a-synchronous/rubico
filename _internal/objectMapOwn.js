@@ -7,7 +7,7 @@ const hasOwn = require('./hasOwn')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * objectMap<
+ * objectMapOwn<
  *   T any,
  *   object Object<T>,
  *   mapper T=>Promise|any,
