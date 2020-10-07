@@ -1,6 +1,7 @@
 const MappingIterator = require('./_internal/MappingIterator')
 const MappingAsyncIterator = require('./_internal/MappingAsyncIterator')
 const isArray = require('./_internal/isArray')
+const isObject = require('./_internal/isObject')
 const isGeneratorFunction = require('./_internal/isGeneratorFunction')
 const isAsyncGeneratorFunction = require('./_internal/isAsyncGeneratorFunction')
 const arrayMap = require('./_internal/arrayMap')
@@ -14,6 +15,7 @@ const objectMap = require('./_internal/objectMap')
 const arrayMapSeries = require('./_internal/arrayMapSeries')
 const arrayMapPool = require('./_internal/arrayMapPool')
 const arrayMapWithIndex = require('./_internal/arrayMapWithIndex')
+const objectMapOwn = require('./_internal/objectMapOwn')
 const symbolIterator = require('./_internal/symbolIterator')
 
 /**
@@ -282,6 +284,13 @@ map.withIndex = mapper => function mappingWithIndex(value) {
     return arrayMapWithIndex(value, mapper)
   }
   throw new TypeError(`${value} is not an Array`)
+}
+
+map.own = mapper => function mappingOwnProperties(value) {
+  if (isObject(value)) {
+    return objectMapOwn(value, mapper)
+  }
+  throw new TypeError(`${value} is not an Object`)
 }
 
 module.exports = map
