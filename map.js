@@ -287,7 +287,7 @@ map.withIndex = mapper => function mappingWithIndex(value) {
 }
 
 map.own = mapper => function mappingOwnProperties(value) {
-  if (isObject(value)) {
+  if (isObject(value) && !isArray(value)) {
     return objectMapOwn(value, mapper)
   }
   throw new TypeError(`${value} is not an Object`)
