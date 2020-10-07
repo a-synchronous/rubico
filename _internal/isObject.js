@@ -8,10 +8,11 @@
  * Determine whether a value is an object. Note that Arrays are also objects in JS.
  */
 const isObject = value => {
-  if (value === null) {
+  if (value == null) {
     return false
   }
-  return (typeof value === 'object') || (typeof val === 'function')
+
+  return (typeof value == 'object') || (typeof value == 'function')
 }
 
 module.exports = isObject
