@@ -31,9 +31,9 @@ const aok = assert.ok
 
 const sleep = ms => new Promise(resolve => { setTimeout(resolve, ms) })
 
-const hi = x => x + 'hi'
+const hi = x => `${x}hi`
 
-const ho = x => x + 'ho'
+const ho = x => `${x}ho`
 
 const isOdd = x => (x % 2 === 1)
 
@@ -53,7 +53,7 @@ const asyncIsEven = x => new Promise(resolve => {
 })
 
 const asyncHey = x => new Promise(resolve => {
-  setImmediate(() => resolve(x + 'hey'))
+  setImmediate(() => resolve(`${x}hey`))
 })
 
 const asyncMult = (y, xi) => new Promise(resolve => {
@@ -478,21 +478,21 @@ describe('rubico', () => {
     it('maps input to object of sync functions then merges', async () => {
       ade(
         assign({
-          b: x => x.a + 'yo',
-          c: x => x.a + 'yaya',
+          b: x => `${x.a}yo`,
+          c: x => `${x.a}yaya`,
         })({ a: 'a' }),
         { a: 'a', b: 'ayo', c: 'ayaya' },
       )
     })
     it('maps input to object of async functions then merges', async () => {
       aok(assign({
-        b: async x => x.a + 'yo',
-        c: async x => x.a + 'yaya',
+        b: async x => `${x.a}yo`,
+        c: async x => `${x.a}yaya`,
       })({ a: 'a' }) instanceof Promise)
       ade(
         await assign({
-          b: async x => x.a + 'yo',
-          c: async x => x.a + 'yaya',
+          b: async x => `${x.a}yo`,
+          c: async x => `${x.a}yaya`,
         })({ a: 'a' }),
         { a: 'a', b: 'ayo', c: 'ayaya' },
       )
@@ -1036,7 +1036,7 @@ describe('rubico', () => {
       assert.deepEqual(map.pool(1, asyncSquare)([]), [])
     })
     it('works for arrays of undefined values', async () => {
-      ade(await map.pool(1, x => x)([,,,,,]), Array(5).fill(undefined))
+      ade(await map.pool(1, x => x)([,,,,, ]), Array(5).fill(undefined))
       ade(await map.pool(1, x => x)(Array(5)), Array(5).fill(undefined))
       ade(await map.pool(1, x => x)(Array(5).fill(null)), Array(5).fill(null))
     })
@@ -1068,8 +1068,9 @@ describe('rubico', () => {
       const plusSleepMinus = n => (async () => {
         i += 1
         maxi = Math.max(maxi, i)
-      })().then(() => sleep(period)).then(() => {
-        i -=1
+      })().then(() => sleep(period)).
+then(() => {
+        i -= 1
         return n
       })
       ade(await map.pool(2, plusSleepMinus)(numbers), numbers)
@@ -1154,27 +1155,40 @@ describe('rubico', () => {
 
   describe('map.own', () => {
     describe('map.own(mapper A=>B)(Object<A>) -> Object<B>', () => {
-      it('maps an only an objects own properties', async () => {
+      it('maps an objects own properties', async () => {
         const Person = function (name) {
           this.name = name
         }
-  
+
         Person.prototype.greet = function () {
           console.log(`Hello, my name is ${this.name}`)
         }
-  
+
         const david = new Person('david')
-  
+
         david.a = 1
         david.b = 2
         david.c = 3
-  
+
         const square = number => number ** 2
-  
+
         const mappedOwn = map.own(square)(david)
         assert.deepStrictEqual(mappedOwn, { name: NaN, a: 1, b: 4, c: 9 });
       })
-  
+
+      it('maps a functions own properties', async () => {
+        const someFunctionWithProperties = () => null
+
+        someFunctionWithProperties.a = 1
+        someFunctionWithProperties.b = 2
+        someFunctionWithProperties.c = 3
+
+        const cube = number => number ** 3
+
+        const mappedOwn = map.own(cube)(someFunctionWithProperties)
+        assert.deepStrictEqual(mappedOwn, { a: 1, b: 8, c: 27 });
+      })
+
       it('throws a TypeError if value argument is not an object', async () => {
         assert.throws(
           () => {
@@ -1490,8 +1504,7 @@ describe('rubico', () => {
       })
       it('predicate T=>Promise|boolean', async () => {
         const variadicAsyncShellUniq = filter.withIndex(
-          (item, index, array) =>
-            item !== array[index + 1] ? Promise.resolve(true) : false)
+          (item, index, array) => item !== array[index + 1] ? Promise.resolve(true) : false)
         assert.deepEqual(
           await variadicAsyncShellUniq([1, 1, 1, 2, 2, 3, 3, 3, 4, 5, 5, 5]),
           [1, 2, 3, 4, 5])
@@ -2077,9 +2090,9 @@ reduce(
         new Set([1, 9, 25]),
       )
       const appendAlphas = pipe([
-        map(x => x + 'a'),
-        map(x => x + 'b'),
-        map(x => x + 'c'),
+        map(x => `${x}a`),
+        map(x => `${x}b`),
+        map(x => `${x}c`),
       ])
       ase(
         reduce(appendAlphas(add), '')('123'),
@@ -2093,7 +2106,7 @@ reduce(
     it('reduce with an async transduced reducer', async () => {
       const hosWithHey = pipe([
         filter(async x => x === 'ho'),
-        map(x => Promise.resolve(x + 'hey')),
+        map(x => Promise.resolve(`${x}hey`)),
       ])
       const hihos = { a: 'hi', b: 'ho', c: 'hi', d: 'ho', e: 'hi', f: 'ho' }
       aok(reduce(hosWithHey(add), '')(hihos) instanceof Promise),
@@ -2191,7 +2204,7 @@ transform(
             [1, 1, 2, 2, 3, 3, 4, 4, 5, 5],
           )
         })
-        it("init ''|(()=>'')", async () => {
+        it('init \'\'|(()=>\'\')', async () => {
           assert.strictEqual(
             transform(map(square), '')([1, 2, 3, 4, 5]),
             '1491625',
@@ -3166,10 +3179,10 @@ flatMap(
         [numbersObject, number => [{ [number]: number }, { [number]: number }], { 1: 1, 2: 2, 3: 3, 4: 4, 5: 5 }],
         [numbersObject, number => null, {}],
         [numbersObject, number => [{ [number]: null }, { [number]: null }], { 1: null, 2: null, 3: null, 4: null, 5: null }],
-        [numbersObject, duplicateObject, { 
+        [numbersObject, duplicateObject, {
           '10': 1, '100': 1, '20': 2, '200': 2, '30': 3, '300': 3, '40': 4, '400': 4, '50': 5, '500': 5,
         }],
-        [numbersObject, async(duplicateObject), { 
+        [numbersObject, async(duplicateObject), {
           '10': 1, '100': 1, '20': 2, '200': 2, '30': 3, '300': 3, '40': 4, '400': 4, '50': 5, '500': 5,
         }],
         [numbersObject, duplicateReadableStream, { 0: 5, 1: 5 }],
