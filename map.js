@@ -286,6 +286,40 @@ map.withIndex = mapper => function mappingWithIndex(value) {
   throw new TypeError(`${value} is not an Array`)
 }
 
+/**
+ * @name map.own
+ *
+ * @synopsis
+ * ```coffeescript [specscript]
+ * map.own<
+ *   T any,
+ *   object Object<T>,
+ *   mapper T=>Promise|any,
+ * >(object, mapper) -> Promise|Object
+ *
+ * map.own(mapper)(object) -> Promise|Object
+ * ```
+ *
+ * @description
+ * `map` over an object's own properties
+ * ```javascript [playground]
+ * const Person = function (name) {
+ *   this.name = name
+ * }
+ *
+ * Person.prototype.greet = function () {}
+ *
+ * const david = new Person('david')
+ * david.a = 1
+ * david.b = 2
+ * david.c = 3
+ *
+ * const square = number => number ** 2
+ * console.log(
+ *  map.own(square)(david)
+ * ) // { name: NaN, a: 1, b: 4, c: 9 }
+ * ```
+ */
 map.own = mapper => function mappingOwnProperties(value) {
   if (isObject(value) && !isArray(value)) {
     return objectMapOwn(value, mapper)
