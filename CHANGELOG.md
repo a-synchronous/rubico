@@ -8,6 +8,7 @@
  * flatten rewrite + refresh benchmarks
  * isDeepEqual rewrite + refresh benchmarks
  * unionWith rewrite + refresh benchmarks
+ * **map.own** - [LMulvey](https://github.com/LMulvey)
 
 ## v1.5.19 - latest
  * pipe.sync
@@ -89,7 +90,7 @@
 
 ## v1.5.2
  * x/unionWith performance revamp + benchmarks
- * x/uniq - Get unique values of a collection
+ * x/uniq - Get unique values of a collection - [FredericHeem](https://github.com/FredericHeem)
 
 ## v1.5.0
  * monad/PossiblePromise - Possibly a promise
