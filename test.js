@@ -1152,6 +1152,40 @@ describe('rubico', () => {
     })
   })
 
+  describe('map.own', () => {
+    describe('map.own(mapper A=>B)(Object<A>) -> Object<B>', () => {
+      it('maps an only an objects own properties', async () => {
+        const Person = function (name) {
+          this.name = name
+        }
+  
+        Person.prototype.greet = function () {
+          console.log(`Hello, my name is ${this.name}`)
+        }
+  
+        const david = new Person('david')
+  
+        david.a = 1
+        david.b = 2
+        david.c = 3
+  
+        const square = number => number ** 2
+  
+        const mappedOwn = map.own(square)(david)
+        assert.deepStrictEqual(mappedOwn, { name: NaN, a: 1, b: 4, c: 9 });
+      })
+  
+      it('throws a TypeError if value argument is not an object', async () => {
+        assert.throws(
+          () => {
+            map.own(() => true)('invalid')
+          },
+          new TypeError('invalid is not an Object')
+        )
+      })
+    })
+  })
+
   describe('filter', () => {
     describe('filter(predicate T=>Promise|boolean)(Array<T>) -> Promise|Array<T>', () => {
       it('predicate T=>boolean', async () => {

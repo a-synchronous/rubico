@@ -332,9 +332,9 @@ const mapFromForLoopDestructuring = x => {
 
   const preES5IsArray = function (obj) {
     try {
-      return str.call(obj) === "[object Array]";
+      return str.call(obj) === '[object Array]';
     }
-    catch(e) {
+    catch (e) {
       return false;
     }
   };
