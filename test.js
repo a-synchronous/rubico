@@ -4169,6 +4169,8 @@ eq(
       assert.strictEqual(curry(add3, __, __, __)(__, 'b', 'c')('a'), 'abc')
       assert.strictEqual(curry(add3, __, __, __)('a', __, 'c')('b'), 'abc')
       assert.strictEqual(curry(add3, __, __, __)('a', 'b', __)('c'), 'abc')
+      assert.strictEqual(curry(add3)(__, __)(__)('a', 'b', __)('c'), 'abc')
+      assert.strictEqual(curry(add3)(__)(__, __)('a')('b')(__)('c'), 'abc')
       assert.strictEqual(curry(add3)(__)(__)(__)('a', 'b', __)('c'), 'abc')
       assert.strictEqual(curry(add3)(__)(__)(__)('a')('b')(__)('c'), 'abc')
     })
