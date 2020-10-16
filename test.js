@@ -7,12 +7,13 @@ const isDeepEqual = require('./x/isDeepEqual')
 const { Readable, Writable } = require('stream')
 
 const {
-  pipe, fork, assign,
-  tap, tryCatch, switchCase,
+  pipe, tap,
+  tryCatch, switchCase,
+  fork, assign, get, pick, omit,
   map, filter, reduce, transform, flatMap,
   any, all, and, or, not,
   eq, gt, lt, gte, lte,
-  get, pick, omit,
+  thunkify, curry, __,
 } = rubico
 
 const objectProto = Object.prototype
@@ -4134,7 +4135,53 @@ eq(
     })
   })
 
-  it('exports 24 functions', async () => {
-    ase(Object.keys(rubico).length, 24)
+  describe('thunkify', () => {
+    const add2 = (a, b) => a + b
+    const thunkAdd212 = thunkify(add2, 1, 2)
+    it('creates a thunk', async () => {
+      assert.strictEqual(thunkAdd212.length, 0)
+      assert.strictEqual(thunkAdd212(), 3)
+    })
+  })
+
+  describe('curry', () => {
+    const add3 = (a, b, c) => a + b + c
+    const curriedAdd3 = curry(add3)
+    it('round robin', async () => {
+      assert.strictEqual(curry(add3, 'a', 'b', 'c'), 'abc')
+      assert.strictEqual(curry(add3)('a', 'b', 'c'), 'abc')
+      assert.strictEqual(curry(add3, 'a')('b', 'c'), 'abc')
+      assert.strictEqual(curry(add3, 'a', 'b')('c'), 'abc')
+      assert.strictEqual(curry(add3)('a', 'b')('c'), 'abc')
+      assert.strictEqual(curry(add3)('a')('b', 'c'), 'abc')
+      assert.strictEqual(curry(add3)('a')('b')('c'), 'abc')
+    })
+
+    it('with placeholder __', async () => {
+      assert.strictEqual(curry(add3, __, 'b', 'c')('a'), 'abc')
+      assert.strictEqual(curry(add3, 'a', __, 'c')('b'), 'abc')
+      assert.strictEqual(curry(add3, 'a', 'b', __)('c'), 'abc')
+      assert.strictEqual(curry(add3, 'a', __, __)('b', 'c'), 'abc')
+      assert.strictEqual(curry(add3, __, 'b', __)('a', 'c'), 'abc')
+      assert.strictEqual(curry(add3, __, __, 'c')('a', 'b'), 'abc')
+      assert.strictEqual(curry(add3, __, __, __)('a', 'b', 'c'), 'abc')
+      assert.strictEqual(curry(add3, __, __, __)(__, __, __)('a', 'b', 'c'), 'abc')
+      assert.strictEqual(curry(add3, __, __, __)(__, 'b', 'c')('a'), 'abc')
+      assert.strictEqual(curry(add3, __, __, __)('a', __, 'c')('b'), 'abc')
+      assert.strictEqual(curry(add3, __, __, __)('a', 'b', __)('c'), 'abc')
+      assert.strictEqual(curry(add3)(__)(__)(__)('a', 'b', __)('c'), 'abc')
+      assert.strictEqual(curry(add3)(__)(__)(__)('a')('b')(__)('c'), 'abc')
+    })
+  })
+
+  describe('__', () => {
+    it('is Symbol(placeholder)', async () => {
+      assert.strictEqual(typeof __, 'symbol')
+      assert.strictEqual(__.description, 'placeholder')
+    })
+  })
+
+  it('exports 27 functions', async () => {
+    ase(Object.keys(rubico).length, 27)
   })
 })

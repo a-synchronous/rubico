@@ -50,14 +50,18 @@
   const get = require('./get')
   const pick = require('./pick')
   const omit = require('./omit')
+  const thunkify = require('./thunkify')
+  const curry = require('./curry')
+  const __ = require('./__')
 
 return {
-  pipe, fork, assign,
-  tap, tryCatch, switchCase,
+  pipe, tap,
+  switchCase, tryCatch,
+  fork, assign, get, pick, omit,
   map, filter, reduce, transform, flatMap,
-  any, all, and, or, not,
+  and, or, not, any, all,
   eq, gt, lt, gte, lte,
-  get, pick, omit,
+  thunkify, curry, __,
 }
 
 }())))
