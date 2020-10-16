@@ -4177,7 +4177,6 @@ eq(
   describe('__', () => {
     it('is Symbol(placeholder)', async () => {
       assert.strictEqual(typeof __, 'symbol')
-      assert.strictEqual(__.description, 'placeholder')
     })
   })
 
