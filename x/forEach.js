@@ -73,14 +73,14 @@ const forEach = callback => function executingCallbackForEach(value) {
   if (value == null) {
     return value
   }
+  if (typeof value.forEach == 'function') {
+    return value.forEach(callback)
+  }
   if (typeof value[symbolIterator] == 'function') {
     return iteratorForEach(value[symbolIterator](), callback)
   }
   if (typeof value[symbolAsyncIterator] == 'function') {
     return asyncIteratorForEach(value[symbolAsyncIterator](), callback)
-  }
-  if (typeof value.forEach == 'function') {
-    return value.forEach(callback)
   }
   if (value.constructor == Object) {
     return objectForEach(value, callback)
