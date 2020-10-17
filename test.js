@@ -13,7 +13,8 @@ const {
   map, filter, reduce, transform, flatMap,
   any, all, and, or, not,
   eq, gt, lt, gte, lte,
-  thunkify, curry, __,
+  thunkify, always,
+  curry, __,
 } = rubico
 
 const objectProto = Object.prototype
@@ -4144,6 +4145,14 @@ eq(
     })
   })
 
+  describe('always', () => {
+    it('always returns a value', async () => {
+      assert.strictEqual(always(1)(), 1)
+      assert.strictEqual(always(null)(), null)
+      assert.strictEqual(always(NaN)(), NaN)
+    })
+  })
+
   describe('curry', () => {
     const add3 = (a, b, c) => a + b + c
     const curriedAdd3 = curry(add3)
@@ -4182,7 +4191,7 @@ eq(
     })
   })
 
-  it('exports 27 functions', async () => {
-    ase(Object.keys(rubico).length, 27)
+  it('exports 28 functions', async () => {
+    ase(Object.keys(rubico).length, 28)
   })
 })

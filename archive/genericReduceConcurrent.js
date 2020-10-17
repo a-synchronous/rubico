@@ -195,7 +195,7 @@ const tacitGenericReduceConcurrent = (
  * @NOTE
  * concurrency is only possible because result is never reassigned. in that regard, `result` is required.
  */
-var genericReduceConcurrent = function (args, reducer, result) {
+const genericReduceConcurrent = function (args, reducer, result) {
   const collection = args[0]
   if (collection == null) {
     reducer(result, collection)

@@ -38,7 +38,7 @@ const reducerConcat = require('./reducerConcat')
  * transform.pool
  * flatMap.pool
  */
-var genericReduce = function (args, reducer, result) {
+const genericReduce = function (args, reducer, result) {
   const collection = args[0]
   if (isArray(collection)) {
     return arrayReduce(collection, reducer, result)

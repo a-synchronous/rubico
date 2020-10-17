@@ -1,3 +1,3 @@
-const __ = Symbol('placeholder')
+const __ = Symbol.for('placeholder')
 
 module.exports = __

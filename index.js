@@ -51,6 +51,7 @@
   const pick = require('./pick')
   const omit = require('./omit')
   const thunkify = require('./thunkify')
+  const always = require('./always')
   const curry = require('./curry')
   const __ = require('./__')
 
@@ -61,7 +62,8 @@ return {
   map, filter, reduce, transform, flatMap,
   and, or, not, any, all,
   eq, gt, lt, gte, lte,
-  thunkify, curry, __,
+  thunkify, always,
+  curry, __,
 }
 
 }())))
