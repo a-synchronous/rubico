@@ -1,4 +1,5 @@
-const { pipe, tap } = require('..')
+const pipe = require('../pipe')
+const tap = require('../tap')
 
 /**
  * @name tracef

@@ -10,8 +10,8 @@ const {
   map, filter, reduce, transform, flatMap,
   and, or, not, any, all,
   eq, gt, lt, gte, lte,
-  thunkify, always,
-  curry, __,
+  thunkify, always, // create lazy computations
+  curry, __, // partially apply arguments
 } = rubico
 
 const {
@@ -19,12 +19,19 @@ const {
   last,
   isEmpty,
   find,
+  forEach,
+  flatten,
 } = rubicoX
 
 const Stdout = {
   concat(...args) {
     console.log(...args)
     return this
+  },
+}
+
+const FileSystem = {
+  concat(path, chunk) {
   },
 }
 
@@ -40,64 +47,64 @@ const replace = (pattern, replacement) => value => value.replace(pattern, replac
 
 const startsWith = pattern => value => value.startsWith(pattern)
 
+const endsWith = pattern => value => value.endsWith(pattern)
+
 const pathResolve = nodePath.resolve
 
 const pathDirname = nodePath.dirname
 
-// code string => string
-const codeRemoveComments = replace(/\/\*\*[\s\S]+?\*\//g, '')
-
-// code string => string
-const codeRemoveExports = replace(/module.exports .+?\n/, '')
-
 // path string => cjs string
-const pathToCjs = pipe.sync([
+const pathToCode = pipe.sync([
   fs.readFileSync,
   toString,
-  codeRemoveComments,
-  codeRemoveExports,
+  replace(/\/\*\*[\s\S]+?\*\//g, ''),
+  replace(/module.exports .+?\n/, ''),
 ])
 
-// path string => bundle string
-const pathToBundle = pipe([
+// path string => codeBundle string
+const pathToCodeBundle = pipe([
   fork({
     path: identity,
-    code: pipe([
-      fs.promises.readFile,
-      toString,
-      replace(/\/\*\*[\s\S]+?\*\//g, ''),
-    ]),
+    code: pathToCode,
   }),
+
   ({ path, code }) => {
     const alreadyRequiredPaths = new Set()
     let cwd = pathDirname(path),
       result = code
     while (result.includes('require(')) {
       result = result.replace(/const \w+ = require\('(.+)'\)/g, (match, $1) => {
-        const requiredPath = pathResolve(cwd, `${$1}.js`),
-          requiredCwd = pathDirname(requiredPath)
+        const requiredPath = pathResolve(cwd, `${$1}.js`)
         if (alreadyRequiredPaths.has(requiredPath)) {
           return ''
         }
         alreadyRequiredPaths.add(requiredPath)
-        let requiredCode = pathToCjs(requiredPath)
+        let requiredCode = pathToCode(requiredPath)
 
         while (requiredCode.includes('require(')) {
           requiredCode = requiredCode.replace(
             /const \w+ = require\('(.+)'\)/g,
-            pipe.sync([
+            pipe([
               (match, $1) => $1,
               filename => `${filename}.js`,
-              curry.arity(2, pathResolve, requiredCwd, __),
+              curry.arity(2, pathResolve, pathDirname(requiredPath), __),
               switchCase([
                 requiredPath => alreadyRequiredPaths.has(requiredPath),
                 always(''),
-                pipe.sync([
-                  tap.sync(requiredPath => alreadyRequiredPaths.add(requiredPath)),
-                  fs.readFileSync,
-                  toString,
-                  codeRemoveComments,
-                  codeRemoveExports,
+                pipe([
+                  tap(requiredPath => alreadyRequiredPaths.add(requiredPath)),
+                  fork({
+                    requiredPath: identity,
+                    code: pathToCode,
+                  }),
+                  ({ requiredPath, code }) => {
+                    code = code.replace(/const (\w+) = require\('(.+)'\)/g, (match, $1, $2) => {
+                      const newPath = pathResolve(pathDirname(requiredPath), $2)
+                      const newStatement = `const ${$1} = require('${newPath}')`
+                      return newStatement
+                    })
+                    return code
+                  },
                 ]),
               ]),
             ]))
@@ -105,15 +112,53 @@ const pathToBundle = pipe([
         return requiredCode
       })
       result = result.replace(/\n{2,}/g, '\n\n')
-      console.log(path, result)
-      return result
     }
+    return result
   },
 ])
 
+transform(
+  pipe([
+    map(methodName => `${__dirname}/${methodName}.js`),
+    map(fork({
+      path: identity,
+      name: pipe([
+        split('/'),
+        last,
+        switchCase([
+          endsWith('.js'),
+          slice(0, -3),
+          identity,
+        ]),
+      ]),
+      codeBundle: pathToCodeBundle,
+    })),
+    // map(trace),
+    map(assign({
+      distPath: pipe([
+        get('name'),
+        name => `${name}.js`,
+        curry(pathResolve, __dirname, 'dist', __),
+      ]),
+    })),
+  ]),
+  {
+    async concat({ codeBundle, distPath }) {
+      const result = await fs.promises.writeFile(distPath, codeBundle)
+      console.log('write result', result)
+      return this
+    },
+  },
+  // Stdout,
+  null,
+)([
+  Object.keys(rubico),
+  Object.keys(rubicoX).map(method => `x/${method}`),
+].flat(1))
+
+  /*
 pipe([
-  split(/[\n, ]/g),
-  filter(not(isEmpty)),
+  Object.keys,
   fork({
     names: identity,
     codeMap: reduce(
@@ -121,82 +166,38 @@ pipe([
         map(filename => `${__dirname}/${filename}.js`),
         map(fork({
           path: identity,
-          code: pathToBundle,
+          code: pathToCodeBundle,
         })),
       ])((codeMap, { path, code }) => codeMap.set(path, code)),
       new Map()),
   }),
-  trace,
-])(`
-  pipe, tap,
-  switchCase, tryCatch,
-  fork, assign, get, pick, omit,
-  map, filter, reduce, transform, flatMap,
-  and, or, not, any, all,
-  eq, gt, lt, gte, lte,
-  thunkify, always,
-  curry, __,
-`)
-
-/*
-pipe([
-  split(/[\n, ]/g),
-  transform(
-    pipe([
-      filter(not(isEmpty)),
-      map(filename => `${__dirname}/${filename}.js`),
-      map(fork({
-        path: identity,
-        code: pipe([
-          curry.arity(1, fs.promises.readFile, __),
-          toString,
-          replace(/\/\*\*[\s\S]+?\*\//g, ''),
-        ]),
-      })),
-      map(assign({
-        requiresReplaced: pipe([
-          get('code'),
-          replace(/require\('(.+)'\)/g, (match, $1) => require.cache[pathResolve()]),
-        ]),
-        requiresReplaced({ path, code }) {
-          return code.replace(
-            /require\('(.+)'\)/g,
-            (match, $1) => {
-              console.log('pathResolve', pathResolve(__dirname, `${$1}.js`))
-              const requireModule = require.cache[pathResolve(__dirname, `${$1}.js`)]
-              console.log('requireModule', requireModule.exports)
-              return requireModule.exports.toString()
-            },
-          )
-        },
-      })),
-      map(assign({
-        name({ path }) {
-          return last(path.split('/')).slice(0, -3)
-        },
-      })),
-      map(assign({
-        exports({ name, code }) {
-          return code.split(/\n+/)
-            .find(startsWith('module.exports'))
-            .replace('module.exports = ', '')
-        },
-      })),
-    ]),
-    Stdout,
-  ),
-])(`
-  pipe, tap,
-  switchCase, tryCatch,
-  fork, assign, get, pick, omit,
-  map, filter, reduce, transform, flatMap,
-  and, or, not, any, all,
-  eq, gt, lt, gte, lte,
-  thunkify, always,
-  curry, __,
-`)
+  tap(({ codeMap }) => {
+    for (const [path, code] of codeMap) {
+      console.log(`file://${path}\n\/\/ START\n${code}\/\/ END\n`)
+    }
+  }),
+])(rubico)
   */
 
-// console.log(require.cache['/home/richard/code/rubico/curry.js'])
-// console.log('curry', require.cache['/home/richard/code/rubico/curry.js'].exports.toString())
-// console.log('hey', require.cache['/home/richard/code/rubico/distributor.js'].children)
+  /*
+pipe([
+  Object.keys,
+  fork({
+    names: identity,
+    codeMap: reduce(
+      pipe([
+        map(filename => `${__dirname}/x/${filename}.js`),
+        map(fork({
+          path: identity,
+          code: pathToCodeBundle,
+        })),
+      ])((codeMap, { path, code }) => codeMap.set(path, code)),
+      new Map()),
+  }),
+  tap(({ codeMap }) => {
+    for (const [path, code] of codeMap) {
+      console.log(`file://${path}\n\/\/ START\n${code}\/\/ END\n`)
+    }
+  }),
+])(rubicoX)
+*/
