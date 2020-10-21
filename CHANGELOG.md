@@ -8,6 +8,7 @@
  * flatten rewrite + refresh benchmarks
  * isDeepEqual rewrite + refresh benchmarks
  * unionWith rewrite + refresh benchmarks
+ * better pipe performance
  * **map.own** - [LMulvey](https://github.com/LMulvey)
 
 ## v1.5.19 - latest
