@@ -40,12 +40,14 @@ rubico is a module of twenty-four operators for [a]synchronous functional progra
 
 ```javascript
 const {
-  pipe, fork, assign,
-  tap, tryCatch, switchCase,
+  pipe, tap,
+  switchCase, tryCatch,
+  fork, assign, get, pick, omit,
   map, filter, reduce, transform, flatMap,
-  any, all, and, or, not,
+  and, or, not, any, all,
   eq, gt, lt, gte, lte,
-  get, pick, omit,
+  thunkify, always,
+  curry, __,
 } = rubico
 ```
 
