@@ -2,7 +2,7 @@ const assert = require('assert')
 const stream = require('stream')
 const path = require('path')
 const fs = require('fs')
-const rubico = require('.')
+const rubico = require('./rubico')
 const isDeepEqual = require('./x/isDeepEqual')
 const { Readable, Writable } = require('stream')
 
