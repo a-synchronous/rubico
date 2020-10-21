@@ -117,10 +117,10 @@ const pipeSync = funcs => funcs.reduce(funcConcatSync)
  * @name pipe
  *
  * @benchmark
- * rubicoPipeline(2): 1e+6: 41.507ms
- * pipeSyncPipeline(2): 1e+6: 35.365ms
- * lodashPipeline(2): 1e+6: 41.679ms
- * ramdaPipeline(2): 1e+6: 39.722ms
+ * rubico.pipe: 1e+6: 249.955ms
+ * rubico.pipe.sync: 1e+6: 94.613ms
+ * _.pipe: 1e+6: 463.235ms
+ * R.pipe: 1e+6: 1.034s
  */
 
 
@@ -138,15 +138,15 @@ const lodashPipeline = _.pipe(funcs)
 
 const ramdaPipeline = R.pipe(...funcs)
 
-// console.log('rubicoPipeline(2)', rubicoPipeline(2))
-// console.log('pipeSyncPipeline(2)', pipeSyncPipeline(2))
-// console.log('lodashPipeline(2)', lodashPipeline(2))
-// console.log('ramdaPipeline(2)', ramdaPipeline(2))
+// console.log('rubicoPipeline(2)', pipe(funcs)(2))
+// console.log('pipeSyncPipeline(2)', pipe.sync(funcs)(2))
+// console.log('lodashPipeline(2)', _.pipe(funcs)(2))
+// console.log('ramdaPipeline(2)', R.pipe(...funcs)(2))
 
-// timeInLoop('rubicoPipeline(2)', 1e6, () => rubicoPipeline(2))
+// timeInLoop('rubico.pipe', 1e6, () => pipe(funcs)(2))
 
-// timeInLoop('pipeSyncPipeline(2)', 1e6, () => pipeSyncPipeline(2))
+// timeInLoop('rubico.pipe.sync', 1e6, () => pipe.sync(funcs)(2))
 
-// timeInLoop('lodashPipeline(2)', 1e6, () => lodashPipeline(2))
+// timeInLoop('_.pipe', 1e6, () => _.pipe(funcs)(2))
 
-// timeInLoop('ramdaPipeline(2)', 1e6, () => ramdaPipeline(2))
+// timeInLoop('R.pipe', 1e6, () => R.pipe(funcs[0], funcs[1], funcs[2])(2))

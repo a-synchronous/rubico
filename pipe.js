@@ -1,3 +1,4 @@
+const noop = require('./_internal/noop')
 const funcConcat = require('./_internal/funcConcat')
 const funcConcatSync = require('./_internal/funcConcatSync')
 const isGeneratorFunction = require('./_internal/isGeneratorFunction')
@@ -64,8 +65,8 @@ const isAsyncGeneratorFunction = require('./_internal/isAsyncGeneratorFunction')
  * @transducing
  */
 const pipe = function (funcs) {
-  const functionPipeline = funcs.reduce(funcConcat),
-    functionComposition = funcs.reduceRight(funcConcat)
+  let functionPipeline = noop,
+    functionComposition = noop
   return function pipeline(...args) {
     const firstArg = args[0]
     if (
@@ -73,8 +74,14 @@ const pipe = function (funcs) {
         && !isGeneratorFunction(firstArg)
         && !isAsyncGeneratorFunction(firstArg)
     ) {
+      if (functionComposition == noop) {
+        functionComposition = funcs.reduceRight(funcConcat)
+      }
       return functionComposition(...args)
     }
+      if (functionPipeline == noop) {
+        functionPipeline = funcs.reduce(funcConcat)
+      }
     return functionPipeline(...args)
   }
 }
