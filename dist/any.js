@@ -118,6 +118,8 @@ const reducerAnySync = predicate => function anyReducer(result, item) {
   return result ? true : predicate(item)
 }
 
+const __ = Symbol.for('placeholder')
+
 // argument resolver for curry2
 const curry2ResolveArg0 = (
   baseFunc, arg1,
@@ -137,8 +139,6 @@ const curry2 = function (baseFunc, arg0, arg1) {
     ? curry2ResolveArg0(baseFunc, arg1)
     : curry2ResolveArg1(baseFunc, arg0)
 }
-
-const __ = Symbol.for('placeholder')
 
 const reducerAny = predicate => function anyReducer(result, item) {
   return result === true ? result

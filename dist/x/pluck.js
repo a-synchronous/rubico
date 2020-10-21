@@ -22,6 +22,8 @@ const funcConcat = (
     : funcB(intermediate)
 }
 
+const symbolIterator = Symbol.iterator
+
 const MappingIterator = (iterator, mapper) => ({
   toString() {
     return '[object MappingIterator]'
@@ -420,8 +422,6 @@ const objectMapOwn = function (object, mapper) {
   }
   return isAsync ? promiseObjectAll(result) : result
 }
-
-const symbolIterator = Symbol.iterator
 
 const map = mapper => function mapping(value) {
   if (isArray(value)) {

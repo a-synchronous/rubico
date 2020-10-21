@@ -85,7 +85,7 @@ const pathToCodeBundle = pipe([
 
         while (requiredCode.includes('require(')) {
           requiredCode = requiredCode.replace(
-            /const \w+ = require\('(.+)'\)/g,
+            /const \w+ = require\('(.+)'\)/,
             pipe([
               (match, $1) => $1,
               filename => `${filename}.js`,

@@ -13,6 +13,8 @@
 
 const isArray = Array.isArray
 
+const __ = Symbol.for('placeholder')
+
 // argument resolver for curry3
 const curry3ResolveArg0 = (
   baseFunc, arg1, arg2,
@@ -43,8 +45,6 @@ const curry3 = function (baseFunc, arg0, arg1, arg2) {
   }
   return curry3ResolveArg2(baseFunc, arg0, arg1)
 }
-
-const __ = Symbol.for('placeholder')
 
 const isPromise = value => value != null && typeof value.then == 'function'
 

@@ -63,6 +63,8 @@ const asyncGeneratorFunctionTag = '[object AsyncGeneratorFunction]'
 
 const isAsyncGeneratorFunction = value => objectToString(value) == asyncGeneratorFunctionTag
 
+const __ = Symbol.for('placeholder')
+
 // argument resolver for curry4
 const curry4ResolveArg0 = (
   baseFunc, arg1, arg2, arg3,
@@ -103,8 +105,6 @@ const curry4 = function (baseFunc, arg0, arg1, arg2, arg3) {
   }
   return curry4ResolveArg3(baseFunc, arg0, arg1, arg2)
 }
-
-const __ = Symbol.for('placeholder')
 
 const promiseAll = Promise.all.bind(Promise)
 

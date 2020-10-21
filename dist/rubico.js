@@ -337,6 +337,8 @@ const switchCase = funcs => function switchingCases(...args) {
   return funcConditional(funcs, args, -2)
 }
 
+const symbolIterator = Symbol.iterator
+
 const MappingIterator = (iterator, mapper) => ({
   toString() {
     return '[object MappingIterator]'
@@ -586,8 +588,6 @@ const objectMapOwn = function (object, mapper) {
   }
   return isAsync ? promiseObjectAll(result) : result
 }
-
-const symbolIterator = Symbol.iterator
 
 const map = mapper => function mapping(value) {
   if (isArray(value)) {
@@ -1515,8 +1515,6 @@ const setFlatMap = function (set, flatMapper) {
     : setFlatten(monadSet)
 }
 
-const arrayFlatten = require ('./arrayFlatten')
-
 const arrayJoin = (array, delimiter) => array.join(delimiter)
 
 const arrayFlattenToString = funcConcat(
@@ -1602,9 +1600,9 @@ const streamFlatMap = async function (stream, flatMapper) {
   return stream
 }
 
-const bufferAlloc = globalThisHasBuffer ? Buffer.alloc : noop
-
 const globalThisHasBuffer = typeof Buffer == 'function'
+
+const bufferAlloc = globalThisHasBuffer ? Buffer.alloc : noop
 
 const arrayJoinToBinary = function (array, init) {
   const length = array.length
@@ -1748,20 +1746,6 @@ const arrayAny = function (array, predicate) {
   return false
 }
 
-const iteratorAny = function (iterator, predicate) {
-  for (const item of iterator) {
-    const predication = predicate(item)
-    if (isPromise(predication)) {
-      return asyncIteratorAny(
-        iterator, predicate, new Set([SelfReferencingPromise(predication)]))
-    }
-    if (predication) {
-      return true
-    }
-  }
-  return false
-}
-
 const asyncIteratorAny = async function (
   iterator, predicate, promisesInFlight, maxConcurrency = 20,
 ) {
@@ -1792,6 +1776,20 @@ const asyncIteratorAny = async function (
   while (promisesInFlight.size > 0) {
     const [predication, promise] = await promiseRace(promisesInFlight)
     promisesInFlight.delete(promise)
+    if (predication) {
+      return true
+    }
+  }
+  return false
+}
+
+const iteratorAny = function (iterator, predicate) {
+  for (const item of iterator) {
+    const predication = predicate(item)
+    if (isPromise(predication)) {
+      return asyncIteratorAny(
+        iterator, predicate, new Set([SelfReferencingPromise(predication)]))
+    }
     if (predication) {
       return true
     }

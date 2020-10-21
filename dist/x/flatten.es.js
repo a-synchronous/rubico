@@ -241,6 +241,20 @@ const objectFlatten = function (object) {
 
 const objectValues = Object.values
 
+const objectProto = Object.prototype
+
+const nativeObjectToString = objectProto.toString
+
+const objectToString = value => nativeObjectToString.call(value)
+
+const generatorFunctionTag = '[object GeneratorFunction]'
+
+const isGeneratorFunction = value => objectToString(value) == generatorFunctionTag
+
+const asyncGeneratorFunctionTag = '[object AsyncGeneratorFunction]'
+
+const isAsyncGeneratorFunction = value => objectToString(value) == asyncGeneratorFunctionTag
+
 const iteratorReduceAsync = async function (
   iterator, reducer, result,
 ) {
@@ -293,6 +307,37 @@ const asyncIteratorReduce = async function (asyncIterator, reducer, result) {
     iteration = await asyncIterator.next()
   }
   return result
+}
+
+// argument resolver for curryArgs3
+const curryArgs3ResolveArgs0 = (
+  baseFunc, arg1, arg2,
+) => function args0Resolver(...args) {
+  return baseFunc(args, arg1, arg2)
+}
+
+// argument resolver for curryArgs3
+const curryArgs3ResolveArgs1 = (
+  baseFunc, arg0, arg2,
+) => function arg1Resolver(...args) {
+  return baseFunc(arg0, args, arg2)
+}
+
+// argument resolver for curryArgs3
+const curryArgs3ResolveArgs2 = (
+  baseFunc, arg0, arg1,
+) => function arg2Resolver(...args) {
+  return baseFunc(arg0, arg1, args)
+}
+
+const curryArgs3 = function (baseFunc, arg0, arg1, arg2) {
+  if (arg0 == __) {
+    return curryArgs3ResolveArgs0(baseFunc, arg1, arg2)
+  }
+  if (arg1 == __) {
+    return curryArgs3ResolveArgs1(baseFunc, arg0, arg2)
+  }
+  return curryArgs3ResolveArgs2(baseFunc, arg0, arg1)
 }
 
 // argument resolver for curry4
@@ -519,20 +564,6 @@ const FlatMappingAsyncIterator = function (asyncIterator, flatMapper) {
   }
 }
 
-const objectProto = Object.prototype
-
-const nativeObjectToString = objectProto.toString
-
-const objectToString = value => nativeObjectToString.call(value)
-
-const generatorFunctionTag = '[object GeneratorFunction]'
-
-const isGeneratorFunction = value => objectToString(value) == generatorFunctionTag
-
-const asyncGeneratorFunctionTag = '[object AsyncGeneratorFunction]'
-
-const isAsyncGeneratorFunction = value => objectToString(value) == asyncGeneratorFunctionTag
-
 const isBinary = ArrayBuffer.isView
 
 const arrayMap = function (array, mapper) {
@@ -636,8 +667,6 @@ const funcConcat = (
     : funcB(intermediate)
 }
 
-const arrayFlatten = require ('./arrayFlatten')
-
 const arrayJoin = (array, delimiter) => array.join(delimiter)
 
 const arrayFlattenToString = funcConcat(
@@ -738,11 +767,11 @@ const binaryExtend = function (typedArray, array) {
   return _binaryExtend(typedArray, [array])
 }
 
+const globalThisHasBuffer = typeof Buffer == 'function'
+
 const noop = function () {}
 
 const bufferAlloc = globalThisHasBuffer ? Buffer.alloc : noop
-
-const globalThisHasBuffer = typeof Buffer == 'function'
 
 const arrayJoinToBinary = function (array, init) {
   const length = array.length
@@ -769,37 +798,6 @@ const binaryFlatMap = function (binary, flatMapper) {
   return isPromise(monadArray)
     ? monadArray.then(curry2(arrayFlattenToBinary, __, result))
     : arrayFlattenToBinary(monadArray, result)
-}
-
-// argument resolver for curryArgs3
-const curryArgs3ResolveArgs0 = (
-  baseFunc, arg1, arg2,
-) => function args0Resolver(...args) {
-  return baseFunc(args, arg1, arg2)
-}
-
-// argument resolver for curryArgs3
-const curryArgs3ResolveArgs1 = (
-  baseFunc, arg0, arg2,
-) => function arg1Resolver(...args) {
-  return baseFunc(arg0, args, arg2)
-}
-
-// argument resolver for curryArgs3
-const curryArgs3ResolveArgs2 = (
-  baseFunc, arg0, arg1,
-) => function arg2Resolver(...args) {
-  return baseFunc(arg0, arg1, args)
-}
-
-const curryArgs3 = function (baseFunc, arg0, arg1, arg2) {
-  if (arg0 == __) {
-    return curryArgs3ResolveArgs0(baseFunc, arg1, arg2)
-  }
-  if (arg1 == __) {
-    return curryArgs3ResolveArgs1(baseFunc, arg0, arg2)
-  }
-  return curryArgs3ResolveArgs2(baseFunc, arg0, arg1)
 }
 
 const reducerFlatMap = (

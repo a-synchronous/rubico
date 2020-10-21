@@ -23,6 +23,8 @@ const asyncGeneratorFunctionTag = '[object AsyncGeneratorFunction]'
 
 const isAsyncGeneratorFunction = value => objectToString(value) == asyncGeneratorFunctionTag
 
+const __ = Symbol.for('placeholder')
+
 // argument resolver for curry3
 const curry3ResolveArg0 = (
   baseFunc, arg1, arg2,
@@ -110,9 +112,9 @@ const asyncIteratorReduce = async function (asyncIterator, reducer, result) {
   return result
 }
 
-const symbolAsyncIterator = Symbol.asyncIterator
+const symbolIterator = Symbol.iterator
 
-const __ = Symbol.for('placeholder')
+const symbolAsyncIterator = Symbol.asyncIterator
 
 // argument resolver for curry2
 const curry2ResolveArg0 = (
@@ -314,8 +316,6 @@ const genericReduce = function (args, reducer, result) {
     ? reducer(collection)
     : reducer(result, collection)
 }
-
-const symbolIterator = Symbol.iterator
 
 const arrayPush = function (array, value) {
   array.push(value)
@@ -667,8 +667,6 @@ const funcConcat = (
     : funcB(intermediate)
 }
 
-const arrayFlatten = require ('./arrayFlatten')
-
 const arrayJoin = (array, delimiter) => array.join(delimiter)
 
 const arrayFlattenToString = funcConcat(
@@ -769,11 +767,11 @@ const binaryExtend = function (typedArray, array) {
   return _binaryExtend(typedArray, [array])
 }
 
+const globalThisHasBuffer = typeof Buffer == 'function'
+
 const noop = function () {}
 
 const bufferAlloc = globalThisHasBuffer ? Buffer.alloc : noop
-
-const globalThisHasBuffer = typeof Buffer == 'function'
 
 const arrayJoinToBinary = function (array, init) {
   const length = array.length
