@@ -7,7 +7,6 @@
  * @description
  * Determine whether a value is a Node.js Readable Stream.
  */
-const isNodeReadStream = value =>
-  value != null && typeof value.pipe == 'function'
+const isNodeReadStream = value => value != null && typeof value.pipe == 'function'
 
 module.exports = isNodeReadStream

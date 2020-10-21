@@ -28,10 +28,6 @@ const mapMap = function (value, mapper) {
     if (isPromise(resultItem)) {
       promises.push(resultItem.then(
         curry4(callPropBinary, result, 'set', key, __)))
-      /*
-      promises.push(resultItem.then(
-        curry3(mapSetItem, result, key, __)))
-        */
     } else {
       result.set(key, resultItem)
     }

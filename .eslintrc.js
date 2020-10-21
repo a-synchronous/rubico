@@ -272,6 +272,7 @@ module.exports = {
         'require-await': 'off',
         'require-jsdoc': 'error',
         'require-unicode-regexp': 'off',
+        'require-yield': 'off',
         'rest-spread-spacing': [
             'error',
             'never'
