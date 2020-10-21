@@ -21,11 +21,12 @@ const curryArity = require('./_internal/curryArity')
  *
  * ```javascript [playground]
  * const add = (a, b, c) => a + b + c
- * console.log(curry(add, 'a', 'b', 'c')) // abc
- * console.log(curry(add)('a', 'b', 'c')) // abc
- * console.log(curry(add)('a', 'b')('c')) // abc
- * console.log(curry(add)('a')('b', 'c')) // abc
- * console.log(curry(add)('a')('b')('c')) // abc
+ *
+ * console.log(curry(add, 'a', 'b', 'c')) // 'abc'
+ * console.log(curry(add)('a', 'b', 'c')) // 'abc'
+ * console.log(curry(add, 'a')('b', 'c')) // 'abc'
+ * console.log(curry(add, 'a', 'b')('c')) // 'abc'
+ * console.log(curry(add)('a')('b')('c')) // 'abc'
  *
  * console.log(curry(add, __, 'b', 'c')('a')) // abc
  * console.log(curry(add, __, __, 'c')('a', 'b')) // abc

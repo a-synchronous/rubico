@@ -1,4 +1,4 @@
-const rubico = require('.')
+const rubico = require('./rubico')
 const rubicoX = require('./x')
 const fs = require('fs')
 const nodePath = require('path')
@@ -10,8 +10,8 @@ const {
   map, filter, reduce, transform, flatMap,
   and, or, not, any, all,
   eq, gt, lt, gte, lte,
-  thunkify, always, // create lazy computations
-  curry, __, // partially apply arguments
+  thunkify, always, // 
+  curry, __, // Partially Apply Arguments
 } = rubico
 
 const {
@@ -21,6 +21,7 @@ const {
   find,
   forEach,
   flatten,
+  isObject,
 } = rubicoX
 
 const Stdout = {
@@ -30,12 +31,9 @@ const Stdout = {
   },
 }
 
-const FileSystem = {
-  concat(path, chunk) {
-  },
-}
-
 const identity = value => value
+
+const noop = function noop() {}
 
 const split = delimiter => value => value.split(delimiter)
 
@@ -48,6 +46,10 @@ const replace = (pattern, replacement) => value => value.replace(pattern, replac
 const startsWith = pattern => value => value.startsWith(pattern)
 
 const endsWith = pattern => value => value.endsWith(pattern)
+
+const has = item => value => value.has(item)
+
+const isArray = Array.isArray
 
 const pathResolve = nodePath.resolve
 
@@ -117,87 +119,163 @@ const pathToCodeBundle = pipe([
   },
 ])
 
-transform(
-  pipe([
-    map(methodName => `${__dirname}/${methodName}.js`),
-    map(fork({
-      path: identity,
-      name: pipe([
-        split('/'),
-        last,
-        switchCase([
-          endsWith('.js'),
-          slice(0, -3),
-          identity,
+const ignoredNames = new Set([
+  'is',
+  'heapUsedInLoop',
+  'timeInLoop',
+  'tracef',
+])
+
+// name string => boolean
+const nameIsIgnored = name => ignoredNames.has(name)
+
+pipe([
+  tap(tryCatch(
+    thunkify(fs.promises.rm, `${__dirname}/dist`, { recursive: true }),
+    noop)),
+  tap(thunkify(fs.promises.mkdir, `${__dirname}/dist/x`, { recursive: true })),
+  transform(
+    pipe([
+      filter(pipe([
+        get('name'),
+        not(nameIsIgnored),
+      ])),
+      map(assign({
+        baseCodeBundle: pipe([
+          get('path'),
+          pathToCodeBundle,
         ]),
+      })),
+
+      map(switchCase([
+        eq('esm', get('type')),
+        assign({
+          codeBundle: ({ name, baseCodeBundle }) => `
+/**
+ * rubico v1.5.19
+ * https://github.com/a-synchronous/rubico
+ * (c) 2019-2020 Richard Tong
+ * rubico may be freely distributed under the MIT license.
+ */
+${baseCodeBundle}export default ${name}
+`.trimStart(),
+        }),
+        assign({
+          codeBundle: ({ name, baseCodeBundle }) => `
+/**
+ * rubico v1.5.19
+ * https://github.com/a-synchronous/rubico
+ * (c) 2019-2020 Richard Tong
+ * rubico may be freely distributed under the MIT license.
+ */
+
+(function (root, ${name}) {
+  if (typeof module == 'object') (module.exports = ${name}) // CommonJS
+  else if (typeof define == 'function') define(() => ${name}) // AMD
+  else (root.${name} = ${name}) // Browser
+}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+${baseCodeBundle}return ${name}
+}())))
+`.trimStart(),
+        }),
+      ])),
+
+      forEach(pipe([
+        get('distPath'),
+        replace(process.env.HOME, '~'),
+        curry.arity(2, console.log, 'writing', __),
+      ])),
+    ]),
+    {
+      async concat({ distPath, codeBundle }) {
+        await fs.promises.writeFile(distPath, codeBundle)
+        return this
+      },
+    },
+    // Stdout,
+    null,
+  ),
+])([
+
+  Object.keys(rubico).map(pipe([
+    fork({
+      name: identity,
+      path: pipe([
+        name => `${name}.js`,
+        curry.arity(2, pathResolve, __dirname, __),
       ]),
-      codeBundle: pathToCodeBundle,
-    })),
-    // map(trace),
-    map(assign({
+    }),
+  ])).flatMap(fork([
+    assign({
+      type: always('esm'),
+      distPath: pipe([
+        get('name'),
+        name => `${name}.es.js`,
+        curry.arity(3, pathResolve, __dirname, 'dist', __),
+      ]),
+    }),
+
+    assign({
+      type: always('cjs'),
       distPath: pipe([
         get('name'),
         name => `${name}.js`,
-        curry(pathResolve, __dirname, 'dist', __),
+        curry.arity(3, pathResolve, __dirname, 'dist', __),
       ]),
-    })),
-  ]),
-  {
-    async concat({ codeBundle, distPath }) {
-      const result = await fs.promises.writeFile(distPath, codeBundle)
-      console.log('write result', result)
-      return this
+    }),
+  ])),
+  Object.keys(rubicoX).map(pipe([
+    fork({
+      name: identity,
+      path: pipe([
+        name => `${name}.js`,
+        curry.arity(3, pathResolve, __dirname, 'x', __),
+      ]),
+    }),
+
+  ])).flatMap(fork([
+    assign({
+      type: always('esm'),
+      distPath: pipe([
+        get('name'),
+        name => `${name}.es.js`,
+        curry.arity(3, pathResolve, __dirname, 'dist/x', __),
+      ]),
+    }),
+    assign({
+      type: always('cjs'),
+      distPath: pipe([
+        get('name'),
+        name => `${name}.js`,
+        curry.arity(3, pathResolve, __dirname, 'dist/x', __),
+      ]),
+    }),
+  ])),
+
+  [
+    {
+      name: 'rubico',
+      type: 'esm',
+      path: pathResolve(__dirname, 'rubico.js'),
+      distPath: pathResolve(__dirname, 'es.js')
     },
-  },
-  // Stdout,
-  null,
-)([
-  Object.keys(rubico),
-  Object.keys(rubicoX).map(method => `x/${method}`),
+    {
+      name: 'rubico',
+      type: 'cjs',
+      path: pathResolve(__dirname, 'rubico.js'),
+      distPath: pathResolve(__dirname, 'index.js')
+    },
+    {
+      name: 'rubico',
+      type: 'esm',
+      path: pathResolve(__dirname, 'rubico.js'),
+      distPath: pathResolve(__dirname, 'dist/rubico.es.js')
+    },
+    {
+      name: 'rubico',
+      type: 'cjs',
+      path: pathResolve(__dirname, 'rubico.js'),
+      distPath: pathResolve(__dirname, 'dist/rubico.js')
+    },
+  ],
 ].flat(1))
-
-  /*
-pipe([
-  Object.keys,
-  fork({
-    names: identity,
-    codeMap: reduce(
-      pipe([
-        map(filename => `${__dirname}/${filename}.js`),
-        map(fork({
-          path: identity,
-          code: pathToCodeBundle,
-        })),
-      ])((codeMap, { path, code }) => codeMap.set(path, code)),
-      new Map()),
-  }),
-  tap(({ codeMap }) => {
-    for (const [path, code] of codeMap) {
-      console.log(`file://${path}\n\/\/ START\n${code}\/\/ END\n`)
-    }
-  }),
-])(rubico)
-  */
-
-  /*
-pipe([
-  Object.keys,
-  fork({
-    names: identity,
-    codeMap: reduce(
-      pipe([
-        map(filename => `${__dirname}/x/${filename}.js`),
-        map(fork({
-          path: identity,
-          code: pathToCodeBundle,
-        })),
-      ])((codeMap, { path, code }) => codeMap.set(path, code)),
-      new Map()),
-  }),
-  tap(({ codeMap }) => {
-    for (const [path, code] of codeMap) {
-      console.log(`file://${path}\n\/\/ START\n${code}\/\/ END\n`)
-    }
-  }),
-])(rubicoX)
-*/

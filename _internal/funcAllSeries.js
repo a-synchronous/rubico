@@ -48,12 +48,6 @@ const funcAllSeries = funcs => function allFuncsSeries(...args) {
       return resultItem.then(funcConcat(
         curry3(objectSet, result, funcsIndex, __),
         curry4(asyncFuncAllSeries, funcs, args, __, funcsIndex)))
-        /*
-      return resultItem.then(function set(res) {
-        result[funcsIndex] = res
-        return asyncFuncAllSeries(funcs, args, result, funcsIndex)
-      })
-      */
     }
     result[funcsIndex] = resultItem
   }

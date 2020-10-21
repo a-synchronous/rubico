@@ -1,3 +1,4 @@
+const funcConcat = require('../_internal/funcConcat')
 const map = require('../map')
 const get = require('../get')
 
@@ -48,6 +49,6 @@ const get = require('../get')
  * ) // total age: 96
  * ```
  */
-const pluck = path => map(get(path))
+const pluck = funcConcat(get, map)
 
 module.exports = pluck

@@ -1,5 +1,3 @@
-'use strict'
-
 const memoryUsage = process.memoryUsage.bind(process)
 
 /**

@@ -1,6 +1,3 @@
-const reducerFlatten = require('./reducerFlatten')
-const funcConcat = require('./funcConcat')
-const curry2 = require('./curry2')
 const curryArgs3 = require('./curryArgs3')
 const genericReduce = require('./genericReduce')
 const __ = require('./placeholder')
@@ -29,8 +26,8 @@ const reducerFlatMap = (
 ) => function flatMappingReducer(result, value) {
   const monad = flatMapper(value)
   return isPromise(monad)
-    ? monad.then(curryArgs3(genericReduce, __, reducerFlatten(reducer), result))
-    : genericReduce([monad], reducerFlatten(reducer), result)
+    ? monad.then(curryArgs3(genericReduce, __, reducer, result))
+    : genericReduce([monad], reducer, result)
 }
 
 module.exports = reducerFlatMap

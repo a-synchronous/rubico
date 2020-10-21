@@ -3,7 +3,7 @@ const __ = require('./placeholder')
 const curry2 = require('./curry2')
 const arrayMap = require('./arrayMap')
 const isPromise = require('./isPromise')
-const arrayFlatten =require ('./arrayFlatten')
+const arrayFlatten = require ('./arrayFlatten')
 const arrayJoin = require('./arrayJoin')
 
 /**
