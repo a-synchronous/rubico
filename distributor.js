@@ -10,8 +10,8 @@ const {
   map, filter, reduce, transform, flatMap,
   and, or, not, any, all,
   eq, gt, lt, gte, lte,
-  thunkify, always, // 
-  curry, __, // Partially Apply Arguments
+  thunkify, always,
+  curry, __,
 } = rubico
 
 const {
