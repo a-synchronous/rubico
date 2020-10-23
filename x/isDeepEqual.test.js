@@ -52,6 +52,11 @@ describe('isDeepEqual', () => {
       { a: 1, b: new Map([['a', 1], ['b', { b: 2 }]]) },
     ), false)
   })
+  it('treats nullish (null and undefined) as primitive', async () => {
+    assert.strictEqual(isDeepEqual(null, null), true)
+    assert.strictEqual(isDeepEqual(null, undefined), false)
+    assert.strictEqual(isDeepEqual(undefined, undefined), true)
+  })
   it('checks values strictly', async () => {
     assert.strictEqual(isDeepEqual(1, 1), true)
     assert.strictEqual(isDeepEqual(0, 0), true)
