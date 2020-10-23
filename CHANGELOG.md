@@ -9,6 +9,7 @@
  * isDeepEqual rewrite + refresh benchmarks
  * unionWith rewrite + refresh benchmarks
  * better pipe performance
+ * fix: isDeepEqual was throwing for nullish
  * **map.own** - [LMulvey](https://github.com/LMulvey)
 
 ## v1.5.19 - latest
