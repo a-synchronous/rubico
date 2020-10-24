@@ -241,6 +241,7 @@ ${baseCodeBundle}return ${name}
       ]),
     }),
   ])).flatMap(fork([
+
     assign({
       type: always('esm'),
       distPath: pipe([
@@ -339,6 +340,7 @@ ${baseCodeBundle}return ${name}
       path: pathResolve(__dirname, 'rubico.js'),
       distPath: pathResolve(__dirname, 'dist', 'rubico.es.js'),
     },
+
     {
       name: 'rubico',
       type: 'esm-minified',
