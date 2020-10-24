@@ -3,6 +3,7 @@ const rubicoX = require('./x')
 const rubicoVersion = require('./package.json').version
 const fs = require('fs')
 const nodePath = require('path')
+const { minify } = require('terser')
 
 const {
   pipe, tap,
@@ -159,6 +160,19 @@ pipe([
 ${baseCodeBundle}export default ${name}
 `.trimStart(),
         }),
+        eq('esm-minified', get('type')),
+        assign({
+          codeBundle: async ({ name, baseCodeBundle }) => `
+/**
+ * rubico v${rubicoVersion}
+ * https://github.com/a-synchronous/rubico
+ * (c) 2019-2020 Richard Tong
+ * rubico may be freely distributed under the MIT license.
+ */
+${(await minify(`${baseCodeBundle}export default ${name}`)).code}
+`.trimStart(),
+        }),
+        eq('cjs', get('type')),
         assign({
           codeBundle: ({ name, baseCodeBundle }) => `
 /**
@@ -177,6 +191,28 @@ ${baseCodeBundle}return ${name}
 }())))
 `.trimStart(),
         }),
+        eq('cjs-minified', get('type')),
+        assign({
+          codeBundle: async ({ name, baseCodeBundle }) => `
+/**
+ * rubico v${rubicoVersion}
+ * https://github.com/a-synchronous/rubico
+ * (c) 2019-2020 Richard Tong
+ * rubico may be freely distributed under the MIT license.
+ */
+
+${(await minify(`(function (root, ${name}) {
+  if (typeof module == 'object') (module.exports = ${name}) // CommonJS
+  else if (typeof define == 'function') define(() => ${name}) // AMD
+  else (root.${name} = ${name}) // Browser
+}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+${baseCodeBundle}return ${name}
+}())))`)).code}
+`.trimStart(),
+        }),
+        function throwingUnrecognizedTypeError({ name, type }) {
+          throw new TypeError(`${name} - unrecognized type ${type}`)
+        }
       ])),
 
       forEach(pipe([
@@ -213,12 +249,28 @@ ${baseCodeBundle}return ${name}
         curry.arity(3, pathResolve, __dirname, 'dist', __),
       ]),
     }),
+    assign({
+      type: always('esm-minified'),
+      distPath: pipe([
+        get('name'),
+        name => `${name}.es.min.js`,
+        curry.arity(3, pathResolve, __dirname, 'dist', __),
+      ]),
+    }),
 
     assign({
       type: always('cjs'),
       distPath: pipe([
         get('name'),
         name => `${name}.js`,
+        curry.arity(3, pathResolve, __dirname, 'dist', __),
+      ]),
+    }),
+    assign({
+      type: always('cjs-minified'),
+      distPath: pipe([
+        get('name'),
+        name => `${name}.min.js`,
         curry.arity(3, pathResolve, __dirname, 'dist', __),
       ]),
     }),
@@ -242,10 +294,27 @@ ${baseCodeBundle}return ${name}
       ]),
     }),
     assign({
+      type: always('esm-minified'),
+      distPath: pipe([
+        get('name'),
+        name => `${name}.es.min.js`,
+        curry.arity(3, pathResolve, __dirname, 'dist/x', __),
+      ]),
+    }),
+
+    assign({
       type: always('cjs'),
       distPath: pipe([
         get('name'),
         name => `${name}.js`,
+        curry.arity(3, pathResolve, __dirname, 'dist/x', __),
+      ]),
+    }),
+    assign({
+      type: always('cjs-minified'),
+      distPath: pipe([
+        get('name'),
+        name => `${name}.min.js`,
         curry.arity(3, pathResolve, __dirname, 'dist/x', __),
       ]),
     }),
@@ -256,25 +325,37 @@ ${baseCodeBundle}return ${name}
       name: 'rubico',
       type: 'esm',
       path: pathResolve(__dirname, 'rubico.js'),
-      distPath: pathResolve(__dirname, 'es.js')
+      distPath: pathResolve(__dirname, 'es.js'),
     },
     {
       name: 'rubico',
       type: 'cjs',
       path: pathResolve(__dirname, 'rubico.js'),
-      distPath: pathResolve(__dirname, 'index.js')
+      distPath: pathResolve(__dirname, 'index.js'),
     },
     {
       name: 'rubico',
       type: 'esm',
       path: pathResolve(__dirname, 'rubico.js'),
-      distPath: pathResolve(__dirname, 'dist/rubico.es.js')
+      distPath: pathResolve(__dirname, 'dist', 'rubico.es.js'),
+    },
+    {
+      name: 'rubico',
+      type: 'esm-minified',
+      path: pathResolve(__dirname, 'rubico.js'),
+      distPath: pathResolve(__dirname, 'dist', 'rubico.es.min.js'),
     },
     {
       name: 'rubico',
       type: 'cjs',
       path: pathResolve(__dirname, 'rubico.js'),
-      distPath: pathResolve(__dirname, 'dist/rubico.js')
+      distPath: pathResolve(__dirname, 'dist', 'rubico.js'),
+    },
+    {
+      name: 'rubico',
+      type: 'cjs-minified',
+      path: pathResolve(__dirname, 'rubico.js'),
+      distPath: pathResolve(__dirname, 'dist', 'rubico.min.js'),
     },
   ],
 ].flat(1))
