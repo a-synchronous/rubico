@@ -95,37 +95,51 @@ npm i rubico
 require `rubico`
 ```javascript
 const rubico = require('rubico')
-```
-
-import `rubico` as a global variable
-```html
-<script src="https://unpkg.com/rubico"></script>
-```
-
-import `rubico` via ES ([JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)) Modules
-```javascript
-import rubico from 'https://unpkg.com/rubico/es.js'
-```
-
-require individual functions
-```javascript
 const pipe = require('rubico/pipe')
 const tap = require('rubico/tap')
 const defaultsDeep = require('rubico/x/defaultsDeep')
 ```
 
-import individual functions as global variables
+import `rubico` globally
 ```html
+<!-- development -->
+<script src="https://unpkg.com/rubico"></script>
 <script src="https://unpkg.com/rubico/dist/pipe.js"></script>
 <script src="https://unpkg.com/rubico/dist/tap.js"></script>
 <script src="https://unpkg.com/rubico/dist/x/defaultsDeep.js"></script>
+<script>
+console.log(rubico) // { pipe, tap, ... }
+console.log(pipe) // [Function: pipe]
+console.log(tap) // [Function: tap]
+console.log(defaultsDeep) // [Function: defaultsDeep]
+</script>
+
+<!-- production -->
+<script src="https://unpkg.com/rubico/dist/rubico.min.js"></script>
+<script src="https://unpkg.com/rubico/dist/pipe.min.js"></script>
+<script src="https://unpkg.com/rubico/dist/tap.min.js"></script>
+<script src="https://unpkg.com/rubico/dist/x/defaultsDeep.min.js"></script>
+<script>
+console.log(rubico) // { pipe, tap, ... }
+console.log(pipe) // [Function: pipe]
+console.log(tap) // [Function: tap]
+console.log(defaultsDeep) // [Function: defaultsDeep]
+</script>
 ```
 
-import individual functions as modules
+import `rubico` via ES ([JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)) Modules
 ```javascript
+// development
+import rubico from 'https://unpkg.com/rubico/es.js'
 import pipe from 'https://unpkg.com/rubico/dist/pipe.es.js'
 import tap from 'https://unpkg.com/rubico/dist/tap.es.js'
 import defaultsDeep from 'https://unpkg.com/rubico/dist/x/defaultsDeep.es.js'
+
+// production
+import rubico from 'https://unpkg.com/rubico/dist/rubico.es.min.js'
+import pipe from 'https://unpkg.com/rubico/dist/pipe.es.min.js'
+import tap from 'https://unpkg.com/rubico/dist/tap.es.min.js'
+import defaultsDeep from 'https://unpkg.com/rubico/dist/x/defaultsDeep.es.min.js'
 ```
 
 ### System Requirements
