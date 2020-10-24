@@ -6,6 +6,7 @@
 
 ![Node.js CI](https://github.com/a-synchronous/rubico/workflows/Node.js%20CI/badge.svg?branch=master)
 [![codecov](https://codecov.io/gh/a-synchronous/rubico/branch/master/graph/badge.svg)](https://codecov.io/gh/a-synchronous/rubico)
+[![npm version](https://img.shields.io/npm/v/rubico.svg?style=flat)](https://www.npmjs.com/package/rubico)
 
 ### [a]synchronous functional programming
 
@@ -91,14 +92,40 @@ with `npm`
 npm i rubico
 ```
 
-browser script, global `rubico`
+require `rubico`
+```javascript
+const rubico = require('rubico')
+```
+
+import `rubico` as a global variable
 ```html
 <script src="https://unpkg.com/rubico"></script>
 ```
 
-browser module
+import `rubico` via ES ([JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)) Modules
 ```javascript
 import rubico from 'https://unpkg.com/rubico/es.js'
+```
+
+require individual functions
+```javascript
+const pipe = require('rubico/pipe')
+const tap = require('rubico/tap')
+const defaultsDeep = require('rubico/x/defaultsDeep')
+```
+
+import individual functions as global variables
+```html
+<script src="https://unpkg.com/rubico/dist/pipe.js"></script>
+<script src="https://unpkg.com/rubico/dist/tap.js"></script>
+<script src="https://unpkg.com/rubico/dist/x/defaultsDeep.js"></script>
+```
+
+import individual functions as modules
+```javascript
+import pipe from 'https://unpkg.com/rubico/dist/pipe.es.js'
+import tap from 'https://unpkg.com/rubico/dist/tap.es.js'
+import defaultsDeep from 'https://unpkg.com/rubico/dist/x/defaultsDeep.es.js'
 ```
 
 ### System Requirements
