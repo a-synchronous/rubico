@@ -1,5 +1,6 @@
 const rubico = require('./rubico')
 const rubicoX = require('./x')
+const rubicoVersion = require('./package.json').version
 const fs = require('fs')
 const nodePath = require('path')
 
@@ -152,7 +153,7 @@ pipe([
         assign({
           codeBundle: ({ name, baseCodeBundle }) => `
 /**
- * rubico v1.6.1
+ * rubico v${rubicoVersion}
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2020 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -163,7 +164,7 @@ ${baseCodeBundle}export default ${name}
         assign({
           codeBundle: ({ name, baseCodeBundle }) => `
 /**
- * rubico v1.6.1
+ * rubico v${rubicoVersion}
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2020 Richard Tong
  * rubico may be freely distributed under the MIT license.
