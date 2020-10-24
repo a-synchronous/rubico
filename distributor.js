@@ -16,6 +16,8 @@ const {
 } = rubico
 
 const {
+  identity,
+  noop,
   trace,
   last,
   isEmpty,
@@ -31,10 +33,6 @@ const Stdout = {
     return this
   },
 }
-
-const identity = value => value
-
-const noop = function noop() {}
 
 const split = delimiter => value => value.split(delimiter)
 
