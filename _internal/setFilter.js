@@ -1,4 +1,6 @@
 const isPromise = require('./isPromise')
+const promiseAll = require('./promiseAll')
+const always = require('./always')
 const __ = require('./placeholder')
 const curry3 = require('./curry3')
 const thunkConditional = require('./thunkConditional')
@@ -32,7 +34,9 @@ const setFilter = function (value, predicate) {
       result.add(item)
     }
   }
-  return result
+  return promises.length == 0
+    ? result
+    : promiseAll(promises).then(always(result))
 }
 
 module.exports = setFilter
