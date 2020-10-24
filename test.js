@@ -1900,12 +1900,12 @@ reduce(
         10,
       )
       assert.strictEqual(
-        reduce(number => number)(10),
-        10,
+        reduce((a, b) => a + b)(10)(5),
+        15,
       )
       assert.strictEqual(
-        reduce(number => number, 0)(10),
-        0,
+        reduce((a, b) => a + b, 0)(10),
+        10,
       )
     })
     it('collection null', async () => {
@@ -1927,9 +1927,9 @@ reduce(
         reduce(value => value, 'hey')(),
         'hey',
       )
-      assert.strictEqual(
-        reduce(value => value, undefined)(undefined),
-        undefined,
+      assert.equal(
+        typeof reduce(value => value, undefined)(undefined),
+        'function'
       )
     })
   })

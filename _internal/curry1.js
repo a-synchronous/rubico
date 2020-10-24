@@ -1,3 +1,5 @@
+const __ = require('./placeholder')
+
 /**
  * @name curry1
  *

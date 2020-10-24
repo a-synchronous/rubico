@@ -17,13 +17,13 @@ const setExtend = require('./setExtend')
 const callConcat = require('./callConcat')
 
 /**
- * @name genericTransformToNull
+ * @name identityTransform
  *
  * @synopsis
  * ```coffeescript [specscript]
  * Reducer = (any, any)=>Promise|any
  *
- * genericTransformToNull<
+ * identityTransform<
  *   args Array,
  *   transducer Reducer=>Reducer,
  *   result undefined|null,
@@ -31,9 +31,9 @@ const callConcat = require('./callConcat')
  * ```
  *
  * @description
- * Reduce a value, always returning null or undefined.
+ * Reduce a value, always returning the initial result
  */
-const genericTransformToNull = function (args, transducer, result) {
+const identityTransform = function (args, transducer, result) {
   const nil = genericReduce(args, transducer(noop), null)
   return isPromise(nil) ? nil.then(always(result)) : result
 }
@@ -65,7 +65,7 @@ const genericTransform = function (args, transducer, result) {
       : binaryExtend(result, intermediateArray)
   }
   if (result == null) {
-    return genericTransformToNull(args, transducer, result)
+    return identityTransform(args, transducer, result)
   }
 
   const resultConstructor = result.constructor
@@ -84,7 +84,7 @@ const genericTransform = function (args, transducer, result) {
   if (resultConstructor == Object) {
     return genericReduce(args, transducer(objectAssign), result)
   }
-  return genericTransformToNull(args, transducer, result)
+  return identityTransform(args, transducer, result)
 }
 
 module.exports = genericTransform

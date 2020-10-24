@@ -7,6 +7,8 @@ const asyncIteratorReduce = require('./asyncIteratorReduce')
 const symbolIterator = require('./symbolIterator')
 const symbolAsyncIterator = require('./symbolAsyncIterator')
 const __ = require('./placeholder')
+const curryArity = require('./curryArity')
+const curry1 = require('./curry1')
 const curry2 = require('./curry2')
 const curryArgs3 = require('./curryArgs3')
 const arrayReduce = require('./arrayReduce')
@@ -53,20 +55,17 @@ const genericReduce = function (args, reducer, result) {
     return curryArgs3(
       genericReduce,
       __,
-      args.reduce(reducerConcat, reducer),
+      args.length == 1
+        ? reducerConcat(reducer, collection)
+        : args.reduce(reducerConcat, reducer),
       result)
   }
   if (collection == null) {
     return result === undefined
-      ? reducer(collection)
+      ? curry2(reducer, collection, __)
       : reducer(result, collection)
   }
 
-  if (typeof collection.next == 'function') {
-    return symbolIterator in collection
-      ? iteratorReduce(collection, reducer, result)
-      : asyncIteratorReduce(collection, reducer, result)
-  }
   if (typeof collection[symbolIterator] == 'function') {
     return iteratorReduce(
       collection[symbolIterator](), reducer, result)
@@ -88,7 +87,7 @@ const genericReduce = function (args, reducer, result) {
     return arrayReduce(objectValues(collection), reducer, result)
   }
   return result === undefined
-    ? reducer(collection)
+    ? curry2(reducer, collection, __)
     : reducer(result, collection)
 }
 
