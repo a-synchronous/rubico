@@ -315,6 +315,66 @@ const asyncIteratorReduce = async function (asyncIterator, reducer, result) {
   return result
 }
 
+const _curryArity = (arity, func, args) => function curried(...curriedArgs) {
+  const argsLength = args.length,
+    curriedArgsLength = curriedArgs.length,
+    nextArgs = []
+  let argsIndex = -1,
+    curriedArgsIndex = -1,
+    numCurriedPlaceholders = 0
+
+  while (++argsIndex < argsLength) {
+    const arg = args[argsIndex]
+    if (arg == __ && (curriedArgsIndex += 1) < curriedArgsLength) {
+      const curriedArg = curriedArgs[curriedArgsIndex]
+      if (curriedArg == __) {
+        numCurriedPlaceholders += 1
+      }
+      nextArgs.push(curriedArg)
+    } else {
+      nextArgs.push(arg)
+    }
+    if (nextArgs.length == arity) {
+      return numCurriedPlaceholders == 0
+        ? func(...nextArgs)
+        : curryArity(arity, func, nextArgs)
+    }
+  }
+
+  while (++curriedArgsIndex < curriedArgsLength) {
+    const curriedArg = curriedArgs[curriedArgsIndex]
+    if (curriedArg == __) {
+      numCurriedPlaceholders += 1
+    }
+    nextArgs.push(curriedArg)
+    if (nextArgs.length == arity) {
+      return numCurriedPlaceholders == 0
+        ? func(...nextArgs)
+        : curryArity(arity, func, nextArgs)
+    }
+  }
+  return curryArity(arity, func, nextArgs)
+}
+
+const curryArity = function (arity, func, args) {
+  const argsLength = args.length
+  if (argsLength < arity) {
+    return _curryArity(arity, func, args)
+  }
+  let argsIndex = -1
+  while (++argsIndex < argsLength) {
+    const arg = args[argsIndex]
+    if (arg == __) {
+      return _curryArity(arity, func, args)
+    }
+  }
+  return func(...args)
+}
+
+const curry1 = (func, arg0) => arg0 == __
+  ? _arg0 => curry1(func, _arg0)
+  : func(arg0)
+
 // argument resolver for curryArgs3
 const curryArgs3ResolveArgs0 = (
   baseFunc, arg1, arg2,
@@ -451,20 +511,17 @@ const genericReduce = function (args, reducer, result) {
     return curryArgs3(
       genericReduce,
       __,
-      args.reduce(reducerConcat, reducer),
+      args.length == 1
+        ? reducerConcat(reducer, collection)
+        : args.reduce(reducerConcat, reducer),
       result)
   }
   if (collection == null) {
     return result === undefined
-      ? reducer(collection)
+      ? curry2(reducer, collection, __)
       : reducer(result, collection)
   }
 
-  if (typeof collection.next == 'function') {
-    return symbolIterator in collection
-      ? iteratorReduce(collection, reducer, result)
-      : asyncIteratorReduce(collection, reducer, result)
-  }
   if (typeof collection[symbolIterator] == 'function') {
     return iteratorReduce(
       collection[symbolIterator](), reducer, result)
@@ -486,7 +543,7 @@ const genericReduce = function (args, reducer, result) {
     return arrayReduce(objectValues(collection), reducer, result)
   }
   return result === undefined
-    ? reducer(collection)
+    ? curry2(reducer, collection, __)
     : reducer(result, collection)
 }
 
