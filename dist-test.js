@@ -1373,7 +1373,13 @@ async function runTestSeries({ name, path }) {
   for (const name of Object.keys(require('./rubico'))) {
     await runTestSeries({ name, path: `./${name}` })
   }
+  for (const name of Object.keys(require('./rubico'))) {
+    await runTestSeries({ name, path: `./dist/${name}` })
+  }
   for (const name of Object.keys(require('./x'))) {
     await runTestSeries({ name, path: `./x/${name}` })
+  }
+  for (const name of Object.keys(require('./x'))) {
+    await runTestSeries({ name, path: `./dist/x/${name}` })
   }
 })()

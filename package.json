@@ -47,6 +47,7 @@
   "scripts": {
     "benchmarks": "mocha benchmarks/",
     "test": "mocha test.js x/*.test.js monad/*.test.js",
+    "dist-test": "node dist-test.js",
     "lint": "eslint _internal rubico.js x monad"
   }
 }
