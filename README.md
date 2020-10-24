@@ -87,6 +87,8 @@ For different but semanticaly related functionality, rubico exposes additional m
 Advanced functions may be found in `rubico/x`.
 
 # Installation
+[Core build](https://unpkg.com/rubico/index.js) ([~7.0 kB minified and gzipped](https://unpkg.com/rubico@1.6.3/dist/rubico.min.js))
+
 with `npm`
 ```bash
 npm i rubico
