@@ -63,7 +63,7 @@ module.exports = {
         'default-case': 'error',
         'default-case-last': 'error',
         'default-param-last': 'error',
-        'dot-location': 'error',
+        'dot-location': 'off',
         'dot-notation': [
             'error',
             {
