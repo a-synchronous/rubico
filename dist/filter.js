@@ -253,7 +253,9 @@ const setFilter = function (value, predicate) {
       result.add(item)
     }
   }
-  return result
+  return promises.length == 0
+    ? result
+    : promiseAll(promises).then(always(result))
 }
 
 const thunkify4 = (func, arg0, arg1, arg2, arg3) => function thunk() {

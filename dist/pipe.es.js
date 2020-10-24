@@ -5,6 +5,8 @@
  * rubico may be freely distributed under the MIT license.
  */
 
+const noop = function () {}
+
 const isPromise = value => value != null && typeof value.then == 'function'
 
 const funcConcat = (
@@ -37,8 +39,8 @@ const asyncGeneratorFunctionTag = '[object AsyncGeneratorFunction]'
 const isAsyncGeneratorFunction = value => objectToString(value) == asyncGeneratorFunctionTag
 
 const pipe = function (funcs) {
-  const functionPipeline = funcs.reduce(funcConcat),
-    functionComposition = funcs.reduceRight(funcConcat)
+  let functionPipeline = noop,
+    functionComposition = noop
   return function pipeline(...args) {
     const firstArg = args[0]
     if (
@@ -46,8 +48,14 @@ const pipe = function (funcs) {
         && !isGeneratorFunction(firstArg)
         && !isAsyncGeneratorFunction(firstArg)
     ) {
+      if (functionComposition == noop) {
+        functionComposition = funcs.reduceRight(funcConcat)
+      }
       return functionComposition(...args)
     }
+      if (functionPipeline == noop) {
+        functionPipeline = funcs.reduce(funcConcat)
+      }
     return functionPipeline(...args)
   }
 }

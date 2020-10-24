@@ -5,6 +5,8 @@
  * rubico may be freely distributed under the MIT license.
  */
 
+const noop = function () {}
+
 const isPromise = value => value != null && typeof value.then == 'function'
 
 const funcConcat = (
@@ -37,8 +39,8 @@ const asyncGeneratorFunctionTag = '[object AsyncGeneratorFunction]'
 const isAsyncGeneratorFunction = value => objectToString(value) == asyncGeneratorFunctionTag
 
 const pipe = function (funcs) {
-  const functionPipeline = funcs.reduce(funcConcat),
-    functionComposition = funcs.reduceRight(funcConcat)
+  let functionPipeline = noop,
+    functionComposition = noop
   return function pipeline(...args) {
     const firstArg = args[0]
     if (
@@ -46,8 +48,14 @@ const pipe = function (funcs) {
         && !isGeneratorFunction(firstArg)
         && !isAsyncGeneratorFunction(firstArg)
     ) {
+      if (functionComposition == noop) {
+        functionComposition = funcs.reduceRight(funcConcat)
+      }
       return functionComposition(...args)
     }
+      if (functionPipeline == noop) {
+        functionPipeline = funcs.reduce(funcConcat)
+      }
     return functionPipeline(...args)
   }
 }
@@ -218,7 +226,7 @@ const funcAllSeries = funcs => function allFuncsSeries(...args) {
 
 const fork = funcs => isArray(funcs) ? funcAll(funcs) : funcObjectAll(funcs)
 
-fork.series = funcAllSeries
+fork.series = funcs => isArray(funcs) ? funcAllSeries(funcs) : funcObjectAll(funcs)
 
 const objectAssign = Object.assign
 
@@ -452,10 +460,6 @@ const mapMap = function (value, mapper) {
     if (isPromise(resultItem)) {
       promises.push(resultItem.then(
         curry4(callPropBinary, result, 'set', key, __)))
-      /*
-      promises.push(resultItem.then(
-        curry3(mapSetItem, result, key, __)))
-        */
     } else {
       result.set(key, resultItem)
     }
@@ -600,6 +604,9 @@ const map = mapper => function mapping(value) {
     return value
   }
 
+  if (typeof value.map == 'function') {
+    return value.map(mapper)
+  }
   if (typeof value.next == 'function') {
     return symbolIterator in value
       ? MappingIterator(value, mapper)
@@ -617,7 +624,7 @@ const map = mapper => function mapping(value) {
   if (value.constructor == Object) {
     return objectMap(value, mapper)
   }
-  return typeof value.map == 'function' ? value.map(mapper) : mapper(value)
+  return mapper(value)
 }
 
 map.series = mapper => function mappingInSeries(value) {
@@ -769,8 +776,6 @@ const thunkify1 = (func, arg0) => function thunk() {
   return func(arg0)
 }
 
-const noop = function () {}
-
 const setFilter = function (value, predicate) {
   const result = new Set(),
     resultAdd = result.add.bind(result),
@@ -784,7 +789,9 @@ const setFilter = function (value, predicate) {
       result.add(item)
     }
   }
-  return result
+  return promises.length == 0
+    ? result
+    : promiseAll(promises).then(always(result))
 }
 
 const thunkify4 = (func, arg0, arg1, arg2, arg3) => function thunk() {
@@ -1155,8 +1162,7 @@ const binaryExtend = function (typedArray, array) {
   return _binaryExtend(typedArray, [array])
 }
 
-const isNodeReadStream = value =>
-  value != null && typeof value.pipe == 'function'
+const isNodeReadStream = value => value != null && typeof value.pipe == 'function'
 
 const __streamWrite = stream => function appender(
   chunk, encoding, callback,

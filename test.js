@@ -471,9 +471,6 @@ describe('rubico', () => {
         new TypeError('funcs[funcsIndex] is not a function')
       )
     })
-    it('defaults to array', async () => {
-      assert.deepEqual(fork.series({})(), [])
-    })
   })
 
   describe('assign', () => {

@@ -366,8 +366,7 @@ const thunkify1 = (func, arg0) => function thunk() {
   return func(arg0)
 }
 
-const isNodeReadStream = value =>
-  value != null && typeof value.pipe == 'function'
+const isNodeReadStream = value => value != null && typeof value.pipe == 'function'
 
 const __streamWrite = stream => function appender(
   chunk, encoding, callback,

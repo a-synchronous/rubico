@@ -177,6 +177,6 @@ const funcAllSeries = funcs => function allFuncsSeries(...args) {
 
 const fork = funcs => isArray(funcs) ? funcAll(funcs) : funcObjectAll(funcs)
 
-fork.series = funcAllSeries
+fork.series = funcs => isArray(funcs) ? funcAllSeries(funcs) : funcObjectAll(funcs)
 
 export default fork

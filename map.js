@@ -158,6 +158,9 @@ const map = mapper => function mapping(value) {
     return value
   }
 
+  if (typeof value.map == 'function') {
+    return value.map(mapper)
+  }
   if (typeof value.next == 'function') {
     return symbolIterator in value
       ? MappingIterator(value, mapper)
@@ -175,7 +178,7 @@ const map = mapper => function mapping(value) {
   if (value.constructor == Object) {
     return objectMap(value, mapper)
   }
-  return typeof value.map == 'function' ? value.map(mapper) : mapper(value)
+  return mapper(value)
 }
 
 /**

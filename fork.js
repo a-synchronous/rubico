@@ -86,6 +86,6 @@ const fork = funcs => isArray(funcs) ? funcAll(funcs) : funcObjectAll(funcs)
  *
  * @execution series
  */
-fork.series = funcAllSeries
+fork.series = funcs => isArray(funcs) ? funcAllSeries(funcs) : funcObjectAll(funcs)
 
 module.exports = fork

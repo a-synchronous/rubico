@@ -66,6 +66,7 @@ const isDeepEqual = function (leftItem, rightItem) {
     return areArraysDeepEqual(leftItem, rightItem)
   } else if (
     typeof leftItem == 'object' && typeof rightItem == 'object'
+      && leftItem != null && rightItem != null
       && leftItem.constructor == rightItem.constructor
       && typeof leftItem[symbolIterator] == 'function'
       && typeof rightItem[symbolIterator] == 'function'
