@@ -9,7 +9,7 @@ const __ = require('./_internal/placeholder')
  * ```
  *
  * @description
- * A special placeholder value that denotes the position of arguments in a curried function.
+ * A special placeholder value `__` (two underscores) that denotes the position of an argument in a curried function.
  *
  * ```javascript [playground]
  * console.log(

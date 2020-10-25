@@ -11,7 +11,9 @@
  * @description
  * Get the first item of a collection
  *
- * ```javascript [node]
+ * ```javascript [playground]
+ * import first from 'https://unpkg.com/rubico/dist/x/first.es.js'
+ *
  * console.log(first([1, 2, 3])) // 1
  * console.log(first('abc')) // 'a'
  * console.log(first([])) // undefined

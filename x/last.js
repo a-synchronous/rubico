@@ -11,8 +11,8 @@
  * @description
  * Get the last item of a collection
  *
- * ```javascript [node]
- * const last = require('rubico/x/last')
+ * ```javascript [playground]
+ * import last from 'https://unpkg.com/rubico/dist/x/last.es.js'
  *
  * console.log(last([1, 2, 3])) // 3
  * console.log(last([])) // undefined

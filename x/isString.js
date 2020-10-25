@@ -9,7 +9,9 @@
  * @description
  * Determine whether a value is a string.
  *
- * ```javascript [node]
+ * ```javascript [playground]
+ * import isString from 'https://unpkg.com/rubico/dist/x/isString.es.js'
+ *
  * console.log(
  *   isString('hey'),
  * ) // true

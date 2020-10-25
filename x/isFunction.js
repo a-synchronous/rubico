@@ -9,7 +9,9 @@
  * @description
  * Determine whether a value is a function.
  *
- * ```javascript [node]
+ * ```javascript [playground]
+ * import isFunction from 'https://unpkg.com/rubico/dist/x/isFunction.es.js'
+ *
  * const add = (a, b) => a + b
  *
  * console.log(

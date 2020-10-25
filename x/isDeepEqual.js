@@ -80,7 +80,9 @@ const areArraysDeepEqual = function (leftArray, rightArray) {
  * @description
  * Check two values for deep strict equality.
  *
- * ```javascript [node]
+ * ```javascript [playground]
+ * import isDeepEqual from 'https://unpkg.com/rubico/dist/x/isDeepEqual.es.js'
+ *
  * console.log(
  *   isDeepEqual({ a: 1, b: 2, c: [3] }, { a: 1, b: 2, c: [3] }),
  * ) // true

@@ -36,7 +36,9 @@ const flatMap = require('../flatMap')
  * @description
  * Flatten a collection. Works in transducer position.
  *
- * ```javascript [node]
+ * ```javascript [playground]
+ * import flatten from 'https://unpkg.com/rubico/dist/x/flatten.es.js'
+ *
  * flatten([
  *   [1, 1],
  *   new Set([2, 2]),
@@ -58,6 +60,7 @@ const flatMap = require('../flatMap')
  *
  * @TODO flatten for each type
  */
+
 const flatten = function (value) {
   if (isArray(value)) {
     return arrayFlatten(value)

@@ -74,7 +74,9 @@ const objectDefaultsDeepFromObject = function (object, defaultObject) {
  * @description
  * Deeply assign default values to an array or object by an array or object of possibly nested default values.
  *
- * ```javascript [node]
+ * ```javascript [playground]
+ * import defaultsDeep from 'https://unpkg.com/rubico/dist/x/defaultsDeep.es.js'
+ *
  * const defaultUser = defaultsDeep({
  *   name: 'placeholder',
  *   images: [

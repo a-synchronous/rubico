@@ -15,7 +15,9 @@ const reduce = require('../reduce')
  * @description
  * Get an array of unique values from an array.
  *
- * ```javascript [node]
+ * ```javascript [playground]
+ * import uniq from 'https://unpkg.com/rubico/dist/x/uniq.es.js'
+ *
  * console.log(
  *   uniq([1, 2, 2, 3]),
  * ) // [1, 2, 3]

@@ -10,7 +10,7 @@
  * ```
  *
  * @description
- * Create a thunk from a function and any number of arguments.
+ * Create a thunk from a function and any number of arguments. A thunk is a function that takes no arguments - the computation it represents has already been "thunk" with given function and arguments.
  *
  * ```javascript [playground]
  * const add = (a, b) => a + b

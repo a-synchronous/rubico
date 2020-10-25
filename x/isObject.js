@@ -9,7 +9,9 @@
  * @description
  * Determine whether a value is a direct `Object`.
  *
- * ```javascript [node]
+ * ```javascript [playground]
+ * import isObject from 'https://unpkg.com/rubico/dist/x/isObject.es.js'
+ *
  * console.log(
  *   isObject({ a: 1, b: 2, c: 3 }),
  * ) // true

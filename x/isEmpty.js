@@ -11,18 +11,15 @@ const objectKeysLength = require('../_internal/objectKeysLength')
  * @description
  * Check if a value is empty.
  *
- * ```javascript [node]
- * console.log(isEmpty('')) // true
- * console.log(isEmpty([])) // true
- * console.log(isEmpty(new Set())) // true
- * console.log(isEmpty(new Map())) // true
- * console.log(isEmpty({})) // true
- * console.log(isEmpty('hey')) // false
- * console.log(isEmpty([1, 2, 3])) // false
- * console.log(isEmpty(new Set([1, 2, 3]))) // false
- * console.log(isEmpty(new Map([['a', 1], ['b', 2], ['c', 3]]))) // false
- * console.log(isEmpty({ a: 1, b: 2, c: 3 })) // false
- * console.log(isEmpty(100)) // false
+ * ```javascript [playground]
+ * import isEmpty from 'https://unpkg.com/rubico/dist/x/isEmpty.es.js'
+ *
+ * console.log('', isEmpty('')) // true
+ * console.log([], isEmpty([])) // true
+ * console.log({}, isEmpty({})) // true
+ * console.log([1, 2, 3], isEmpty([1, 2, 3])) // false
+ * console.log(new Set([1, 2, 3]), isEmpty(new Set([1, 2, 3]))) // false
+ * console.log({ a: 1, b: 2, c: 3 }, isEmpty({ a: 1, b: 2, c: 3 })) // false
  * ```
  */
 const isEmpty = value => typeof value == 'string' ? value.length == 0

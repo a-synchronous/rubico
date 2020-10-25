@@ -21,12 +21,15 @@ const tapLog = tapSync(console.log)
  * @description
  * Log a value out to the console, returning the value. If the value is a function, treat it as a resolver.
  *
- * ```javascript [node]
+ * ```javascript [playground]
+ * import trace from 'https://unpkg.com/rubico/dist/x/trace.es.js'
+ *
  * pipe([
  *   trace,
  *   trace(value => value.toUpperCase()),
  * ])('hey') // hey
  *           // HEY
+ * console.log('check your console')
  * ```
  */
 const trace = function (...args) {

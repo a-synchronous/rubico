@@ -30,7 +30,9 @@ const get = require('../get')
  * @description
  * Apply a getter denoted by path across all items of a collection, creating a new collection of plucked values. Also works in transducer position.
  *
- * ```javascript [node]
+ * ```javascript [playground]
+ * import pluck from 'https://unpkg.com/rubico/dist/x/pluck.es.js'
+ *
  * const users = [
  *   { name: 'George', age: 33 },
  *   { name: 'Jane', age: 51 },
@@ -45,7 +47,7 @@ const get = require('../get')
  *
  * console.log(
  *   'total age:',
- *   users.reduce(pluck('age')(add)),
+ *   users.reduce(pluck('age')(add), 0),
  * ) // total age: 96
  * ```
  */
