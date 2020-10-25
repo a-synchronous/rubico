@@ -1,15 +1,20 @@
 ## v1.6 - next release
+ * curry
+ * __
+ * thunkify
+ * always
+ * x/differenceWith
  * project structure reorganization around `_internal/`
  * new generated documentation format
- * size rewrite + refresh benchmarks
- * find works on all foldables
- * forEach rewrite + benchmarks
- * defaultsDeep rewrite + refresh benchmarks
- * flatten rewrite + refresh benchmarks
- * isDeepEqual rewrite + refresh benchmarks
- * unionWith rewrite + refresh benchmarks
+ * x/size rewrite + refresh benchmarks
+ * x/find works on all foldables
+ * x/forEach rewrite + benchmarks
+ * x/defaultsDeep rewrite + refresh benchmarks
+ * x/flatten rewrite + refresh benchmarks
+ * x/isDeepEqual rewrite + refresh benchmarks
+ * x/unionWith rewrite + refresh benchmarks
  * better pipe performance
- * fix: isDeepEqual was throwing for nullish
+ * fix: x/isDeepEqual was throwing for nullish
  * **map.own** - [LMulvey](https://github.com/LMulvey)
 
 ## v1.5.19 - latest
