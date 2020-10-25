@@ -1,9 +1,12 @@
-## v1.6 - next release
+## v1.6.6 - latest
+* new distribution setup
+* x/differenceWith
+
+## v1.6.0
  * curry
  * __
  * thunkify
  * always
- * x/differenceWith
  * project structure reorganization around `_internal/`
  * new generated documentation format
  * x/size rewrite + refresh benchmarks

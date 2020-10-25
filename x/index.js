@@ -1,4 +1,5 @@
 const defaultsDeep = require('./defaultsDeep')
+const differenceWith = require('./differenceWith')
 const find = require('./find')
 const first = require('./first')
 const flatten = require('./flatten')
@@ -20,6 +21,7 @@ const uniq = require('./uniq')
 
 const rubicoX = {
   defaultsDeep,
+  differenceWith,
   find,
   first,
   flatten,

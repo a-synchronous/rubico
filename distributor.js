@@ -360,4 +360,33 @@ ${baseCodeBundle}return ${name}
       distPath: pathResolve(__dirname, 'dist', 'rubico.min.js'),
     },
   ],
+
+  /* TODO fix name conflicts
+  [
+    {
+      name: 'rubicoX',
+      type: 'esm',
+      path: pathResolve(__dirname, 'x', 'index.js'),
+      distPath: pathResolve(__dirname, 'dist', 'rubico-x.es.js'),
+    },
+    {
+      name: 'rubicoX',
+      type: 'cjs',
+      path: pathResolve(__dirname, 'x', 'index.js'),
+      distPath: pathResolve(__dirname, 'dist', 'rubico-x.js'),
+    },
+    {
+      name: 'rubicoX',
+      type: 'esm-minified',
+      path: pathResolve(__dirname, 'x', 'index.js'),
+      distPath: pathResolve(__dirname, 'dist', 'rubico-x.es.min.js'),
+    },
+    {
+      name: 'rubicoX',
+      type: 'cjs-minified',
+      path: pathResolve(__dirname, 'x', 'index.js'),
+      distPath: pathResolve(__dirname, 'dist', 'rubico-x.min.js'),
+    },
+  ],
+  */
 ].flat(1))
