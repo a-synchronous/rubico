@@ -93,7 +93,7 @@ const differenceWithArray = function (comparator, allValues, array) {
  * import isDeepEqual from 'https://unpkg.com/rubico/dist/x/isDeepEqual.es.js'
  *
  * console.log(
- *   differenceWith(isDeepEqual, [{ a: 1 }, { b: 2 }, { c: 3 }])({ b: 2 }),
+ *   differenceWith(isDeepEqual, [{ a: 1 }, { b: 2 }, { c: 3 }])([{ b: 2 }]),
  * ) // [{ a: 1 }, { c: 3 }]
  * ```
  */
