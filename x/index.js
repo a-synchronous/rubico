@@ -25,7 +25,6 @@ const rubicoX = {
   flatten,
   forEach,
   identity,
-  is,
   isDeepEqual,
   isEmpty,
   isEqual,
@@ -36,9 +35,7 @@ const rubicoX = {
   noop,
   pluck,
   size,
-  timeInLoop,
   trace,
-  tracef,
   unionWith,
   uniq,
 }

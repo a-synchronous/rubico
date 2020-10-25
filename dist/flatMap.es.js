@@ -497,6 +497,8 @@ const arrayFlatten = function (array) {
       }
     } else if (item == null) {
       result.push(item)
+    } else if (typeof item.then == 'function') {
+      promises.push(item.then(curry2(arrayPush, result, __)))
     } else if (typeof item[symbolIterator] == 'function') {
       for (const subItem of item) {
         result.push(subItem)
@@ -898,6 +900,9 @@ const flatMap = flatMapper => function flatMapping(value) {
     return flatMapper(value)
   }
 
+  if (typeof value.then == 'function') {
+    return value.then(flatMapper)
+  }
   if (typeof value.next == 'function') {
     return symbolIterator in value
       ? FlatMappingIterator(value, flatMapper)

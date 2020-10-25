@@ -127,6 +127,8 @@ const arrayFlatten = function (array) {
       }
     } else if (item == null) {
       result.push(item)
+    } else if (typeof item.then == 'function') {
+      promises.push(item.then(curry2(arrayPush, result, __)))
     } else if (typeof item[symbolIterator] == 'function') {
       for (const subItem of item) {
         result.push(subItem)
