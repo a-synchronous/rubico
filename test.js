@@ -1,3 +1,4 @@
+const ThunkTest = require('thunk-test')
 const assert = require('assert')
 const stream = require('stream')
 const path = require('path')
@@ -746,16 +747,22 @@ describe('rubico', () => {
   })
 
   describe('map', () => {
+    it('ThunkTest', ThunkTest('map', map(number => number ** 2))
+      .case(Promise.resolve(1), 1)
+      .case(Promise.resolve(2), 4)
+      .case(Promise.resolve(3), 9)
+    )
+
     describe('map(func A=>Promise|B)(Array<A>) -> Promise|Array<B>', () => {
       it('func A=>B; B', async () => {
         assert.deepEqual(
-          map(num => num ** 2)([1, 2, 3, 4, 5]),
+          map(number => number ** 2)([1, 2, 3, 4, 5]),
           [1, 4, 9, 16, 25],
         )
       })
       it('func A=>Promise<B>; Promise<B>', async () => {
         assert.deepEqual(
-          await map(async num => num ** 2)([1, 2, 3, 4, 5]),
+          await map(async number => number ** 2)([1, 2, 3, 4, 5]),
           [1, 4, 9, 16, 25],
         )
       })
@@ -764,13 +771,13 @@ describe('rubico', () => {
     describe('map(func A=>Promise|B)(Set<A>) -> Promise|Set<B>', () => {
       it('func A=>B; B', async () => {
         assert.deepEqual(
-          map(num => num ** 2)(new Set([1, 2, 3, 4, 5])),
+          map(number => number ** 2)(new Set([1, 2, 3, 4, 5])),
           new Set([1, 4, 9, 16, 25]),
         )
       })
       it('func A=>Promise<B>; Promise<B>', async () => {
         assert.deepEqual(
-          await map(async num => num ** 2)(new Set([1, 2, 3, 4, 5])),
+          await map(async number => number ** 2)(new Set([1, 2, 3, 4, 5])),
           new Set([1, 4, 9, 16, 25]),
         )
       })
@@ -779,13 +786,13 @@ describe('rubico', () => {
     describe('map(func A=>Promise|B)(Map<any, A>) -> Promise|Map<any, B>', () => {
       it('func A=>B; B', async () => {
         assert.deepEqual(
-          map(num => num ** 2)(new Map([['a', 1], ['b', 2], ['c', 3], ['d', 4], ['e', 5]])),
+          map(number => number ** 2)(new Map([['a', 1], ['b', 2], ['c', 3], ['d', 4], ['e', 5]])),
           new Map([['a', 1], ['b', 4], ['c', 9], ['d', 16], ['e', 25]]),
         )
       })
       it('func A=>Promise<B>; Promise<B>', async () => {
         assert.deepEqual(
-          await map(async num => num ** 2)(new Map([['a', 1], ['b', 2], ['c', 3], ['d', 4], ['e', 5]])),
+          await map(async number => number ** 2)(new Map([['a', 1], ['b', 2], ['c', 3], ['d', 4], ['e', 5]])),
           new Map([['a', 1], ['b', 4], ['c', 9], ['d', 16], ['e', 25]]),
         )
       })
@@ -794,13 +801,13 @@ describe('rubico', () => {
     describe('map(func A=>Promise|B)(String<A>) -> Promise|String<B>', () => {
       it('func A=>B; B', async () => {
         assert.deepEqual(
-          map(num => num ** 2)('12345'),
+          map(number => number ** 2)('12345'),
           '1491625',
         )
       })
       it('func A=>Promise<B>; Promise<B>', async () => {
         assert.deepEqual(
-          await map(async num => num ** 2)('12345'),
+          await map(async number => number ** 2)('12345'),
           '1491625',
         )
       })
@@ -809,18 +816,18 @@ describe('rubico', () => {
     describe('map(func A=>Promise|B)(Object<A>) -> Promise|Object<B>', () => {
       it('func A=>B; B', async () => {
         assert.deepEqual(
-          map(num => num ** 2)({ a: 1, b: 2, c: 3, d: 4, e: 5 }),
+          map(number => number ** 2)({ a: 1, b: 2, c: 3, d: 4, e: 5 }),
           { a: 1, b: 4, c: 9, d: 16, e: 25 },
         )
       })
       it('func A=>Promise<B>; Promise<B>', async () => {
         assert.deepEqual(
-          await map(async num => num ** 2)({ a: 1, b: 2, c: 3, d: 4, e: 5 }),
+          await map(async number => number ** 2)({ a: 1, b: 2, c: 3, d: 4, e: 5 }),
           { a: 1, b: 4, c: 9, d: 16, e: 25 },
         )
         assert.deepEqual(
           await map(
-            num => num % 2 == 1 ? Promise.resolve(num ** 2) : num ** 2,
+            number => number % 2 == 1 ? Promise.resolve(number ** 2) : number ** 2,
           )({ a: 1, b: 2, c: 3, d: 4, e: 5 }),
           { a: 1, b: 4, c: 9, d: 16, e: 25 },
         )
@@ -830,7 +837,7 @@ describe('rubico', () => {
     describe('map(func A=>B)(GeneratorFunction<A>) -> GeneratorFunction<B>', () => {
       it('func A=>B; B', async () => {
         const numbers = function* () { let i = 0; while (++i < 6) yield i }
-        const squares = map(num => num ** 2)(numbers)
+        const squares = map(number => number ** 2)(numbers)
         assert.equal(objectToString(squares), '[object GeneratorFunction]')
         assert.deepEqual([...squares()], [1, 4, 9, 16, 25])
       })
@@ -839,7 +846,7 @@ describe('rubico', () => {
     describe('map(func A=>B)(Iterator<A>) -> Iterator<B>', () => {
       it('func A=>B; B', async () => {
         const numbers = function* () { let i = 0; while (++i < 6) yield i }
-        const squaresIterator = map(num => num ** 2)(numbers())
+        const squaresIterator = map(number => number ** 2)(numbers())
         assert.strictEqual(`${squaresIterator}`, '[object MappingIterator]')
         assert.equal(objectToString(squaresIterator), '[object Object]')
         assert.deepEqual([...squaresIterator], [1, 4, 9, 16, 25])
@@ -849,7 +856,7 @@ describe('rubico', () => {
     describe('map(func A=>Promise|B)(AsyncGeneratorFunction<A>) -> AsyncGeneratorFunction<B>', () => {
       it('func A=>B; B', async () => {
         const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
-        const asyncSquares = map(num => num ** 2)(asyncNumbers)
+        const asyncSquares = map(number => number ** 2)(asyncNumbers)
         assert.equal(objectToString(asyncSquares), '[object AsyncGeneratorFunction]')
         const squaresArray = []
         for await (const number of asyncSquares()) squaresArray.push(number)
@@ -857,7 +864,7 @@ describe('rubico', () => {
       })
       it('func A=>Promise<B>; Promise<B>', async () => {
         const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
-        const asyncSquares = map(async num => num ** 2)(asyncNumbers)
+        const asyncSquares = map(async number => number ** 2)(asyncNumbers)
         assert.equal(objectToString(asyncSquares), '[object AsyncGeneratorFunction]')
         const squaresArray = []
         for await (const number of asyncSquares()) squaresArray.push(number)
@@ -868,7 +875,7 @@ describe('rubico', () => {
     describe('map(func A=>Promise|B)(AsyncIterator<A>) -> AsyncIterator<B>', () => {
       it('func A=>B; AsyncIterator<B>', async () => {
         const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
-        const asyncSquaresGenerator = map(num => num ** 2)(asyncNumbers())
+        const asyncSquaresGenerator = map(number => number ** 2)(asyncNumbers())
         assert.equal(objectToString(asyncSquaresGenerator), '[object Object]')
         const squaresArray = []
         for await (const number of asyncSquaresGenerator) squaresArray.push(number)
@@ -876,7 +883,7 @@ describe('rubico', () => {
       })
       it('func A=>Promise<B>; AsyncIterator<B>', async () => {
         const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
-        const asyncSquaresGenerator = map(async num => num ** 2)(asyncNumbers())
+        const asyncSquaresGenerator = map(async number => number ** 2)(asyncNumbers())
         assert.equal(objectToString(asyncSquaresGenerator), '[object Object]')
         const squaresArray = []
         for await (const number of asyncSquaresGenerator) squaresArray.push(number)
@@ -888,13 +895,13 @@ describe('rubico', () => {
       it('func A=>B; Reducer<B>', async () => {
         const add = (a, b) => a + b
         assert.strictEqual(
-          [1, 2, 3, 4, 5].reduce(map(num => num ** 2)(add), 0),
+          [1, 2, 3, 4, 5].reduce(map(number => number ** 2)(add), 0),
           55,
         )
       })
       it('func A=>B; async Reducer<A>; Reducer<B>', async () => {
         const asyncAdd = async (a, b) => a + b
-        const asyncReducer = map(num => num ** 2)(asyncAdd)
+        const asyncReducer = map(number => number ** 2)(asyncAdd)
         let total = 0
         for (const number of [1, 2, 3, 4, 5]) {
           total = await asyncReducer(total, number)
@@ -903,7 +910,7 @@ describe('rubico', () => {
       })
       it('func A=>Promise<B>; Reducer<B>', async () => {
         const add = (a, b) => a + b
-        const asyncReducer = map(async num => num ** 2)(add)
+        const asyncReducer = map(async number => number ** 2)(add)
         let total = 0
         for (const number of [1, 2, 3, 4, 5]) {
           total = await asyncReducer(total, number)
@@ -1588,6 +1595,14 @@ reduce(
     const add = (a, b) => a + b
     const asyncAdd = async (a, b) => a + b
     const variadicAsyncAdd = (a, b) => b % 2 == 1 ? Promise.resolve(a + b) : a + b
+    xit('collection Promise<Array<number>>', async () => {
+      assert.strictEqual(
+        reduce(add, 0)(Promise.resolve([1, 2, 3, 4, 5])), 15)
+      assert.strictEqual(
+        await reduce(asyncAdd, 0)(Promise.resolve([1, 2, 3, 4, 5])), 15)
+      assert.strictEqual(
+        await reduce(variadicAsyncAdd, 0)(Promise.resolve([1, 2, 3, 4, 5])), 15)
+    })
     it('collection Array<number>', async () => {
       assert.strictEqual(
         reduce(add, 0)([1, 2, 3, 4, 5]), 15)
@@ -2751,10 +2766,12 @@ flatMap(
       Identity.of = value => new Identity(value)
 
       const assertions = [
+        [Promise.resolve(1), identity, 1],
         [numbersArray, () => null, [null, null, null, null, null]],
         [numbersArray, () => [null, null], [null, null, null, null, null, null, null, null, null, null]],
         [numbersArray, () => undefined, [undefined, undefined, undefined, undefined, undefined]],
         [numbersArray, identity, numbersArray],
+        [numbersArray, Promise.resolve.bind(Promise), numbersArray],
         [numbersArray, duplicateArray, numbersDuplicates],
         [numbersArray, async(duplicateArray), numbersDuplicates],
         [numbersArray, DuplicateArray.of, numbersArray.map(duplicateArray)], // calling .chain is 1 flat
@@ -3301,7 +3318,7 @@ flatMap(
         assert.deepEqual([1, 2, 3, 4, 5].reduce(flatMap(() => [null, null])(concat), []), [null, null, null, null, null, null, null, null, null, null])
         assert.deepEqual(await reduce(flatMap(duplicateReadableStream)(concat), [])([1, 2, 3, 4, 5]), [1, 2, 3, 4, 5].map(duplicateBuffer))
         assert.deepEqual(await reduce(flatMap(async(duplicateReadableStream))(concat), [])([1, 2, 3, 4, 5]), [1, 2, 3, 4, 5].map(duplicateBuffer))
-        assert.deepEqual(await reduce(flatMap(duplicateArrayOfUint8Array)(concat), [])([1, 2, 3, 4, 5]), [1, 1, 2, 2, 3, 3, 4, 4, 5, 5].map(num => Buffer.from([num])))
+        assert.deepEqual(await reduce(flatMap(duplicateArrayOfUint8Array)(concat), [])([1, 2, 3, 4, 5]), [1, 1, 2, 2, 3, 3, 4, 4, 5, 5].map(number => Buffer.from([number])))
       })
 
       it('value number', async () => {

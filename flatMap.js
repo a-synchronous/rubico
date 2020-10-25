@@ -191,6 +191,9 @@ const flatMap = flatMapper => function flatMapping(value) {
     return flatMapper(value)
   }
 
+  if (typeof value.then == 'function') {
+    return value.then(flatMapper)
+  }
   if (typeof value.next == 'function') {
     return symbolIterator in value
       ? FlatMappingIterator(value, flatMapper)

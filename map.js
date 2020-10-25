@@ -158,6 +158,9 @@ const map = mapper => function mapping(value) {
     return value
   }
 
+  if (typeof value.then == 'function') {
+    return value.then(mapper)
+  }
   if (typeof value.map == 'function') {
     return value.map(mapper)
   }
