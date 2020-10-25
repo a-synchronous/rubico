@@ -4199,6 +4199,39 @@ eq(
     })
   })
 
+  describe('curry.arity', () => {
+    const add3 = (a, b, c) => a + b + c
+    const curriedAdd3 = curry.arity(3, add3)
+    it('round robin', async () => {
+      assert.strictEqual(curry.arity(3, add3, 'a', 'b', 'c'), 'abc')
+      assert.strictEqual(curry.arity(3, add3)('a', 'b', 'c'), 'abc')
+      assert.strictEqual(curry.arity(3, add3, 'a')('b', 'c'), 'abc')
+      assert.strictEqual(curry.arity(3, add3, 'a', 'b')('c'), 'abc')
+      assert.strictEqual(curry.arity(3, add3)('a', 'b')('c'), 'abc')
+      assert.strictEqual(curry.arity(3, add3)('a')('b', 'c'), 'abc')
+      assert.strictEqual(curry.arity(3, add3)('a')('b')('c'), 'abc')
+    })
+
+    it('with placeholder __', async () => {
+      assert.strictEqual(curry.arity(3, add3, __, 'b', 'c')('a'), 'abc')
+      assert.strictEqual(curry.arity(3, add3, 'a', __, 'c')('b'), 'abc')
+      assert.strictEqual(curry.arity(3, add3, 'a', 'b', __)('c'), 'abc')
+      assert.strictEqual(curry.arity(3, add3, 'a', __, __)('b', 'c'), 'abc')
+      assert.strictEqual(curry.arity(3, add3, __, 'b', __)('a', 'c'), 'abc')
+      assert.strictEqual(curry.arity(3, add3, __, __, 'c')('a', 'b'), 'abc')
+      assert.strictEqual(curry.arity(3, add3, __, __, __)('a', 'b', 'c'), 'abc')
+      assert.strictEqual(curry.arity(3, add3, __, __, __)(__, __, __)('a', 'b', 'c'), 'abc')
+      assert.strictEqual(curry.arity(3, add3, __, __, __)(__, 'b', 'c')('a'), 'abc')
+      assert.strictEqual(curry.arity(3, add3, __, __, __)('a', __, 'c')('b'), 'abc')
+      assert.strictEqual(curry.arity(3, add3, __, __, __)('a', 'b', __)('c'), 'abc')
+      assert.strictEqual(curry.arity(3, add3)(__, __)(__)('a', 'b', __)('c'), 'abc')
+      assert.strictEqual(curry.arity(3, add3)(__)(__, __)('a')('b')(__)('c'), 'abc')
+      assert.strictEqual(curry.arity(3, add3)(__)(__)(__)('a', 'b', __)('c'), 'abc')
+      assert.strictEqual(curry.arity(3, add3)(__)(__)(__)('a', 'b', __)('c'), 'abc')
+      assert.strictEqual(curry.arity(3, add3)(__)(__)(__)('a')('b')(__)('c'), 'abc')
+    })
+  })
+
   describe('__', () => {
     it('is Symbol(placeholder)', async () => {
       assert.strictEqual(typeof __, 'symbol')
