@@ -54,7 +54,7 @@ const curry = (func, ...args) => curryArity(func.length, func, args)
  * `curry` with specified arity as the first parameter. Useful for locking down variadic functions.
  *
  * ```javascript [playground]
- * const add = (a, b, c) => a + b + c
+ * const add = (a, b, c = 0) => a + b + c
  *
  * console.log(curry.arity(2, add, 1, 2)) // 3
  * ```
