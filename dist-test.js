@@ -1123,6 +1123,44 @@ TestsMap.set('defaultsDeep', defaultsDeep => [
     .case({ a: 1, b: [1, 2, { c: 3 }] }, { a: 1, b: [1, 2, { c: 3 }] })
 ])
 
+TestsMap.set('differenceWith', differenceWith => [
+  ThunkTest(
+    'differenceWith strictEqual',
+    differenceWith((a, b) => a === b, [1, 2, 3, 4, 5]))
+    .case([1, 2, 3, 4, 5], [])
+    .case([1], [2, 3, 4, 5])
+    .case([1, 2], [3, 4, 5])
+    .case([1, 2, 3], [4, 5])
+    .case([1, 2, 3, 4], [5])
+    .case([], [1, 2, 3, 4, 5])
+    .throws('', TypeError(' is not an Array'))
+    .throws(null, TypeError('null is not an Array')),
+
+  ThunkTest(
+    'differenceWith strictEqual',
+    differenceWith(async (a, b) => a === b, [1, 2, 3, 4, 5]))
+    .case([1, 2, 3, 4, 5], [])
+    .case([1], [2, 3, 4, 5])
+    .case([1, 2], [3, 4, 5])
+    .case([1, 2, 3], [4, 5])
+    .case([1, 2, 3, 4], [5])
+    .case([], [1, 2, 3, 4, 5])
+    .throws('', TypeError(' is not an Array'))
+    .throws(null, TypeError('null is not an Array')),
+
+    ThunkTest(
+      'differenceWith strictEqual variadicA',
+      differenceWith((a, b) => a === b ? Promise.resolve(true) : false, [1, 2, 3, 4, 5]))
+      .case([1, 2, 3, 4, 5], [])
+      .case([1], [2, 3, 4, 5])
+      .case([1, 2], [3, 4, 5])
+      .case([1, 2, 3], [4, 5])
+      .case([1, 2, 3, 4], [5])
+      .case([], [1, 2, 3, 4, 5])
+      .throws('', TypeError(' is not an Array'))
+      .throws(null, TypeError('null is not an Array'))
+])
+
 TestsMap.set('find', find => [
   ThunkTest(
     'find sync',
