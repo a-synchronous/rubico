@@ -7,6 +7,10 @@ describe('flatten', () => {
       flatten([[1], new Set([2]), 3, 4, [5]]),
       [1, 2, 3, 4, 5],
     )
+    assert.deepEqual(
+      await flatten([[1], new Set([2]), 3, 4, [5], Promise.resolve(6)]),
+      [1, 2, 3, 4, 5, 6],
+    )
   })
   it('flattens a Set of Iterables', async () => {
     assert.deepEqual(
