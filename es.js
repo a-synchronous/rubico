@@ -207,32 +207,12 @@ fork.series = funcs => isArray(funcs) ? funcAllSeries(funcs) : funcObjectAll(fun
 
 const objectAssign = Object.assign
 
-// argument resolver for curry2
-const curry2ResolveArg0 = (
-  baseFunc, arg1,
-) => function arg0Resolver(arg0) {
-  return baseFunc(arg0, arg1)
-}
-
-// argument resolver for curry2
-const curry2ResolveArg1 = (
-  baseFunc, arg0,
-) => function arg1Resolver(arg1) {
-  return baseFunc(arg0, arg1)
-}
-
-const curry2 = function (baseFunc, arg0, arg1) {
-  return arg0 == __
-    ? curry2ResolveArg0(baseFunc, arg1)
-    : curry2ResolveArg1(baseFunc, arg0)
-}
-
 const assign = function (funcs) {
   const allFuncs = funcObjectAll(funcs)
   return function assignment(value) {
     const result = allFuncs(value)
     return isPromise(result)
-      ? result.then(curry2(objectAssign, value, __))
+      ? result.then(curry3(objectAssign, {}, value, __))
       : ({ ...value, ...result })
   }
 }
@@ -388,6 +368,26 @@ const asyncGeneratorFunctionMap = function (asyncGeneratorFunc, mapper) {
       yield mapper(item)
     }
   }
+}
+
+// argument resolver for curry2
+const curry2ResolveArg0 = (
+  baseFunc, arg1,
+) => function arg0Resolver(arg0) {
+  return baseFunc(arg0, arg1)
+}
+
+// argument resolver for curry2
+const curry2ResolveArg1 = (
+  baseFunc, arg0,
+) => function arg1Resolver(arg1) {
+  return baseFunc(arg0, arg1)
+}
+
+const curry2 = function (baseFunc, arg0, arg1) {
+  return arg0 == __
+    ? curry2ResolveArg0(baseFunc, arg1)
+    : curry2ResolveArg1(baseFunc, arg0)
 }
 
 const reducerMap = (

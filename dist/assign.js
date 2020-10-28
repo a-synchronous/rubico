@@ -17,30 +17,6 @@ const objectAssign = Object.assign
 
 const __ = Symbol.for('placeholder')
 
-// argument resolver for curry2
-const curry2ResolveArg0 = (
-  baseFunc, arg1,
-) => function arg0Resolver(arg0) {
-  return baseFunc(arg0, arg1)
-}
-
-// argument resolver for curry2
-const curry2ResolveArg1 = (
-  baseFunc, arg0,
-) => function arg1Resolver(arg1) {
-  return baseFunc(arg0, arg1)
-}
-
-const curry2 = function (baseFunc, arg0, arg1) {
-  return arg0 == __
-    ? curry2ResolveArg0(baseFunc, arg1)
-    : curry2ResolveArg1(baseFunc, arg0)
-}
-
-const always = value => function getter() { return value }
-
-const promiseAll = Promise.all.bind(Promise)
-
 // argument resolver for curry3
 const curry3ResolveArg0 = (
   baseFunc, arg1, arg2,
@@ -72,6 +48,10 @@ const curry3 = function (baseFunc, arg0, arg1, arg2) {
   return curry3ResolveArg2(baseFunc, arg0, arg1)
 }
 
+const always = value => function getter() { return value }
+
+const promiseAll = Promise.all.bind(Promise)
+
 const objectSet = function (object, property, value) {
   object[property] = value
   return object
@@ -95,7 +75,7 @@ const assign = function (funcs) {
   return function assignment(value) {
     const result = allFuncs(value)
     return isPromise(result)
-      ? result.then(curry2(objectAssign, value, __))
+      ? result.then(curry3(objectAssign, {}, value, __))
       : ({ ...value, ...result })
   }
 }

@@ -1,7 +1,7 @@
 const isPromise = require('./_internal/isPromise')
 const objectAssign = require('./_internal/objectAssign')
 const __ = require('./_internal/placeholder')
-const curry2 = require('./_internal/curry2')
+const curry3 = require('./_internal/curry3')
 const funcObjectAll = require('./_internal/funcObjectAll')
 
 /**
@@ -38,7 +38,7 @@ const assign = function (funcs) {
   return function assignment(value) {
     const result = allFuncs(value)
     return isPromise(result)
-      ? result.then(curry2(objectAssign, value, __))
+      ? result.then(curry3(objectAssign, {}, value, __))
       : ({ ...value, ...result })
   }
 }
