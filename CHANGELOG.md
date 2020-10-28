@@ -1,6 +1,9 @@
+## v1.6.8 - latest
+ * fix: assign creates a new object on Promise
+
 ## v1.6.6 - latest
-* new distribution setup
-* x/differenceWith
+ * new distribution setup
+ * x/differenceWith
 
 ## v1.6.0
  * curry
