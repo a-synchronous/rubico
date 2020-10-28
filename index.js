@@ -89,43 +89,7 @@ const funcAll = funcs => function allFuncs(...args) {
   return isAsync ? promiseAll(result) : result
 }
 
-const promiseObjectAllExecutor = object => function executor(resolve) {
-  const result = {}
-  let numPromises = 0
-  for (const key in object) {
-    const value = object[key]
-    if (isPromise(value)) {
-      numPromises += 1
-      value.then((key => function (res) {
-        result[key] = res
-        numPromises -= 1
-        if (numPromises == 0) {
-          resolve(result)
-        }
-      })(key))
-    } else {
-      result[key] = value
-    }
-  }
-  if (numPromises == 0) {
-    resolve(result)
-  }
-}
-
-const promiseObjectAll = object => new Promise(promiseObjectAllExecutor(object))
-
-const funcObjectAll = funcs => function objectAllFuncs(...args) {
-  const result = {}
-  let isAsync = false
-  for (const key in funcs) {
-    const resultItem = funcs[key](...args)
-    if (!isAsync && isPromise(resultItem)) {
-      isAsync = true
-    }
-    result[key] = resultItem
-  }
-  return isAsync ? promiseObjectAll(result) : result
-}
+const always = value => function getter() { return value }
 
 const __ = Symbol.for('placeholder')
 
@@ -158,6 +122,24 @@ const curry3 = function (baseFunc, arg0, arg1, arg2) {
     return curry3ResolveArg1(baseFunc, arg0, arg2)
   }
   return curry3ResolveArg2(baseFunc, arg0, arg1)
+}
+
+const objectSet = function (object, property, value) {
+  object[property] = value
+  return object
+}
+
+const funcObjectAll = funcs => function objectAllFuncs(...args) {
+  const result = {}, promises = []
+  for (const key in funcs) {
+    const resultItem = funcs[key](...args)
+    if (isPromise(resultItem)) {
+      promises.push(resultItem.then(curry3(objectSet, result, key, __)))
+    } else {
+      result[key] = resultItem
+    }
+  }
+  return promises.length == 0 ? result : promiseAll(promises).then(always(result))
 }
 
 // argument resolver for curry4
@@ -199,11 +181,6 @@ const curry4 = function (baseFunc, arg0, arg1, arg2, arg3) {
     return curry4ResolveArg2(baseFunc, arg0, arg1, arg3)
   }
   return curry4ResolveArg3(baseFunc, arg0, arg1, arg2)
-}
-
-const objectSet = function (object, property, value) {
-  object[property] = value
-  return object
 }
 
 const asyncFuncAllSeries = async function (funcs, args, result, funcsIndex) {
@@ -265,8 +242,6 @@ const assign = function (funcs) {
       : ({ ...value, ...result })
   }
 }
-
-const always = value => function getter() { return value }
 
 const tapSync = func => function tapping(...args) {
   func(...args)
@@ -474,6 +449,31 @@ const mapMap = function (value, mapper) {
     ? result
     : promiseAll(promises).then(always(result))
 }
+
+const promiseObjectAllExecutor = object => function executor(resolve) {
+  const result = {}
+  let numPromises = 0
+  for (const key in object) {
+    const value = object[key]
+    if (isPromise(value)) {
+      numPromises += 1
+      value.then((key => function (res) {
+        result[key] = res
+        numPromises -= 1
+        if (numPromises == 0) {
+          resolve(result)
+        }
+      })(key))
+    } else {
+      result[key] = value
+    }
+  }
+  if (numPromises == 0) {
+    resolve(result)
+  }
+}
+
+const promiseObjectAll = object => new Promise(promiseObjectAllExecutor(object))
 
 const objectMap = function (object, mapper) {
   const result = {}

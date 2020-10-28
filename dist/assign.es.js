@@ -31,42 +31,57 @@ const curry2 = function (baseFunc, arg0, arg1) {
     : curry2ResolveArg1(baseFunc, arg0)
 }
 
-const promiseObjectAllExecutor = object => function executor(resolve) {
-  const result = {}
-  let numPromises = 0
-  for (const key in object) {
-    const value = object[key]
-    if (isPromise(value)) {
-      numPromises += 1
-      value.then((key => function (res) {
-        result[key] = res
-        numPromises -= 1
-        if (numPromises == 0) {
-          resolve(result)
-        }
-      })(key))
-    } else {
-      result[key] = value
-    }
-  }
-  if (numPromises == 0) {
-    resolve(result)
-  }
+const always = value => function getter() { return value }
+
+const promiseAll = Promise.all.bind(Promise)
+
+// argument resolver for curry3
+const curry3ResolveArg0 = (
+  baseFunc, arg1, arg2,
+) => function arg0Resolver(arg0) {
+  return baseFunc(arg0, arg1, arg2)
 }
 
-const promiseObjectAll = object => new Promise(promiseObjectAllExecutor(object))
+// argument resolver for curry3
+const curry3ResolveArg1 = (
+  baseFunc, arg0, arg2,
+) => function arg1Resolver(arg1) {
+  return baseFunc(arg0, arg1, arg2)
+}
+
+// argument resolver for curry3
+const curry3ResolveArg2 = (
+  baseFunc, arg0, arg1,
+) => function arg2Resolver(arg2) {
+  return baseFunc(arg0, arg1, arg2)
+}
+
+const curry3 = function (baseFunc, arg0, arg1, arg2) {
+  if (arg0 == __) {
+    return curry3ResolveArg0(baseFunc, arg1, arg2)
+  }
+  if (arg1 == __) {
+    return curry3ResolveArg1(baseFunc, arg0, arg2)
+  }
+  return curry3ResolveArg2(baseFunc, arg0, arg1)
+}
+
+const objectSet = function (object, property, value) {
+  object[property] = value
+  return object
+}
 
 const funcObjectAll = funcs => function objectAllFuncs(...args) {
-  const result = {}
-  let isAsync = false
+  const result = {}, promises = []
   for (const key in funcs) {
     const resultItem = funcs[key](...args)
-    if (!isAsync && isPromise(resultItem)) {
-      isAsync = true
+    if (isPromise(resultItem)) {
+      promises.push(resultItem.then(curry3(objectSet, result, key, __)))
+    } else {
+      result[key] = resultItem
     }
-    result[key] = resultItem
   }
-  return isAsync ? promiseObjectAll(result) : result
+  return promises.length == 0 ? result : promiseAll(promises).then(always(result))
 }
 
 const assign = function (funcs) {
