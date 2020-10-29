@@ -1,7 +1,7 @@
 ## v1.6.8 - latest
  * fix: assign creates a new object on Promise
 
-## v1.6.6 - latest
+## v1.6.6
  * new distribution setup
  * x/differenceWith
 
