@@ -57,14 +57,12 @@ These operators act sensibly on a wide range of vanilla JavaScript types to crea
 ```javascript [playground]
 const { pipe, map } = rubico
 
-const toTodosUrl = id => 'https://jsonplaceholder.typicode.com/todos/' + id
-
-const fetchedToJson = fetched => fetched.json()
+const toTodosUrl = id => `https://jsonplaceholder.typicode.com/todos/${id}`
 
 const logTodoByID = pipe([ // fetch a Todo and log it
   toTodosUrl,
   fetch,
-  fetchedToJson,
+  response => response.json(),
   console.log,
 ])
 
