@@ -1,3 +1,6 @@
+## v1.6.9 - next release
+ * x/groupBy
+
 ## v1.6.8 - latest
  * fix: assign creates a new object on Promise
 
