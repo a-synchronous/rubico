@@ -17,8 +17,7 @@ describe('groupBy', () => {
           [21, [{ age: 21 }, { age: 21 }, { age: 21 }]],
           [22, [{ age: 22 }]],
           [23, [{ age: 23 }]],
-        ]))
-    ()
+        ]))()
   })
   it('Groups a foldable collection into a Map of arrays by a resolver for each of its elements', async () => {
     Test(groupBy(object => object.age))
@@ -35,8 +34,7 @@ describe('groupBy', () => {
           [21, [{ age: 21 }, { age: 21 }, { age: 21 }]],
           [22, [{ age: 22 }]],
           [23, [{ age: 23 }]],
-        ]))
-    ()
+        ]))()
   })
   it('above but async', async () => {
     Test(groupBy(async object => object.age))
@@ -53,7 +51,6 @@ describe('groupBy', () => {
           [21, [{ age: 21 }, { age: 21 }, { age: 21 }]],
           [22, [{ age: 22 }]],
           [23, [{ age: 23 }]],
-        ]))
-    ()
+        ]))()
   })
 })
