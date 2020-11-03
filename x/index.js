@@ -4,6 +4,7 @@ const find = require('./find')
 const first = require('./first')
 const flatten = require('./flatten')
 const forEach = require('./forEach')
+const groupBy = require('./groupBy')
 const identity = require('./identity')
 const isDeepEqual = require('./isDeepEqual')
 const isEmpty = require('./isEmpty')
@@ -26,6 +27,7 @@ const rubicoX = {
   first,
   flatten,
   forEach,
+  groupBy,
   identity,
   isDeepEqual,
   isEmpty,

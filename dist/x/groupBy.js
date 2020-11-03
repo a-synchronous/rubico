@@ -5,11 +5,13 @@
  * rubico may be freely distributed under the MIT license.
  */
 
-(function (root, transform) {
-  if (typeof module == 'object') (module.exports = transform) // CommonJS
-  else if (typeof define == 'function') define(() => transform) // AMD
-  else (root.transform = transform) // Browser
+(function (root, groupBy) {
+  if (typeof module == 'object') (module.exports = groupBy) // CommonJS
+  else if (typeof define == 'function') define(() => groupBy) // AMD
+  else (root.groupBy = groupBy) // Browser
 }(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+// () => Map<>
+const EmptyMap = () => new Map()
 
 const isPromise = value => value != null && typeof value.then == 'function'
 
@@ -46,37 +48,38 @@ const curry3 = function (baseFunc, arg0, arg1, arg2) {
   return curry3ResolveArg2(baseFunc, arg0, arg1)
 }
 
+// argument resolver for curryArgs3
+const curryArgs3ResolveArgs0 = (
+  baseFunc, arg1, arg2,
+) => function args0Resolver(...args) {
+  return baseFunc(args, arg1, arg2)
+}
+
+// argument resolver for curryArgs3
+const curryArgs3ResolveArgs1 = (
+  baseFunc, arg0, arg2,
+) => function arg1Resolver(...args) {
+  return baseFunc(arg0, args, arg2)
+}
+
+// argument resolver for curryArgs3
+const curryArgs3ResolveArgs2 = (
+  baseFunc, arg0, arg1,
+) => function arg2Resolver(...args) {
+  return baseFunc(arg0, arg1, args)
+}
+
+const curryArgs3 = function (baseFunc, arg0, arg1, arg2) {
+  if (arg0 == __) {
+    return curryArgs3ResolveArgs0(baseFunc, arg1, arg2)
+  }
+  if (arg1 == __) {
+    return curryArgs3ResolveArgs1(baseFunc, arg0, arg2)
+  }
+  return curryArgs3ResolveArgs2(baseFunc, arg0, arg1)
+}
+
 const isArray = Array.isArray
-
-const isBinary = ArrayBuffer.isView
-
-const callPropUnary = (value, property, arg0) => value[property](arg0)
-
-// argument resolver for curry2
-const curry2ResolveArg0 = (
-  baseFunc, arg1,
-) => function arg0Resolver(arg0) {
-  return baseFunc(arg0, arg1)
-}
-
-// argument resolver for curry2
-const curry2ResolveArg1 = (
-  baseFunc, arg0,
-) => function arg1Resolver(arg1) {
-  return baseFunc(arg0, arg1)
-}
-
-const curry2 = function (baseFunc, arg0, arg1) {
-  return arg0 == __
-    ? curry2ResolveArg0(baseFunc, arg1)
-    : curry2ResolveArg1(baseFunc, arg0)
-}
-
-const always = value => function getter() { return value }
-
-const noop = function () {}
-
-const add = (a, b) => a + b
 
 const objectValues = Object.values
 
@@ -208,35 +211,24 @@ const curryArity = function (arity, func, args) {
   return func(...args)
 }
 
-// argument resolver for curryArgs3
-const curryArgs3ResolveArgs0 = (
-  baseFunc, arg1, arg2,
-) => function args0Resolver(...args) {
-  return baseFunc(args, arg1, arg2)
+// argument resolver for curry2
+const curry2ResolveArg0 = (
+  baseFunc, arg1,
+) => function arg0Resolver(arg0) {
+  return baseFunc(arg0, arg1)
 }
 
-// argument resolver for curryArgs3
-const curryArgs3ResolveArgs1 = (
-  baseFunc, arg0, arg2,
-) => function arg1Resolver(...args) {
-  return baseFunc(arg0, args, arg2)
+// argument resolver for curry2
+const curry2ResolveArg1 = (
+  baseFunc, arg0,
+) => function arg1Resolver(arg1) {
+  return baseFunc(arg0, arg1)
 }
 
-// argument resolver for curryArgs3
-const curryArgs3ResolveArgs2 = (
-  baseFunc, arg0, arg1,
-) => function arg2Resolver(...args) {
-  return baseFunc(arg0, arg1, args)
-}
-
-const curryArgs3 = function (baseFunc, arg0, arg1, arg2) {
-  if (arg0 == __) {
-    return curryArgs3ResolveArgs0(baseFunc, arg1, arg2)
-  }
-  if (arg1 == __) {
-    return curryArgs3ResolveArgs1(baseFunc, arg0, arg2)
-  }
-  return curryArgs3ResolveArgs2(baseFunc, arg0, arg1)
+const curry2 = function (baseFunc, arg0, arg1) {
+  return arg0 == __
+    ? curry2ResolveArg0(baseFunc, arg1)
+    : curry2ResolveArg1(baseFunc, arg0)
 }
 
 // argument resolver for curry4
@@ -386,139 +378,50 @@ const genericReduce = function (args, reducer, result) {
     : reducer(result, collection)
 }
 
-const objectAssign = Object.assign
-
-const _arrayExtend = function (array, values) {
-  const arrayLength = array.length,
-    valuesLength = values.length
-  let valuesIndex = -1
-  while (++valuesIndex < valuesLength) {
-    array[arrayLength + valuesIndex] = values[valuesIndex]
-  }
-  return array
-}
-
-const arrayExtend = function (array, values) {
-  if (isArray(values)) {
-    return _arrayExtend(array, values)
-  }
-  array.push(values)
-  return array
-}
-
-const _binaryExtend = function (typedArray, array) {
-  const offset = typedArray.length
-  const result = new typedArray.constructor(offset + array.length)
-  result.set(typedArray)
-  result.set(array, offset)
-  return result
-}
-
-const binaryExtend = function (typedArray, array) {
-  if (isArray(array) || isBinary(array)) {
-    return _binaryExtend(typedArray, array)
-  }
-  return _binaryExtend(typedArray, [array])
-}
-
-const thunkify1 = (func, arg0) => function thunk() {
-  return func(arg0)
-}
-
-const isNodeReadStream = value => value != null && typeof value.pipe == 'function'
-
-const __streamWrite = stream => function appender(
-  chunk, encoding, callback,
-) {
-  stream.write(chunk, encoding, callback)
-  return stream
-}
-
-const _streamExtendExecutor = (
-  resultStream, stream,
-) => function executor(resolve, reject) {
-  stream.on('data', __streamWrite(resultStream))
-  stream.on('end', thunkify1(resolve, resultStream))
-  stream.on('error', reject)
-}
-
-const _streamExtend = (
-  resultStream, stream,
-) => new Promise(_streamExtendExecutor(resultStream, stream))
-
-const streamExtend = function (stream, values) {
-  if (isNodeReadStream(values)) {
-    return _streamExtend(stream, values)
-  }
-  stream.write(values)
-  return stream
-}
-
-const setExtend = function (set, values) {
-  if (values != null && values.constructor == Set) {
-    for (const value of values) {
-      set.add(value)
-    }
-    return set
-  }
-  return set.add(values)
-}
-
-const callConcat = function (object, values) {
-  return object.concat(values)
-}
-
-const identityTransform = function (args, transducer, result) {
-  const nil = genericReduce(args, transducer(noop), null)
-  return isPromise(nil) ? nil.then(always(result)) : result
-}
-
-const genericTransform = function (args, transducer, result) {
-  if (isArray(result)) {
-    return genericReduce(args, transducer(arrayExtend), result)
-  }
-  if (isBinary(result)) {
-    const intermediateArray = genericReduce(args, transducer(arrayExtend), [])
-    return isPromise(intermediateArray)
-      ? intermediateArray.then(curry2(binaryExtend, result, __))
-      : binaryExtend(result, intermediateArray)
-  }
-  if (result == null) {
-    return identityTransform(args, transducer, result)
-  }
-
-  const resultConstructor = result.constructor
-  if (typeof result == 'string' || resultConstructor == String) {
-    return genericReduce(args, transducer(add), result)
-  }
-  if (typeof result.concat == 'function') {
-    return genericReduce(args, transducer(callConcat), result)
-  }
-  if (typeof result.write == 'function') {
-    return genericReduce(args, transducer(streamExtend), result)
-  }
-  if (resultConstructor == Set) {
-    return genericReduce(args, transducer(setExtend), result)
-  }
-  if (resultConstructor == Object) {
-    return genericReduce(args, transducer(objectAssign), result)
-  }
-  return identityTransform(args, transducer, result)
-}
-
-const transform = function (transducer, init) {
+const reduce = function (reducer, init) {
   if (typeof init == 'function') {
-    return function transforming(...args) {
+    return function reducing(...args) {
       const result = init(...args)
       return isPromise(result)
-        ? result.then(curry3(genericTransform, args, transducer, __))
-        : genericTransform(args, transducer, result)
+        ? result.then(curry3(genericReduce, args, reducer, __))
+        : genericReduce(args, reducer, result)
     }
   }
-  return function transforming(...args) {
-    return genericTransform(args, transducer, init)
-  }
+  return curryArgs3(genericReduce, __, reducer, init)
 }
 
-return transform
+// (mapOfArrays Map<any=>Array>, key any, item any) => mapOfArrays
+// TODO: benchmark vs mapOfArrays.has(key)
+const group = function (mapOfArrays, key, item) {
+  const array = mapOfArrays.get(key)
+  if (array == null) {
+    mapOfArrays.set(key, [item])
+  } else {
+    array.push(item)
+  }
+  return mapOfArrays
+}
+
+// property string => (mapOfArrays Map<any=>Array>, item any) => mapOfArrays
+const groupByProperty = property => function groupByPropertyReducer(
+  mapOfArrays, item,
+) {
+  return group(mapOfArrays, item[property], item)
+}
+
+// resolver any=>any => (mapOfArrays Map<any=>Array>, item any) => mapOfArrays
+const groupByResolver = resolver => function groupByResolverReducer(
+  mapOfArrays, item,
+) {
+  const key = resolver(item)
+  return isPromise(key)
+    ? key.then(curry3(group, mapOfArrays, __, item))
+    : group(mapOfArrays, key, item)
+}
+
+const groupBy = propertyOrResolver => typeof propertyOrResolver == 'function'
+  ? reduce(groupByResolver(propertyOrResolver), EmptyMap)
+  : reduce(groupByProperty(propertyOrResolver), EmptyMap)
+
+return groupBy
 }())))

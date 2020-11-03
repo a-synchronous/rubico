@@ -1,4 +1,4 @@
-const ThunkTest = require('thunk-test')
+const Test = require('thunk-test')
 const assert = require('assert')
 const funcConcatSync = require('./_internal/funcConcatSync')
 const thunkify1 = require('./_internal/thunkify1')
@@ -25,7 +25,7 @@ const mapFromObject = function (object) {
 const TestsMap = new Map()
 
 TestsMap.set('pipe', pipe => [
-  ThunkTest(
+  Test(
     'pipe: awesome username generator',
     pipe([
       (arg0, arg1) => arg1 == null ? arg0 : arg0 + arg1,
@@ -45,7 +45,7 @@ TestsMap.set('pipe', pipe => [
       assert.strictEqual(err.message, 'string.toUpperCase is not a function')
     }),
 
-  ThunkTest(
+  Test(
     'pipe: object transducer',
     pipe([
       map(obj => Object.assign(obj, { a: 1 })),
@@ -61,7 +61,7 @@ TestsMap.set('pipe', pipe => [
 ])
 
 TestsMap.set('pipe.sync', pipeSync => [
-  ThunkTest(
+  Test(
     'pipe.sync',
     pipeSync([
       value => Promise.resolve(value),
@@ -74,7 +74,7 @@ TestsMap.set('pipe.sync', pipeSync => [
 ])
 
 TestsMap.set('tap', tap => [
-  ThunkTest(
+  Test(
     'tap syncTapper',
     tap(function noop() {}))
     .case(1, 1)
@@ -84,7 +84,7 @@ TestsMap.set('tap', tap => [
     .case({ a: 1, b: 2, c: 3 }, { a: 1, b: 2, c: 3 })
     .case({ a: 1, b: 2, c: 3, d: ['ayo'] }, { a: 1, b: 2, c: 3, d: ['ayo'] }),
 
-  ThunkTest(
+  Test(
     'tap asyncTapper',
     tap(async function asyncNoop() {}))
     .case(1, 1)
@@ -96,7 +96,7 @@ TestsMap.set('tap', tap => [
 ])
 
 TestsMap.set('tap.sync', tapSync => [
-  ThunkTest(
+  Test(
     'tap.sync syncTapper',
     tapSync(function noop() {}))
     .case(1, 1)
@@ -106,7 +106,7 @@ TestsMap.set('tap.sync', tapSync => [
     .case({ a: 1, b: 2, c: 3 }, { a: 1, b: 2, c: 3 })
     .case({ a: 1, b: 2, c: 3, d: ['ayo'] }, { a: 1, b: 2, c: 3, d: ['ayo'] }),
 
-  ThunkTest(
+  Test(
     'tap.sync asyncTapper',
     tapSync(async function asyncNoop() {}))
     .case(1, 1)
@@ -118,7 +118,7 @@ TestsMap.set('tap.sync', tapSync => [
 ])
 
 TestsMap.set('tap.if', tapIf => [
-  ThunkTest(
+  Test(
     'tap.if',
     tapIf(number => number % 2 == 1, function noop() {}))
     .case(1, 1)
@@ -126,7 +126,7 @@ TestsMap.set('tap.if', tapIf => [
 ])
 
 TestsMap.set('fork', fork => [
-  ThunkTest(
+  Test(
     'fork object',
     fork({
       number: number => number,
@@ -137,7 +137,7 @@ TestsMap.set('fork', fork => [
     .case(2, { number: 2, squared: 4, cubed: 8 })
     .case(3, { number: 3, squared: 9, cubed: 27 }),
 
-  ThunkTest(
+  Test(
     'fork array',
     fork([
       object => object.a,
@@ -148,7 +148,7 @@ TestsMap.set('fork', fork => [
 ])
 
 TestsMap.set('fork.series', forkSeries => [
-  ThunkTest(
+  Test(
     'fork.series object',
     forkSeries({
       number: number => number,
@@ -159,7 +159,7 @@ TestsMap.set('fork.series', forkSeries => [
     .case(2, { number: 2, squared: 4, cubed: 8 })
     .case(3, { number: 3, squared: 9, cubed: 27 }),
 
-  ThunkTest(
+  Test(
     'fork.series array',
     forkSeries([
       object => object.a,
@@ -170,7 +170,7 @@ TestsMap.set('fork.series', forkSeries => [
 ])
 
 TestsMap.set('assign', assign => [
-  ThunkTest(
+  Test(
     'assign',
     assign({
       fifthPower({ number }) {
@@ -186,7 +186,7 @@ TestsMap.set('assign', assign => [
 ])
 
 TestsMap.set('get', get => [
-  ThunkTest(
+  Test(
     'get',
     get('a'))
     .case({ a: 1 }, 1)
@@ -194,7 +194,7 @@ TestsMap.set('get', get => [
     .case({ a: {} }, {})
     .case({ b: 1 }, undefined),
 
-  ThunkTest(
+  Test(
     'get default',
     get('a', 'abc'))
     .case({ a: 1 }, 1)
@@ -202,7 +202,7 @@ TestsMap.set('get', get => [
     .case({ a: {} }, {})
     .case({ b: 1 }, 'abc'),
 
-  ThunkTest(
+  Test(
     'get default getter',
     get('a', () => 'abc'))
     .case({ a: 1 }, 1)
@@ -212,7 +212,7 @@ TestsMap.set('get', get => [
 ])
 
 TestsMap.set('pick', pick => [
-  ThunkTest(
+  Test(
     'pick',
     pick(['a', 'b']))
     .case({ a: 1 }, { a: 1 })
@@ -223,7 +223,7 @@ TestsMap.set('pick', pick => [
 ])
 
 TestsMap.set('omit', omit => [
-  ThunkTest(
+  Test(
     'omit',
     omit(['c']))
     .case({ a: 1 }, { a: 1 })
@@ -234,7 +234,7 @@ TestsMap.set('omit', omit => [
 ])
 
 TestsMap.set('switchCase', switchCase => [
-  ThunkTest(
+  Test(
     'switchCase',
     switchCase([
       number => number == 1, () => 'one',
@@ -245,7 +245,7 @@ TestsMap.set('switchCase', switchCase => [
     .case(2, 'two')
     .case(3, 'something'),
 
-  ThunkTest(
+  Test(
     'switchCase async',
     switchCase([
       async number => number == 1, async () => 'one',
@@ -256,7 +256,7 @@ TestsMap.set('switchCase', switchCase => [
     .case(2, 'two')
     .case(3, 'something'),
 
-  ThunkTest(
+  Test(
     'switchCase async variadic',
     switchCase([
       number => number == 1, async () => 'one',
@@ -269,7 +269,7 @@ TestsMap.set('switchCase', switchCase => [
 ])
 
 TestsMap.set('map', map => [
-  ThunkTest(
+  Test(
     'map syncMapper',
     map(number => number ** 2))
     .case([1, 2, 3, 4, 5], [1, 4, 9, 16, 25])
@@ -318,7 +318,7 @@ TestsMap.set('map', map => [
       assert.deepEqual(array, [1, 4, 9, 16, 25])
     }),
 
-  ThunkTest(
+  Test(
     'map asyncMapper',
     map(async number => number ** 2))
     .case([1, 2, 3, 4, 5], [1, 4, 9, 16, 25])
@@ -358,7 +358,7 @@ TestsMap.set('map', map => [
 ])
 
 TestsMap.set('map.series', mapSeries => [
-  ThunkTest(
+  Test(
     'map.series',
     mapSeries(number => number ** 2),
     mapSeries(async number => number ** 2))
@@ -381,7 +381,7 @@ TestsMap.set('map.pool', function (mapPool) {
   })
 
   return [
-    ThunkTest(
+    Test(
       'map.pool poolSize 2',
       mapPool(2, plusSleepMinus))
       .case([1, 2, 3, 4, 5, 6], result => {
@@ -391,7 +391,7 @@ TestsMap.set('map.pool', function (mapPool) {
         maxi = 0
       }),
 
-    ThunkTest(
+    Test(
       'map.pool poolSize 3',
       mapPool(3, plusSleepMinus))
       .case([1, 2, 3, 4, 5, 6], result => {
@@ -401,7 +401,7 @@ TestsMap.set('map.pool', function (mapPool) {
         maxi = 0
       }),
 
-    ThunkTest(
+    Test(
       'map.pool square',
       mapPool(5, number => number ** 2))
       .case([1, 2, 3, 4, 5], [1, 4, 9, 16, 25])
@@ -410,14 +410,14 @@ TestsMap.set('map.pool', function (mapPool) {
 })
 
 TestsMap.set('map.withIndex', mapWithIndex => [
-  ThunkTest(
+  Test(
     'map.withIndex',
     mapWithIndex((item, index, array) => [item, index, array]))
     .case([1, 2, 3], [[1, 0, [1, 2, 3]], [2, 1, [1, 2, 3]], [3, 2, [1, 2, 3]]]),
 ])
 
 TestsMap.set('filter', filter => [
-  ThunkTest(
+  Test(
     'filter syncPredicate',
     filter(number => number % 2 == 1))
     .case([1, 2, 3, 4, 5], [1, 3, 5])
@@ -466,7 +466,7 @@ TestsMap.set('filter', filter => [
       assert.deepEqual(array, [1, 3, 5])
     }),
 
-  ThunkTest(
+  Test(
     'filter asyncPredicate',
     filter(async number => number % 2 == 1))
     .case([1, 2, 3, 4, 5], [1, 3, 5])
@@ -517,7 +517,7 @@ TestsMap.set('filter', filter => [
 ])
 
 TestsMap.set('filter.withIndex', filterWithIndex => [
-  ThunkTest(
+  Test(
     'filter.withIndex',
     filterWithIndex(
       (item, index, array) => item !== array[index + 1]))
@@ -527,7 +527,7 @@ TestsMap.set('filter.withIndex', filterWithIndex => [
 ])
 
 TestsMap.set('reduce', reduce => [
-  ThunkTest(
+  Test(
     'reduce sync init 0',
     reduce(function add(a, b) { return a + b }, 0))
   .case([1, 2, 3, 4, 5], 15)
@@ -564,7 +564,7 @@ TestsMap.set('reduce', reduce => [
   .case({ a: 1, b: 2, c: 3, d: 4, e: 5 }, 15)
   .case(1, 1),
 
-  ThunkTest(
+  Test(
     'reduce async init 0',
     reduce(async function asyncAdd (a, b) { return a + b }, 0))
   .case([1, 2, 3, 4, 5], 15)
@@ -601,7 +601,7 @@ TestsMap.set('reduce', reduce => [
   .case({ a: 1, b: 2, c: 3, d: 4, e: 5 }, 15)
   .case(1, 1),
 
-  ThunkTest(
+  Test(
     'reduce sync init unary',
     reduce(function add(a, b) { return a + b }))
   .case([1, 2, 3, 4, 5], 15)
@@ -638,7 +638,7 @@ TestsMap.set('reduce', reduce => [
   .case({ a: 1, b: 2, c: 3, d: 4, e: 5 }, 15)
   .case(1, result => assert(isNaN(result))),
 
-  ThunkTest(
+  Test(
     'reduce sync init undefined',
     reduce(function add(a, b) { return a + b }, undefined))
   .case([1, 2, 3, 4, 5], 15)
@@ -677,59 +677,59 @@ TestsMap.set('reduce', reduce => [
 ])
 
 TestsMap.set('transform', transform => [
-  ThunkTest(
+  Test(
     'transform Array',
     transform(map(number => number ** 2), []))
     .case([1, 2, 3, 4, 5], [1, 4, 9, 16, 25]),
 
-  ThunkTest(
+  Test(
     'transform ()=>Array',
     transform(map(number => number ** 2), () => []))
     .case([1, 2, 3, 4, 5], [1, 4, 9, 16, 25]),
 
-  ThunkTest(
+  Test(
     'transform Set',
     transform(map(number => number ** 2), new Set()))
     .case([1, 2, 3, 4, 5], new Set([1, 4, 9, 16, 25])),
 
-  ThunkTest(
+  Test(
     'transform Object',
     transform(map(number => ({ [number.toString()]: number ** 2 })), {}))
     .case([1, 2, 3, 4, 5], { 1: 1, 2: 4, 3: 9, 4: 16, 5: 25 }),
 
-  ThunkTest(
+  Test(
     'transform Uint8Array',
     transform(map(number => number ** 2), new Uint8Array()))
     .case([1, 2, 3, 4, 5], new Uint8Array([1, 4, 9, 16, 25])),
 
-  ThunkTest(
+  Test(
     'transform null',
     transform(map(number => number ** 2), null))
     .case([1, 2, 3, 4, 5], null),
 
-  ThunkTest(
+  Test(
     'transform string',
     transform(map(value => `${value}${value}`), ''))
     .case([1, 2, 3, 4, 5], '1122334455'),
 
-  ThunkTest(
+  Test(
     'transform explicitSemigroup',
     transform(map(value => `${value}${value}`), { concat() { return this } }))
     .case([1, 2, 3, 4, 5], semigroup => assert(typeof semigroup.concat == 'function')),
 
-  ThunkTest(
+  Test(
     'transform writable',
     transform(map(value => `${value}${value}`), { write() { return this } }))
     .case([1, 2, 3, 4, 5], writable => assert(typeof writable.write == 'function')),
 
-  ThunkTest(
+  Test(
     'transform 0',
     transform(map(value => `${value}${value}`), 0))
     .case([1, 2, 3, 4, 5], 0),
 ])
 
 TestsMap.set('flatMap', flatMap => [
-  ThunkTest(
+  Test(
     'flatMap duplicate',
     flatMap(value => [value, value]))
     .case([1, 2, 3, 4, 5], [1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
@@ -789,7 +789,7 @@ TestsMap.set('flatMap', flatMap => [
       assert.deepEqual(mockStream.values, [1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
     }),
 
-  ThunkTest(
+  Test(
     'flatMap asyncDuplicate',
     flatMap(async value => [value, value]))
     .case([1, 2, 3, 4, 5], [1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
@@ -851,7 +851,7 @@ TestsMap.set('flatMap', flatMap => [
 ])
 
 TestsMap.set('and', and => [
-  ThunkTest(
+  Test(
     'and sync',
     and([
       number => number % 2 == 1,
@@ -861,7 +861,7 @@ TestsMap.set('and', and => [
     .case(2, false)
     .case(-1, false),
 
-  ThunkTest(
+  Test(
     'and async',
     and([
       async number => number % 2 == 1,
@@ -873,7 +873,7 @@ TestsMap.set('and', and => [
 ])
 
 TestsMap.set('or', or => [
-  ThunkTest(
+  Test(
     'or sync',
     or([
       number => number % 2 == 1,
@@ -883,7 +883,7 @@ TestsMap.set('or', or => [
     .case(1, true)
     .case(2, true),
 
-  ThunkTest(
+  Test(
     'or async',
     or([
       async number => number % 2 == 1,
@@ -895,14 +895,14 @@ TestsMap.set('or', or => [
 ])
 
 TestsMap.set('not', not => [
-  ThunkTest(
+  Test(
     'not sync',
     not(number => number == 1))
     .case(0, true)
     .case(1, false)
     .case(2, true),
 
-  ThunkTest(
+  Test(
     'not async',
     not(async number => number == 1))
     .case(0, true)
@@ -911,7 +911,7 @@ TestsMap.set('not', not => [
 ])
 
 TestsMap.set('any', any => [
-  ThunkTest(
+  Test(
     'any sync',
     any(number => number == 1))
     .case([1, 2, 3], true)
@@ -934,7 +934,7 @@ TestsMap.set('any', any => [
       yield 4; yield 5; yield 6
     })(), false),
 
-  ThunkTest(
+  Test(
     'any async',
     any(number => number == 1))
     .case([1, 2, 3], true)
@@ -961,7 +961,7 @@ TestsMap.set('any', any => [
 ])
 
 TestsMap.set('all', all => [
-  ThunkTest(
+  Test(
     'all sync',
     all(number => number == 1))
     .case([1, 1, 1], true)
@@ -984,7 +984,7 @@ TestsMap.set('all', all => [
       yield 1; yield 2; yield 3
     })(), false),
 
-  ThunkTest(
+  Test(
     'all async',
     all(async number => number == 1))
     .case([1, 1, 1], true)
@@ -1009,7 +1009,7 @@ TestsMap.set('all', all => [
 ])
 
 TestsMap.set('eq', eq => [
-  ThunkTest(
+  Test(
     'eq',
     eq(1, value => value),
     eq(1, async value => value),
@@ -1020,7 +1020,7 @@ TestsMap.set('eq', eq => [
 ])
 
 TestsMap.set('gt', gt => [
-  ThunkTest(
+  Test(
     'gt',
     gt(1, value => value),
     gt(1, async value => value),
@@ -1032,7 +1032,7 @@ TestsMap.set('gt', gt => [
 ])
 
 TestsMap.set('lt', lt => [
-  ThunkTest(
+  Test(
     'lt',
     lt(1, value => value),
     lt(1, async value => value),
@@ -1044,7 +1044,7 @@ TestsMap.set('lt', lt => [
 ])
 
 TestsMap.set('gte', gte => [
-  ThunkTest(
+  Test(
     'gte',
     gte(1, value => value),
     gte(1, async value => value),
@@ -1056,7 +1056,7 @@ TestsMap.set('gte', gte => [
 ])
 
 TestsMap.set('lte', lte => [
-  ThunkTest(
+  Test(
     'lte',
     lte(1, value => value),
     lte(1, async value => value),
@@ -1068,7 +1068,7 @@ TestsMap.set('lte', lte => [
 ])
 
 TestsMap.set('thunkify', thunkify => [
-  ThunkTest(
+  Test(
     'thunkify',
     thunkify(value => value, 10))
     .case(1, 10)
@@ -1077,7 +1077,7 @@ TestsMap.set('thunkify', thunkify => [
 ])
 
 TestsMap.set('always', always => [
-  ThunkTest(
+  Test(
     'always',
     always(10))
     .case(1, 10)
@@ -1086,7 +1086,7 @@ TestsMap.set('always', always => [
 ])
 
 TestsMap.set('curry', curry => [
-  ThunkTest(
+  Test(
     'curry',
     curry(function add (a, b) { return a + b }, __, 1),
     curry(function add (a, b) { return a + b }, 1, __))
@@ -1095,7 +1095,7 @@ TestsMap.set('curry', curry => [
 
 
 TestsMap.set('curry.arity', curryArity => [
-  ThunkTest(
+  Test(
     'curry.arity',
     curryArity(2, function add (a, b) { return a + b }, __, 1),
     curryArity(2, function add (a, b) { return a + b }, 1, __))
@@ -1103,14 +1103,14 @@ TestsMap.set('curry.arity', curryArity => [
 ])
 
 TestsMap.set('__', __ => [
-  ThunkTest('__', () => __)
+  Test('__', () => __)
     .case(null, __ => {
       assert.strictEqual(typeof __, 'symbol')
     })
 ])
 
 TestsMap.set('defaultsDeep', defaultsDeep => [
-  ThunkTest(
+  Test(
     'defaultsDeep',
     defaultsDeep({ a: 1, b: [1, 2, { c: 3 }] }))
     .case({}, { a: 1, b: [1, 2, { c: 3 }] })
@@ -1124,7 +1124,7 @@ TestsMap.set('defaultsDeep', defaultsDeep => [
 ])
 
 TestsMap.set('differenceWith', differenceWith => [
-  ThunkTest(
+  Test(
     'differenceWith strictEqual',
     differenceWith((a, b) => a === b, [1, 2, 3, 4, 5]))
     .case([1, 2, 3, 4, 5], [])
@@ -1136,7 +1136,7 @@ TestsMap.set('differenceWith', differenceWith => [
     .throws('', TypeError(' is not an Array'))
     .throws(null, TypeError('null is not an Array')),
 
-  ThunkTest(
+  Test(
     'differenceWith strictEqual',
     differenceWith(async (a, b) => a === b, [1, 2, 3, 4, 5]))
     .case([1, 2, 3, 4, 5], [])
@@ -1148,7 +1148,7 @@ TestsMap.set('differenceWith', differenceWith => [
     .throws('', TypeError(' is not an Array'))
     .throws(null, TypeError('null is not an Array')),
 
-    ThunkTest(
+    Test(
       'differenceWith strictEqual variadicA',
       differenceWith((a, b) => a === b ? Promise.resolve(true) : false, [1, 2, 3, 4, 5]))
       .case([1, 2, 3, 4, 5], [])
@@ -1162,7 +1162,7 @@ TestsMap.set('differenceWith', differenceWith => [
 ])
 
 TestsMap.set('find', find => [
-  ThunkTest(
+  Test(
     'find sync',
     find(number => number == 1))
     .case([1, 2, 3], 1)
@@ -1193,7 +1193,7 @@ TestsMap.set('find', find => [
     .case({ a: 1, b: 2, c: 3 }, 1)
     .case({}, undefined),
 
-  ThunkTest(
+  Test(
     'find async',
     find(async number => number == 1))
     .case([1, 2, 3], 1)
@@ -1226,7 +1226,7 @@ TestsMap.set('find', find => [
 ])
 
 TestsMap.set('first', first => [
-  ThunkTest('first', first)
+  Test('first', first)
     .case([1, 2, 3], 1)
     .case('abc', 'a')
     .case(null, undefined)
@@ -1234,7 +1234,7 @@ TestsMap.set('first', first => [
 ])
 
 TestsMap.set('flatten', flatten => [
-  ThunkTest('flatten', flatten)
+  Test('flatten', flatten)
     .case([[1], [2], [3]], [1, 2, 3])
     .case([1, 2, 3], [1, 2, 3])
     .case(null, null)
@@ -1243,21 +1243,71 @@ TestsMap.set('flatten', flatten => [
 ])
 
 TestsMap.set('forEach', forEach => [
-  ThunkTest('forEach sync', forEach(function noop() {}))
+  Test('forEach sync', forEach(function noop() {}))
     .case([1, 2, 3, 4, 5], [1, 2, 3, 4, 5])
     .case(function add(a, b) { return a + b }, add => {
       assert.strictEqual([1, 2, 3, 4, 5].reduce(add, 0), 15)
     }),
 
-  ThunkTest('forEach async', forEach(function noop() {}))
+  Test('forEach async', forEach(function noop() {}))
     .case([1, 2, 3, 4, 5], [1, 2, 3, 4, 5])
     .case(async function add(a, b) { return a + b }, async asyncAdd => {
       assert.strictEqual(await reduce(asyncAdd, 0)([1, 2, 3, 4, 5]), 15)
     }),
 ])
 
+TestsMap.set('groupBy', groupBy => [
+  Test('groupBy property', groupBy('age'))
+    .case(
+      [{ age: 21 }, { age: 22 }, { age: 21 }, { age: 23 }, { age: 21 }],
+      new Map([
+        [21, [{ age: 21 }, { age: 21 }, { age: 21 }]],
+        [22, [{ age: 22 }]],
+        [23, [{ age: 23 }]],
+      ]))
+    .case(
+      new Set([{ age: 21 }, { age: 22 }, { age: 21 }, { age: 23 }, { age: 21 }]),
+      new Map([
+        [21, [{ age: 21 }, { age: 21 }, { age: 21 }]],
+        [22, [{ age: 22 }]],
+        [23, [{ age: 23 }]],
+      ])),
+
+  Test('groupBy resolver', groupBy(object => object.age))
+    .case(
+      [{ age: 21 }, { age: 22 }, { age: 21 }, { age: 23 }, { age: 21 }],
+      new Map([
+        [21, [{ age: 21 }, { age: 21 }, { age: 21 }]],
+        [22, [{ age: 22 }]],
+        [23, [{ age: 23 }]],
+      ]))
+    .case(
+      new Set([{ age: 21 }, { age: 22 }, { age: 21 }, { age: 23 }, { age: 21 }]),
+      new Map([
+        [21, [{ age: 21 }, { age: 21 }, { age: 21 }]],
+        [22, [{ age: 22 }]],
+        [23, [{ age: 23 }]],
+      ])),
+
+  Test('groupBy resolver async', groupBy(async object => object.age))
+    .case(
+      [{ age: 21 }, { age: 22 }, { age: 21 }, { age: 23 }, { age: 21 }],
+      new Map([
+        [21, [{ age: 21 }, { age: 21 }, { age: 21 }]],
+        [22, [{ age: 22 }]],
+        [23, [{ age: 23 }]],
+      ]))
+    .case(
+      new Set([{ age: 21 }, { age: 22 }, { age: 21 }, { age: 23 }, { age: 21 }]),
+      new Map([
+        [21, [{ age: 21 }, { age: 21 }, { age: 21 }]],
+        [22, [{ age: 22 }]],
+        [23, [{ age: 23 }]],
+      ])),
+])
+
 TestsMap.set('isDeepEqual', isDeepEqual => [
-  ThunkTest('isDeepEqual', isDeepEqual)
+  Test('isDeepEqual', isDeepEqual)
     .case({ a: 1, b: 2, c: 3 }, { a: 1, b: 2, c: 3 }, true)
     .case({ a: 1, b: 2, c: 3 }, {}, false)
     .case({ a: 1, b: 2, c: [] }, { a: 1, b: 2, c: [] }, true)
@@ -1272,7 +1322,7 @@ TestsMap.set('isDeepEqual', isDeepEqual => [
 ])
 
 TestsMap.set('isEmpty', isEmpty => [
-  ThunkTest('isEmpty', isEmpty)
+  Test('isEmpty', isEmpty)
     .case('', true)
     .case('abc', false)
     .case([], true)
@@ -1286,7 +1336,7 @@ TestsMap.set('isEmpty', isEmpty => [
 ])
 
 TestsMap.set('isFunction', isFunction => [
-  ThunkTest('isFunction', isFunction)
+  Test('isFunction', isFunction)
     .case(0, false)
     .case(null, false)
     .case('hey', false)
@@ -1298,7 +1348,7 @@ TestsMap.set('isFunction', isFunction => [
 ])
 
 TestsMap.set('isObject', isObject => [
-  ThunkTest('isObject', isObject)
+  Test('isObject', isObject)
     .case({ a: 1 }, true)
     .case({}, true)
     .case([], false)
@@ -1310,7 +1360,7 @@ TestsMap.set('isObject', isObject => [
 ])
 
 TestsMap.set('isString', isString => [
-  ThunkTest('isString', isString)
+  Test('isString', isString)
     .case('abc', true)
     .case('', true)
     .case(String('hey'), true)
@@ -1321,7 +1371,7 @@ TestsMap.set('isString', isString => [
 ])
 
 TestsMap.set('last', last => [
-  ThunkTest('last', last)
+  Test('last', last)
     .case([1, 2, 3], 3)
     .case('abc', 'c')
     .case(null, undefined)
@@ -1329,19 +1379,19 @@ TestsMap.set('last', last => [
 ])
 
 TestsMap.set('pluck', pluck => [
-  ThunkTest('pluck', pluck('a'))
+  Test('pluck', pluck('a'))
     .case([{ a: 1 }, { a: 2 }, { a: 3 }], [1, 2, 3])
     .case([{ a: 1 }, { b: 2 }, { a: 3 }], [1, undefined, 3]),
 
-  ThunkTest('pluck', pluck('a.b'))
+  Test('pluck', pluck('a.b'))
     .case([{ a: { b: 1 } }, { a: { b: 2 } }, { a: { b: 3 } }], [1, 2, 3]),
 
-  ThunkTest('pluck', pluck('a[0]'))
+  Test('pluck', pluck('a[0]'))
     .case([{ a: [1] }, { a: [2] }, { a: [3] }], [1, 2, 3]),
 ])
 
 TestsMap.set('size', size => [
-  ThunkTest('size', size)
+  Test('size', size)
     .case('abc', 3)
     .case('', 0)
     .case({ a: 1 }, 1)
@@ -1358,7 +1408,7 @@ TestsMap.set('size', size => [
 ])
 
 TestsMap.set('trace', trace => [
-  ThunkTest('trace', trace)
+  Test('trace', trace)
     .case('hey', 'hey')
     .case(1, 1)
     .case(null, null)
@@ -1369,17 +1419,17 @@ TestsMap.set('trace', trace => [
 ])
 
 TestsMap.set('unionWith', unionWith => [
-  ThunkTest('unionWith number', unionWith((a, b) => a == b))
+  Test('unionWith number', unionWith((a, b) => a == b))
     .case([[1, 2, 3], [1, 2, 3]], [1, 2, 3])
     .throws('ayo', TypeError('ayo is not an Array')),
 
-  ThunkTest('unionWith namedObject', unionWith((a, b) => a.name == b.name))
+  Test('unionWith namedObject', unionWith((a, b) => a.name == b.name))
     .case([[{ name: 'hey' }, { name: 'ho' }, { name: 'hey' }]], [{ name: 'hey' }, { name: 'ho' }])
     .throws(1, TypeError('1 is not an Array')),
 ])
 
 TestsMap.set('uniq', uniq => [
-  ThunkTest('uniq', uniq)
+  Test('uniq', uniq)
     .case([1, 1, 2, 2, 3, 3], [1, 2, 3])
     .case([1, 2, 3], [1, 2, 3])
     .case([3, 3, 3, 3, 3, 2, 2, 1], [3, 2, 1])

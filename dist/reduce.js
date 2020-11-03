@@ -209,10 +209,6 @@ const curryArity = function (arity, func, args) {
   return func(...args)
 }
 
-const curry1 = (func, arg0) => arg0 == __
-  ? _arg0 => curry1(func, _arg0)
-  : func(arg0)
-
 // argument resolver for curry2
 const curry2ResolveArg0 = (
   baseFunc, arg1,
