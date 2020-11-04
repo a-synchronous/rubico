@@ -2520,7 +2520,7 @@ transform(
     })
     it('sync transforms iterable to writeable stream', async () => {
       const tmpWriter = fs.createWriteStream(path.join(__dirname, './tmp'))
-      transform(squareOddsToString, tmpWriter)([1, 2, 3, 4, 5])
+      await transform(squareOddsToString, tmpWriter)([1, 2, 3, 4, 5])
       ase(await consumeReadStreamPush(
         fs.createReadStream(path.join(__dirname, './tmp')),
       ), '1925')
