@@ -19,6 +19,7 @@ const size = require('./size')
 const trace = require('./trace')
 const unionWith = require('./unionWith')
 const uniq = require('./uniq')
+const values = require('./values')
 
 const rubicoX = {
   defaultsDeep,
@@ -42,6 +43,7 @@ const rubicoX = {
   trace,
   unionWith,
   uniq,
+  values,
 }
 
 module.exports = rubicoX

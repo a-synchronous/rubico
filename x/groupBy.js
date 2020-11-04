@@ -55,6 +55,8 @@ const groupByResolver = resolver => function groupByResolverReducer(
  * Group a foldable collection into a Map of arrays by a property on each of its elements.
  *
  * ```javascript [playground]
+ * import groupBy from 'https://unpkg.com/rubico/dist/x/groupBy.es.js'
+ *
  * console.log(
  *   groupBy('age')([
  *     { name: 'George', age: 22 },
@@ -71,6 +73,8 @@ const groupByResolver = resolver => function groupByResolverReducer(
  * Additionally, pass a resolver in property position to resolve a value for group membership for each item.
  *
  * ```javascript [playground]
+ * import groupBy from 'https://unpkg.com/rubico/dist/x/groupBy.es.js'
+ *
  * console.log(
  *   groupBy(
  *     word => word.toLowerCase(),
