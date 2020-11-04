@@ -82,7 +82,7 @@ For different but semanticaly related functionality, rubico exposes additional m
  * `map.pool` - apply a mapper function concurrently with a concurrency limit
  * `map.series` - apply a mapper function serially
 
-For advanced and more domain-specific functions, please visit `rubico/x`. You can find the full method documentation at [rubico.land/docs](https://rubico.land/docs).
+For advanced functions, please visit `rubico/x`. You can find the full method documentation at [rubico.land/docs](https://rubico.land/docs).
 
 # Installation
 [Core build](https://unpkg.com/rubico/index.js) ([~7.0 kB minified and gzipped](https://unpkg.com/rubico/dist/rubico.min.js))
