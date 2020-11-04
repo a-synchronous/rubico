@@ -1,8 +1,8 @@
-## v1.6.9 - next release
+## v1.6.9 - latest
  * x/groupBy
  * x/values
 
-## v1.6.8 - latest
+## v1.6.8
  * fix: assign creates a new object on Promise
 
 ## v1.6.6
