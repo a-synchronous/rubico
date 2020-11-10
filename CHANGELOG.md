@@ -1,3 +1,6 @@
+## v1.6.10 - next release
+ * eq tests for equality
+
 ## v1.6.9 - latest
  * x/groupBy
  * x/values
