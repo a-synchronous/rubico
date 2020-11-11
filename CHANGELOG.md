@@ -1,4 +1,7 @@
 ## v1.6.10 - next release
+ * and defers to `.and` if method is present
+ * or defers to `.or` if method is present
+ * not defers to `.not` if method is present
  * eq defers to `.eq` if method is present
  * gt defers to `.gt` if method is present
  * lt defers to `.lt` if method is present
