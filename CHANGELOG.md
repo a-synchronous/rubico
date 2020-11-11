@@ -1,5 +1,10 @@
 ## v1.6.10 - next release
- * eq tests for equality
+ * eq defers to `.eq` if method is present
+ * gt defers to `.gt` if method is present
+ * lt defers to `.lt` if method is present
+ * gte defers to `.gte` if method is present
+ * lte defers to `.lte` if method is present
+ * fix: eq tests for equality
 
 ## v1.6.9 - latest
  * x/groupBy
