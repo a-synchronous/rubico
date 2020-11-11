@@ -870,6 +870,19 @@ TestsMap.set('and', and => [
     .case(1, true)
     .case(2, false)
     .case(-1, false),
+
+  Test(and)
+    .before(function () {
+      this.predicates = []
+    })
+    .case([1, 2, 3], predicate => {
+      const lexed = predicate({
+        and: predicates => {
+          this.predicates = predicates
+        }
+      })
+      assert.deepEqual(this.predicates, [1, 2, 3])
+    }),
 ])
 
 TestsMap.set('or', or => [
@@ -892,6 +905,19 @@ TestsMap.set('or', or => [
     .case(0, false)
     .case(1, true)
     .case(2, true),
+
+  Test(or)
+    .before(function () {
+      this.predicates = []
+    })
+    .case([1, 2, 3], predicate => {
+      const lexed = predicate({
+        or: predicates => {
+          this.predicates = predicates
+        }
+      })
+      assert.deepEqual(this.predicates, [1, 2, 3])
+    }),
 ])
 
 TestsMap.set('not', not => [
@@ -908,6 +934,19 @@ TestsMap.set('not', not => [
     .case(0, true)
     .case(1, false)
     .case(2, true),
+
+  Test(not)
+    .before(function () {
+      this.predicates = []
+    })
+    .case([1, 2, 3], predicate => {
+      const lexed = predicate({
+        not: predicates => {
+          this.predicates = predicates
+        }
+      })
+      assert.deepEqual(this.predicates, [1, 2, 3])
+    }),
 ])
 
 TestsMap.set('any', any => [

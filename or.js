@@ -62,6 +62,9 @@ const _asyncOrInterlude = (
  * @note ...args slows down here by an order of magnitude
  */
 const or = predicates => function anyPredicates(value) {
+  if (value != null && typeof value.or == 'function') {
+    return value.or(predicates)
+  }
   const length = predicates.length
   let index = -1
 

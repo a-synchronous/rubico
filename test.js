@@ -3788,7 +3788,7 @@ all(predicate all=>Promise|boolean)(value Foldable) -> Promise|boolean
     })
   })
 
-  describe('not - v1.5.15 regression', () => {
+  describe('not', () => {
     it('[sync] not(isOdd)(x) === !isOdd(x)', async () => {
       ase(not(isOdd)(2), true)
       ase(not(isOdd)(1), false)
@@ -3797,6 +3797,21 @@ all(predicate all=>Promise|boolean)(value Foldable) -> Promise|boolean
       aok(not(asyncIsEven)(2) instanceof Promise)
       ase(await not(asyncIsEven)(2), false)
       ase(await not(asyncIsEven)(1), true)
+    })
+
+    it('defer .not', async () => {
+      Test(not)
+        .before(function () {
+          this.predicates = []
+        })
+        .case([1, 2, 3], predicate => {
+          const lexed = predicate({
+            not: predicates => {
+              this.predicates = predicates
+            }
+          })
+          assert.deepEqual(this.predicates, [1, 2, 3])
+        })()
     })
   })
 
@@ -3838,6 +3853,21 @@ and(
     it('undefined', async () => {
       assert.strictEqual(and([isOdd, isOdd, isOdd])(undefined), false)
       assert.strictEqual(and([isOdd, isOdd, isOdd])(), false)
+    })
+
+    it('defer .and', async () => {
+      Test(and)
+        .before(function () {
+          this.predicates = []
+        })
+        .case([1, 2, 3], predicate => {
+          const lexed = predicate({
+            and: predicates => {
+              this.predicates = predicates
+            }
+          })
+          assert.deepEqual(this.predicates, [1, 2, 3])
+        })()
     })
   })
 
@@ -3887,6 +3917,21 @@ or(
       aok(or([asyncIsEven, isGreaterThan1])(2) instanceof Promise)
       ase(await or([asyncIsEven, isGreaterThan1])(2), true)
       ase(await or([asyncIsEven, isGreaterThan1])(1), false)
+    })
+
+    it('defer .or', async () => {
+      Test(or)
+        .before(function () {
+          this.predicates = []
+        })
+        .case([1, 2, 3], predicate => {
+          const lexed = predicate({
+            or: predicates => {
+              this.predicates = predicates
+            }
+          })
+          assert.deepEqual(this.predicates, [1, 2, 3])
+        })()
     })
   })
 

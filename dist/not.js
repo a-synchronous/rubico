@@ -16,8 +16,11 @@ const isPromise = value => value != null && typeof value.then == 'function'
 // true -> false
 const _not = value => !value
 
-const not = func => function logicalInverter(...args) {
-  const boolean = func(...args)
+const not = func => function logicalInverter(value) {
+  if (value != null && typeof value.not == 'function') {
+    return value.not(func)
+  }
+  const boolean = func(value)
   return isPromise(boolean) ? boolean.then(_not) : !boolean
 }
 

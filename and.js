@@ -62,6 +62,9 @@ const asyncAnd = async function (predicates, value, index) {
  * @note ...args slows down here by an order of magnitude
  */
 const and = predicates => function allPredicates(value) {
+  if (value != null && typeof value.and == 'function') {
+    return value.and(predicates)
+  }
   const length = predicates.length,
     promises = []
   let index = -1

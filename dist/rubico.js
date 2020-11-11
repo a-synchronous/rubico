@@ -2006,6 +2006,9 @@ const asyncAnd = async function (predicates, value, index) {
 }
 
 const and = predicates => function allPredicates(value) {
+  if (value != null && typeof value.and == 'function') {
+    return value.and(predicates)
+  }
   const length = predicates.length,
     promises = []
   let index = -1
@@ -2047,6 +2050,9 @@ const _asyncOrInterlude = (
 ) => firstPredication ? true : asyncOr(predicates, value)
 
 const or = predicates => function anyPredicates(value) {
+  if (value != null && typeof value.or == 'function') {
+    return value.or(predicates)
+  }
   const length = predicates.length
   let index = -1
 
@@ -2065,8 +2071,11 @@ const or = predicates => function anyPredicates(value) {
 // true -> false
 const _not = value => !value
 
-const not = func => function logicalInverter(...args) {
-  const boolean = func(...args)
+const not = func => function logicalInverter(value) {
+  if (value != null && typeof value.not == 'function') {
+    return value.not(func)
+  }
+  const boolean = func(value)
   return isPromise(boolean) ? boolean.then(_not) : !boolean
 }
 
