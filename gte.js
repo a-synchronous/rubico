@@ -63,14 +63,18 @@ const gte = function (left, right) {
     }
   }
   if (isRightResolver) {
-    return function strictEqualBy(value) {
+    return function greaterThanOrEqualBy(value) {
       const rightResolve = right(value)
       return isPromise(rightResolve)
         ? rightResolve.then(curry2(greaterThanOrEqual, left, __))
         : left >= rightResolve
     }
   }
-  return always(left >= right)
+  return function greaterThanOrEqualBy(value) {
+    return value != null && typeof value.eq == 'function'
+      ? value.gte(left, right)
+      : left >= right
+  }
 }
 
 module.exports = gte

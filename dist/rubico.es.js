@@ -2074,46 +2074,50 @@ const spread2 = func => function spreading2([arg0, arg1]) {
   return func(arg0, arg1)
 }
 
-const strictEqual = (a, b) => a === b
+const equal = (a, b) => a == b
 
 const eq = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
   if (isLeftResolver && isRightResolver) {
-    return function strictEqualBy(value) {
+    return function equalBy(value) {
       const leftResolve = left(value),
         rightResolve = right(value)
       const isLeftPromise = isPromise(leftResolve),
         isRightPromise = isPromise(rightResolve)
       if (isLeftPromise && isRightPromise) {
         return promiseAll(
-          [leftResolve, rightResolve]).then(spread2(strictEqual))
+          [leftResolve, rightResolve]).then(spread2(equal))
       } else if (isLeftPromise) {
-        return leftResolve.then(curry2(strictEqual, __, rightResolve))
+        return leftResolve.then(curry2(equal, __, rightResolve))
       } else if (isRightPromise) {
-        return rightResolve.then(curry2(strictEqual, leftResolve, __))
+        return rightResolve.then(curry2(equal, leftResolve, __))
       }
-      return leftResolve === rightResolve
+      return leftResolve == rightResolve
     }
   }
 
   if (isLeftResolver) {
-    return function strictEqualBy(value) {
+    return function equalBy(value) {
       const leftResolve = left(value)
       return isPromise(leftResolve)
-        ? leftResolve.then(curry2(strictEqual, __, right))
-        : leftResolve === right
+        ? leftResolve.then(curry2(equal, __, right))
+        : leftResolve == right
     }
   }
   if (isRightResolver) {
-    return function strictEqualBy(value) {
+    return function equalBy(value) {
       const rightResolve = right(value)
       return isPromise(rightResolve)
-        ? rightResolve.then(curry2(strictEqual, left, __))
-        : left === rightResolve
+        ? rightResolve.then(curry2(equal, left, __))
+        : left == rightResolve
     }
   }
-  return always(left === right)
+  return function equalBy(value) {
+    return value != null && typeof value.eq == 'function'
+      ? value.eq(left, right)
+      : left == right
+  }
 }
 
 const greaterThan = (left, right) => left > right
@@ -2155,7 +2159,11 @@ const gt = function (left, right) {
         : left > rightResolve
     }
   }
-  return always(left > right)
+  return function greaterThanBy(value) {
+    return value != null && typeof value.eq == 'function'
+      ? value.gt(left, right)
+      : left > right
+  }
 }
 
 const lessThan = (left, right) => left < right
@@ -2190,14 +2198,18 @@ const lt = function (left, right) {
     }
   }
   if (isRightResolver) {
-    return function strictEqualBy(value) {
+    return function lessThanBy(value) {
       const rightResolve = right(value)
       return isPromise(rightResolve)
         ? rightResolve.then(curry2(lessThan, left, __))
         : left < rightResolve
     }
   }
-  return always(left < right)
+  return function lessThanBy(value) {
+    return value != null && typeof value.eq == 'function'
+      ? value.lt(left, right)
+      : left < right
+  }
 }
 
 const greaterThanOrEqual = (left, right) => left >= right
@@ -2232,14 +2244,18 @@ const gte = function (left, right) {
     }
   }
   if (isRightResolver) {
-    return function strictEqualBy(value) {
+    return function greaterThanOrEqualBy(value) {
       const rightResolve = right(value)
       return isPromise(rightResolve)
         ? rightResolve.then(curry2(greaterThanOrEqual, left, __))
         : left >= rightResolve
     }
   }
-  return always(left >= right)
+  return function greaterThanOrEqualBy(value) {
+    return value != null && typeof value.eq == 'function'
+      ? value.gte(left, right)
+      : left >= right
+  }
 }
 
 const lessThanOrEqual = (left, right) => left <= right
@@ -2248,7 +2264,7 @@ const lte = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
   if (isLeftResolver && isRightResolver) {
-    return function lessThanBy(value) {
+    return function lessThanOrEqualBy(value) {
       const leftResolve = left(value),
         rightResolve = right(value)
       const isLeftPromise = isPromise(leftResolve),
@@ -2266,7 +2282,7 @@ const lte = function (left, right) {
   }
 
   if (isLeftResolver) {
-    return function lessThanBy(value) {
+    return function lessThanOrEqualBy(value) {
       const leftResolve = left(value)
       return isPromise(leftResolve)
         ? leftResolve.then(curry2(lessThanOrEqual, __, right))
@@ -2274,14 +2290,18 @@ const lte = function (left, right) {
     }
   }
   if (isRightResolver) {
-    return function strictEqualBy(value) {
+    return function lessThanOrEqualBy(value) {
       const rightResolve = right(value)
       return isPromise(rightResolve)
         ? rightResolve.then(curry2(lessThanOrEqual, left, __))
         : left <= rightResolve
     }
   }
-  return always(left <= right)
+  return function lessThanOrEqualBy(value) {
+    return value != null && typeof value.eq == 'function'
+      ? value.lte(left, right)
+      : left <= right
+  }
 }
 
 const memoizeCappedUnary = function (func, cap) {

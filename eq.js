@@ -70,7 +70,11 @@ const eq = function (left, right) {
         : left == rightResolve
     }
   }
-  return always(left == right)
+  return function equalBy(value) {
+    return value != null && typeof value.eq == 'function'
+      ? value.eq(left, right)
+      : left == right
+  }
 }
 
 module.exports = eq

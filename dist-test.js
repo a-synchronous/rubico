@@ -1016,7 +1016,23 @@ TestsMap.set('eq', eq => [
     eq(value => value, 1),
     eq(async value => value, 1))
     .case(1, true)
-    .case(0, false)
+    .case(0, false),
+
+  Test(eq)
+    .before(function () {
+      this.left = null
+      this.right = null
+    })
+    .case(1, 1, predicate => {
+      const lexed = predicate({
+        eq: (left, right) => {
+          this.left = left
+          this.right = right
+        }
+      })
+      assert(this.left == 1)
+      assert(this.right == 1)
+    }),
 ])
 
 TestsMap.set('gt', gt => [
@@ -1028,7 +1044,23 @@ TestsMap.set('gt', gt => [
     gt(() => 1, async value => value))
     .case(0, true)
     .case(1, false)
-    .case(2, false)
+    .case(2, false),
+
+  Test(gt)
+    .before(function () {
+      this.left = null
+      this.right = null
+    })
+    .case(1, 1, predicate => {
+      const lexed = predicate({
+        gt: (left, right) => {
+          this.left = left
+          this.right = right
+        }
+      })
+      assert(this.left == 1)
+      assert(this.right == 1)
+    }),
 ])
 
 TestsMap.set('lt', lt => [
@@ -1040,7 +1072,23 @@ TestsMap.set('lt', lt => [
     lt(() => 1, async value => value))
     .case(2, true)
     .case(1, false)
-    .case(0, false)
+    .case(0, false),
+
+  Test(lt)
+    .before(function () {
+      this.left = null
+      this.right = null
+    })
+    .case(1, 1, predicate => {
+      const lexed = predicate({
+        lt: (left, right) => {
+          this.left = left
+          this.right = right
+        }
+      })
+      assert(this.left == 1)
+      assert(this.right == 1)
+    }),
 ])
 
 TestsMap.set('gte', gte => [
@@ -1052,7 +1100,23 @@ TestsMap.set('gte', gte => [
     gte(() => 1, async value => value))
     .case(0, true)
     .case(1, true)
-    .case(2, false)
+    .case(2, false),
+
+  Test(gte)
+    .before(function () {
+      this.left = null
+      this.right = null
+    })
+    .case(1, 1, predicate => {
+      const lexed = predicate({
+        gte: (left, right) => {
+          this.left = left
+          this.right = right
+        }
+      })
+      assert(this.left == 1)
+      assert(this.right == 1)
+    }),
 ])
 
 TestsMap.set('lte', lte => [
@@ -1064,7 +1128,23 @@ TestsMap.set('lte', lte => [
     lte(() => 1, async value => value))
     .case(2, true)
     .case(1, true)
-    .case(0, false)
+    .case(0, false),
+
+  Test(lte)
+    .before(function () {
+      this.left = null
+      this.right = null
+    })
+    .case(1, 1, predicate => {
+      const lexed = predicate({
+        lte: (left, right) => {
+          this.left = left
+          this.right = right
+        }
+      })
+      assert(this.left == 1)
+      assert(this.right == 1)
+    }),
 ])
 
 TestsMap.set('thunkify', thunkify => [

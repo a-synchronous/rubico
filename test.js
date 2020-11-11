@@ -1,4 +1,4 @@
-const ThunkTest = require('thunk-test')
+const Test = require('thunk-test')
 const assert = require('assert')
 const stream = require('stream')
 const path = require('path')
@@ -747,7 +747,7 @@ describe('rubico', () => {
   })
 
   describe('map', () => {
-    it('ThunkTest', ThunkTest('map', map(number => number ** 2))
+    it('Test', Test('map', map(number => number ** 2))
       .case(Promise.resolve(1), 1)
       .case(Promise.resolve(2), 4)
       .case(Promise.resolve(3), 9)
@@ -3932,6 +3932,24 @@ eq(
         asserter(await func(value), result)
       })
     })
+
+    it('defer .eq', async () => {
+      Test(eq)
+        .before(function () {
+          this.left = null
+          this.right = null
+        })
+        .case(1, 1, predicate => {
+          const lexed = predicate({
+            eq: (left, right) => {
+              this.left = left
+              this.right = right
+            }
+          })
+          assert(this.left == 1)
+          assert(this.right == 1)
+        })()
+    })
   })
 
   describe('eq - v1.5.15 regression', () => {
@@ -4016,6 +4034,24 @@ eq(
     it('throws RangeError on too many arguments', async () => {
       assert.strictEqual(gt('hey', () => {}, 'ho')(), false)
     })
+
+    it('defer .gt', async () => {
+      Test(gt)
+        .before(function () {
+          this.left = null
+          this.right = null
+        })
+        .case(1, 1, predicate => {
+          const lexed = predicate({
+            gt: (left, right) => {
+              this.left = left
+              this.right = right
+            }
+          })
+          assert(this.left == 1)
+          assert(this.right == 1)
+        })()
+    })
   })
 
   describe('lt', () => {
@@ -4059,6 +4095,24 @@ eq(
     })
     it('throws RangeError on too many arguments', async () => {
       assert.strictEqual(lt('hey', () => {}, 'ho')(), false)
+    })
+
+    it('defer .lt', async () => {
+      Test(lt)
+        .before(function () {
+          this.left = null
+          this.right = null
+        })
+        .case(1, 1, predicate => {
+          const lexed = predicate({
+            lt: (left, right) => {
+              this.left = left
+              this.right = right
+            }
+          })
+          assert(this.left == 1)
+          assert(this.right == 1)
+        })()
     })
   })
 
@@ -4104,6 +4158,24 @@ eq(
     it('throws RangeError on too many arguments', async () => {
       assert.strictEqual(gte('hey', () => {}, 'ho')(), false)
     })
+
+    it('defer .gte', async () => {
+      Test(gte)
+        .before(function () {
+          this.left = null
+          this.right = null
+        })
+        .case(1, 1, predicate => {
+          const lexed = predicate({
+            gte: (left, right) => {
+              this.left = left
+              this.right = right
+            }
+          })
+          assert(this.left == 1)
+          assert(this.right == 1)
+        })()
+    })
   })
 
   describe('lte', () => {
@@ -4147,6 +4219,24 @@ eq(
     })
     it('throws RangeError on too many arguments', async () => {
       assert.strictEqual(lte('hey', () => {}, 'ho')(), false)
+    })
+
+    it('defer .lte', async () => {
+      Test(lte)
+        .before(function () {
+          this.left = null
+          this.right = null
+        })
+        .case(1, 1, predicate => {
+          const lexed = predicate({
+            lte: (left, right) => {
+              this.left = left
+              this.right = right
+            }
+          })
+          assert(this.left == 1)
+          assert(this.right == 1)
+        })()
     })
   })
 

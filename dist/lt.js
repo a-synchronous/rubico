@@ -75,14 +75,18 @@ const lt = function (left, right) {
     }
   }
   if (isRightResolver) {
-    return function strictEqualBy(value) {
+    return function lessThanBy(value) {
       const rightResolve = right(value)
       return isPromise(rightResolve)
         ? rightResolve.then(curry2(lessThan, left, __))
         : left < rightResolve
     }
   }
-  return always(left < right)
+  return function lessThanBy(value) {
+    return value != null && typeof value.eq == 'function'
+      ? value.lt(left, right)
+      : left < right
+  }
 }
 
 return lt

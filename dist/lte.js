@@ -49,7 +49,7 @@ const lte = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
   if (isLeftResolver && isRightResolver) {
-    return function lessThanBy(value) {
+    return function lessThanOrEqualBy(value) {
       const leftResolve = left(value),
         rightResolve = right(value)
       const isLeftPromise = isPromise(leftResolve),
@@ -67,7 +67,7 @@ const lte = function (left, right) {
   }
 
   if (isLeftResolver) {
-    return function lessThanBy(value) {
+    return function lessThanOrEqualBy(value) {
       const leftResolve = left(value)
       return isPromise(leftResolve)
         ? leftResolve.then(curry2(lessThanOrEqual, __, right))
@@ -75,14 +75,18 @@ const lte = function (left, right) {
     }
   }
   if (isRightResolver) {
-    return function strictEqualBy(value) {
+    return function lessThanOrEqualBy(value) {
       const rightResolve = right(value)
       return isPromise(rightResolve)
         ? rightResolve.then(curry2(lessThanOrEqual, left, __))
         : left <= rightResolve
     }
   }
-  return always(left <= right)
+  return function lessThanOrEqualBy(value) {
+    return value != null && typeof value.eq == 'function'
+      ? value.lte(left, right)
+      : left <= right
+  }
 }
 
 return lte

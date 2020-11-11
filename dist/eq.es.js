@@ -13,7 +13,7 @@ const isPromise = value => value != null && typeof value.then == 'function'
 
 const promiseAll = Promise.all.bind(Promise)
 
-const strictEqual = (a, b) => a === b
+const equal = (a, b) => a == b
 
 const __ = Symbol.for('placeholder')
 
@@ -43,40 +43,44 @@ const eq = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
   if (isLeftResolver && isRightResolver) {
-    return function strictEqualBy(value) {
+    return function equalBy(value) {
       const leftResolve = left(value),
         rightResolve = right(value)
       const isLeftPromise = isPromise(leftResolve),
         isRightPromise = isPromise(rightResolve)
       if (isLeftPromise && isRightPromise) {
         return promiseAll(
-          [leftResolve, rightResolve]).then(spread2(strictEqual))
+          [leftResolve, rightResolve]).then(spread2(equal))
       } else if (isLeftPromise) {
-        return leftResolve.then(curry2(strictEqual, __, rightResolve))
+        return leftResolve.then(curry2(equal, __, rightResolve))
       } else if (isRightPromise) {
-        return rightResolve.then(curry2(strictEqual, leftResolve, __))
+        return rightResolve.then(curry2(equal, leftResolve, __))
       }
-      return leftResolve === rightResolve
+      return leftResolve == rightResolve
     }
   }
 
   if (isLeftResolver) {
-    return function strictEqualBy(value) {
+    return function equalBy(value) {
       const leftResolve = left(value)
       return isPromise(leftResolve)
-        ? leftResolve.then(curry2(strictEqual, __, right))
-        : leftResolve === right
+        ? leftResolve.then(curry2(equal, __, right))
+        : leftResolve == right
     }
   }
   if (isRightResolver) {
-    return function strictEqualBy(value) {
+    return function equalBy(value) {
       const rightResolve = right(value)
       return isPromise(rightResolve)
-        ? rightResolve.then(curry2(strictEqual, left, __))
-        : left === rightResolve
+        ? rightResolve.then(curry2(equal, left, __))
+        : left == rightResolve
     }
   }
-  return always(left === right)
+  return function equalBy(value) {
+    return value != null && typeof value.eq == 'function'
+      ? value.eq(left, right)
+      : left == right
+  }
 }
 
 export default eq

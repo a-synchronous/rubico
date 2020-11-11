@@ -76,7 +76,11 @@ const gt = function (left, right) {
         : left > rightResolve
     }
   }
-  return always(left > right)
+  return function greaterThanBy(value) {
+    return value != null && typeof value.eq == 'function'
+      ? value.gt(left, right)
+      : left > right
+  }
 }
 
 export default gt
