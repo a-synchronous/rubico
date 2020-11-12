@@ -7,7 +7,9 @@
  * lt defers to `.lt` if method is present
  * gte defers to `.gte` if method is present
  * lte defers to `.lte` if method is present
- * fix: eq tests for equality
+ * isDeepEqual performance improvements
+ * fix: eq semantics
+ * fix: isDeepEqual semantics
 
 ## v1.6.9 - latest
  * x/groupBy
