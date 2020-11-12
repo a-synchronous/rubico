@@ -21,6 +21,14 @@ const R = require('ramda')
  * isDeepEqual(arr, arrDiff): 1e+5: 12.552ms
  * _.isEqual(arr, arrDiff): 1e+5: 76.846ms
  * R.equals(arr, arrDiff): 1e+5: 467.502ms
+ *
+ * richytong [2020-11-12]
+ * isDeepEqual(arr, arrCopy): 1e+5: 22.957ms
+ * _.isEqual(arr, arrCopy): 1e+5: 140.304ms
+ * R.equals(arr, arrCopy): 1e+5: 1.607s
+ * isDeepEqual(arr, arrDiff): 1e+5: 10.275ms
+ * _.isEqual(arr, arrDiff): 1e+5: 75.698ms
+ * R.equals(arr, arrDiff): 1e+5: 466.476ms
  */
 
 const arr = [1, [2], [[3]]]
@@ -28,6 +36,13 @@ const arr = [1, [2], [[3]]]
 const arrCopy = [1, [2], [[3]]]
 
 const arrDiff = [1, 2, 3]
+
+// console.log(isDeepEqual(arr, arrCopy))
+// console.log(isDeepEqual(arr, arrDiff))
+// console.log(_.isEqual(arr, arrCopy))
+// console.log(_.isEqual(arr, arrDiff))
+// console.log(R.equals(arr, arrCopy))
+// console.log(R.equals(arr, arrDiff))
 
 // timeInLoop('isDeepEqual(arr, arrCopy)', 1e5, () => isDeepEqual(arr, arrCopy))
 

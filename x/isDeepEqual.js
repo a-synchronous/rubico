@@ -78,7 +78,7 @@ const areArraysDeepEqual = function (leftArray, rightArray) {
  * ```
  *
  * @description
- * Check two values for deep strict equality.
+ * Check two values for deep equality.
  *
  * ```javascript [playground]
  * import isDeepEqual from 'https://unpkg.com/rubico/dist/x/isDeepEqual.es.js'
@@ -92,26 +92,36 @@ const areArraysDeepEqual = function (leftArray, rightArray) {
  * ) // false
  * ```
  */
-const isDeepEqual = function (leftItem, rightItem) {
-  if (isArray(leftItem) && isArray(rightItem)) {
-    return areArraysDeepEqual(leftItem, rightItem)
-  } else if (
-    typeof leftItem == 'object' && typeof rightItem == 'object'
-      && leftItem != null && rightItem != null
-      && leftItem.constructor == rightItem.constructor
-      && typeof leftItem[symbolIterator] == 'function'
-      && typeof rightItem[symbolIterator] == 'function'
-  ) {
-    return areIteratorsDeepEqual(
-      leftItem[symbolIterator](), rightItem[symbolIterator]())
-  } else if (leftItem == null || rightItem == null) {
-    return leftItem === rightItem
-  } else if (
-    leftItem.constructor == Object && rightItem.constructor == Object
-  ) {
-    return areObjectsDeepEqual(leftItem, rightItem)
+const isDeepEqual = function (left, right) {
+  const isLeftArray = isArray(left),
+    isRightArray = isArray(right)
+  if (isLeftArray || isRightArray) {
+    return isLeftArray && isRightArray
+      && areArraysDeepEqual(left, right)
   }
-  return leftItem === rightItem
+  if (left == null || right == null) {
+    return left == right
+  }
+
+  const isLeftString = typeof left == 'string' || left.constructor == String,
+    isRightString = typeof right == 'string' || right.constructor == String
+  if (isLeftString || isRightString) {
+    return left == right
+  }
+  const isLeftIterable = typeof left[symbolIterator] == 'function',
+    isRightIterable = typeof right[symbolIterator] == 'function'
+  if (isLeftIterable || isRightIterable) {
+    return isLeftIterable && isRightIterable
+      && areIteratorsDeepEqual(left[symbolIterator](), right[symbolIterator]())
+  }
+
+  const isLeftObject = left.constructor == Object,
+    isRightObject = right.constructor == Object
+  if (isLeftObject || isRightObject) {
+    return isLeftObject && isRightObject
+      && areObjectsDeepEqual(left, right)
+  }
+  return left == right
 }
 
 module.exports = isDeepEqual
