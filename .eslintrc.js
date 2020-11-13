@@ -205,7 +205,7 @@ module.exports = {
         'no-return-assign': 'off',
         'no-return-await': 'error',
         'no-script-url': 'error',
-        'no-self-compare': 'error',
+        'no-self-compare': 'off',
         'no-sequences': 'off',
         'no-shadow': 'off',
         'no-spaced-func': 'error',
