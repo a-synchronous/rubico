@@ -1,3 +1,5 @@
+const isObject = require('../_internal/isObject')
+
 /**
  * @name isObject
  *
@@ -7,7 +9,7 @@
  * ```
  *
  * @description
- * Determine whether a value is a direct `Object`.
+ * Determine whether a value has the [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types) of `Object`.
  *
  * ```javascript [playground]
  * import isObject from 'https://unpkg.com/rubico/dist/x/isObject.es.js'
@@ -22,9 +24,8 @@
  *
  * console.log(
  *   isObject(new Set([1, 2, 3])),
- * ) // false
+ * ) // true
  * ```
  */
-const isObject = value => value != null && value.constructor == Object
 
 module.exports = isObject

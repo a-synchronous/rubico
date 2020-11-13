@@ -1470,7 +1470,7 @@ TestsMap.set('isObject', isObject => [
   Test('isObject', isObject)
     .case({ a: 1 }, true)
     .case({}, true)
-    .case([], false)
+    .case([], true)
     .case('', false)
     .case('abc', false)
     .case(1, false)
