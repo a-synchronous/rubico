@@ -7,9 +7,9 @@
  * lt defers to `.lt` if method is present
  * gte defers to `.gte` if method is present
  * lte defers to `.lte` if method is present
- * eq compares by SameValueZero instead of strict equality
- * isDeepEqual compares by SameValueZero instead of strict equality
- * isDeepEqual performance improvements
+ * eq compares by SameValueZero
+ * isDeepEqual compares by SameValueZero
+ * isObject checks for language type Object
 
 ## v1.6.9 - latest
  * x/groupBy
