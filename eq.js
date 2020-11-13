@@ -31,6 +31,8 @@ const __ = require('./_internal/placeholder')
  * ) // true
  * ```
  *
+ * More on SameValueZero: [Equality comparisons and sameness](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Equality_comparisons_and_sameness)
+ *
  * @execution concurrent
  */
 const eq = function (left, right) {
