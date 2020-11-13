@@ -1,4 +1,4 @@
-## v1.6.10 - next release
+## v1.6.10 - latest
  * and defers to `.and` if method is present
  * or defers to `.or` if method is present
  * not defers to `.not` if method is present
