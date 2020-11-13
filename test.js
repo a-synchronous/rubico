@@ -3943,6 +3943,8 @@ eq(
   `, () => {
 
     const cases = [
+      [eq(NaN, NaN), undefined, true], // SameValueZero
+      [eq(+0, -0), undefined, true], // SameValueZero
       [eq(0, 0), undefined, true],
       [eq(0, () => 0), undefined, true],
       [eq(0, async () => 0), undefined, true],
@@ -3961,15 +3963,15 @@ eq(
       [eq(async () => 1, () => 0), undefined, false],
       [eq(async () => 1, async () => 0), undefined, false],
       [eq(async () => 1, async () => 0), undefined, false],
-      [eq(0, '0'), undefined, true],
-      [eq(0, () => '0'), undefined, true],
-      [eq(0, async () => '0'), undefined, true],
-      [eq(() => 0, '0'), undefined, true],
-      [eq(async () => 0, '0'), undefined, true],
-      [eq(() => 0, () => '0'), undefined, true],
-      [eq(async () => 0, () => '0'), undefined, true],
-      [eq(() => 0, async () => '0'), undefined, true],
-      [eq(async () => 0, async () => '0'), undefined, true],
+      [eq(0, '0'), undefined, false],
+      [eq(0, () => '0'), undefined, false],
+      [eq(0, async () => '0'), undefined, false],
+      [eq(() => 0, '0'), undefined, false],
+      [eq(async () => 0, '0'), undefined, false],
+      [eq(() => 0, () => '0'), undefined, false],
+      [eq(async () => 0, () => '0'), undefined, false],
+      [eq(() => 0, async () => '0'), undefined, false],
+      [eq(async () => 0, async () => '0'), undefined, false],
     ]
 
     cases.forEach(([func, value, result, asserter = assert.strictEqual]) => {
@@ -4000,12 +4002,12 @@ eq(
   describe('eq - v1.5.15 regression', () => {
     it('[sync] eq(f, g)(x) == (f(x) == g(x))', async () => {
       ase(eq(x => `${x}`, x => x)('hey'), true)
-      ase(eq(x => `${x}`, x => x)(1), true)
+      ase(eq(x => `${x}`, x => x)(1), false)
     })
     it('[async] eq(f, g)(x) == (f(x) == g(x))', async () => {
       aok(eq(x => `${x}`, async x => x)('hey') instanceof Promise)
       ase(await eq(async x => `${x}`, async x => x)('hey'), true)
-      ase(await eq(async x => `${x}`, async x => x)(1), true)
+      ase(await eq(async x => `${x}`, async x => x)(1), false)
     })
     it('[sync] eq(f, value)(x) == (valueA == valueB)', async () => {
       ase(eq(() => 'hey', 'hey')('ayylmao'), true)

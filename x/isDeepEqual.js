@@ -1,6 +1,7 @@
 const isArray = require('../_internal/isArray')
 const objectKeysLength = require('../_internal/objectKeysLength')
 const symbolIterator = require('../_internal/symbolIterator')
+const sameValueZero = require('../_internal/sameValueZero')
 
 /**
  * @name areIteratorsDeepEqual
@@ -100,13 +101,13 @@ const isDeepEqual = function (left, right) {
       && areArraysDeepEqual(left, right)
   }
   if (left == null || right == null) {
-    return left == right
+    return sameValueZero(left, right)
   }
 
   const isLeftString = typeof left == 'string' || left.constructor == String,
     isRightString = typeof right == 'string' || right.constructor == String
   if (isLeftString || isRightString) {
-    return left == right
+    return sameValueZero(left, right)
   }
   const isLeftIterable = typeof left[symbolIterator] == 'function',
     isRightIterable = typeof right[symbolIterator] == 'function'
@@ -121,7 +122,7 @@ const isDeepEqual = function (left, right) {
     return isLeftObject && isRightObject
       && areObjectsDeepEqual(left, right)
   }
-  return left == right
+  return sameValueZero(left, right)
 }
 
 module.exports = isDeepEqual

@@ -1,7 +1,7 @@
 const spread2 = require('./_internal/spread2')
 const isPromise = require('./_internal/isPromise')
 const promiseAll = require('./_internal/promiseAll')
-const equal = require('./_internal/equal')
+const sameValueZero = require('./_internal/sameValueZero')
 const curry2 = require('./_internal/curry2')
 const always = require('./_internal/always')
 const __ = require('./_internal/placeholder')
@@ -21,7 +21,7 @@ const __ = require('./_internal/placeholder')
  * ```
  *
  * @description
- * Test for equality (`==`) between the returns of two functions. Either parameter may be an actual value.
+ * Test for [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero) between the returns of two functions. Either parameter may be an actual value for comparison.
  *
  * ```javascript [playground]
  * const personIsGeorge = eq(person => person.name, 'George')
@@ -44,13 +44,13 @@ const eq = function (left, right) {
         isRightPromise = isPromise(rightResolve)
       if (isLeftPromise && isRightPromise) {
         return promiseAll(
-          [leftResolve, rightResolve]).then(spread2(equal))
+          [leftResolve, rightResolve]).then(spread2(sameValueZero))
       } else if (isLeftPromise) {
-        return leftResolve.then(curry2(equal, __, rightResolve))
+        return leftResolve.then(curry2(sameValueZero, __, rightResolve))
       } else if (isRightPromise) {
-        return rightResolve.then(curry2(equal, leftResolve, __))
+        return rightResolve.then(curry2(sameValueZero, leftResolve, __))
       }
-      return leftResolve == rightResolve
+      return sameValueZero(leftResolve, rightResolve)
     }
   }
 
@@ -58,22 +58,22 @@ const eq = function (left, right) {
     return function equalBy(value) {
       const leftResolve = left(value)
       return isPromise(leftResolve)
-        ? leftResolve.then(curry2(equal, __, right))
-        : leftResolve == right
+        ? leftResolve.then(curry2(sameValueZero, __, right))
+        : sameValueZero(leftResolve, right)
     }
   }
   if (isRightResolver) {
     return function equalBy(value) {
       const rightResolve = right(value)
       return isPromise(rightResolve)
-        ? rightResolve.then(curry2(equal, left, __))
-        : left == rightResolve
+        ? rightResolve.then(curry2(sameValueZero, left, __))
+        : sameValueZero(left, rightResolve)
     }
   }
   return function equalBy(value) {
     return value != null && typeof value.eq == 'function'
       ? value.eq(left, right)
-      : left == right
+      : sameValueZero(left, right)
   }
 }
 
