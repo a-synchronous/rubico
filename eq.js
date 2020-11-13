@@ -21,7 +21,7 @@ const __ = require('./_internal/placeholder')
  * ```
  *
  * @description
- * Test for [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero) between the returns of two functions. Either parameter may be an actual value for comparison.
+ * Test for [SameValueZero](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero) between the returns of two functions. Either parameter may be an actual value for comparison.
  *
  * ```javascript [playground]
  * const personIsGeorge = eq(person => person.name, 'George')
