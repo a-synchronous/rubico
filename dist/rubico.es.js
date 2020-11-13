@@ -335,7 +335,8 @@ const isObject = value => {
     return false
   }
 
-  return (typeof value == 'object') || (typeof value == 'function')
+  const typeofValue = typeof value
+  return (typeofValue == 'object') || (typeofValue == 'function')
 }
 
 const arrayMap = function (array, mapper) {
@@ -2083,7 +2084,9 @@ const spread2 = func => function spreading2([arg0, arg1]) {
   return func(arg0, arg1)
 }
 
-const equal = (a, b) => a == b
+const sameValueZero = function (left, right) {
+  return left === right || (left !== left && right !== right);
+}
 
 const eq = function (left, right) {
   const isLeftResolver = typeof left == 'function',
@@ -2096,13 +2099,13 @@ const eq = function (left, right) {
         isRightPromise = isPromise(rightResolve)
       if (isLeftPromise && isRightPromise) {
         return promiseAll(
-          [leftResolve, rightResolve]).then(spread2(equal))
+          [leftResolve, rightResolve]).then(spread2(sameValueZero))
       } else if (isLeftPromise) {
-        return leftResolve.then(curry2(equal, __, rightResolve))
+        return leftResolve.then(curry2(sameValueZero, __, rightResolve))
       } else if (isRightPromise) {
-        return rightResolve.then(curry2(equal, leftResolve, __))
+        return rightResolve.then(curry2(sameValueZero, leftResolve, __))
       }
-      return leftResolve == rightResolve
+      return sameValueZero(leftResolve, rightResolve)
     }
   }
 
@@ -2110,22 +2113,22 @@ const eq = function (left, right) {
     return function equalBy(value) {
       const leftResolve = left(value)
       return isPromise(leftResolve)
-        ? leftResolve.then(curry2(equal, __, right))
-        : leftResolve == right
+        ? leftResolve.then(curry2(sameValueZero, __, right))
+        : sameValueZero(leftResolve, right)
     }
   }
   if (isRightResolver) {
     return function equalBy(value) {
       const rightResolve = right(value)
       return isPromise(rightResolve)
-        ? rightResolve.then(curry2(equal, left, __))
-        : left == rightResolve
+        ? rightResolve.then(curry2(sameValueZero, left, __))
+        : sameValueZero(left, rightResolve)
     }
   }
   return function equalBy(value) {
     return value != null && typeof value.eq == 'function'
       ? value.eq(left, right)
-      : left == right
+      : sameValueZero(left, right)
   }
 }
 

@@ -11,7 +11,14 @@
   else (root.isObject = isObject) // Browser
 }(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
 
-const isObject = value => value != null && value.constructor == Object
+const isObject = value => {
+  if (value == null) {
+    return false
+  }
+
+  const typeofValue = typeof value
+  return (typeofValue == 'object') || (typeofValue == 'function')
+}
 
 return isObject
 }())))

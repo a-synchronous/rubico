@@ -65,7 +65,8 @@ const isObject = value => {
     return false
   }
 
-  return (typeof value == 'object') || (typeof value == 'function')
+  const typeofValue = typeof value
+  return (typeofValue == 'object') || (typeofValue == 'function')
 }
 
 const objectProto = Object.prototype
