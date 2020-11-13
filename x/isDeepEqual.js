@@ -79,7 +79,7 @@ const areArraysDeepEqual = function (leftArray, rightArray) {
  * ```
  *
  * @description
- * Check two values for deep equality.
+ * Check two values for deep [SameValueZero](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero) equality.
  *
  * ```javascript [playground]
  * import isDeepEqual from 'https://unpkg.com/rubico/dist/x/isDeepEqual.es.js'
