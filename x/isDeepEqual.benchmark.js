@@ -50,7 +50,7 @@ const arrDiff = [1, 2, 3]
 
 // timeInLoop('R.equals(arr, arrCopy)', 1e5, () => R.equals(arr, arrCopy))
 
-timeInLoop('isDeepEqual(arr, arrDiff)', 1e5, () => isDeepEqual(arr, arrDiff))
+// timeInLoop('isDeepEqual(arr, arrDiff)', 1e5, () => isDeepEqual(arr, arrDiff))
 
 // timeInLoop('_.isEqual(arr, arrDiff)', 1e5, () => _.isEqual(arr, arrDiff))
 
