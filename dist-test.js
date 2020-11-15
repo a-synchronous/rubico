@@ -123,6 +123,18 @@ TestsMap.set('tap.if', tapIf => [
     tapIf(number => number % 2 == 1, function noop() {}))
     .case(1, 1)
     .case(2, 2),
+
+  Test(
+    'tap.if',
+    tapIf(async number => number % 2 == 1, function noop() {}))
+    .case(1, 1)
+    .case(2, 2),
+
+  Test(
+    'tap.if',
+    tapIf(number => number % 2 == 1, async function noop() {}))
+    .case(1, 1)
+    .case(2, 2),
 ])
 
 TestsMap.set('fork', fork => [

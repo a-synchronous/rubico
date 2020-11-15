@@ -76,7 +76,10 @@ tap.if = (predicate, func) => function tappingIf(...args) {
       thunkConditional, __, thunkifyArgs(tap(func), args), always(args[0])))
   }
   if (predication) {
-    func(...args)
+    const execution = func(...args)
+    if (isPromise(execution)) {
+      return execution.then(always(args[0]))
+    }
   }
   return args[0]
 }
