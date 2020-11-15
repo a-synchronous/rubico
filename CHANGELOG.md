@@ -1,7 +1,7 @@
-## v1.6.11 - next release
+## v1.6.11 - latest
  * fix: tap.if handles promises in its executor
 
-## v1.6.10 - latest
+## v1.6.10
  * and defers to `.and` if method is present
  * or defers to `.or` if method is present
  * not defers to `.not` if method is present
