@@ -51,6 +51,11 @@ const async = func => async function asyncFunc(...args) {
   return func(...args)
 }
 
+const delay = (func, ms) => async function delayed(...args) {
+  await new Promise(resolve => setTimeout(resolve, ms))
+  return func(...args)
+}
+
 const asyncIsEven = x => new Promise(resolve => {
   setImmediate(() => resolve(x % 2 === 0))
 })
@@ -552,7 +557,7 @@ describe('rubico', () => {
         }
         assert.deepEqual(oddNumbers, [1, 3, 5])
         for (const number of numbers) {
-          assert.strictEqual(await tap.if(async(isOdd), async(pushOddNumbers))(number), number)
+          assert.strictEqual(await tap.if(isOdd, delay(pushOddNumbers, 10))(number), number)
         }
         assert.deepEqual(oddNumbers, [1, 3, 5, 1, 3, 5])
       })
