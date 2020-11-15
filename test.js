@@ -551,6 +551,10 @@ describe('rubico', () => {
           assert.strictEqual(await tap.if(async(isOdd), pushOddNumbers)(number), number)
         }
         assert.deepEqual(oddNumbers, [1, 3, 5])
+        for (const number of numbers) {
+          assert.strictEqual(await tap.if(async(isOdd), async(pushOddNumbers))(number), number)
+        }
+        assert.deepEqual(oddNumbers, [1, 3, 5, 1, 3, 5])
       })
     })
   })
