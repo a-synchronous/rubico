@@ -149,6 +149,9 @@ import defaultsDeep from 'https://unpkg.com/rubico/dist/x/defaultsDeep.es.min.js
  * minimum Edge version: 79
  * minimum Safari version: 11.1
 
+# Community
+[General Chat](https://chat.stackoverflow.com/rooms/224874/rubico)
+
 # Awesome Resources
  * [Practical Functional Programming in JavaScript - Why it's worth it](https://dev.to/richytong/practical-functional-programming-in-javascript-why-it-s-worth-it-ep1)
  * [Practical Functional Programming in JavaScript - Data last](https://dev.to/richytong/practical-functional-programming-in-javascript-data-last-1gjo)
