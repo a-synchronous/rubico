@@ -1,3 +1,6 @@
+## v1.6.12 - next release
+ * License (MIT) and Chat (Gitter) readme badges
+
 ## v1.6.11 - latest
  * fix: tap.if handles promises in its executor
 
