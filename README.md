@@ -7,7 +7,7 @@
 ![Node.js CI](https://github.com/a-synchronous/rubico/workflows/Node.js%20CI/badge.svg?branch=master)
 [![codecov](https://codecov.io/gh/a-synchronous/rubico/branch/master/graph/badge.svg)](https://codecov.io/gh/a-synchronous/rubico)
 [![npm version](https://img.shields.io/npm/v/rubico.svg?style=flat)](https://www.npmjs.com/package/rubico)
-[General Chat](https://chat.stackoverflow.com/rooms/224874/rubico)
+### [General Chat](https://chat.stackoverflow.com/rooms/224874/rubico)
 
 ### [a]synchronous functional programming
 
