@@ -7,6 +7,7 @@
 ![Node.js CI](https://github.com/a-synchronous/rubico/workflows/Node.js%20CI/badge.svg?branch=master)
 [![codecov](https://codecov.io/gh/a-synchronous/rubico/branch/master/graph/badge.svg)](https://codecov.io/gh/a-synchronous/rubico)
 [![npm version](https://img.shields.io/npm/v/rubico.svg?style=flat)](https://www.npmjs.com/package/rubico)
+[General Chat](https://chat.stackoverflow.com/rooms/224874/rubico)
 
 ### [a]synchronous functional programming
 
@@ -148,9 +149,6 @@ import defaultsDeep from 'https://unpkg.com/rubico/dist/x/defaultsDeep.es.min.js
  * minimum Firefox version: 57
  * minimum Edge version: 79
  * minimum Safari version: 11.1
-
-# Community
-[General Chat](https://chat.stackoverflow.com/rooms/224874/rubico)
 
 # Awesome Resources
  * [Practical Functional Programming in JavaScript - Why it's worth it](https://dev.to/richytong/practical-functional-programming-in-javascript-why-it-s-worth-it-ep1)
