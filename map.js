@@ -16,6 +16,8 @@ const arrayMapSeries = require('./_internal/arrayMapSeries')
 const arrayMapPool = require('./_internal/arrayMapPool')
 const arrayMapWithIndex = require('./_internal/arrayMapWithIndex')
 const objectMapOwn = require('./_internal/objectMapOwn')
+const objectMapEntries = require('./_internal/objectMapEntries')
+const mapMapEntries = require('./_internal/mapMapEntries')
 const symbolIterator = require('./_internal/symbolIterator')
 
 /**
@@ -182,6 +184,43 @@ const map = mapper => function mapping(value) {
     return objectMap(value, mapper)
   }
   return mapper(value)
+}
+
+/**
+ * @name map.entries
+ *
+ * @synopsis
+ * ```coffeescript [specscript]
+ * map.entries(
+ *   mapper ([key any, value any])=>Promise|[any, any],
+ * )(value Object) -> Promise|any
+ * ```
+ *
+ * @description
+ * `map` over an object's entries.
+ * ```javascript [playground]
+ * console.log(
+ *   map.entries(
+ *     ([key, value]) => [key.toUpperCase(), value ** 2],
+ *   )({ a: 1, b: 2, c: 3 })
+ * ) // { A: 1, B: 4, C: 9 }
+ * ```
+ *
+ * @since v1.7.0
+ */
+map.entries = function mapEntries(mapper) {
+  return function mappingEntries(value) {
+    if (value == null) {
+      throw new TypeError('value is not an Object or Map')
+    }
+    if (value.constructor == Object) {
+      return objectMapEntries(value, mapper)
+    }
+    if (value.constructor == Map) {
+      return mapMapEntries(value, mapper)
+    }
+    throw new TypeError('value is not an Object or Map')
+  }
 }
 
 /**
