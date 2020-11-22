@@ -591,6 +591,109 @@ const objectMapOwn = function (object, mapper) {
   return isAsync ? promiseObjectAll(result) : result
 }
 
+const _curryArity = (arity, func, args) => function curried(...curriedArgs) {
+  const argsLength = args.length,
+    curriedArgsLength = curriedArgs.length,
+    nextArgs = []
+  let argsIndex = -1,
+    curriedArgsIndex = -1,
+    numCurriedPlaceholders = 0
+
+  while (++argsIndex < argsLength) {
+    const arg = args[argsIndex]
+    if (arg == __ && (curriedArgsIndex += 1) < curriedArgsLength) {
+      const curriedArg = curriedArgs[curriedArgsIndex]
+      if (curriedArg == __) {
+        numCurriedPlaceholders += 1
+      }
+      nextArgs.push(curriedArg)
+    } else {
+      nextArgs.push(arg)
+    }
+    if (nextArgs.length == arity) {
+      return numCurriedPlaceholders == 0
+        ? func(...nextArgs)
+        : curryArity(arity, func, nextArgs)
+    }
+  }
+
+  while (++curriedArgsIndex < curriedArgsLength) {
+    const curriedArg = curriedArgs[curriedArgsIndex]
+    if (curriedArg == __) {
+      numCurriedPlaceholders += 1
+    }
+    nextArgs.push(curriedArg)
+    if (nextArgs.length == arity) {
+      return numCurriedPlaceholders == 0
+        ? func(...nextArgs)
+        : curryArity(arity, func, nextArgs)
+    }
+  }
+  return curryArity(arity, func, nextArgs)
+}
+
+const curryArity = function (arity, func, args) {
+  const argsLength = args.length
+  if (argsLength < arity) {
+    return _curryArity(arity, func, args)
+  }
+  let argsIndex = -1
+  while (++argsIndex < argsLength) {
+    const arg = args[argsIndex]
+    if (arg == __) {
+      return _curryArity(arity, func, args)
+    }
+  }
+  return func(...args)
+}
+
+const spread2 = func => function spreading2([arg0, arg1]) {
+  return func(arg0, arg1)
+}
+
+const objectMapEntries = function (object, mapper) {
+  const result = {},
+    promises = []
+  for (const key in object) {
+    const value = object[key],
+      mapping = mapper([key, value])
+    if (isPromise(mapping)) {
+      promises.push(mapping.then(
+        spread2(curryArity(3, objectSet, [result]))))
+    } else {
+      result[mapping[0]] = mapping[1]
+    }
+  }
+  return promises.length == 0
+    ? result
+    : promiseAll(promises).then(always(result))
+}
+
+const mapSet = function setting(source, key, value) {
+  return source.set(key, value)
+}
+
+// (mapper function, result Map, promises Array<Promise>) => (key any, value any) => ()
+const mapMapEntriesForEachCallback = (
+  mapper, result, promises,
+) => function callback(value, key) {
+  const mapping = mapper([key, value])
+  if (isPromise(mapping)) {
+    promises.push(mapping.then(spread2(curryArity(3, mapSet, [result]))))
+  } else {
+    result.set(mapping[0], mapping[1])
+  }
+}
+
+const mapMapEntries = function (source, mapper) {
+  const result = new Map(),
+    promises = []
+  source.forEach(mapMapEntriesForEachCallback(mapper, result, promises))
+  return promises.length == 0
+    ? result
+    : promiseAll(promises).then(always(result))
+}
+
 const map = mapper => function mapping(value) {
   if (isArray(value)) {
     return arrayMap(value, mapper)
@@ -632,6 +735,21 @@ const map = mapper => function mapping(value) {
     return objectMap(value, mapper)
   }
   return mapper(value)
+}
+
+map.entries = function mapEntries(mapper) {
+  return function mappingEntries(value) {
+    if (value == null) {
+      throw new TypeError('value is not an Object or Map')
+    }
+    if (value.constructor == Object) {
+      return objectMapEntries(value, mapper)
+    }
+    if (value.constructor == Map) {
+      return mapMapEntries(value, mapper)
+    }
+    throw new TypeError('value is not an Object or Map')
+  }
 }
 
 map.series = mapper => function mappingInSeries(value) {
@@ -1015,62 +1133,6 @@ const asyncIteratorReduce = async function (asyncIterator, reducer, result) {
     iteration = await asyncIterator.next()
   }
   return result
-}
-
-const _curryArity = (arity, func, args) => function curried(...curriedArgs) {
-  const argsLength = args.length,
-    curriedArgsLength = curriedArgs.length,
-    nextArgs = []
-  let argsIndex = -1,
-    curriedArgsIndex = -1,
-    numCurriedPlaceholders = 0
-
-  while (++argsIndex < argsLength) {
-    const arg = args[argsIndex]
-    if (arg == __ && (curriedArgsIndex += 1) < curriedArgsLength) {
-      const curriedArg = curriedArgs[curriedArgsIndex]
-      if (curriedArg == __) {
-        numCurriedPlaceholders += 1
-      }
-      nextArgs.push(curriedArg)
-    } else {
-      nextArgs.push(arg)
-    }
-    if (nextArgs.length == arity) {
-      return numCurriedPlaceholders == 0
-        ? func(...nextArgs)
-        : curryArity(arity, func, nextArgs)
-    }
-  }
-
-  while (++curriedArgsIndex < curriedArgsLength) {
-    const curriedArg = curriedArgs[curriedArgsIndex]
-    if (curriedArg == __) {
-      numCurriedPlaceholders += 1
-    }
-    nextArgs.push(curriedArg)
-    if (nextArgs.length == arity) {
-      return numCurriedPlaceholders == 0
-        ? func(...nextArgs)
-        : curryArity(arity, func, nextArgs)
-    }
-  }
-  return curryArity(arity, func, nextArgs)
-}
-
-const curryArity = function (arity, func, args) {
-  const argsLength = args.length
-  if (argsLength < arity) {
-    return _curryArity(arity, func, args)
-  }
-  let argsIndex = -1
-  while (++argsIndex < argsLength) {
-    const arg = args[argsIndex]
-    if (arg == __) {
-      return _curryArity(arity, func, args)
-    }
-  }
-  return func(...args)
 }
 
 const arrayReduceAsync = async function (
@@ -2082,10 +2144,6 @@ const notSync = func => function notSync(...args) {
 }
 
 not.sync = notSync
-
-const spread2 = func => function spreading2([arg0, arg1]) {
-  return func(arg0, arg1)
-}
 
 const sameValueZero = function (left, right) {
   return left === right || (left !== left && right !== right);

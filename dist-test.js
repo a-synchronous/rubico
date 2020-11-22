@@ -2,6 +2,7 @@ const Test = require('thunk-test')
 const assert = require('assert')
 const funcConcatSync = require('./_internal/funcConcatSync')
 const thunkify1 = require('./_internal/thunkify1')
+const mapFrom = require('./_internal/mapFrom')
 
 const {
   pipe, tap,
@@ -366,6 +367,31 @@ TestsMap.set('map', map => [
         array.push(number)
       }
       assert.deepEqual(array, [1, 4, 9, 16, 25])
+    }),
+])
+
+TestsMap.set('map.entries', mapEntries => [
+  Test('map.entries', mapEntries)
+    .case(([key, value]) => [key, value], mappingEntries => {
+      assert.deepEqual(mappingEntries({ a: 1, b: 2, c: 3 }), { a: 1, b: 2, c: 3 })
+      assert.deepEqual(mappingEntries(mapFrom({ a: 1, b: 2, c: 3 })), mapFrom({ a: 1, b: 2, c: 3 }))
+      assert.throws(() => mappingEntries([]), new TypeError('value is not an Object or Map'))
+      assert.throws(() => mappingEntries(null), new TypeError('value is not an Object or Map'))
+      assert.throws(() => mappingEntries(), new TypeError('value is not an Object or Map'))
+    })
+    .case(async ([key, value]) => [key, value], async mappingEntries => {
+      assert.deepEqual(await mappingEntries({ a: 1, b: 2, c: 3 }), { a: 1, b: 2, c: 3 })
+      assert.deepEqual(await mappingEntries(mapFrom({ a: 1, b: 2, c: 3 })), mapFrom({ a: 1, b: 2, c: 3 }))
+      assert.throws(() => mappingEntries([]), new TypeError('value is not an Object or Map'))
+      assert.throws(() => mappingEntries(null), new TypeError('value is not an Object or Map'))
+      assert.throws(() => mappingEntries(), new TypeError('value is not an Object or Map'))
+    })
+    .case(([key, value]) => value % 2 == 1 ? Promise.resolve([key, value]) : [key, value], async mappingEntries => {
+      assert.deepEqual(await mappingEntries({ a: 1, b: 2, c: 3 }), { a: 1, b: 2, c: 3 })
+      assert.deepEqual(await mappingEntries(mapFrom({ a: 1, b: 2, c: 3 })), mapFrom({ a: 1, b: 2, c: 3 }))
+      assert.throws(() => mappingEntries([]), new TypeError('value is not an Object or Map'))
+      assert.throws(() => mappingEntries(null), new TypeError('value is not an Object or Map'))
+      assert.throws(() => mappingEntries(), new TypeError('value is not an Object or Map'))
     }),
 ])
 
