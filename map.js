@@ -193,11 +193,11 @@ const map = mapper => function mapping(value) {
  * ```coffeescript [specscript]
  * map.entries(
  *   mapper ([key any, value any])=>Promise|[any, any],
- * )(value Object) -> Promise|any
+ * )(value Map|Object) -> Promise|Map|Object
  * ```
  *
  * @description
- * `map` over an object's entries.
+ * `map` over the entries of a `Map` or `Object`.
  * ```javascript [playground]
  * console.log(
  *   map.entries(
