@@ -1,4 +1,5 @@
 ## v1.6.12 - next release
+ * map.entries
  * License (MIT) and Chat (Gitter) readme badges
  * fix x/trace
 
