@@ -1,8 +1,8 @@
 const funcConcat = require('../_internal/funcConcat')
-const tapSync = require('../_internal/tapSync')
+const tap = require('../tap')
 
 // ...any => ()
-const tapLog = tapSync(console.log)
+const consoleLog = console.log
 
 /**
  * @name trace
@@ -35,9 +35,9 @@ const tapLog = tapSync(console.log)
 const trace = function (...args) {
   const arg0 = args[0]
   if (typeof arg0 == 'function') {
-    return funcConcat(arg0, tapLog)
+    return tap(funcConcat(arg0, consoleLog))
   }
-  return tapLog(...args)
+  return tap(consoleLog)(...args)
 }
 
 module.exports = trace
