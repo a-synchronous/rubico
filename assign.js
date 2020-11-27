@@ -16,7 +16,7 @@ const funcObjectAll = require('./_internal/funcObjectAll')
  * ```
  *
  * @description
- * Compose an object from a source object merged with the evaluations of a specifying object of functions. Functions of the specifying object may return Promises.
+ * Compose an object from a source object merged with its evaluations with a specifying object of functions. Functions of the specifying object may return Promises.
  *
  * ```javascript [playground]
  * console.log(
