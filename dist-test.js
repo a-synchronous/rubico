@@ -1571,7 +1571,7 @@ TestsMap.set('trace', trace => [
     .case(null, null)
     .case(undefined, undefined)
     .case(object => object.a, traceResolver => {
-      assert.strictEqual(traceResolver({ a: 1 }), 1)
+      assert.deepEqual(traceResolver({ a: 1 }), { a: 1 })
     })
 ])
 
