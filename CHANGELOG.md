@@ -1,7 +1,8 @@
 ## v1.7.0 - next release
  * map.entries
  * License (MIT) and Chat (Gitter) readme badges
- * fix x/trace
+ * fix x/trace altering output
+ * fix transform - strings and binary correspond 1 character = 1 byte
 
 ## v1.6.11 - latest
  * fix: tap.if handles promises in its executor
