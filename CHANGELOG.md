@@ -1,11 +1,11 @@
-## v1.7.0 - next release
+## v1.6.13 - latest
  * map.entries
  * License (MIT) and Chat (Gitter) readme badges
  * fix x/trace altering output
  * patch transform - strings and binary correspond 1 character = 1 byte
  * patch internal/binaryExtend - construct Buffers as per Node.js warning
 
-## v1.6.11 - latest
+## v1.6.11
  * fix: tap.if handles promises in its executor
 
 ## v1.6.10
