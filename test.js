@@ -2511,6 +2511,10 @@ transform(
           new constructor([1, 9, 2, 5]),
         )
       }
+      ade(
+        transform(squareOddsToString, Buffer.alloc(0))([1, 2, 3, 4, 5]),
+        Buffer.from([1, 9, 2, 5]),
+      )
     })
     it('coerces booleans to 0 and 1', async () => {
       for (const constructor of numberTypedArrayConstructors) {

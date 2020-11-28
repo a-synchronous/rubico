@@ -1,5 +1,7 @@
 const isArray = require('./isArray')
 const isBinary = require('./isBinary')
+const bufferAlloc = require('./bufferAlloc')
+const globalThisHasBuffer = require('./globalThisHasBuffer')
 
 /**
  * @name _binaryExtend
@@ -17,7 +19,9 @@ const isBinary = require('./isBinary')
  */
 const _binaryExtend = function (typedArray, array) {
   const offset = typedArray.length
-  const result = new typedArray.constructor(offset + array.length)
+  const result = globalThisHasBuffer && typedArray.constructor == Buffer
+    ? bufferAlloc(offset + array.length)
+    : new typedArray.constructor(offset + array.length)
   result.set(typedArray)
   result.set(array, offset)
   return result
