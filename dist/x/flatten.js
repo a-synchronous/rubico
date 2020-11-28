@@ -757,9 +757,17 @@ const streamFlatMap = async function (stream, flatMapper) {
   return stream
 }
 
+const globalThisHasBuffer = typeof Buffer == 'function'
+
+const noop = function () {}
+
+const bufferAlloc = globalThisHasBuffer ? Buffer.alloc : noop
+
 const _binaryExtend = function (typedArray, array) {
   const offset = typedArray.length
-  const result = new typedArray.constructor(offset + array.length)
+  const result = globalThisHasBuffer && typedArray.constructor == Buffer
+    ? bufferAlloc(offset + array.length)
+    : new typedArray.constructor(offset + array.length)
   result.set(typedArray)
   result.set(array, offset)
   return result
@@ -771,12 +779,6 @@ const binaryExtend = function (typedArray, array) {
   }
   return _binaryExtend(typedArray, [array])
 }
-
-const globalThisHasBuffer = typeof Buffer == 'function'
-
-const noop = function () {}
-
-const bufferAlloc = globalThisHasBuffer ? Buffer.alloc : noop
 
 const arrayJoinToBinary = function (array, init) {
   const length = array.length

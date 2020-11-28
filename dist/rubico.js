@@ -1279,9 +1279,15 @@ const arrayExtend = function (array, values) {
   return array
 }
 
+const globalThisHasBuffer = typeof Buffer == 'function'
+
+const bufferAlloc = globalThisHasBuffer ? Buffer.alloc : noop
+
 const _binaryExtend = function (typedArray, array) {
   const offset = typedArray.length
-  const result = new typedArray.constructor(offset + array.length)
+  const result = globalThisHasBuffer && typedArray.constructor == Buffer
+    ? bufferAlloc(offset + array.length)
+    : new typedArray.constructor(offset + array.length)
   result.set(typedArray)
   result.set(array, offset)
   return result
@@ -1733,10 +1739,6 @@ const streamFlatMap = async function (stream, flatMapper) {
   await promiseAll(promises)
   return stream
 }
-
-const globalThisHasBuffer = typeof Buffer == 'function'
-
-const bufferAlloc = globalThisHasBuffer ? Buffer.alloc : noop
 
 const arrayJoinToBinary = function (array, init) {
   const length = array.length
