@@ -1251,6 +1251,10 @@ const isBinary = ArrayBuffer.isView
 
 const add = (a, b) => a + b
 
+const isArrayLike = function (value) {
+  return value != null && value.length > 0
+}
+
 const _arrayExtend = function (array, values) {
   const arrayLength = array.length,
     valuesLength = values.length
@@ -1262,7 +1266,7 @@ const _arrayExtend = function (array, values) {
 }
 
 const arrayExtend = function (array, values) {
-  if (isArray(values)) {
+  if (isArrayLike(values)) {
     return _arrayExtend(array, values)
   }
   array.push(values)
