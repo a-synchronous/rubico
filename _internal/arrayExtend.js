@@ -1,4 +1,4 @@
-const isArray = require('./isArray')
+const isArrayLike = require('./isArrayLike')
 
 /**
  * @name _arrayExtend
@@ -30,7 +30,7 @@ const _arrayExtend = function (array, values) {
  * Extend an array with values.
  */
 const arrayExtend = function (array, values) {
-  if (isArray(values)) {
+  if (isArrayLike(values)) {
     return _arrayExtend(array, values)
   }
   array.push(values)

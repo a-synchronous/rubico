@@ -2508,7 +2508,7 @@ transform(
       for (const constructor of numberTypedArrayConstructors) {
         ade(
           transform(squareOddsToString, new constructor(0))([1, 2, 3, 4, 5]),
-          new constructor([1, 9, 25]),
+          new constructor([1, 9, 2, 5]),
         )
       }
     })
