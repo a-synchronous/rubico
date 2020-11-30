@@ -10,12 +10,31 @@
  * ```
  *
  * @description
- * Create a new object by excluding specific keys.
+ * Create a new object by excluding specific paths.
  *
  * ```javascript [playground]
  * console.log(
  *   omit(['_id'])({ _id: '1', name: 'George' }),
  * ) // { name: 'George' }
+ * ```
+ *
+ * Path patterns are the same as those supported by `get`:
+ *
+ *  * dot delimited - `'a.b.c'`
+ *  * bracket notation - `'a[0].value'`
+ *  * an array of keys or indices - `['a', 0, 'value']`
+ *
+ * ```javascript [playground]
+ * console.log(
+ *   omit(['a.b.d'])({
+ *     a: {
+ *       b: {
+ *         c: 'hello',
+ *         d: 'goodbye',
+ *       },
+ *     },
+ *   }),
+ * ) // { a: { b: { c: 'hello' } } }
  * ```
  */
 const omit = keys => function omitting(source) {
