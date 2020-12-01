@@ -3557,13 +3557,22 @@ flatMap(
 
   describe('omit', () => {
     const abc = { a: 1, b: 2, c: 3 }
+    const nested = { a: { b: { c: { d: 1, e: [2, 3] } } } }
     it('omits properties from an object defined by array', async () => {
       ade(omit(['a'])(abc), { b: 2, c: 3 })
       ade(omit(['a', 'd'])(abc), { b: 2, c: 3 })
       ade(omit(['d'])(abc), { a: 1, b: 2, c: 3 })
+      ade(omit(['d'])({ d: null }), {})
       ase(omit(['d'])(null), null)
       ase(omit(['d'])(undefined), undefined)
       ase(omit(['d'])(), undefined)
+    })
+    it('omits nested properties', async () => {
+      assert(omit([])(nested) !== nested)
+      assert.deepEqual(omit([])(nested), nested)
+      assert.deepEqual(omit(['a.b.c.d'])(nested), { a: { b: { c: { e: [2, 3] } } } })
+      assert.deepEqual(omit(['a.b.c.d', 'a.b.c.e[0]'])(nested), { a: { b: { c: { e: [, 3] } } } })
+      assert.deepEqual(omit(['a[0][0].d'])({ a: [[{ b: 1, c: 2, d: 3 }]] }), { a: [[{ b: 1, c: 2 }]] })
     })
   })
 

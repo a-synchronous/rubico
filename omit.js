@@ -29,16 +29,18 @@ const copyDeep = require('./_internal/copyDeep')
  *
  * ```javascript [playground]
  * console.log(
- *   omit(['a.b.d'])({
+ *   omit('a.b.d')({
  *     a: {
  *       b: {
  *         c: 'hello',
  *         d: 'goodbye',
  *       },
  *     },
- *   }),
+ *   })
  * ) // { a: { b: { c: 'hello' } } }
  * ```
+ *
+ * Note: omitting numeric array properties leaves holes
  */
 const omit = paths => function omitting(source) {
   if (source == null) {

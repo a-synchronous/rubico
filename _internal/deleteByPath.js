@@ -14,7 +14,6 @@ const propertyPathToArray = require('./propertyPathToArray')
  */
 const deleteByPath = function (object, path) {
   const propertyPathArray = propertyPathToArray(path),
-    length = propertyPathArray.length,
     lengthMinusOne = propertyPathArray.length - 1
   let index = -1,
     result = object
