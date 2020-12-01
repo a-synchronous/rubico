@@ -1,5 +1,5 @@
 /**
- * rubico v1.6.13
+ * rubico v1.6.14
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2020 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -2466,17 +2466,20 @@ const pick = keys => function picking(source) {
 }
 
 const deleteByPath = function (object, path) {
-  const propertyPathArray = propertyPathToArray(path),
-    lengthMinusOne = propertyPathArray.length - 1
+  const pathArray = propertyPathToArray(path),
+    lengthMinusOne = pathArray.length - 1
   let index = -1,
     result = object
   while (++index < lengthMinusOne) {
-    result = result[propertyPathArray[index]]
+    result = result[pathArray[index]]
     if (result == null) {
       return undefined
     }
   }
-  delete result[propertyPathArray[index]]
+  const property = pathArray[index]
+  if (result != null && property in result) {
+    delete result[property]
+  }
   return undefined
 }
 
@@ -2528,9 +2531,6 @@ const copyDeep = function (value) {
 }
 
 const omit = paths => function omitting(source) {
-  if (source == null) {
-    return source
-  }
   const pathsLength = paths.length,
     result = copyDeep(source)
   let pathsIndex = -1
