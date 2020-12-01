@@ -1,4 +1,7 @@
-## v1.6.15 - latest
+## v1.6.16 - latest
+ * fix omit throwing on nullish
+
+## v1.6.15
  * omit supports nested fields [#181](https://github.com/a-synchronous/rubico/pull/181)
 
 ## v1.6.13
