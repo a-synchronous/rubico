@@ -13,7 +13,7 @@ const copyDeep = require('./_internal/copyDeep')
  * ```
  *
  * @description
- * Create a new object by excluding specific paths.
+ * Create a new object by excluding specific paths on a source object.
  *
  * ```javascript [playground]
  * console.log(
@@ -29,18 +29,16 @@ const copyDeep = require('./_internal/copyDeep')
  *
  * ```javascript [playground]
  * console.log(
- *   omit('a.b.d')({
+ *   omit(['a.b.d'])({
  *     a: {
  *       b: {
  *         c: 'hello',
  *         d: 'goodbye',
  *       },
  *     },
- *   })
+ *   }),
  * ) // { a: { b: { c: 'hello' } } }
  * ```
- *
- * Note: omitting numeric array properties leaves holes
  */
 const omit = paths => function omitting(source) {
   const pathsLength = paths.length,
