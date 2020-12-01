@@ -1,12 +1,15 @@
+const deleteByPath = require('./_internal/deleteByPath')
+const copyDeep = require('./_internal/copyDeep')
+
 /**
  * @name omit
  *
  * @synopsis
  * ```coffeescript [specscript]
- * var keys Array<string>,
+ * var paths Array<string>,
  *   source Object
  *
- * omit(keys)(source) -> omitted Object
+ * omit(paths)(source) -> omitted Object
  * ```
  *
  * @description
@@ -37,15 +40,15 @@
  * ) // { a: { b: { c: 'hello' } } }
  * ```
  */
-const omit = keys => function omitting(source) {
+const omit = paths => function omitting(source) {
   if (source == null) {
     return source
   }
-  const keysLength = keys.length,
-    result = { ...source }
-  let keysIndex = -1
-  while (++keysIndex < keysLength) {
-    delete result[keys[keysIndex]]
+  const pathsLength = paths.length,
+    result = copyDeep(source)
+  let pathsIndex = -1
+  while (++pathsIndex < pathsLength) {
+    deleteByPath(result, paths[pathsIndex])
   }
   return result
 }
