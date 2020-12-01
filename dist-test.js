@@ -242,8 +242,35 @@ TestsMap.set('omit', omit => [
     .case({ a: 1 }, { a: 1 })
     .case({ a: 1, b: 2 }, { a: 1, b: 2 })
     .case({ a: 1, b: 2, c: 3 }, { a: 1, b: 2 })
+    .case(null, null)
     .case({}, {})
-    .case([], {}),
+    .case([], []),
+
+  Test(
+    'omit nested',
+    omit(['a.b.c.e[0]']))
+    .case({
+      a: {
+        b: {
+          c: {
+            d: 1,
+            e: [2, 3],
+          },
+        }
+      },
+    }, {
+      a: {
+        b: {
+          c: {
+            d: 1,
+            e: [, 3],
+          },
+        }
+      },
+    })
+    .case(null, null)
+    .case({}, {})
+    .case([], []),
 ])
 
 TestsMap.set('switchCase', switchCase => [
