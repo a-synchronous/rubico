@@ -621,9 +621,9 @@ const memoizeCappedUnary = function (func, cap) {
 }
 
 // a[0].b.c
-const pathStringSplitRegex = /[.|[|\]]+/
+const pathDelimiters = /[.|[|\]]+/
 
-const pathStringSplit = function (pathString) {
+const parsePropertyPath = function (pathString) {
   const pathStringLastIndex = pathString.length - 1,
     firstChar = pathString[0],
     lastChar = pathString[pathStringLastIndex],
@@ -631,29 +631,29 @@ const pathStringSplit = function (pathString) {
     isLastCharRightBracket = lastChar == ']'
 
   if (isFirstCharLeftBracket && isLastCharRightBracket) {
-    return pathString.slice(1, pathStringLastIndex).split(pathStringSplitRegex)
+    return pathString.slice(1, pathStringLastIndex).split(pathDelimiters)
   } else if (isFirstCharLeftBracket) {
-    return pathString.slice(1).split(pathStringSplitRegex)
+    return pathString.slice(1).split(pathDelimiters)
   } else if (isLastCharRightBracket) {
-    return pathString.slice(0, pathStringLastIndex).split(pathStringSplitRegex)
+    return pathString.slice(0, pathStringLastIndex).split(pathDelimiters)
   }
-  return pathString.split(pathStringSplitRegex)
+  return pathString.split(pathDelimiters)
 }
 
-// memoized version of pathStringSplit, max cache size 500
-const memoizedCappedPathStringSplit = memoizeCappedUnary(pathStringSplit, 500)
+// memoized version of parsePropertyPath, max cache size 500
+const memoizedCappedParsePropertyPath = memoizeCappedUnary(parsePropertyPath, 500)
 
-const pathToArray = path => isArray(path) ? path
-  : typeof path == 'string' ? memoizedCappedPathStringSplit(path)
+const propertyPathToArray = path => isArray(path) ? path
+  : typeof path == 'string' ? memoizedCappedParsePropertyPath(path)
   : [path]
 
 const getByPath = function (value, path) {
-  const pathArray = pathToArray(path),
-    length = pathArray.length
+  const propertyPathArray = propertyPathToArray(path),
+    length = propertyPathArray.length
   let index = -1,
     result = value
   while (++index < length) {
-    result = result[pathArray[index]]
+    result = result[propertyPathArray[index]]
     if (result == null) {
       return undefined
     }

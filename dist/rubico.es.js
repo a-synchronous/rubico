@@ -2401,9 +2401,9 @@ const memoizeCappedUnary = function (func, cap) {
 }
 
 // a[0].b.c
-const pathStringSplitRegex = /[.|[|\]]+/
+const pathDelimiters = /[.|[|\]]+/
 
-const pathStringSplit = function (pathString) {
+const parsePropertyPath = function (pathString) {
   const pathStringLastIndex = pathString.length - 1,
     firstChar = pathString[0],
     lastChar = pathString[pathStringLastIndex],
@@ -2411,29 +2411,29 @@ const pathStringSplit = function (pathString) {
     isLastCharRightBracket = lastChar == ']'
 
   if (isFirstCharLeftBracket && isLastCharRightBracket) {
-    return pathString.slice(1, pathStringLastIndex).split(pathStringSplitRegex)
+    return pathString.slice(1, pathStringLastIndex).split(pathDelimiters)
   } else if (isFirstCharLeftBracket) {
-    return pathString.slice(1).split(pathStringSplitRegex)
+    return pathString.slice(1).split(pathDelimiters)
   } else if (isLastCharRightBracket) {
-    return pathString.slice(0, pathStringLastIndex).split(pathStringSplitRegex)
+    return pathString.slice(0, pathStringLastIndex).split(pathDelimiters)
   }
-  return pathString.split(pathStringSplitRegex)
+  return pathString.split(pathDelimiters)
 }
 
-// memoized version of pathStringSplit, max cache size 500
-const memoizedCappedPathStringSplit = memoizeCappedUnary(pathStringSplit, 500)
+// memoized version of parsePropertyPath, max cache size 500
+const memoizedCappedParsePropertyPath = memoizeCappedUnary(parsePropertyPath, 500)
 
-const pathToArray = path => isArray(path) ? path
-  : typeof path == 'string' ? memoizedCappedPathStringSplit(path)
+const propertyPathToArray = path => isArray(path) ? path
+  : typeof path == 'string' ? memoizedCappedParsePropertyPath(path)
   : [path]
 
 const getByPath = function (value, path) {
-  const pathArray = pathToArray(path),
-    length = pathArray.length
+  const propertyPathArray = propertyPathToArray(path),
+    length = propertyPathArray.length
   let index = -1,
     result = value
   while (++index < length) {
-    result = result[pathArray[index]]
+    result = result[propertyPathArray[index]]
     if (result == null) {
       return undefined
     }
@@ -2465,15 +2465,77 @@ const pick = keys => function picking(source) {
   return result
 }
 
-const omit = keys => function omitting(source) {
+const deleteByPath = function (object, path) {
+  const propertyPathArray = propertyPathToArray(path),
+    lengthMinusOne = propertyPathArray.length - 1
+  let index = -1,
+    result = object
+  while (++index < lengthMinusOne) {
+    result = result[propertyPathArray[index]]
+    if (result == null) {
+      return undefined
+    }
+  }
+  delete result[propertyPathArray[index]]
+  return undefined
+}
+
+// objectCopyDeep(array Array) -> copied Array
+const objectCopyDeep = function (object) {
+  const result = {}
+  for (const key in object) {
+    const item = object[key]
+    if (isArray(item)) {
+      result[key] = arrayCopyDeep(item)
+    } else if (item != null && item.constructor == Object) {
+      result[key] = objectCopyDeep(item)
+    } else {
+      result[key] = item
+    }
+  }
+  return result
+}
+
+// arrayCopyDeep(array Array) -> copied Array
+const arrayCopyDeep = function (array) {
+  const length = array.length,
+    result = []
+  let index = -1
+  while (++index < length) {
+    const item = array[index]
+    if (isArray(item)) {
+      result[index] = arrayCopyDeep(item)
+    } else if (item != null && item.constructor == Object) {
+      result[index] = objectCopyDeep(item)
+    } else {
+      result[index] = item
+    }
+  }
+  return result
+}
+
+const copyDeep = function (value) {
+  if (isArray(value)) {
+    return arrayCopyDeep(value)
+  }
+  if (value == null) {
+    return value
+  }
+  if (value.constructor == Object) {
+    return objectCopyDeep(value)
+  }
+  return value
+}
+
+const omit = paths => function omitting(source) {
   if (source == null) {
     return source
   }
-  const keysLength = keys.length,
-    result = { ...source }
-  let keysIndex = -1
-  while (++keysIndex < keysLength) {
-    delete result[keys[keysIndex]]
+  const pathsLength = paths.length,
+    result = copyDeep(source)
+  let pathsIndex = -1
+  while (++pathsIndex < pathsLength) {
+    deleteByPath(result, paths[pathsIndex])
   }
   return result
 }
