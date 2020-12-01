@@ -23,7 +23,10 @@ const deleteByPath = function (object, path) {
       return undefined
     }
   }
-  delete result[pathArray[index]]
+  const property = pathArray[index]
+  if (result != null && property in result) {
+    delete result[property]
+  }
   return undefined
 }
 

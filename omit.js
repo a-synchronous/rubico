@@ -43,9 +43,6 @@ const copyDeep = require('./_internal/copyDeep')
  * Note: omitting numeric array properties leaves holes
  */
 const omit = paths => function omitting(source) {
-  if (source == null) {
-    return source
-  }
   const pathsLength = paths.length,
     result = copyDeep(source)
   let pathsIndex = -1
