@@ -3577,7 +3577,34 @@ flatMap(
       assert.deepEqual(omit(['a.b.f.g'])(nested), nested)
       assert.deepEqual(omit(['a.b.c.d', 'a.b.c.e[0]'])(nested), { a: { b: { c: { e: [, 3] } } } })
       assert.deepEqual(omit(['a[0][0].d'])({ a: [[{ b: 1, c: 2, d: 3 }]] }), { a: [[{ b: 1, c: 2 }]] })
+      assert.deepEqual(omit(['a[0][0].d'])({ a: [[{ b: 1, c: 2, d: null }]] }), { a: [[{ b: 1, c: 2 }]] })
     })
+    it('more nested',
+      Test(
+        'omit nested',
+        omit(['a.b.c.e[0]']))
+        .case({
+          a: {
+            b: {
+              c: {
+                d: 1,
+                e: [2, 3],
+              },
+            }
+          },
+        }, {
+          a: {
+            b: {
+              c: {
+                d: 1,
+                e: [, 3],
+              },
+            }
+          },
+        })
+    .case(null, null)
+    .case({}, {})
+    .case([], []))
   })
 
   describe(`
