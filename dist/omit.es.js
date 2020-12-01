@@ -66,6 +66,9 @@ const getByPath = function (value, path) {
 }
 
 const deleteByPath = function (object, path) {
+  if (object == null) {
+    return undefined
+  }
   const pathArray = propertyPathToArray(path),
     lengthMinusOne = pathArray.length - 1
   let index = -1,
