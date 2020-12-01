@@ -1,7 +1,7 @@
-## v1.6.14 - next release
+## v1.6.15 - latest
  * omit supports nested fields [#181](https://github.com/a-synchronous/rubico/pull/181)
 
-## v1.6.13 - latest
+## v1.6.13
  * map.entries
  * License (MIT) and Chat (Gitter) readme badges
  * fix x/trace altering output
