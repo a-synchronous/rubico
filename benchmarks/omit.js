@@ -8,6 +8,10 @@ const _ = require('lodash')
  * @benchmark
  * rubico.omit(['a', 'b', 'c'])(object): 1e+6: 599.19ms
  * _.omit(['a', 'b', 'c'])(object): 1e+6: 2.651s
+ *
+ * 2020-11-30
+ * rubico.omit(['a', 'b', 'c'])(object): 1e+6: 628.47ms
+ * _.omit(['a', 'b', 'c'])(object): 1e+6: 2.595s
  */
 
 {
