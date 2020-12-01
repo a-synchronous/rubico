@@ -13,17 +13,17 @@ const propertyPathToArray = require('./propertyPathToArray')
  * ```
  */
 const deleteByPath = function (object, path) {
-  const propertyPathArray = propertyPathToArray(path),
-    lengthMinusOne = propertyPathArray.length - 1
+  const pathArray = propertyPathToArray(path),
+    lengthMinusOne = pathArray.length - 1
   let index = -1,
     result = object
   while (++index < lengthMinusOne) {
-    result = result[propertyPathArray[index]]
+    result = result[pathArray[index]]
     if (result == null) {
       return undefined
     }
   }
-  delete result[propertyPathArray[index]]
+  delete result[pathArray[index]]
   return undefined
 }
 
