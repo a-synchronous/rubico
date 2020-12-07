@@ -25,7 +25,8 @@ const funcConditional = require('./_internal/funcConditional')
  * const fruitIsYellow = fruit => fruit.color == 'yellow'
  *
  * const fruitsGuesser = switchCase([
- *   fruitIsYellow, fruit => fruit.name + ' is possibly a banana',
+ *   fruitIsYellow,
+ *   fruit => fruit.name + ' is possibly a banana',
  *   fruit => fruit.name + ' is probably not a banana',
  * ])
  *
