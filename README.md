@@ -39,7 +39,7 @@ When you import this library, you obtain the freedom that comes from having thos
 
 # Introduction
 
-rubico is a module of twenty-eight operators for [a]synchronous functional programming in JavaScript.
+rubico is a module of twenty-eight operators for async-enabled functional programming in JavaScript.
 
 ```javascript
 const {
