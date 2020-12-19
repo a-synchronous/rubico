@@ -1,3 +1,7 @@
+## v1.6.17 - next release
+ * x/has
+ * x/includes
+
 ## v1.6.16 - latest
  * fix omit throwing on nullish
 
