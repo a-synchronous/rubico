@@ -1490,6 +1490,32 @@ TestsMap.set('groupBy', groupBy => [
       ])),
 ])
 
+TestsMap.set('has', has => [
+  Test(has)
+  .case('b', hasB => {
+    assert.strictEqual(hasB(new Set(['a', 'b', 'c'])), true)
+    assert.strictEqual(hasB(new Set(['a', 'c'])), false)
+    assert.strictEqual(hasB(new Map([['a', 1], ['b', 2], ['c', 3]])), true)
+    assert.strictEqual(hasB(new Map([['a', 1], ['c', 3]])), false)
+    assert.strictEqual(hasB({ a: 1, b: 2, c: 3 }), true)
+    assert.strictEqual(hasB({ a: 1, c: 3 }), false)
+    assert.strictEqual(hasB(null), false)
+    assert.strictEqual(hasB(15), false)
+  }),
+])
+
+TestsMap.set('includes', includes => [
+  Test(includes)
+  .case(5, includes5 => {
+    assert.strictEqual(includes5([1, 2, 3, 4, 5]), true)
+    assert.strictEqual(includes5([1, 2, 3]), false)
+    assert.strictEqual(includes5({ a: 1, b: 2, c: 3, d: 4, e: 5 }), true)
+    assert.strictEqual(includes5({ a: 1, b: 2, c: 3 }), false)
+    assert.strictEqual(includes5(null), false)
+    assert.strictEqual(includes5(15), false)
+  }),
+])
+
 TestsMap.set('isDeepEqual', isDeepEqual => [
   Test('isDeepEqual', isDeepEqual)
     .case({ a: 1, b: 2, c: 3 }, { a: 1, b: 2, c: 3 }, true)

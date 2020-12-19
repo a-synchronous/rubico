@@ -1358,6 +1358,7 @@ const genericTransform = function (args, transducer, result) {
 
   const resultConstructor = result.constructor
   if (typeof result == 'string' || resultConstructor == String) {
+    // TODO: use array + join over adding
     return genericReduce(args, transducer(add), result)
   }
   if (typeof result.concat == 'function') {
