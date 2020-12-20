@@ -28,6 +28,10 @@ const objectIncludes = function (object, value) {
  * console.log(
  *   includes(5)([1, 2, 3, 4, 5])
  * ) // true
+ *
+ * console.log(
+ *   includes(5)([1, 2, 3])
+ * ) // false
  * ```
  */
 const includes = value => function includesValue(container) {
