@@ -94,8 +94,8 @@ const genericReduce = require('./_internal/genericReduce')
  *
  * const state = { todos: [] }
  *
- * reduce(asyncAppReducer, state)(asyncFetchActions(5)).then(
- *   reducedState => console.log('finalState', reducedState))
+ * reduce(asyncAppReducer, state)(asyncFetchActions(5))
+ *   .then(reducedState => console.log('finalState', reducedState))
  *
  * // fetched { userId: 1, id: 1, title: 'delectus aut autem', completed: false }
  * // fetched { userId: 1, id: 2, title: 'quis ut nam facilis...', completed: false }
