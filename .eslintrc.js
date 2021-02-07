@@ -194,7 +194,7 @@ module.exports = {
         ],
         'no-process-env': 'error',
         'no-process-exit': 'error',
-        'no-promise-executor-return': 'error',
+        'no-promise-executor-return': 'off',
         'no-proto': 'error',
         'no-restricted-exports': 'error',
         'no-restricted-globals': 'error',
