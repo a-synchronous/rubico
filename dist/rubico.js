@@ -1438,7 +1438,24 @@ const FlatMappingIterator = function (iterator, flatMapper) {
 const FlatMappingAsyncIterator = function (asyncIterator, flatMapper) {
   const buffer = [],
     promises = new Set()
-  let bufferIndex = 0
+  let isAsyncIteratorDone = false;
+
+  (async function () {
+    for await (const item of asyncIterator) {
+      let monad = flatMapper(item)
+      if (isPromise(monad)) {
+        monad = await monad
+      }
+      // this will always load at least one item
+      const bufferLoading = genericReduce([monad], arrayPush, buffer)
+      if (isPromise(bufferLoading)) {
+        const promise = bufferLoading.then(() => promises.delete(promise))
+        promises.add(promise)
+      }
+    }
+    isAsyncIteratorDone = true
+  })()
+
   return {
     [symbolAsyncIterator]() {
       return this
@@ -1449,32 +1466,13 @@ const FlatMappingAsyncIterator = function (asyncIterator, flatMapper) {
 
     
     async next() {
-      if (bufferIndex < buffer.length) {
-        const value = buffer[bufferIndex]
-        delete buffer[bufferIndex]
-        bufferIndex += 1
-        return { value, done: false }
-      }
-
-      const iteration = await asyncIterator.next()
-      if (iteration.done) {
-        if (promises.size == 0) {
-          return iteration
+      while (buffer.length == 0) {
+        if (isAsyncIteratorDone && promises.size == 0) {
+          return { value: undefined, done: true }
         }
-        await promiseRace(promises)
-        return this.next()
+        await new Promise(resolve => setTimeout(resolve, 50))
       }
-      let monad = flatMapper(iteration.value)
-      if (isPromise(monad)) {
-        monad = await monad
-      }
-      // this will always load at least one item
-      const bufferLoading = genericReduce([monad], arrayPush, buffer)
-      if (isPromise(bufferLoading)) {
-        const promise = bufferLoading.then(() => promises.delete(promise))
-        promises.add(promise)
-      }
-      return this.next()
+      return { value: buffer.shift(), done: false }
     },
   }
 }
