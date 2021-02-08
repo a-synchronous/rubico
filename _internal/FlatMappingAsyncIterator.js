@@ -3,6 +3,8 @@ const genericReduce = require('./genericReduce')
 const symbolAsyncIterator = require('./symbolAsyncIterator')
 const arrayPush = require('./arrayPush')
 const promiseRace = require('./promiseRace')
+const curryArgs3 = require('./curryArgs3')
+const __ = require('./placeholder')
 
 /**
  * @name FlatMappingAsyncIterator
@@ -21,23 +23,6 @@ const promiseRace = require('./promiseRace')
 const FlatMappingAsyncIterator = function (asyncIterator, flatMapper) {
   const buffer = [],
     promises = new Set()
-  let isAsyncIteratorDone = false;
-
-  (async function () {
-    for await (const item of asyncIterator) {
-      let monad = flatMapper(item)
-      if (isPromise(monad)) {
-        monad = await monad
-      }
-      // this will always load at least one item
-      const bufferLoading = genericReduce([monad], arrayPush, buffer)
-      if (isPromise(bufferLoading)) {
-        const promise = bufferLoading.then(() => promises.delete(promise))
-        promises.add(promise)
-      }
-    }
-    isAsyncIteratorDone = true
-  })()
 
   return {
     [symbolAsyncIterator]() {
@@ -58,13 +43,35 @@ const FlatMappingAsyncIterator = function (asyncIterator, flatMapper) {
      * ```
      */
     async next() {
-      while (buffer.length == 0) {
-        if (isAsyncIteratorDone && promises.size == 0) {
-          return { value: undefined, done: true }
-        }
-        await new Promise(resolve => setTimeout(resolve, 50))
+      if (buffer.length > 0) {
+        return { value: buffer.shift(), done: false }
       }
-      return { value: buffer.shift(), done: false }
+      const { value, done } = await asyncIterator.next()
+      if (done) {
+        if (promises.size > 0) {
+          await promiseRace(promises)
+          return { value: buffer.shift(), done: false } // bufferLoading always loads at least one item
+        }
+        return { value: undefined, done: true }
+      }
+
+      // this will always load at least one item
+      const monad = flatMapper(value)
+      if (isPromise(monad)) {
+        const bufferLoading = monad.then(
+          curryArgs3(genericReduce, __, arrayPush, buffer))
+        const promise = bufferLoading.then(() => promises.delete(promise))
+        promises.add(promise)
+        await promiseRace(promises)
+      } else {
+        const bufferLoading = genericReduce([monad], arrayPush, buffer)
+        if (isPromise(bufferLoading)) {
+          const promise = bufferLoading.then(() => promises.delete(promise))
+          promises.add(promise)
+          await promiseRace(promises)
+        }
+      }
+      return { value: buffer.shift(), done: false } // bufferLoading always loads at least one item
     },
   }
 }
