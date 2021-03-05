@@ -13,7 +13,7 @@
  * import callProp from 'https://unpkg.com/rubico/dist/x/callProp.es.js'
  *
  * const priceRoundedDown = callProp('toFixed', 2)(5.992)
- * console.log('priceRoundedDown', priceRoundedDown) // '5.99'
+ * console.log('priceRoundedDown:', priceRoundedDown) // '5.99'
  * ```
  */
 const callProp = (property, ...args) => function callingProp(object) {
