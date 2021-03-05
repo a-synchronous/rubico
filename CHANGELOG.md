@@ -1,8 +1,11 @@
-## v1.6.17 - next release
+## v1.6.22 - latest
+ * x/callProp
+
+## v1.6.17
  * x/has
  * x/includes
 
-## v1.6.16 - latest
+## v1.6.16
  * fix omit throwing on nullish
 
 ## v1.6.15
