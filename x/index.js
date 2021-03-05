@@ -1,3 +1,4 @@
+const callProp = require('./callProp')
 const defaultsDeep = require('./defaultsDeep')
 const differenceWith = require('./differenceWith')
 const find = require('./find')
@@ -24,6 +25,7 @@ const uniq = require('./uniq')
 const values = require('./values')
 
 const rubicoX = {
+  callProp,
   defaultsDeep,
   differenceWith,
   find,

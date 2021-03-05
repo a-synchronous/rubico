@@ -1293,6 +1293,12 @@ TestsMap.set('__', __ => [
     })
 ])
 
+TestsMap.set('callProp', callProp => [
+  Test('callProp', callProp('toFixed', 2))
+  .case(5.992, '5.99')
+  .case(5.996, '6.00'),
+])
+
 TestsMap.set('defaultsDeep', defaultsDeep => [
   Test(
     'defaultsDeep',
