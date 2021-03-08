@@ -154,7 +154,7 @@ pipe([
 /**
  * rubico v${rubicoVersion}
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2020 Richard Tong
+ * (c) 2019-2021 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 ${baseCodeBundle}export default ${name}
@@ -166,7 +166,7 @@ ${baseCodeBundle}export default ${name}
 /**
  * rubico v${rubicoVersion}
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2020 Richard Tong
+ * (c) 2019-2021 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 ${(await minify(`${baseCodeBundle}export default ${name}`)).code}
@@ -178,7 +178,7 @@ ${(await minify(`${baseCodeBundle}export default ${name}`)).code}
 /**
  * rubico v${rubicoVersion}
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2020 Richard Tong
+ * (c) 2019-2021 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 
@@ -197,7 +197,7 @@ ${baseCodeBundle}return ${name}
 /**
  * rubico v${rubicoVersion}
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2020 Richard Tong
+ * (c) 2019-2021 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 
