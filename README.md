@@ -28,9 +28,9 @@ squaredOdds([1, 2, 3, 4, 5]).then(console.log) // [1, 9, 25]
 ```
 
 A note from the author
-> At a certain point in my career, I grew frustrated with the entanglement of my own code. While looking for something better, I found functional programming. I was excited by the idea of functional composition, but disillusioned by the redundancy of effectful types. I started rubico to capitalize on the prior while rebuking the latter. Many iterations since then, the library has grown into something I personally enjoy using, and continue to use to this day.
+> At a certain point in my career, I grew frustrated with the entanglement of my own code. While looking for something better, I found functional programming. I was excited by the idea of functional composition, but disillusioned by the redundancy of effectful types. I started Rubico to capitalize on the prior while rebuking the latter. Many iterations since then, the library has grown into something I personally enjoy using, and continue to use to this day.
 
-rubico is founded on the following principles:
+Rubico is founded on the following principles:
  * asynchronous code should be simple
  * functional style should not care about async
  * functional transformations should be composable, performant, and simple to express
@@ -39,7 +39,7 @@ When you import this library, you obtain the freedom that comes from having thos
 
 # Introduction
 
-rubico is a module of twenty-eight operators for async-enabled functional programming in JavaScript.
+Rubico is a module of twenty-eight operators for async-enabled functional programming in JavaScript.
 
 ```javascript
 const {
@@ -78,7 +78,7 @@ map(logTodoByID)(todoIDs) // fetch Todos per id of TodoIDs and log them
 // { userId: 1, id: 5, title: 'laboriosam mollitia...', completed: false }
 ```
 
-For different but semanticaly related functionality, rubico exposes additional methods as property functions. For example,
+For different but semanticaly related functionality, Rubico exposes additional methods as property functions. For example,
 
  * `map` - apply a mapper function concurrently
  * `map.pool` - apply a mapper function concurrently with a concurrency limit
@@ -167,4 +167,4 @@ Your feedback and contributions are welcome. If you have a suggestion, please ra
 Pull requests should provide some basic context and link the relevant issue. Here is an [example pull request](https://github.com/a-synchronous/rubico/pull/12). If you are interested in contributing, the [help wanted](https://github.com/a-synchronous/rubico/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) tag is a good place to start.
 
 # License
-rubico is [MIT Licensed](https://github.com/a-synchronous/rubico/blob/master/LICENSE).
+Rubico is [MIT Licensed](https://github.com/a-synchronous/rubico/blob/master/LICENSE).
