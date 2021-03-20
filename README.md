@@ -35,7 +35,7 @@ with `npm`
 npm i rubico
 ```
 
-require `rubico`
+require `rubico` in Node.js
 ```javascript
 const rubico = require('rubico')
 const pipe = require('rubico/pipe')
