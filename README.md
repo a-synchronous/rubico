@@ -85,6 +85,8 @@ import tap from 'https://unpkg.com/rubico/dist/tap.es.min.js'
 import defaultsDeep from 'https://unpkg.com/rubico/dist/x/defaultsDeep.es.min.js'
 ```
 
+# Motivation
+
 A note from the author
 > At a certain point in my career, I grew frustrated with the entanglement of my own code. While looking for something better, I found functional programming. I was excited by the idea of functional composition, but disillusioned by the redundancy of effectful types. I started Rubico to capitalize on the prior while rebuking the latter. Many iterations since then, the library has grown into something I personally enjoy using, and continue to use to this day.
 
