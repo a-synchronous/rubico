@@ -146,7 +146,7 @@ For different but semanticaly related functionality, Rubico exposes additional m
 
 For advanced functions, please visit `rubico/x`. You can find the full method documentation at [rubico.land/docs](https://rubico.land/docs).
 
-# Awesome Resources
+# Further Reading
  * [Practical Functional Programming in JavaScript - Why it's worth it](https://dev.to/richytong/practical-functional-programming-in-javascript-why-it-s-worth-it-ep1)
  * [Practical Functional Programming in JavaScript - Data last](https://dev.to/richytong/practical-functional-programming-in-javascript-data-last-1gjo)
  * [Practical Functional Programming in JavaScript - Side Effects and Purity](https://dev.to/richytong/practical-functional-programming-in-javascript-side-effects-and-purity-revised-420h)
