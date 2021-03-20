@@ -27,6 +27,64 @@ const squaredOdds = pipe([
 squaredOdds([1, 2, 3, 4, 5]).then(console.log) // [1, 9, 25]
 ```
 
+# Installation
+[Core build](https://unpkg.com/rubico/index.js) ([~7.0 kB minified and gzipped](https://unpkg.com/rubico/dist/rubico.min.js))
+
+with `npm`
+```bash
+npm i rubico
+```
+
+require `rubico`
+```javascript
+const rubico = require('rubico')
+const pipe = require('rubico/pipe')
+const tap = require('rubico/tap')
+const defaultsDeep = require('rubico/x/defaultsDeep')
+```
+
+import `rubico` globally
+```html
+<!-- development -->
+<script src="https://unpkg.com/rubico"></script>
+<script src="https://unpkg.com/rubico/dist/pipe.js"></script>
+<script src="https://unpkg.com/rubico/dist/tap.js"></script>
+<script src="https://unpkg.com/rubico/dist/x/defaultsDeep.js"></script>
+<script>
+console.log(rubico) // { pipe, tap, ... }
+console.log(pipe) // [Function: pipe]
+console.log(tap) // [Function: tap]
+console.log(defaultsDeep) // [Function: defaultsDeep]
+</script>
+
+<!-- production -->
+<script src="https://unpkg.com/rubico/dist/rubico.min.js"></script>
+<script src="https://unpkg.com/rubico/dist/pipe.min.js"></script>
+<script src="https://unpkg.com/rubico/dist/tap.min.js"></script>
+<script src="https://unpkg.com/rubico/dist/x/defaultsDeep.min.js"></script>
+<script>
+console.log(rubico) // { pipe, tap, ... }
+console.log(pipe) // [Function: pipe]
+console.log(tap) // [Function: tap]
+console.log(defaultsDeep) // [Function: defaultsDeep]
+</script>
+```
+
+import `rubico` via ES ([JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)) Modules
+```javascript
+// development
+import rubico from 'https://unpkg.com/rubico/es.js'
+import pipe from 'https://unpkg.com/rubico/dist/pipe.es.js'
+import tap from 'https://unpkg.com/rubico/dist/tap.es.js'
+import defaultsDeep from 'https://unpkg.com/rubico/dist/x/defaultsDeep.es.js'
+
+// production
+import rubico from 'https://unpkg.com/rubico/dist/rubico.es.min.js'
+import pipe from 'https://unpkg.com/rubico/dist/pipe.es.min.js'
+import tap from 'https://unpkg.com/rubico/dist/tap.es.min.js'
+import defaultsDeep from 'https://unpkg.com/rubico/dist/x/defaultsDeep.es.min.js'
+```
+
 A note from the author
 > At a certain point in my career, I grew frustrated with the entanglement of my own code. While looking for something better, I found functional programming. I was excited by the idea of functional composition, but disillusioned by the redundancy of effectful types. I started Rubico to capitalize on the prior while rebuking the latter. Many iterations since then, the library has grown into something I personally enjoy using, and continue to use to this day.
 
@@ -86,71 +144,6 @@ For different but semanticaly related functionality, Rubico exposes additional m
 
 For advanced functions, please visit `rubico/x`. You can find the full method documentation at [rubico.land/docs](https://rubico.land/docs).
 
-# Installation
-[Core build](https://unpkg.com/rubico/index.js) ([~7.0 kB minified and gzipped](https://unpkg.com/rubico/dist/rubico.min.js))
-
-with `npm`
-```bash
-npm i rubico
-```
-
-require `rubico`
-```javascript
-const rubico = require('rubico')
-const pipe = require('rubico/pipe')
-const tap = require('rubico/tap')
-const defaultsDeep = require('rubico/x/defaultsDeep')
-```
-
-import `rubico` globally
-```html
-<!-- development -->
-<script src="https://unpkg.com/rubico"></script>
-<script src="https://unpkg.com/rubico/dist/pipe.js"></script>
-<script src="https://unpkg.com/rubico/dist/tap.js"></script>
-<script src="https://unpkg.com/rubico/dist/x/defaultsDeep.js"></script>
-<script>
-console.log(rubico) // { pipe, tap, ... }
-console.log(pipe) // [Function: pipe]
-console.log(tap) // [Function: tap]
-console.log(defaultsDeep) // [Function: defaultsDeep]
-</script>
-
-<!-- production -->
-<script src="https://unpkg.com/rubico/dist/rubico.min.js"></script>
-<script src="https://unpkg.com/rubico/dist/pipe.min.js"></script>
-<script src="https://unpkg.com/rubico/dist/tap.min.js"></script>
-<script src="https://unpkg.com/rubico/dist/x/defaultsDeep.min.js"></script>
-<script>
-console.log(rubico) // { pipe, tap, ... }
-console.log(pipe) // [Function: pipe]
-console.log(tap) // [Function: tap]
-console.log(defaultsDeep) // [Function: defaultsDeep]
-</script>
-```
-
-import `rubico` via ES ([JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)) Modules
-```javascript
-// development
-import rubico from 'https://unpkg.com/rubico/es.js'
-import pipe from 'https://unpkg.com/rubico/dist/pipe.es.js'
-import tap from 'https://unpkg.com/rubico/dist/tap.es.js'
-import defaultsDeep from 'https://unpkg.com/rubico/dist/x/defaultsDeep.es.js'
-
-// production
-import rubico from 'https://unpkg.com/rubico/dist/rubico.es.min.js'
-import pipe from 'https://unpkg.com/rubico/dist/pipe.es.min.js'
-import tap from 'https://unpkg.com/rubico/dist/tap.es.min.js'
-import defaultsDeep from 'https://unpkg.com/rubico/dist/x/defaultsDeep.es.min.js'
-```
-
-### System Requirements
- * minimum node version: 10.3
- * minimum Chrome version: 63
- * minimum Firefox version: 57
- * minimum Edge version: 79
- * minimum Safari version: 11.1
-
 # Awesome Resources
  * [Practical Functional Programming in JavaScript - Why it's worth it](https://dev.to/richytong/practical-functional-programming-in-javascript-why-it-s-worth-it-ep1)
  * [Practical Functional Programming in JavaScript - Data last](https://dev.to/richytong/practical-functional-programming-in-javascript-data-last-1gjo)
@@ -168,3 +161,10 @@ Pull requests should provide some basic context and link the relevant issue. Her
 
 # License
 Rubico is [MIT Licensed](https://github.com/a-synchronous/rubico/blob/master/LICENSE).
+
+# Support
+ * minimum Node.js version: 10.3
+ * minimum Chrome version: 63
+ * minimum Firefox version: 57
+ * minimum Edge version: 79
+ * minimum Safari version: 11.1
