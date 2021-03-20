@@ -1,7 +1,7 @@
 /**
  * rubico v1.6.22
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2020 Richard Tong
+ * (c) 2019-2021 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 const __ = Symbol.for('placeholder')
