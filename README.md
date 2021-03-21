@@ -44,7 +44,7 @@ const defaultsDeep = require('rubico/x/defaultsDeep')
 ```
 
 import `rubico` globally
-```html
+```html [htmlmixed]
 <!-- development -->
 <script src="https://unpkg.com/rubico"></script>
 <script src="https://unpkg.com/rubico/dist/pipe.js"></script>
