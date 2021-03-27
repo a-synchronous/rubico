@@ -28,7 +28,7 @@ squaredOdds([1, 2, 3, 4, 5]).then(console.log) // [1, 9, 25]
 ```
 
 # Installation
-[Core build](https://unpkg.com/rubico/index.js) ([~5.7 kB minified and gzipped](https://unpkg.com/rubico/dist/rubico.min.js))
+[Core build](https://unpkg.com/rubico/index.js) ([~6.1 kB minified and gzipped](https://unpkg.com/rubico/dist/rubico.min.js))
 
 with `npm`
 ```bash
