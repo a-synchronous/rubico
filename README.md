@@ -136,15 +136,17 @@ map(logTodoByID)(todoIDs) // fetch Todos per id of TodoIDs and log them
 // { userId: 1, id: 3, title: 'fugiat veniam minus', completed: false }
 // { userId: 1, id: 2, title: 'quis ut nam facilis...', completed: false }
 // { userId: 1, id: 5, title: 'laboriosam mollitia...', completed: false }
+
+// same as above but with limited concurrency
+// map.pool(2, logTodoByID)(todoIDs)
 ```
 
-For different but semanticaly related functionality, Rubico exposes additional methods as property functions. For example,
-
+For advanced asynchronous use cases, check out some of Rubico's property functions:
  * `map` - apply a mapper function concurrently
  * `map.pool` - apply a mapper function concurrently with a concurrency limit
  * `map.series` - apply a mapper function serially
 
-For advanced functions, please visit `rubico/x`. You can find the full method documentation at [rubico.land/docs](https://rubico.land/docs).
+For even more advanced functions, please visit `rubico/x`. You can find the full method documentation at [rubico.land/docs](https://rubico.land/docs).
 
 # Further Reading
  * [Practical Functional Programming in JavaScript - Why it's worth it](https://dev.to/richytong/practical-functional-programming-in-javascript-why-it-s-worth-it-ep1)
