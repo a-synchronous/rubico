@@ -20,6 +20,8 @@ const objectKeys = require('../_internal/objectKeys')
  * console.log(keys('abc')) // [0, 1, 2]
  * console.log(keys(new Map([['hello', 1], ['world', 2]]))) // ['hello', 'world']
  * ```
+ *
+ * @since 1.6.25
  */
 const keys = object => object == null ? []
   : typeof object.keys == 'function' ? [...object.keys()]
