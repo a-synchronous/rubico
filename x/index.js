@@ -15,6 +15,7 @@ const isEqual = require('./isEqual')
 const isFunction = require('./isFunction')
 const isObject = require('./isObject')
 const isString = require('./isString')
+const keys = require('./keys')
 const last = require('./last')
 const noop = require('./noop')
 const pluck = require('./pluck')
@@ -42,6 +43,7 @@ const rubicoX = {
   isFunction,
   isObject,
   isString,
+  keys,
   last,
   noop,
   pluck,
