@@ -1235,20 +1235,20 @@ TestsMap.set('lte', lte => [
     .case(0, false),
 
   Test(lte)
-    .before(function () {
-      this.left = null
-      this.right = null
+  .before(function () {
+    this.left = null
+    this.right = null
+  })
+  .case(1, 1, predicate => {
+    const lexed = predicate({
+      lte: (left, right) => {
+        this.left = left
+        this.right = right
+      }
     })
-    .case(1, 1, predicate => {
-      const lexed = predicate({
-        lte: (left, right) => {
-          this.left = left
-          this.right = right
-        }
-      })
-      assert(this.left == 1)
-      assert(this.right == 1)
-    }),
+    assert(this.left == 1)
+    assert(this.right == 1)
+  }),
 ])
 
 TestsMap.set('thunkify', thunkify => [
@@ -1288,9 +1288,9 @@ TestsMap.set('curry.arity', curryArity => [
 
 TestsMap.set('__', __ => [
   Test('__', () => __)
-    .case(null, __ => {
-      assert.strictEqual(typeof __, 'symbol')
-    })
+  .case(null, __ => {
+    assert.strictEqual(typeof __, 'symbol')
+  })
 ])
 
 TestsMap.set('callProp', callProp => [
@@ -1417,83 +1417,89 @@ TestsMap.set('find', find => [
 
 TestsMap.set('first', first => [
   Test('first', first)
-    .case([1, 2, 3], 1)
-    .case('abc', 'a')
-    .case(null, undefined)
-    .case(undefined, undefined)
+  .case([1, 2, 3], 1)
+  .case('abc', 'a')
+  .case(null, undefined)
+  .case(undefined, undefined)
 ])
 
 TestsMap.set('flatten', flatten => [
   Test('flatten', flatten)
-    .case([[1], [2], [3]], [1, 2, 3])
-    .case([1, 2, 3], [1, 2, 3])
-    .case(null, null)
-    .case(new Set([[1], [2], [3]]), new Set([1, 2, 3]))
-    .case({ a: { a: 1 }, b: { b: 2 }, c: { c: 3 } }, { a: 1, b: 2, c: 3 }),
+  .case([[1], [2], [3]], [1, 2, 3])
+  .case([1, 2, 3], [1, 2, 3])
+  .case(null, null)
+  .case(new Set([[1], [2], [3]]), new Set([1, 2, 3]))
+  .case({ a: { a: 1 }, b: { b: 2 }, c: { c: 3 } }, { a: 1, b: 2, c: 3 }),
 ])
 
 TestsMap.set('forEach', forEach => [
   Test('forEach sync', forEach(function noop() {}))
-    .case([1, 2, 3, 4, 5], [1, 2, 3, 4, 5])
-    .case(function add(a, b) { return a + b }, add => {
-      assert.strictEqual([1, 2, 3, 4, 5].reduce(add, 0), 15)
-    }),
+  .case([1, 2, 3, 4, 5], [1, 2, 3, 4, 5])
+  .case(function add(a, b) { return a + b }, add => {
+    assert.strictEqual([1, 2, 3, 4, 5].reduce(add, 0), 15)
+  }),
 
   Test('forEach async', forEach(function noop() {}))
-    .case([1, 2, 3, 4, 5], [1, 2, 3, 4, 5])
-    .case(async function add(a, b) { return a + b }, async asyncAdd => {
-      assert.strictEqual(await reduce(asyncAdd, 0)([1, 2, 3, 4, 5]), 15)
-    }),
+  .case([1, 2, 3, 4, 5], [1, 2, 3, 4, 5])
+  .case(async function add(a, b) { return a + b }, async asyncAdd => {
+    assert.strictEqual(await reduce(asyncAdd, 0)([1, 2, 3, 4, 5]), 15)
+  }),
 ])
 
 TestsMap.set('groupBy', groupBy => [
   Test('groupBy property', groupBy('age'))
-    .case(
-      [{ age: 21 }, { age: 22 }, { age: 21 }, { age: 23 }, { age: 21 }],
-      new Map([
-        [21, [{ age: 21 }, { age: 21 }, { age: 21 }]],
-        [22, [{ age: 22 }]],
-        [23, [{ age: 23 }]],
-      ]))
-    .case(
-      new Set([{ age: 21 }, { age: 22 }, { age: 21 }, { age: 23 }, { age: 21 }]),
-      new Map([
-        [21, [{ age: 21 }, { age: 21 }, { age: 21 }]],
-        [22, [{ age: 22 }]],
-        [23, [{ age: 23 }]],
-      ])),
+  .case(
+    [{ age: 21 }, { age: 22 }, { age: 21 }, { age: 23 }, { age: 21 }],
+    new Map([
+      [21, [{ age: 21 }, { age: 21 }, { age: 21 }]],
+      [22, [{ age: 22 }]],
+      [23, [{ age: 23 }]],
+    ]),
+  )
+  .case(
+    new Set([{ age: 21 }, { age: 22 }, { age: 21 }, { age: 23 }, { age: 21 }]),
+    new Map([
+      [21, [{ age: 21 }, { age: 21 }, { age: 21 }]],
+      [22, [{ age: 22 }]],
+      [23, [{ age: 23 }]],
+    ]),
+  ),
 
   Test('groupBy resolver', groupBy(object => object.age))
-    .case(
-      [{ age: 21 }, { age: 22 }, { age: 21 }, { age: 23 }, { age: 21 }],
-      new Map([
-        [21, [{ age: 21 }, { age: 21 }, { age: 21 }]],
-        [22, [{ age: 22 }]],
-        [23, [{ age: 23 }]],
-      ]))
-    .case(
-      new Set([{ age: 21 }, { age: 22 }, { age: 21 }, { age: 23 }, { age: 21 }]),
-      new Map([
-        [21, [{ age: 21 }, { age: 21 }, { age: 21 }]],
-        [22, [{ age: 22 }]],
-        [23, [{ age: 23 }]],
-      ])),
+  .case(
+    [{ age: 21 }, { age: 22 }, { age: 21 }, { age: 23 }, { age: 21 }],
+    new Map([
+      [21, [{ age: 21 }, { age: 21 }, { age: 21 }]],
+      [22, [{ age: 22 }]],
+      [23, [{ age: 23 }]],
+    ]),
+  )
+  .case(
+    new Set([{ age: 21 }, { age: 22 }, { age: 21 }, { age: 23 }, { age: 21 }]),
+    new Map([
+      [21, [{ age: 21 }, { age: 21 }, { age: 21 }]],
+      [22, [{ age: 22 }]],
+      [23, [{ age: 23 }]],
+    ]),
+  ),
 
   Test('groupBy resolver async', groupBy(async object => object.age))
-    .case(
-      [{ age: 21 }, { age: 22 }, { age: 21 }, { age: 23 }, { age: 21 }],
-      new Map([
-        [21, [{ age: 21 }, { age: 21 }, { age: 21 }]],
-        [22, [{ age: 22 }]],
-        [23, [{ age: 23 }]],
-      ]))
-    .case(
-      new Set([{ age: 21 }, { age: 22 }, { age: 21 }, { age: 23 }, { age: 21 }]),
-      new Map([
-        [21, [{ age: 21 }, { age: 21 }, { age: 21 }]],
-        [22, [{ age: 22 }]],
-        [23, [{ age: 23 }]],
-      ])),
+  .case(
+    [{ age: 21 }, { age: 22 }, { age: 21 }, { age: 23 }, { age: 21 }],
+    new Map([
+      [21, [{ age: 21 }, { age: 21 }, { age: 21 }]],
+      [22, [{ age: 22 }]],
+      [23, [{ age: 23 }]],
+    ]),
+  )
+  .case(
+    new Set([{ age: 21 }, { age: 22 }, { age: 21 }, { age: 23 }, { age: 21 }]),
+    new Map([
+      [21, [{ age: 21 }, { age: 21 }, { age: 21 }]],
+      [22, [{ age: 22 }]],
+      [23, [{ age: 23 }]],
+    ]),
+  ),
 ])
 
 TestsMap.set('has', has => [
@@ -1524,143 +1530,144 @@ TestsMap.set('includes', includes => [
 
 TestsMap.set('isDeepEqual', isDeepEqual => [
   Test('isDeepEqual', isDeepEqual)
-    .case({ a: 1, b: 2, c: 3 }, { a: 1, b: 2, c: 3 }, true)
-    .case({ a: 1, b: 2, c: 3 }, {}, false)
-    .case({ a: 1, b: 2, c: [] }, { a: 1, b: 2, c: [] }, true)
-    .case({ a: 1, b: 2, c: [1] }, { a: 1, b: 2, c: [] }, false)
-    .case({ a: 1, b: 2, c: [1, { e: 5 }] }, { a: 1, b: 2, c: [1, { e: 5 }] }, true)
-    .case({}, {}, true)
-    .case([], {}, false)
-    .case([], [], true)
-    .case(null, null, true)
-    .case(undefined, undefined, true)
-    .case(undefined, null, false)
+  .case({ a: 1, b: 2, c: 3 }, { a: 1, b: 2, c: 3 }, true)
+  .case({ a: 1, b: 2, c: 3 }, {}, false)
+  .case({ a: 1, b: 2, c: [] }, { a: 1, b: 2, c: [] }, true)
+  .case({ a: 1, b: 2, c: [1] }, { a: 1, b: 2, c: [] }, false)
+  .case({ a: 1, b: 2, c: [1, { e: 5 }] }, { a: 1, b: 2, c: [1, { e: 5 }] }, true)
+  .case({}, {}, true)
+  .case([], {}, false)
+  .case([], [], true)
+  .case(null, null, true)
+  .case(undefined, undefined, true)
+  .case(undefined, null, false)
 ])
 
 TestsMap.set('isEmpty', isEmpty => [
   Test('isEmpty', isEmpty)
-    .case('', true)
-    .case('abc', false)
-    .case([], true)
-    .case([1, 2, 3], false)
-    .case(new Set(), true)
-    .case(new Set([1, 2, 3]), false)
-    .case(new Map(), true)
-    .case(new Map([['a', 1]]), false)
-    .case(null, true)
-    .case(undefined, true)
+  .case('', true)
+  .case('abc', false)
+  .case([], true)
+  .case([1, 2, 3], false)
+  .case(new Set(), true)
+  .case(new Set([1, 2, 3]), false)
+  .case(new Map(), true)
+  .case(new Map([['a', 1]]), false)
+  .case(null, true)
+  .case(undefined, true)
 ])
 
 TestsMap.set('isFunction', isFunction => [
   Test('isFunction', isFunction)
-    .case(0, false)
-    .case(null, false)
-    .case('hey', false)
-    .case(() => {}, true)
-    .case(function noop() {}, true)
-    .case(async function noop() {}, true)
-    .case(function* noop() {}, true)
-    .case(async function* noop() {}, true)
+  .case(0, false)
+  .case(null, false)
+  .case('hey', false)
+  .case(() => {}, true)
+  .case(function noop() {}, true)
+  .case(async function noop() {}, true)
+  .case(function* noop() {}, true)
+  .case(async function* noop() {}, true)
 ])
 
 TestsMap.set('isObject', isObject => [
   Test('isObject', isObject)
-    .case({ a: 1 }, true)
-    .case({}, true)
-    .case([], true)
-    .case('', false)
-    .case('abc', false)
-    .case(1, false)
-    .case(null, false)
-    .case(undefined, false)
+  .case({ a: 1 }, true)
+  .case({}, true)
+  .case([], true)
+  .case('', false)
+  .case('abc', false)
+  .case(1, false)
+  .case(null, false)
+  .case(undefined, false)
 ])
 
 TestsMap.set('isString', isString => [
   Test('isString', isString)
-    .case('abc', true)
-    .case('', true)
-    .case(String('hey'), true)
-    .case(new String('hey'), true)
-    .case(0, false)
-    .case(null, false)
-    .case(undefined, false)
+  .case('abc', true)
+  .case('', true)
+  .case(String('hey'), true)
+  .case(new String('hey'), true)
+  .case(0, false)
+  .case(null, false)
+  .case(undefined, false)
 ])
 
 TestsMap.set('last', last => [
   Test('last', last)
-    .case([1, 2, 3], 3)
-    .case('abc', 'c')
-    .case(null, undefined)
-    .case(undefined, undefined)
+  .case([1, 2, 3], 3)
+  .case('abc', 'c')
+  .case(null, undefined)
+  .case(undefined, undefined)
 ])
 
 TestsMap.set('pluck', pluck => [
   Test('pluck', pluck('a'))
-    .case([{ a: 1 }, { a: 2 }, { a: 3 }], [1, 2, 3])
-    .case([{ a: 1 }, { b: 2 }, { a: 3 }], [1, undefined, 3]),
+  .case([{ a: 1 }, { a: 2 }, { a: 3 }], [1, 2, 3])
+  .case([{ a: 1 }, { b: 2 }, { a: 3 }], [1, undefined, 3]),
 
   Test('pluck', pluck('a.b'))
-    .case([{ a: { b: 1 } }, { a: { b: 2 } }, { a: { b: 3 } }], [1, 2, 3]),
+  .case([{ a: { b: 1 } }, { a: { b: 2 } }, { a: { b: 3 } }], [1, 2, 3]),
 
   Test('pluck', pluck('a[0]'))
-    .case([{ a: [1] }, { a: [2] }, { a: [3] }], [1, 2, 3]),
+  .case([{ a: [1] }, { a: [2] }, { a: [3] }], [1, 2, 3]),
 ])
 
 TestsMap.set('size', size => [
   Test('size', size)
-    .case('abc', 3)
-    .case('', 0)
-    .case({ a: 1 }, 1)
-    .case({}, 0)
-    .case([1, 2, 3], 3)
-    .case([], 0)
-    .case(new Set([1, 2, 3]), 3)
-    .case(new Set(), 0)
-    .case(new Map([[1, 2]]), 1)
-    .case(new Map(), 0)
-    .case(null, 0)
-    .case(undefined, 0)
-    .case(1, 1)
+  .case('abc', 3)
+  .case('', 0)
+  .case({ a: 1 }, 1)
+  .case({}, 0)
+  .case([1, 2, 3], 3)
+  .case([], 0)
+  .case(new Set([1, 2, 3]), 3)
+  .case(new Set(), 0)
+  .case(new Map([[1, 2]]), 1)
+  .case(new Map(), 0)
+  .case(null, 0)
+  .case(undefined, 0)
+  .case(1, 1)
 ])
 
 TestsMap.set('trace', trace => [
   Test('trace', trace)
-    .case('hey', 'hey')
-    .case(1, 1)
-    .case(null, null)
-    .case(undefined, undefined)
-    .case(object => object.a, traceResolver => {
-      assert.deepEqual(traceResolver({ a: 1 }), { a: 1 })
-    })
+  .case('hey', 'hey')
+  .case(1, 1)
+  .case(null, null)
+  .case(undefined, undefined)
+  .case(object => object.a, traceResolver => {
+    assert.deepEqual(traceResolver({ a: 1 }), { a: 1 })
+  })
 ])
 
 TestsMap.set('unionWith', unionWith => [
   Test('unionWith number', unionWith((a, b) => a == b))
-    .case([[1, 2, 3], [1, 2, 3]], [1, 2, 3])
-    .throws('ayo', TypeError('ayo is not an Array')),
+  .case([[1, 2, 3], [1, 2, 3]], [1, 2, 3])
+  .throws('ayo', TypeError('ayo is not an Array')),
 
   Test('unionWith namedObject', unionWith((a, b) => a.name == b.name))
-    .case([[{ name: 'hey' }, { name: 'ho' }, { name: 'hey' }]], [{ name: 'hey' }, { name: 'ho' }])
-    .throws(1, TypeError('1 is not an Array')),
+  .case([[{ name: 'hey' }, { name: 'ho' }, { name: 'hey' }]], [{ name: 'hey' }, { name: 'ho' }])
+  .throws(1, TypeError('1 is not an Array')),
 ])
 
 TestsMap.set('uniq', uniq => [
   Test('uniq', uniq)
-    .case([1, 1, 2, 2, 3, 3], [1, 2, 3])
-    .case([1, 2, 3], [1, 2, 3])
-    .case([3, 3, 3, 3, 3, 2, 2, 1], [3, 2, 1])
-    .case([3, 3, 3, 3, 3, 1, 2, 2, 1], [3, 1, 2])
-    .throws(1, Error('uniq(arr): arr is not an array'))
+  .case([1, 1, 2, 2, 3, 3], [1, 2, 3])
+  .case([1, 2, 3], [1, 2, 3])
+  .case([3, 3, 3, 3, 3, 2, 2, 1], [3, 2, 1])
+  .case([3, 3, 3, 3, 3, 1, 2, 2, 1], [3, 1, 2])
+  .throws(1, Error('uniq(arr): arr is not an array'))
 ])
 
-const Foo = function () {
-  this.a = 1;
-  this.b = 2;
-}
-Foo.prototype.c = 3;
-
-TestsMap.set('values', values => [
-  Test(values)
+TestsMap.set('values', function (values) {
+  const Foo = function () {
+    this.a = 1;
+    this.b = 2;
+  }
+  Foo.prototype.toString = () => '[object Foo]'
+  Foo.prototype.c = 3;
+  return [
+    Test(values)
     .case([1, 2, 3], [1, 2, 3])
     .case([], [])
     .case({ a: 1, b: 2, c: 3 }, [1, 2, 3])
@@ -1674,7 +1681,30 @@ TestsMap.set('values', values => [
     .case(new Foo(), [1, 2])
     .case(null, [])
     .case(undefined, [])
-])
+  ]
+})
+
+TestsMap.set('keys', function (keys) {
+  const Foo = function () {
+    this.a = 1;
+    this.b = 2;
+  }
+  Foo.prototype.toString = () => '[object Foo]'
+  Foo.prototype.c = 3;
+  return [
+    Test(keys)
+    .case({ a: 1, b: 2, c: 3 }, ['a', 'b', 'c'])
+    .case(new Map([['a', 1], ['b', 2], ['c', 3]]), ['a', 'b', 'c'])
+    .case(new Set([1, 2, 3]), [1, 2, 3])
+    .case(['a', 'b', 'c'], [0, 1, 2])
+    .case('abc', ['0', '1', '2'])
+    .case([], [])
+    .case({}, [])
+    .case(10, [])
+    .case(new Foo(), ['a', 'b'])
+    .case(null, []),
+  ]
+})
 
 async function runTestSeries({ name, path }) {
   const Tests = TestsMap.get(name)
