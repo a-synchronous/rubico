@@ -52,6 +52,8 @@ const findIndexAsync = async function (predicate, array, index) {
  *
  * console.log(oddNumberIndex) // 1
  * ```
+ *
+ * @since 1.6.26
  */
 const findIndex = predicate => function findingIndex(array) {
   const length = array.length
