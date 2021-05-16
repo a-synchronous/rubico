@@ -2,6 +2,7 @@ const callProp = require('./callProp')
 const defaultsDeep = require('./defaultsDeep')
 const differenceWith = require('./differenceWith')
 const find = require('./find')
+const findIndex = require('./findIndex')
 const first = require('./first')
 const flatten = require('./flatten')
 const forEach = require('./forEach')
@@ -30,6 +31,7 @@ const rubicoX = {
   defaultsDeep,
   differenceWith,
   find,
+  findIndex,
   first,
   flatten,
   forEach,
