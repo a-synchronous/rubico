@@ -47,7 +47,7 @@ const findIndexAsync = async function (predicate, array, index) {
  * import findIndex from 'https://unpkg.com/rubico/dist/x/findIndex.es.js'
  *
  * const oddNumberIndex = findIndex(function isOdd(number) {
- *   return number % 2 == 0
+ *   return number % 2 == 1
  * })([2, 3, 5])
  *
  * console.log(oddNumberIndex) // 1
