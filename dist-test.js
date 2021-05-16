@@ -1706,6 +1706,44 @@ TestsMap.set('keys', function (keys) {
   ]
 })
 
+TestsMap.set('findIndex', function (findIndex) {
+  return [Test(async function () {
+    const startsWithAAA = string => string.startsWith('AAA')
+    {
+      const foundIndex = findIndex(startsWithAAA)([
+        'BBB',
+        'AAB',
+        'AAA',
+      ])
+      assert.equal(foundIndex, 2)
+
+      const notFoundIndex = findIndex(startsWithAAA)([
+        'CCC',
+        'CCD',
+        'EEE',
+      ])
+      assert.equal(notFoundIndex, -1)
+    }
+
+    const startsWithAAAAsync = async string => string.startsWith('AAA')
+    {
+      const foundIndex = await findIndex(startsWithAAAAsync)([
+        'BBB',
+        'AAB',
+        'AAA',
+      ])
+      assert.equal(foundIndex, 2)
+
+      const notFoundIndex = await findIndex(startsWithAAAAsync)([
+        'CCC',
+        'CCD',
+        'EEE',
+      ])
+      assert.equal(notFoundIndex, -1)
+    }
+  }).case()]
+})
+
 async function runTestSeries({ name, path }) {
   const Tests = TestsMap.get(name)
   if (Tests == null) {
