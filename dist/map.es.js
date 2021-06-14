@@ -540,11 +540,6 @@ const map = mapper => function mapping(value) {
   if (typeof value.map == 'function') {
     return value.map(mapper)
   }
-  if (typeof value.next == 'function') {
-    return symbolIterator in value
-      ? MappingIterator(value, mapper)
-      : MappingAsyncIterator(value, mapper)
-  }
   if (typeof value == 'string' || value.constructor == String) {
     return stringMap(value, mapper)
   }
@@ -556,6 +551,12 @@ const map = mapper => function mapping(value) {
   }
   if (value.constructor == Object) {
     return objectMap(value, mapper)
+  }
+  if (typeof value[symbolIterator] == 'function') {
+    return MappingIterator(value, mapper)
+  }
+  if (typeof value[symbolAsyncIterator] == 'function') {
+    return MappingAsyncIterator(value, mapper)
   }
   return mapper(value)
 }

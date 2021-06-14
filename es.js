@@ -717,11 +717,6 @@ const map = mapper => function mapping(value) {
   if (typeof value.map == 'function') {
     return value.map(mapper)
   }
-  if (typeof value.next == 'function') {
-    return symbolIterator in value
-      ? MappingIterator(value, mapper)
-      : MappingAsyncIterator(value, mapper)
-  }
   if (typeof value == 'string' || value.constructor == String) {
     return stringMap(value, mapper)
   }
@@ -733,6 +728,12 @@ const map = mapper => function mapping(value) {
   }
   if (value.constructor == Object) {
     return objectMap(value, mapper)
+  }
+  if (typeof value[symbolIterator] == 'function') {
+    return MappingIterator(value, mapper)
+  }
+  if (typeof value[symbolAsyncIterator] == 'function') {
+    return MappingAsyncIterator(value, mapper)
   }
   return mapper(value)
 }
@@ -1018,11 +1019,6 @@ const filter = predicate => function filtering(value) {
     return value
   }
 
-  if (typeof value.next == 'function') {
-    return symbolIterator in value
-      ? FilteringIterator(value, predicate)
-      : FilteringAsyncIterator(value, predicate)
-  }
   if (typeof value == 'string' || value.constructor == String) {
     return stringFilter(value, predicate)
   }
@@ -1037,6 +1033,12 @@ const filter = predicate => function filtering(value) {
   }
   if (value.constructor == Object) {
     return objectFilter(value, predicate)
+  }
+  if (typeof value[symbolIterator] == 'function') {
+    return FilteringIterator(value, predicate)
+  }
+  if (typeof value[symbolAsyncIterator] == 'function') {
+    return FilteringAsyncIterator(value, predicate)
   }
   return value
 }

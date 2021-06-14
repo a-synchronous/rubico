@@ -353,11 +353,6 @@ const filter = predicate => function filtering(value) {
     return value
   }
 
-  if (typeof value.next == 'function') {
-    return symbolIterator in value
-      ? FilteringIterator(value, predicate)
-      : FilteringAsyncIterator(value, predicate)
-  }
   if (typeof value == 'string' || value.constructor == String) {
     return stringFilter(value, predicate)
   }
@@ -372,6 +367,12 @@ const filter = predicate => function filtering(value) {
   }
   if (value.constructor == Object) {
     return objectFilter(value, predicate)
+  }
+  if (typeof value[symbolIterator] == 'function') {
+    return FilteringIterator(value, predicate)
+  }
+  if (typeof value[symbolAsyncIterator] == 'function') {
+    return FilteringAsyncIterator(value, predicate)
   }
   return value
 }
