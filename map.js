@@ -19,6 +19,7 @@ const objectMapOwn = require('./_internal/objectMapOwn')
 const objectMapEntries = require('./_internal/objectMapEntries')
 const mapMapEntries = require('./_internal/mapMapEntries')
 const symbolIterator = require('./_internal/symbolIterator')
+const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
 
 /**
  * @name map
@@ -166,11 +167,6 @@ const map = mapper => function mapping(value) {
   if (typeof value.map == 'function') {
     return value.map(mapper)
   }
-  if (typeof value.next == 'function') {
-    return symbolIterator in value
-      ? MappingIterator(value, mapper)
-      : MappingAsyncIterator(value, mapper)
-  }
   if (typeof value == 'string' || value.constructor == String) {
     return stringMap(value, mapper)
   }
@@ -182,6 +178,12 @@ const map = mapper => function mapping(value) {
   }
   if (value.constructor == Object) {
     return objectMap(value, mapper)
+  }
+  if (typeof value[symbolIterator] == 'function') {
+    return MappingIterator(value, mapper)
+  }
+  if (typeof value[symbolAsyncIterator] == 'function') {
+    return MappingAsyncIterator(value, mapper)
   }
   return mapper(value)
 }
