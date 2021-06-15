@@ -167,7 +167,7 @@ Pull requests should provide some basic context and link the relevant issue. Her
 Rubico is [MIT Licensed](https://github.com/a-synchronous/rubico/blob/master/LICENSE).
 
 # Support
- * minimum Node.js version: 10.3
+ * minimum Node.js version: 12
  * minimum Chrome version: 63
  * minimum Firefox version: 57
  * minimum Edge version: 79
