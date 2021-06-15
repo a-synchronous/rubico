@@ -559,10 +559,10 @@ const map = mapper => function mapping(value) {
     return objectMap(value, mapper)
   }
   if (typeof value[symbolIterator] == 'function') {
-    return MappingIterator(value, mapper)
+    return MappingIterator(value[symbolIterator](), mapper)
   }
   if (typeof value[symbolAsyncIterator] == 'function') {
-    return MappingAsyncIterator(value, mapper)
+    return MappingAsyncIterator(value[symbolAsyncIterator](), mapper)
   }
   return mapper(value)
 }

@@ -730,10 +730,10 @@ const map = mapper => function mapping(value) {
     return objectMap(value, mapper)
   }
   if (typeof value[symbolIterator] == 'function') {
-    return MappingIterator(value, mapper)
+    return MappingIterator(value[symbolIterator](), mapper)
   }
   if (typeof value[symbolAsyncIterator] == 'function') {
-    return MappingAsyncIterator(value, mapper)
+    return MappingAsyncIterator(value[symbolAsyncIterator](), mapper)
   }
   return mapper(value)
 }
@@ -1035,10 +1035,10 @@ const filter = predicate => function filtering(value) {
     return objectFilter(value, predicate)
   }
   if (typeof value[symbolIterator] == 'function') {
-    return FilteringIterator(value, predicate)
+    return FilteringIterator(value[symbolIterator](), predicate)
   }
   if (typeof value[symbolAsyncIterator] == 'function') {
-    return FilteringAsyncIterator(value, predicate)
+    return FilteringAsyncIterator(value[symbolAsyncIterator](), predicate)
   }
   return value
 }
