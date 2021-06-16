@@ -1,10 +1,10 @@
-## v1.6.29
+## v1.6.29 - latest
  * fix syntax issue with map filter iterators and async iterators
 
 ## v1.6.28
  * stop supporting node 10
 
-## v1.6.22 - latest
+## v1.6.22
  * x/callProp
 
 ## v1.6.17
