@@ -91,14 +91,14 @@ describe('defaultsDeep', () => {
     assert.strictEqual(defaultsDeep({ b: 'yo' })(1), 1)
   })
   it('{ obj: undefined } <-> object', async () => {
-    const x = { obj: {a: "1"} }
+    const x = { obj: { a: '1' } }
     assert.deepEqual(
       defaultsDeep({ obj: undefined })(x),
-      { obj: { a: "1"} },
+      { obj: { a: '1' } },
     )
   })
   it('undefined <-> object', async () => {
-    const b = { obj: { a: "1"} }
+    const b = { obj: { a: '1' } }
     assert.deepEqual(
       defaultsDeep(undefined)(b),
      b,
