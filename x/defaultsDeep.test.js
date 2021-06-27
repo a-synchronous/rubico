@@ -90,4 +90,18 @@ describe('defaultsDeep', () => {
   it('identity for non object or array values', async () => {
     assert.strictEqual(defaultsDeep({ b: 'yo' })(1), 1)
   })
+  it('{ obj: undefined } <-> object', async () => {
+    const x = { obj: {a: "1"} }
+    assert.deepEqual(
+      defaultsDeep({ obj: undefined })(x),
+      { obj: { a: "1"} },
+    )
+  })
+  it('undefined <-> object', async () => {
+    const b = { obj: { a: "1"} }
+    assert.deepEqual(
+      defaultsDeep(undefined)(b),
+     b,
+    )
+  })
 })
