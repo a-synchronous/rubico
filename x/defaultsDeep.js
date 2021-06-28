@@ -107,7 +107,7 @@ const defaultsDeep = defaultCollection => function defaulting(value) {
   if (value == null) {
     return value
   }
-  if (value?.constructor == Object && defaultCollection?.constructor == Object) {
+  if (value.constructor == Object && defaultCollection && defaultCollection.constructor == Object) {
     return objectDefaultsDeepFromObject(value, defaultCollection)
   }
   return value
