@@ -22,7 +22,7 @@ const arrayDefaultsDeepFromArray = function (array, defaultArray) {
       result[index] = arrayDefaultsDeepFromArray(item, defaultItem)
     } else if (item == null) {
       result[index] = defaultItem
-    } else if (item?.constructor == Object && defaultItem?.constructor == Object) {
+    } else if (item.constructor == Object && defaultItem && defaultItem.constructor == Object) {
       result[index] = objectDefaultsDeepFromObject(item, defaultItem)
     } else {
       result[index] = item
@@ -51,7 +51,7 @@ const objectDefaultsDeepFromObject = function (object, defaultObject) {
       result[key] = arrayDefaultsDeepFromArray(item, defaultItem)
     } else if (item == null) {
       result[key] = defaultItem
-    } else if (item?.constructor == Object && defaultItem?.constructor == Object) {
+    } else if (item.constructor == Object && defaultItem && defaultItem.constructor == Object) {
       result[key] = objectDefaultsDeepFromObject(item, defaultItem)
     } else {
       result[key] = item
