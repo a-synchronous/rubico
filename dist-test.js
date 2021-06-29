@@ -1310,7 +1310,25 @@ TestsMap.set('defaultsDeep', defaultsDeep => [
     .case({ a: 1, b: [1, 2] }, { a: 1, b: [1, 2, { c: 3 }] })
     .case({ a: 1, b: [1, 2, {}] }, { a: 1, b: [1, 2, { c: 3 }] })
     .case({ a: 1, b: [1, 2, { c: 2 }] }, { a: 1, b: [1, 2, { c: 2 }] })
-    .case({ a: 1, b: [1, 2, { c: 3 }] }, { a: 1, b: [1, 2, { c: 3 }] })
+    .case({ a: 1, b: [1, 2, { c: 3 }] }, { a: 1, b: [1, 2, { c: 3 }] }),
+
+  Test('defaultsDeep null', defaultsDeep(null))
+  .case({ a: 1 }, { a: 1 })
+  .case({}, {})
+  .case(1, 1)
+  .case([1, 2, 3], [1, 2, 3])
+  .case([], []),
+
+  Test('defaultsDeep undefined', defaultsDeep(undefined))
+  .case({ a: 1 }, { a: 1 })
+  .case({}, {})
+  .case(1, 1)
+  .case([1, 2, 3], [1, 2, 3])
+  .case([], []),
+
+  Test('defaultsDeep item null', defaultsDeep({ a: null }))
+  .case({ a: 1 }, { a: 1 })
+  .case({ a: undefined }, { a: null }),
 ])
 
 TestsMap.set('differenceWith', differenceWith => [
