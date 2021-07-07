@@ -3547,7 +3547,7 @@ flatMap(
       ade(set('a', 1)(null), null)
       ade(set('a', 1)(undefined), undefined)
       ade(set('a', 1)('yo'), 'yo')
-      ade(set('a', 1)({ b: 2}), { a: 1, b: 2})
+      ade(set('a', 1)({ b: 2 }), { a: 1, b: 2 })
       ade(set('a.b', 1)({ a: { c: 2 }}), { a: { b: 1, c: 2 }})
       ade(set(['a', 'b'], 1)({ a: { c: 2 }}), { a: { b: 1, c: 2 }})
       ade(set('a[0].b.c', 4)({ 'a': [{ 'b': { 'c': 3 } }] }), { 'a': [{ 'b': { 'c': 4 } }] })
