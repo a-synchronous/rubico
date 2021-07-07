@@ -3544,7 +3544,7 @@ flatMap(
   })
 
   describe('set', () => {
-    it.only('set a property of an object', async () => {
+    it('set a property of an object', async () => {
       ade(set('a', 1)(null), null)
       ade(set('a', 1)(undefined), undefined)
       ade(set('a', 1)('yo'), 'yo')
