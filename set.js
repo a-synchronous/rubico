@@ -1,4 +1,3 @@
-const isString = require('./x/isString')
 const setByPath = require('./_internal/setByPath')
 
 /**
