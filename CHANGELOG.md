@@ -1,4 +1,7 @@
-## v1.6.29 - latest
+## v1.6.30 - latest
+ * defaultsDeep handle undefined [#186](https://github.com/a-synchronous/rubico/pull/186) - [FredericHeem](https://github.com/FredericHeem)
+
+## v1.6.29
  * fix syntax issue with map filter iterators and async iterators
 
 ## v1.6.28

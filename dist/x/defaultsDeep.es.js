@@ -1,5 +1,5 @@
 /**
- * rubico v1.6.29
+ * rubico v1.6.30
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2021 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -18,6 +18,8 @@ const arrayDefaultsDeepFromArray = function (array, defaultArray) {
       result[index] = arrayDefaultsDeepFromArray(item, defaultItem)
     } else if (item == null) {
       result[index] = defaultItem
+    } else if (defaultItem == null) {
+      result[key] = item
     } else if (item.constructor == Object && defaultItem.constructor == Object) {
       result[index] = objectDefaultsDeepFromObject(item, defaultItem)
     } else {
@@ -36,6 +38,8 @@ const objectDefaultsDeepFromObject = function (object, defaultObject) {
       result[key] = arrayDefaultsDeepFromArray(item, defaultItem)
     } else if (item == null) {
       result[key] = defaultItem
+    } else if (defaultItem == null) {
+      result[key] = item
     } else if (item.constructor == Object && defaultItem.constructor == Object) {
       result[key] = objectDefaultsDeepFromObject(item, defaultItem)
     } else {
@@ -49,7 +53,7 @@ const defaultsDeep = defaultCollection => function defaulting(value) {
   if (isArray(value) && isArray(defaultCollection)) {
     return arrayDefaultsDeepFromArray(value, defaultCollection)
   }
-  if (value == null) {
+  if (value == null || defaultCollection == null) {
     return value
   }
   if (value.constructor == Object && defaultCollection.constructor == Object) {
