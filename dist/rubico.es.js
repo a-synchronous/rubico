@@ -2463,18 +2463,47 @@ const get = (path, defaultValue) => function getter(value) {
     : result
 }
 
+const setByPath = function (obj, value, path) {
+  if (!isObject(obj)){
+    return obj
+  }
+  const pathArray = propertyPathToArray(path)
+  const pathLength = pathArray.length
+  const lastIndex = pathLength - 1
+  const result = { ...obj }
+  let nested = result
+  let index = -1
+  while (++index < pathLength){
+    const pathKey = pathArray[index]
+    if (index == lastIndex){
+      nested[pathKey] = value
+    } else {
+      const existingNextNested = nested[pathKey]
+      const nextNested = isArray(existingNextNested)
+        ? existingNextNested.slice() : { ...existingNextNested }
+      nested[pathKey] = nextNested
+      nested = nextNested
+    }
+  }
+  return result
+}
+
+const set = (path, value) => function setter(obj) {
+  return setByPath(obj, value, path)
+}
+
 const pick = keys => function picking(source) {
   if (source == null) {
     return source
   }
-  const keysLength = keys.length,
-    result = {}
+  const keysLength = keys.length
+  let result = {}
   let keysIndex = -1
   while (++keysIndex < keysLength) {
     const key = keys[keysIndex],
-      value = source[key]
+      value = getByPath(source, key)
     if (value != null) {
-      result[key] = value
+      result = setByPath(result, value, key)
     }
   }
   return result
@@ -2571,7 +2600,7 @@ curry.arity = function curryArity_(arity, func, ...args) {
 const rubico = {
   pipe, tap,
   switchCase, tryCatch,
-  fork, assign, get, pick, omit,
+  fork, assign, get, set, pick, omit,
   map, filter, reduce, transform, flatMap,
   and, or, not, any, all,
   eq, gt, lt, gte, lte,

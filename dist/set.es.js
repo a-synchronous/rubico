@@ -7,6 +7,15 @@
 
 const isArray = Array.isArray
 
+const isObject = value => {
+  if (value == null) {
+    return false
+  }
+
+  const typeofValue = typeof value
+  return (typeofValue == 'object') || (typeofValue == 'function')
+}
+
 const memoizeCappedUnary = function (func, cap) {
   const cache = new Map(),
     memoized = function memoized(arg0) {
@@ -51,29 +60,6 @@ const propertyPathToArray = path => isArray(path) ? path
   : typeof path == 'string' ? memoizedCappedParsePropertyPath(path)
   : [path]
 
-const getByPath = function (value, path) {
-  const propertyPathArray = propertyPathToArray(path),
-    length = propertyPathArray.length
-  let index = -1,
-    result = value
-  while (++index < length) {
-    result = result[propertyPathArray[index]]
-    if (result == null) {
-      return undefined
-    }
-  }
-  return result
-}
-
-const isObject = value => {
-  if (value == null) {
-    return false
-  }
-
-  const typeofValue = typeof value
-  return (typeofValue == 'object') || (typeofValue == 'function')
-}
-
 const setByPath = function (obj, value, path) {
   if (!isObject(obj)){
     return obj
@@ -99,21 +85,8 @@ const setByPath = function (obj, value, path) {
   return result
 }
 
-const pick = keys => function picking(source) {
-  if (source == null) {
-    return source
-  }
-  const keysLength = keys.length
-  let result = {}
-  let keysIndex = -1
-  while (++keysIndex < keysLength) {
-    const key = keys[keysIndex],
-      value = getByPath(source, key)
-    if (value != null) {
-      result = setByPath(result, value, key)
-    }
-  }
-  return result
+const set = (path, value) => function setter(obj) {
+  return setByPath(obj, value, path)
 }
 
-export default pick
+export default set
