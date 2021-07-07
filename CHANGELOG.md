@@ -1,4 +1,7 @@
-## v1.6.30 - latest
+## v1.7.0 - latest
+ * set and pick nested properties [#187](https://github.com/a-synchronous/rubico/pull/187) - [FredericHeem](https://github.com/FredericHeem)
+
+## v1.6.30
  * defaultsDeep handle undefined [#186](https://github.com/a-synchronous/rubico/pull/186) - [FredericHeem](https://github.com/FredericHeem)
 
 ## v1.6.29
