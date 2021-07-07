@@ -1,5 +1,5 @@
+const isArray = require('./isArray')
 const isObject = require('./isObject')
-const getByPath = require('./getByPath')
 const propertyPathToArray = require('./propertyPathToArray')
 
 /**
@@ -14,31 +14,29 @@ const propertyPathToArray = require('./propertyPathToArray')
  * >(obj, value, path) -> obj any
  * ```
  */
+
 const setByPath = function (obj, value, path) {
   if (!isObject(obj)){
     return obj
   }
-  let index = -1
   const pathArray = propertyPathToArray(path)
   const pathLength = pathArray.length
-
+  const lastIndex = pathLength - 1
   const result = { ...obj }
   let nested = result
-  while (nested != null && ++index < pathLength){
+  let index = -1
+  while (++index < pathLength){
     const pathKey = pathArray[index]
-    if (index == (pathLength - 1)){
+    if (index == lastIndex){
       nested[pathKey] = value
     } else {
-      const value = getByPath(nested, pathKey)
-      if (value) {
-        nested = value
-      } else {
-        nested[pathKey] = {}
-        nested = nested[pathKey]
-      }
+      const existingNextNested = nested[pathKey]
+      const nextNested = isArray(existingNextNested)
+        ? existingNextNested.slice() : { ...existingNextNested }
+      nested[pathKey] = nextNested
+      nested = nextNested
     }
   }
-
   return result
 }
 

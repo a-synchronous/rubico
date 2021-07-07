@@ -224,15 +224,38 @@ TestsMap.set('get', get => [
     .case({ b: 1 }, 'abc'),
 ])
 
+TestsMap.set('set', set => [
+  Test('set', set('a', 1))
+  .case(null, null)
+  .case(undefined, undefined)
+  .case({}, { a: 1 })
+  .case({ a: 1 }, { a: 1 })
+  .case({ b: 2 }, { a: 1, b: 2 }),
+
+  Test('set - nested', set('a.b', 1))
+  .case(null, null)
+  .case(undefined, undefined)
+  .case({}, { a: { b: 1 } })
+  .case({ a: 1 }, { a: { b: 1 } })
+  .case({ b: 2 }, { a: { b: 1 }, b: 2 }),
+])
+
 TestsMap.set('pick', pick => [
-  Test(
-    'pick',
-    pick(['a', 'b']))
-    .case({ a: 1 }, { a: 1 })
-    .case({ a: 1, b: 2 }, { a: 1, b: 2 })
-    .case({ a: 1, b: 2, c: 3 }, { a: 1, b: 2 })
-    .case({}, {})
-    .case([], {}),
+  Test('pick', pick(['a', 'b']))
+  .case({ a: 1 }, { a: 1 })
+  .case({ a: 1, b: 2 }, { a: 1, b: 2 })
+  .case({ a: 1, b: 2, c: 3 }, { a: 1, b: 2 })
+  .case({}, {})
+  .case([], {}),
+
+  Test('pick - nested', pick(['a.b', 'a.c']))
+  .case(null, null)
+  .case(undefined, undefined)
+  .case({ a: { b: 1 }, c: 3 }, { a: { b: 1 } })
+  .case({ a: { b: 1, c: 3 }, c: 3 }, { a: { b: 1, c: 3 } })
+  .case({ a: { c: 3 }, c: 3 }, { a: { c: 3 } })
+  .case({}, {})
+  .case([], {}),
 ])
 
 TestsMap.set('omit', omit => [
