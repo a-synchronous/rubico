@@ -25,6 +25,8 @@ const setByPath = require('./_internal/setByPath')
  *   console.log(set(['a', 'b'], '1')({ a: { c : 2 })),
  * ) // { a: { b: 1, c: 2 }}
  * ```
+ *
+ * @since 1.7.0
  */
 
 const set = (path, value) => function setter(obj) {
