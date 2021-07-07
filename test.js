@@ -11,7 +11,7 @@ const mapFrom = require('./_internal/mapFrom')
 const {
   pipe, tap,
   tryCatch, switchCase,
-  fork, assign, get, pick, omit,
+  fork, assign, get, set, pick, omit,
   map, filter, reduce, transform, flatMap,
   any, all, and, or, not,
   eq, gt, lt, gte, lte,
@@ -3495,7 +3495,7 @@ flatMap(
     })
   })
 
-  describe('get', () => {
+  describe('set', () => {
     const aaaaa = { a: { a: { a: { a: { a: 1 } } } } }
     const nested = [[[[[1]]]]]
     it('accesses a property of an object by name', async () => {
@@ -3542,9 +3542,25 @@ flatMap(
     it('clears cache at size 500', async () => {
     })
   })
-
+  describe('set', () => {
+    it('set a property of an object', async () => {
+      ade(set('a', 1)(null), null)
+      ade(set('a', 1)(undefined), undefined)
+      ade(set('a', 1)("yo"), "yo")
+      ade(set('a', 1)({ b: 2}), { a: 1, b: 2})
+      ade(set('a.b', 1)({ a: { c: 2 }}), { a: { b: 1, c: 2 }})
+      ade(set(['a', 'b'], 1)({ a: { c: 2 }}), { a: { b: 1, c: 2 }})
+      assert.throws(() => set({}, 1)({ b: 2}), {
+        message: 'path should be a string or an array',
+      })
+      ade(set('a[0].b.c', 4)({ 'a': [{ 'b': { 'c': 3 } }] }), { 'a': [{ 'b': { 'c': 4 } }] })
+      ade(set('a.b.c.d', 1)({}), { a: { b: { c: { d: 1 } }}})
+    })
+  })
   describe('pick', () => {
     const abc = { a: 1, b: 2, c: 3 }
+    const nested = { a: { b: { c: { d: 1, e: [2, 3] } } } }
+
     it('picks properties off an object defined by array', async () => {
       ade(pick(['a'])(abc), { a: 1 })
       ade(pick(['a', 'd'])(abc), { a: 1 })
@@ -3552,6 +3568,13 @@ flatMap(
       ade(pick(['d'])(null), null)
       ade(pick(['d'])(undefined), undefined)
       ade(pick(['d'])(), undefined)
+    })
+    it('picks nested properties', async () => {
+      assert.deepEqual(pick(['a.b.c.d'])(nested), { a: { b: { c: { d: 1 } } } })
+      // assert.deepEqual(pick(['a.b.f.g'])(nested), nested)
+      // assert.deepEqual(pick(['a.b.c.d', 'a.b.c.e[0]'])(nested), { a: { b: { c: { e: [, 3] } } } })
+      // assert.deepEqual(pick(['a[0][0].d'])({ a: [[{ b: 1, c: 2, d: 3 }]] }), { a: [[{ b: 1, c: 2 }]] })
+      // assert.deepEqual(pick(['a[0][0].d'])({ a: [[{ b: 1, c: 2, d: null }]] }), { a: [[{ b: 1, c: 2 }]] })
     })
   })
 
@@ -4456,7 +4479,7 @@ eq(
     })
   })
 
-  it('exports 28 functions', async () => {
-    ase(Object.keys(rubico).length, 28)
+  it('exports 29 functions', async () => {
+    ase(Object.keys(rubico).length, 29)
   })
 })

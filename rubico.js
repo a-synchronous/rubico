@@ -20,6 +20,7 @@ const lt = require('./lt')
 const gte = require('./gte')
 const lte = require('./lte')
 const get = require('./get')
+const set = require('./set')
 const pick = require('./pick')
 const omit = require('./omit')
 const thunkify = require('./thunkify')
@@ -43,7 +44,7 @@ const __ = require('./__')
 const rubico = {
   pipe, tap,
   switchCase, tryCatch,
-  fork, assign, get, pick, omit,
+  fork, assign, get, set, pick, omit,
   map, filter, reduce, transform, flatMap,
   and, or, not, any, all,
   eq, gt, lt, gte, lte,

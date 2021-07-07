@@ -16,20 +16,27 @@
  * console.log(
  *   pick(['hello', 'world'])({ goodbye: 1, world: 2 }),
  * ) // { world: 2 }
+ * console.log(
+ *   pick(['a.b.c.d'])({ a: { b: { c: { d: 1, e: [2, 3] } } } }),
+ * ) // { a: { b: { c: { d: 1 } } } }
  * ```
  */
+
+const get = require("./get")
+const set = require("./set")
+
 const pick = keys => function picking(source) {
   if (source == null) {
     return source
   }
-  const keysLength = keys.length,
-    result = {}
+  const keysLength = keys.length
+  let result = {}
   let keysIndex = -1
   while (++keysIndex < keysLength) {
     const key = keys[keysIndex],
-      value = source[key]
+      value = get(key)(source)
     if (value != null) {
-      result[key] = value
+      result = set(key, value)(result)
     }
   }
   return result
