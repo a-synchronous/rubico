@@ -1,6 +1,6 @@
 {
   "name": "rubico",
-  "version": "1.6.30",
+  "version": "1.7.0",
   "description": "[a]synchronous functional programming",
   "author": "Richard Tong",
   "license": "MIT",
