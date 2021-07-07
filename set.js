@@ -1,6 +1,6 @@
-const isObject = require('./x/isObject')
+const isObject = require('./_internal/isObject')
 const isString = require('./x/isString')
-const get = require("./get")
+const getByPath = require('./_internal/getByPath')
 
 /**
  * @name set
@@ -11,11 +11,11 @@ const get = require("./get")
  *   path string|Array<string|number>,
  *   value (value=>any)|any
  *
- * set(path, value) -> setter obj=>obj
+ * set(path, value) -> setter  object=>object
  * ```
  *
  * @description
- * Create a setter that set a property on a value denoted by path.
+ * Create a setter that sets a property on an object denoted by path.
  *
  * ```javascript [playground]
  * console.log(
@@ -34,22 +34,23 @@ const toPathArray = path => {
   if(Array.isArray(path)) return path
   throw Error(`path should be a string or an array`)
 }
+
 const set = (path, value) => function setter(obj) {
-  if((obj == null) || !isObject(obj)){
+  if( !isObject(obj) ){
     return obj
   }
   let index = -1
   const pathArray = toPathArray(path)
   const pathLength = pathArray.length
 
-  const result = {...obj}
+  const result = { ...obj }
   let nested = result
-  while(nested != null && ++index < pathLength){
+  while( nested != null && ++index < pathLength ){
     const pathKey = pathArray[index]
-    if(index === (pathLength - 1)){
+    if(index == (pathLength - 1)){
       nested[pathKey] = value
     } else {
-      const value = get(pathKey)(nested)
+      const value = getByPath(nested, pathKey)
       if(!value) {
         nested[pathKey] = {}
         nested = nested[pathKey]

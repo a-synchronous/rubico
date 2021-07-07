@@ -3495,7 +3495,7 @@ flatMap(
     })
   })
 
-  describe('set', () => {
+  describe('get', () => {
     const aaaaa = { a: { a: { a: { a: { a: 1 } } } } }
     const nested = [[[[[1]]]]]
     it('accesses a property of an object by name', async () => {

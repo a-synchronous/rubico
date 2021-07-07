@@ -22,7 +22,7 @@
  * ```
  */
 
-const get = require("./get")
+const getByPath = require("./_internal/getByPath")
 const set = require("./set")
 
 const pick = keys => function picking(source) {
@@ -34,7 +34,7 @@ const pick = keys => function picking(source) {
   let keysIndex = -1
   while (++keysIndex < keysLength) {
     const key = keys[keysIndex],
-      value = get(key)(source)
+      value = getByPath(source, key)
     if (value != null) {
       result = set(key, value)(result)
     }
