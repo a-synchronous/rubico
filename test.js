@@ -3546,7 +3546,7 @@ flatMap(
     it('set a property of an object', async () => {
       ade(set('a', 1)(null), null)
       ade(set('a', 1)(undefined), undefined)
-      ade(set('a', 1)("yo"), "yo")
+      ade(set('a', 1)('yo'), 'yo')
       ade(set('a', 1)({ b: 2}), { a: 1, b: 2})
       ade(set('a.b', 1)({ a: { c: 2 }}), { a: { b: 1, c: 2 }})
       ade(set(['a', 'b'], 1)({ a: { c: 2 }}), { a: { b: 1, c: 2 }})
