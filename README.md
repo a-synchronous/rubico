@@ -99,13 +99,13 @@ When you import this library, you obtain the freedom that comes from having thos
 
 # Introduction
 
-Rubico is a module of twenty-eight operators for async-enabled functional programming in JavaScript.
+Rubico is a module of twenty-nine operators for async-enabled functional programming in JavaScript.
 
 ```javascript
 const {
   pipe, tap,
   switchCase, tryCatch,
-  fork, assign, get, pick, omit,
+  fork, assign, get, set, pick, omit,
   map, filter, reduce, transform, flatMap,
   and, or, not, any, all,
   eq, gt, lt, gte, lte,
