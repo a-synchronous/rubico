@@ -3542,6 +3542,7 @@ flatMap(
     it('clears cache at size 500', async () => {
     })
   })
+
   describe('set', () => {
     it('set a property of an object', async () => {
       ade(set('a', 1)(null), null)
@@ -3554,6 +3555,7 @@ flatMap(
       ade(set('a.b.c.d', 1)({}), { a: { b: { c: { d: 1 } }}})
     })
   })
+
   describe('pick', () => {
     const abc = { a: 1, b: 2, c: 3 }
     const nested = { a: { b: { c: { d: 1, e: [2, 3] } } } }
