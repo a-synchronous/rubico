@@ -1,6 +1,5 @@
-const isObject = require('./_internal/isObject')
 const isString = require('./x/isString')
-const getByPath = require('./_internal/getByPath')
+const setByPath = require('./_internal/setByPath')
 
 /**
  * @name set
@@ -29,38 +28,8 @@ const getByPath = require('./_internal/getByPath')
  * ```
  */
 
-const toPathArray = path => {
-  if(isString(path)) return path.split(".")
-  if(Array.isArray(path)) return path
-  throw Error(`path should be a string or an array`)
-}
-
 const set = (path, value) => function setter(obj) {
-  if( !isObject(obj) ){
-    return obj
-  }
-  let index = -1
-  const pathArray = toPathArray(path)
-  const pathLength = pathArray.length
-
-  const result = { ...obj }
-  let nested = result
-  while( nested != null && ++index < pathLength ){
-    const pathKey = pathArray[index]
-    if(index == (pathLength - 1)){
-      nested[pathKey] = value
-    } else {
-      const value = getByPath(nested, pathKey)
-      if(!value) {
-        nested[pathKey] = {}
-        nested = nested[pathKey]
-      } else {
-        nested = value
-      }
-    }
-  } 
-
-  return result
+  return setByPath(obj, value, path)
 }
 
 module.exports = set

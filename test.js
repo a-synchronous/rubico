@@ -3550,9 +3550,6 @@ flatMap(
       ade(set('a', 1)({ b: 2}), { a: 1, b: 2})
       ade(set('a.b', 1)({ a: { c: 2 }}), { a: { b: 1, c: 2 }})
       ade(set(['a', 'b'], 1)({ a: { c: 2 }}), { a: { b: 1, c: 2 }})
-      assert.throws(() => set({}, 1)({ b: 2}), {
-        message: 'path should be a string or an array',
-      })
       ade(set('a[0].b.c', 4)({ 'a': [{ 'b': { 'c': 3 } }] }), { 'a': [{ 'b': { 'c': 4 } }] })
       ade(set('a.b.c.d', 1)({}), { a: { b: { c: { d: 1 } }}})
     })
