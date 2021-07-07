@@ -19,10 +19,13 @@ const setByPath = require('./_internal/setByPath')
  * console.log(
  *   set('a.b', '1')({ a: { c : 2 }),
  * ) // { a : { b: 1, c: 2 }}
+ *
  * console.log(
  *   set('a[0].b.c', 4)({ 'a': [{ 'b': { 'c': 3 } }] }),
  * ) // { 'a': [{ 'b': { 'c': 4 } }] }
- *   console.log(set(['a', 'b'], '1')({ a: { c : 2 })),
+ *
+ * console.log(
+ *   set(['a', 'b'], '1')({ a: { c : 2 }),
  * ) // { a: { b: 1, c: 2 }}
  * ```
  *
