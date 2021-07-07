@@ -1,3 +1,6 @@
+const getByPath = require('./_internal/getByPath')
+const setByPath = require('./_internal/setByPath')
+
 /**
  * @name pick
  *
@@ -16,14 +19,12 @@
  * console.log(
  *   pick(['hello', 'world'])({ goodbye: 1, world: 2 }),
  * ) // { world: 2 }
+ *
  * console.log(
  *   pick(['a.b.c.d'])({ a: { b: { c: { d: 1, e: [2, 3] } } } }),
  * ) // { a: { b: { c: { d: 1 } } } }
  * ```
  */
-
-const getByPath = require("./_internal/getByPath")
-const setByPath = require("./_internal/setByPath")
 
 const pick = keys => function picking(source) {
   if (source == null) {
@@ -36,7 +37,7 @@ const pick = keys => function picking(source) {
     const key = keys[keysIndex],
       value = getByPath(source, key)
     if (value != null) {
-      result = setByPath(result, value, key )
+      result = setByPath(result, value, key)
     }
   }
   return result
