@@ -23,7 +23,7 @@
  */
 
 const getByPath = require("./_internal/getByPath")
-const set = require("./set")
+const setByPath = require("./_internal/setByPath")
 
 const pick = keys => function picking(source) {
   if (source == null) {
@@ -36,7 +36,7 @@ const pick = keys => function picking(source) {
     const key = keys[keysIndex],
       value = getByPath(source, key)
     if (value != null) {
-      result = set(key, value)(result)
+      result = setByPath(result, value, key )
     }
   }
   return result
