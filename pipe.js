@@ -63,6 +63,8 @@ const isAsyncGeneratorFunction = require('./_internal/isAsyncGeneratorFunction')
  * @execution series
  *
  * @transducing
+ *
+ * @since 1.6.0
  */
 const pipe = function (funcs) {
   let functionPipeline = noop,
