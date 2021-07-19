@@ -13,7 +13,7 @@
  *  isEven,
  *  (num) => num * 2
  * );
-
+ *
  * console.log(doubleIfEven(100)) // 200
  * console.log(doubleIfEven(101)) // 101
  * ```
@@ -21,9 +21,9 @@
 
 const when = (predicate, fn) => function when(object) {
     if (predicate(object)) {
-      return fn(object);
+      return fn(object)
     }
     return object;
   };
 
-module.exports = when;
+module.exports = when
