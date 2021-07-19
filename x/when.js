@@ -13,11 +13,11 @@ const thunkConditional = require('../_internal/thunkConditional')
  * when(
  *   predicate any=>Promise|boolean,
  *   func function,
- * )(object Object) -> Promise|any
+ * )(value any) -> Promise|any
  * ```
  *
  * @description
- * Execute a function and return the result when a condition is true, otherwise return the original object.
+ * Execute a function and return the result when a condition is true, otherwise return the original value.
  *
  * ```javascript [playground]
  * import when from 'https://unpkg.com/rubico/dist/x/when.es.js'
@@ -28,22 +28,24 @@ const thunkConditional = require('../_internal/thunkConditional')
  * console.log(doubleIfEven(100)) // 200
  * console.log(doubleIfEven(101)) // 101
  * ```
+ *
+ * @since 1.7.1
  */
 
-const when = (predicate, func) => function whenFunc(object) {
-  const predication = predicate(object)
+const when = (predicate, func) => function whenFunc(value) {
+  const predication = predicate(value)
   if (isPromise(predication)) {
     return predication.then(curry3(
       thunkConditional,
       __,
-      thunkify1(func, object),
-      always(object),
+      thunkify1(func, value),
+      always(value),
     ))
   }
   if (predication) {
-    return func(object)
+    return func(value)
   }
-  return object
+  return value
 }
 
 module.exports = when
