@@ -1,4 +1,7 @@
-## v1.7.0 - latest
+## v1.7.1 - latest
+ * x/when [#188](https://github.com/a-synchronous/rubico/pull/188) - [FredericHeem](https://github.com/FredericHeem)
+
+## v1.7.0
  * set and pick nested properties [#187](https://github.com/a-synchronous/rubico/pull/187) - [FredericHeem](https://github.com/FredericHeem)
 
 ## v1.6.30
