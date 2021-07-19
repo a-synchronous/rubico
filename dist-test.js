@@ -1456,6 +1456,44 @@ TestsMap.set('find', find => [
     .case({}, undefined),
 ])
 
+TestsMap.set('findIndex', function (findIndex) {
+  return [Test(async function () {
+    const startsWithAAA = string => string.startsWith('AAA')
+    {
+      const foundIndex = findIndex(startsWithAAA)([
+        'BBB',
+        'AAB',
+        'AAA',
+      ])
+      assert.equal(foundIndex, 2)
+
+      const notFoundIndex = findIndex(startsWithAAA)([
+        'CCC',
+        'CCD',
+        'EEE',
+      ])
+      assert.equal(notFoundIndex, -1)
+    }
+
+    const startsWithAAAAsync = async string => string.startsWith('AAA')
+    {
+      const foundIndex = await findIndex(startsWithAAAAsync)([
+        'BBB',
+        'AAB',
+        'AAA',
+      ])
+      assert.equal(foundIndex, 2)
+
+      const notFoundIndex = await findIndex(startsWithAAAAsync)([
+        'CCC',
+        'CCD',
+        'EEE',
+      ])
+      assert.equal(notFoundIndex, -1)
+    }
+  }).case()]
+})
+
 TestsMap.set('first', first => [
   Test('first', first)
   .case([1, 2, 3], 1)
@@ -1633,6 +1671,28 @@ TestsMap.set('isString', isString => [
   .case(undefined, false)
 ])
 
+TestsMap.set('keys', function (keys) {
+  const Foo = function () {
+    this.a = 1;
+    this.b = 2;
+  }
+  Foo.prototype.toString = () => '[object Foo]'
+  Foo.prototype.c = 3;
+  return [
+    Test(keys)
+    .case({ a: 1, b: 2, c: 3 }, ['a', 'b', 'c'])
+    .case(new Map([['a', 1], ['b', 2], ['c', 3]]), ['a', 'b', 'c'])
+    .case(new Set([1, 2, 3]), [1, 2, 3])
+    .case(['a', 'b', 'c'], [0, 1, 2])
+    .case('abc', ['0', '1', '2'])
+    .case([], [])
+    .case({}, [])
+    .case(10, [])
+    .case(new Foo(), ['a', 'b'])
+    .case(null, []),
+  ]
+})
+
 TestsMap.set('last', last => [
   Test('last', last)
   .case([1, 2, 3], 3)
@@ -1725,65 +1785,15 @@ TestsMap.set('values', function (values) {
   ]
 })
 
-TestsMap.set('keys', function (keys) {
-  const Foo = function () {
-    this.a = 1;
-    this.b = 2;
-  }
-  Foo.prototype.toString = () => '[object Foo]'
-  Foo.prototype.c = 3;
-  return [
-    Test(keys)
-    .case({ a: 1, b: 2, c: 3 }, ['a', 'b', 'c'])
-    .case(new Map([['a', 1], ['b', 2], ['c', 3]]), ['a', 'b', 'c'])
-    .case(new Set([1, 2, 3]), [1, 2, 3])
-    .case(['a', 'b', 'c'], [0, 1, 2])
-    .case('abc', ['0', '1', '2'])
-    .case([], [])
-    .case({}, [])
-    .case(10, [])
-    .case(new Foo(), ['a', 'b'])
-    .case(null, []),
-  ]
-})
+TestsMap.set('when', when => [
+  Test('when', when(num => num % 2 == 0, num => num *= 2))
+  .case(1, 1)
+  .case(6, 12),
 
-TestsMap.set('findIndex', function (findIndex) {
-  return [Test(async function () {
-    const startsWithAAA = string => string.startsWith('AAA')
-    {
-      const foundIndex = findIndex(startsWithAAA)([
-        'BBB',
-        'AAB',
-        'AAA',
-      ])
-      assert.equal(foundIndex, 2)
-
-      const notFoundIndex = findIndex(startsWithAAA)([
-        'CCC',
-        'CCD',
-        'EEE',
-      ])
-      assert.equal(notFoundIndex, -1)
-    }
-
-    const startsWithAAAAsync = async string => string.startsWith('AAA')
-    {
-      const foundIndex = await findIndex(startsWithAAAAsync)([
-        'BBB',
-        'AAB',
-        'AAA',
-      ])
-      assert.equal(foundIndex, 2)
-
-      const notFoundIndex = await findIndex(startsWithAAAAsync)([
-        'CCC',
-        'CCD',
-        'EEE',
-      ])
-      assert.equal(notFoundIndex, -1)
-    }
-  }).case()]
-})
+  Test('when - async predicate', when(async num => num % 2 == 0, num => num *= 2))
+  .case(1, 1)
+  .case(6, 12),
+])
 
 async function runTestSeries({ name, path }) {
   const Tests = TestsMap.get(name)
