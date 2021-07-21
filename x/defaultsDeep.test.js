@@ -97,6 +97,18 @@ describe('defaultsDeep', () => {
       { obj: { a: '1' } },
     )
   })
+  it('nullish default item should use current item', async () => {
+    assert.deepEqual(
+      defaultsDeep([null, 1, 2, 3, 4])([0, 1, 2]),
+      [0, 1, 2, 3, 4],
+    )
+
+    const x = { obj: { a: '1' } }
+    assert.deepEqual(
+      defaultsDeep({ obj: undefined })(x),
+      { obj: { a: '1' } },
+    )
+  })
   it('undefined <-> object', async () => {
     const b = { obj: { a: '1' } }
     assert.deepEqual(
