@@ -56,20 +56,20 @@ const thunkConditional = (
   conditionalExpression, thunkOnTruthy, thunkOnFalsy,
 ) => conditionalExpression ? thunkOnTruthy() : thunkOnFalsy()
 
-const when = (predicate, func) => function whenFunc(object) {
-  const predication = predicate(object)
+const when = (predicate, func) => function whenFunc(value) {
+  const predication = predicate(value)
   if (isPromise(predication)) {
     return predication.then(curry3(
       thunkConditional,
       __,
-      thunkify1(func, object),
-      always(object),
+      thunkify1(func, value),
+      always(value),
     ))
   }
   if (predication) {
-    return func(object)
+    return func(value)
   }
-  return object
+  return value
 }
 
 return when
