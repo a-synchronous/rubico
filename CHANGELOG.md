@@ -1,4 +1,7 @@
-## v1.7.1 - latest
+## v1.7.2 - latest
+ * fix syntax error on nullish defaultItem in defaultsDeep - [#189](https://github.com/a-synchronous/rubico/pull/189/files) - [FredericHeem](https://github.com/FredericHeem)
+
+## v1.7.1
  * x/when [#188](https://github.com/a-synchronous/rubico/pull/188) - [FredericHeem](https://github.com/FredericHeem)
 
 ## v1.7.0
