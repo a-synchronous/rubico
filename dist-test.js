@@ -1349,9 +1349,12 @@ TestsMap.set('defaultsDeep', defaultsDeep => [
   .case([1, 2, 3], [1, 2, 3])
   .case([], []),
 
-  Test('defaultsDeep item null', defaultsDeep({ a: null }))
+  Test('defaultsDeep object item null', defaultsDeep({ a: null }))
   .case({ a: 1 }, { a: 1 })
   .case({ a: undefined }, { a: null }),
+
+  Test('defaultsDeep array item null', defaultsDeep([null, 1, 2]))
+  .case([0], [0, 1, 2]),
 ])
 
 TestsMap.set('differenceWith', differenceWith => [

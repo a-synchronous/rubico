@@ -25,7 +25,7 @@ const arrayDefaultsDeepFromArray = function (array, defaultArray) {
     } else if (item == null) {
       result[index] = defaultItem
     } else if (defaultItem == null) {
-      result[key] = item
+      result[index] = item
     } else if (item.constructor == Object && defaultItem.constructor == Object) {
       result[index] = objectDefaultsDeepFromObject(item, defaultItem)
     } else {
