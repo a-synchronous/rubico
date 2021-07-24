@@ -29,7 +29,7 @@ const thunkConditional = require('../_internal/thunkConditional');
  * console.log(doubleIfEven(101)) // 202
  * ```
  *
- * @since 1.7.2
+ * @since 1.7.3
  */
 
 const unless = (predicate, func) => function unlessFunc(value) {
