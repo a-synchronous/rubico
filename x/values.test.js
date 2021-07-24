@@ -3,13 +3,13 @@ const values = require('./values')
 
 describe('values', () => {
   const Foo = function () {
-    this.a = 1;
-    this.b = 2;
+    this.a = 1
+    this.b = 2
   }
 
   Foo.prototype.toString = () => '[object Foo]'
 
-  Foo.prototype.c = 3;
+  Foo.prototype.c = 3
 
   it('gets an array of an object\'s values', async () => {
     Test(values)

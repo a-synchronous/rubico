@@ -277,7 +277,7 @@ module.exports = {
             'error',
             'never'
         ],
-        'semi': 'never',
+        'semi': ['error', 'never'],
         'semi-spacing': [
             'error',
             {
@@ -326,4 +326,4 @@ module.exports = {
             'never'
         ]
     }
-};
+}

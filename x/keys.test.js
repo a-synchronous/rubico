@@ -32,11 +32,11 @@ describe('keys', () => {
     assert.deepEqual(keys(), [])
   })
   const Foo = function () {
-    this.a = 1;
-    this.b = 2;
+    this.a = 1
+    this.b = 2
   }
   Foo.prototype.toString = () => '[object Foo]'
-  Foo.prototype.c = 3;
+  Foo.prototype.c = 3
   it('only direct properties (no prototype)', async () => {
     assert.deepEqual(keys(new Foo()), ['a', 'b'])
   })
