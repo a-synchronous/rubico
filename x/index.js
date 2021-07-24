@@ -26,6 +26,8 @@ const unionWith = require('./unionWith')
 const uniq = require('./uniq')
 const values = require('./values')
 const when = require('./when')
+const unless = require('./unless')
+const prepend = require('./prepend')
 
 const rubicoX = {
   callProp,
@@ -50,10 +52,12 @@ const rubicoX = {
   last,
   noop,
   pluck,
+  prepend,
   size,
   trace,
   unionWith,
   uniq,
+  unless,
   values,
   when,
 }
