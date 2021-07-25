@@ -1,4 +1,9 @@
-## v1.7.2 - latest
+## v1.7.3 - latest
+ * x/append - [#190](https://github.com/a-synchronous/rubico/pull/190/files) - [FredericHeem](https://github.com/FredericHeem)
+ * x/prepend - [#190](https://github.com/a-synchronous/rubico/pull/190/files) - [FredericHeem](https://github.com/FredericHeem)
+ * x/unless - [#190](https://github.com/a-synchronous/rubico/pull/190/files) - [FredericHeem](https://github.com/FredericHeem)
+
+## v1.7.2
  * fix syntax error on nullish defaultItem in defaultsDeep - [#189](https://github.com/a-synchronous/rubico/pull/189/files) - [FredericHeem](https://github.com/FredericHeem)
 
 ## v1.7.1
