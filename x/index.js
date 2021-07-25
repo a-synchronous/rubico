@@ -1,3 +1,4 @@
+const append = require('./append')
 const callProp = require('./callProp')
 const defaultsDeep = require('./defaultsDeep')
 const differenceWith = require('./differenceWith')
@@ -30,6 +31,7 @@ const unless = require('./unless')
 const prepend = require('./prepend')
 
 const rubicoX = {
+  append,
   callProp,
   defaultsDeep,
   differenceWith,
