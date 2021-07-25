@@ -18,15 +18,21 @@ const isArray = require('../_internal/isArray')
  * import prepend from 'https://unpkg.com/rubico/dist/x/prepend.es.js'
  *
  * const myArray = ['orange', 'apple']
- * const result = prepend(['ananas'])(myArray)
- * console.log(result) // ['ananas', 'orange', 'apple']
  *
- * const myArray = ['orange', 'apple']
- * const result = prepend('ananas')(myArray)
- * console.log(result) // ['ananas', 'orange', 'apple']
+ * {
+ *   const result = prepend(['ananas'])(myArray)
+ *   console.log(result) // ['ananas', 'orange', 'apple']
+ * }
  *
- * const result = prepend('hello ')('world')
- * console.log(result) // 'hello world'
+ * {
+ *   const result = prepend('ananas')(myArray)
+ *   console.log(result) // ['ananas', 'orange', 'apple']
+ * }
+ *
+ * {
+ *   const result = prepend('hello ')('world')
+ *   console.log(result) // 'hello world'
+ * }
  * ```
  *
  * @since 1.7.3
