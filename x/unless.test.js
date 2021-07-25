@@ -5,17 +5,17 @@ const isEven = num => num % 2 === 0
 
 describe('unless', () => {
   it('happy path', async () => {
-    const doubleIfEven = unless(isEven, num => num * 2)
+    const doubleIfOdd = unless(isEven, num => num * 2)
 
-    assert.strictEqual(doubleIfEven(100), 100)
-    assert.strictEqual(doubleIfEven(101), 202)
+    assert.strictEqual(doubleIfOdd(100), 100)
+    assert.strictEqual(doubleIfOdd(101), 202)
   })
 
   it('async happy path', async () => {
     const asyncIsEven = async num => num % 2 == 0
-    const asyncDoubleIfEven = unless(asyncIsEven, num => num * 2)
+    const asyncDoubleIfOdd = unless(asyncIsEven, num => num * 2)
 
-    assert.strictEqual(await asyncDoubleIfEven(100), 100)
-    assert.strictEqual(await asyncDoubleIfEven(101), 202)
+    assert.strictEqual(await asyncDoubleIfOdd(100), 100)
+    assert.strictEqual(await asyncDoubleIfOdd(101), 202)
   })
 })

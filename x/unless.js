@@ -1,9 +1,9 @@
-const isPromise = require('../_internal/isPromise');
-const always = require('../_internal/always');
-const __ = require('../_internal/placeholder');
-const thunkify1 = require('../_internal/thunkify1');
-const curry3 = require('../_internal/curry3');
-const thunkConditional = require('../_internal/thunkConditional');
+const isPromise = require('../_internal/isPromise')
+const always = require('../_internal/always')
+const __ = require('../_internal/placeholder')
+const thunkify1 = require('../_internal/thunkify1')
+const curry3 = require('../_internal/curry3')
+const thunkConditional = require('../_internal/thunkConditional')
 
 /**
  * @name unless
@@ -23,10 +23,10 @@ const thunkConditional = require('../_internal/thunkConditional');
  * import unless from 'https://unpkg.com/rubico/dist/x/unless.es.js'
  *
  * const isEven = num => num % 2 === 0
- * const doubleIfEven = unless(isEven, num => num * 2)
+ * const doubleIfOdd = unless(isEven, num => num * 2)
  *
- * console.log(doubleIfEven(100)) // 100
- * console.log(doubleIfEven(101)) // 202
+ * console.log(doubleIfOdd(100)) // 100
+ * console.log(doubleIfOdd(101)) // 202
  * ```
  *
  * @since 1.7.3
