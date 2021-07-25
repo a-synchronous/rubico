@@ -10,7 +10,7 @@ const thunkConditional = require('../_internal/thunkConditional')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * when(
+ * unless(
  *   predicate any=>Promise|boolean,
  *   func function,
  * )(value any) -> Promise|any
@@ -33,16 +33,16 @@ const thunkConditional = require('../_internal/thunkConditional')
  */
 
 const unless = (predicate, func) => function unlessFunc(value) {
-    const predication = predicate(value)
-    if (isPromise(predication)) {
-      return predication.then(
-        curry3(thunkConditional, __, always(value), thunkify1(func, value))
-      )
-    }
-    if (!predication) {
-      return func(value)
-    }
-    return value
+  const predication = predicate(value)
+  if (isPromise(predication)) {
+    return predication.then(
+      curry3(thunkConditional, __, always(value), thunkify1(func, value))
+    )
   }
+  if (!predication) {
+    return func(value)
+  }
+  return value
+}
 
 module.exports = unless

@@ -12,7 +12,7 @@ const isArray = require('../_internal/isArray')
  * ```
  *
  * @description
- * Prepend a string or an array.
+ * Append a string or an array.
  *
  * ```javascript [playground]
  * import append from 'https://unpkg.com/rubico/dist/x/append.es.js'

@@ -20,7 +20,7 @@ const isPromise = value => value != null && typeof value.then == 'function'
 const promiseAll = Promise.all.bind(Promise)
 
 const sameValueZero = function (left, right) {
-  return left === right || (left !== left && right !== right);
+  return left === right || (left !== left && right !== right)
 }
 
 const __ = Symbol.for('placeholder')

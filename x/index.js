@@ -21,14 +21,14 @@ const keys = require('./keys')
 const last = require('./last')
 const noop = require('./noop')
 const pluck = require('./pluck')
+const prepend = require('./prepend')
 const size = require('./size')
 const trace = require('./trace')
 const unionWith = require('./unionWith')
 const uniq = require('./uniq')
+const unless = require('./unless')
 const values = require('./values')
 const when = require('./when')
-const unless = require('./unless')
-const prepend = require('./prepend')
 
 const rubicoX = {
   append,

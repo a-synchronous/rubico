@@ -1316,6 +1316,19 @@ TestsMap.set('__', __ => [
   })
 ])
 
+TestsMap.set('append', append => [
+  Test('append - string', append('ed'))
+  .case('head', 'headed')
+  .case('', 'ed')
+  .throws(1, new TypeError('1 is not an Array or string'))
+  .throws(null, new TypeError('null is not an Array or string'))
+  .throws(undefined, new TypeError('undefined is not an Array or string')),
+
+  Test('append - array', append([5, 6, 7]))
+  .case([1, 2, 3], [1, 2, 3, 5, 6, 7])
+  .case([], [5, 6, 7]),
+])
+
 TestsMap.set('callProp', callProp => [
   Test('callProp', callProp('toFixed', 2))
   .case(5.992, '5.99')
@@ -1716,6 +1729,18 @@ TestsMap.set('pluck', pluck => [
   .case([{ a: [1] }, { a: [2] }, { a: [3] }], [1, 2, 3]),
 ])
 
+TestsMap.set('prepend', prepend => [
+  Test('prepend - string', prepend('hey '))
+  .case('there', 'hey there')
+  .case('', 'hey ')
+  .throws(null, new TypeError('null is not an Array or string'))
+  .throws(undefined, new TypeError('undefined is not an Array or string')),
+
+  Test('prepend - array', prepend([1, 2, 3]))
+  .case(['a', 'b', 'c'], [1, 2, 3, 'a', 'b', 'c'])
+  .case([], [1, 2, 3]),
+])
+
 TestsMap.set('size', size => [
   Test('size', size)
   .case('abc', 3)
@@ -1761,6 +1786,22 @@ TestsMap.set('uniq', uniq => [
   .case([3, 3, 3, 3, 3, 2, 2, 1], [3, 2, 1])
   .case([3, 3, 3, 3, 3, 1, 2, 2, 1], [3, 1, 2])
   .throws(1, Error('uniq(arr): arr is not an array'))
+])
+
+TestsMap.set('unless', unless => [
+  Test('unless - sync', unless(function isEven(number) {
+    return number % 2 == 0
+  }, number => number * 2))
+  .case(1, 2)
+  .case(2, 2)
+  .case(3, 6),
+
+  Test('unless - async', unless(async function asyncIsEven(number) {
+    return number % 2 == 0
+  }, number => number * 2))
+  .case(1, 2)
+  .case(2, 2)
+  .case(3, 6),
 ])
 
 TestsMap.set('values', function (values) {

@@ -2167,7 +2167,7 @@ const notSync = func => function notSync(...args) {
 not.sync = notSync
 
 const sameValueZero = function (left, right) {
-  return left === right || (left !== left && right !== right);
+  return left === right || (left !== left && right !== right)
 }
 
 const eq = function (left, right) {
