@@ -1,5 +1,6 @@
 const isString = require('./isString');
-const isArray = require("../_internal/isArray")
+const isArray = require('../_internal/isArray')
+
 /**
  * @name prepend
  *
