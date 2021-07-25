@@ -45,4 +45,4 @@ const unless = (predicate, func) => function unlessFunc(value) {
     return value
   }
 
-module.exports = unless;
+module.exports = unless
