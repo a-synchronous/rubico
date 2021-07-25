@@ -1,4 +1,4 @@
-const isString = require('./isString');
+const isString = require('./isString')
 const isArray = require('../_internal/isArray')
 
 /**
@@ -51,4 +51,4 @@ const prepend = item => function prependFunc(value) {
     throw new TypeError(`${value} is not an Array or string`)
   }
 
-module.exports = prepend;
+module.exports = prepend
