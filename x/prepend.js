@@ -1,5 +1,5 @@
 const isString = require('./isString');
-
+const isArray = require("../_internal/isArray")
 /**
  * @name prepend
  *
@@ -34,8 +34,8 @@ const isString = require('./isString');
 
 const prepend = item => function prependFunc(value) {
 
-    if (Array.isArray(value)) {
-      if (Array.isArray(item)){
+    if (isArray(value)) {
+      if (isArray(item)){
         return [...item, ...value]
       }
       return [item, ...value]
