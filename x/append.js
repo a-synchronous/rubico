@@ -18,15 +18,21 @@ const isArray = require('../_internal/isArray')
  * import append from 'https://unpkg.com/rubico/dist/x/append.es.js'
  *
  * const myArray = ['orange', 'apple']
- * const result = append(['ananas'])(myArray)
- * console.log(result) // ['orange', 'apple', 'ananas']
  *
- * const myArray = ['orange', 'apple']
- * const result = append('ananas')(myArray)
- * console.log(result) // ['orange', 'apple', 'ananas']
+ * {
+ *   const result = append(['ananas'])(myArray)
+ *   console.log(result) // ['orange', 'apple', 'ananas']
+ * }
  *
- * const result = append('world')('hello ')
- * console.log(result) // 'hello world'
+ * {
+ *   const result = append('ananas')(myArray)
+ *   console.log(result) // ['orange', 'apple', 'ananas']
+ * }
+ *
+ * {
+ *   const result = append('world')('hello ')
+ *   console.log(result) // 'hello world'
+ * }
  * ```
  *
  * @since 1.7.3
