@@ -221,7 +221,7 @@ module.exports = {
         'no-underscore-dangle': 'off',
         'no-unmodified-loop-condition': 'error',
         'no-unneeded-ternary': 'error',
-        'no-unreachable-loop': 'error',
+        'no-unreachable-loop': 'off',
         'no-unused-expressions': 'off',
         'no-unused-vars': 'off',
         'no-use-before-define': 'off',
