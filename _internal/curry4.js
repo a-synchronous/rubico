@@ -47,7 +47,7 @@ const curry4ResolveArg3 = (
  * @description
  * Curry a 4-ary function.
  *
- * Note: at least one argument must be the placeholder
+ * Note: exactly one argument must be the placeholder
  */
 const curry4 = function (baseFunc, arg0, arg1, arg2, arg3) {
   if (arg0 == __) {

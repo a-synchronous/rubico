@@ -31,7 +31,7 @@ const curry2ResolveArg1 = (
  * @description
  * Curry a binary function.
  *
- * Note: at least one argument must be the placeholder
+ * Note: exactly one argument must be the placeholder
  */
 const curry2 = function (baseFunc, arg0, arg1) {
   return arg0 == __

@@ -39,7 +39,7 @@ const curry3ResolveArg2 = (
  * @description
  * Curry a 3-ary function.
  *
- * Note: at least one argument must be the placeholder
+ * Note: exactly one argument must be the placeholder
  */
 const curry3 = function (baseFunc, arg0, arg1, arg2) {
   if (arg0 == __) {
