@@ -10,6 +10,7 @@ const __ = require('./placeholder')
 const curry2 = require('./curry2')
 const curryArgs3 = require('./curryArgs3')
 const arrayReduce = require('./arrayReduce')
+const objectReduce = require('./objectReduce')
 const generatorFunctionReduce = require('./generatorFunctionReduce')
 const asyncGeneratorFunctionReduce = require('./asyncGeneratorFunctionReduce')
 const reducerConcat = require('./reducerConcat')
@@ -82,7 +83,7 @@ const genericReduce = function (args, reducer, result) {
     return collection.flatMap(curry2(reducer, result, __))
   }
   if (collection.constructor == Object) {
-    return arrayReduce(objectValues(collection), reducer, result)
+    return objectReduce(collection, reducer, result)
   }
   return result === undefined
     ? curry2(reducer, collection, __)

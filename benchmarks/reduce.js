@@ -1,8 +1,12 @@
+const crypto = require('crypto')
 const timeInLoop = require('../x/timeInLoop')
 const { reduce } = require('..')
 const R = require('ramda')
 const _ = require('lodash')
 const _fp = require('lodash/fp')
+const curry4 = require('../_internal/curry4')
+const curry5 = require('../_internal/curry5')
+const __ = require('../_internal/placeholder')
 
 const isPromise = value => value != null && typeof value.then == 'function'
 
@@ -325,48 +329,130 @@ const objectValues = Object.values
 const objectReduce2 = (object, reducer, result) => arrayReduce1(
   objectValues(object), reducer, result)
 
+const objectKeys = Object.keys
+
+const objectReduce3Async = async function (object, reducer, result, keys, index) {
+  const keysLength = keys.length
+  while (++index < keysLength) {
+    const key = keys[index]
+    result = reducer(result, object[key], key, object)
+    if (isPromise(result)) {
+      result = await result
+    }
+  }
+  return result
+}
+
+const objectReduce3 = function (object, reducer, result) {
+  const keys = objectKeys(object),
+    keysLength = keys.length
+  let index = -1
+  if (result === undefined) {
+    result = object[keys[++index]]
+  }
+  while (++index < keysLength) {
+    const key = keys[index]
+    result = reducer(result, object[key], key, object)
+    if (isPromise(result)) {
+      return result.then(curry5(objectReduce3Async, object, reducer, __, keys, index))
+    }
+  }
+  return result
+}
+
 /**
  * @name objectReduce
  *
  * @benchmark
- * // numbers
+ * // numbers5
  * objectReduce1: 1e+6: 377.995ms
  * objectReduce2: 1e+6: 288.279ms
+ * objectReduce3: 1e+6: 121.555ms
+ *
+ * // numbers10
+ * objectReduce1: 1e+6: 634.794ms
+ * objectReduce2: 1e+6: 422.544ms
+ * objectReduce3: 1e+6: 238.916ms
+ *
+ * // numericObject10
+ * objectReduce1: 1e+5: 121.482ms
+ * objectReduce2: 1e+5: 45.423ms
+ * objectReduce3: 1e+5: 57.031ms
+ *
+ * // hashObject10
+ * objectReduce1: 1e+5: 83.197ms
+ * objectReduce2: 1e+5: 58.986ms
+ * objectReduce3: 1e+5: 36.719ms
+ *
+ * // hashObject100
+ * objectReduce1: 1e+4: 115.869ms
+ * objectReduce2: 1e+4: 200.251ms
+ * objectReduce3: 1e+4: 62.409ms
+ *
+ * // numericObject50
+ * objectReduce1: 1e+5: 451.518ms
+ * objectReduce2: 1e+5: 86.637ms
+ * objectReduce3: 1e+5: 170.327ms
  *
  * // numericObject100
  * objectReduce1: 1e+4: 100.247ms
  * objectReduce2: 1e+4: 26.077ms
+ * objectReduce3: 1e+4: 42.457ms
  *
  * // numericObject1000
  * objectReduce1: 1e+4: 800.712ms
  * objectReduce2: 1e+4: 123.687ms
+ * objectReduce3: 1e+4: 305.151ms
  *
  * // numericObject1e4
  * objectReduce1: 1e+3: 819.551ms
  * objectReduce2: 1e+3: 115.656ms
+ * objectReduce3: 1e+3: 303.498ms
  *
  * // numericObject1e5
  * objectReduce1: 1e+2: 1.699s
- * objectReduce2: 1e+2: 183.447ms
+ * objectReduce2: 1e+2: 179.696ms
+ * objectReduce3: 1e+2: 1.035s
  *
  * // numericObject1e6
  * objectReduce1: 1e+0: 256.155ms
  * objectReduce2: 1e+0: 22.112ms
+ * objectReduce3: 1e+0: 180.417ms
  *
  * // empty
  * objectReduce1 - empty: 1e+6: 74.931ms
  * objectReduce2: 1e+6: 25.596ms
+ * objectReduce3: 1e+6: 24.173ms
  *
- * // async numbers
+ * // async numbers5
  * objectReduce1: 1e+5: 194.493ms
  * objectReduce2: 1e+5: 123.184ms
+ * objectReduce3: 1e+5: 179.193ms
  *
  * @remarks
  * Object.keys + arrayReduce is faster than newer syntax with iterators
+ *
+ * For regular objects (not numeric ones) we progress by 3
  */
 
 {
-  const numbers = { a: 1, b: 2, c: 3, d: 4, e: 5 }
+  const numbers5 = { a: 1, b: 2, c: 3, d: 4, e: 5 }
+
+  const numbers10 = {
+     a: 1, b: 2, c: 3, d: 4, e: 5,
+     f: 6, g: 7, h: 8, i: 9, j: 10,
+  }
+
+  const sha256 = value => crypto.createHash('sha256').update(value).digest('hex')
+
+  const HashObject = function (size) {
+    const result = {}
+    let index = -1
+    while (++index < size) {
+      result[sha256(String(index))] = index
+    }
+    return result
+  }
 
   const NumericObject = function (size) {
     const result = {}
@@ -383,47 +469,93 @@ const objectReduce2 = (object, reducer, result) => arrayReduce1(
 
   const asyncAdd = async (a, b) => a + b
 
-  // console.log(objectReduce1(numbers, add, 0))
-  // objectReduce1(numbers, asyncAdd, 0).then(console.log)
-  // console.log(objectReduce2(numbers, add, 0))
-  // objectReduce2(numbers, asyncAdd, 0).then(console.log)
+  // console.log(objectReduce1(numbers5, add, 0))
+  // objectReduce1(numbers5, asyncAdd, 0).then(console.log)
+  // console.log(objectReduce2(numbers5, add, 0))
+  // objectReduce2(numbers5, asyncAdd, 0).then(console.log)
+  // console.log(objectReduce3(numbers5, add, 0))
+  // objectReduce3(numbers5, asyncAdd, 0).then(console.log)
+  // const hashObject100 = HashObject(100)
+  // console.log(objectReduce1(hashObject100, add, 0))
+  // objectReduce1(hashObject100, asyncAdd, 0).then(console.log)
+  // console.log(objectReduce2(hashObject100, add, 0))
+  // objectReduce2(hashObject100, asyncAdd, 0).then(console.log)
+  // console.log(objectReduce3(hashObject100, add, 0))
+  // objectReduce3(hashObject100, asyncAdd, 0).then(console.log)
 
-  // numbers
-  // timeInLoop('objectReduce1', 1e6, () => objectReduce1(numbers, add, 0))
-  // timeInLoop('objectReduce2', 1e6, () => objectReduce2(numbers, add, 0))
+  // numbers5
+  // timeInLoop('objectReduce1', 1e6, () => objectReduce1(numbers5, add, 0))
+  // timeInLoop('objectReduce2', 1e6, () => objectReduce2(numbers5, add, 0))
+  // timeInLoop('objectReduce3', 1e6, () => objectReduce3(numbers5, add, 0))
+
+  // numbers10
+  // timeInLoop('objectReduce1', 1e6, () => objectReduce1(numbers10, add, 0))
+  // timeInLoop('objectReduce2', 1e6, () => objectReduce2(numbers10, add, 0))
+  // timeInLoop('objectReduce3', 1e6, () => objectReduce3(numbers10, add, 0))
+
+  // hashObject10
+  // const hashObject10 = HashObject(10)
+  // timeInLoop('objectReduce1', 1e5, () => objectReduce1(hashObject10, add, 0))
+  // timeInLoop('objectReduce2', 1e5, () => objectReduce2(hashObject10, add, 0))
+  // timeInLoop('objectReduce3', 1e5, () => objectReduce3(hashObject10, add, 0))
+
+  // hashObject100
+  // const hashObject100 = HashObject(100)
+  // timeInLoop('objectReduce1', 1e4, () => objectReduce1(hashObject100, add, 0))
+  // timeInLoop('objectReduce2', 1e4, () => objectReduce2(hashObject100, add, 0))
+  // timeInLoop('objectReduce3', 1e4, () => objectReduce3(hashObject100, add, 0))
+
+  // numericObject10
+  // const numericObject10 = NumericObject(10)
+  // timeInLoop('objectReduce1', 1e5, () => objectReduce1(numericObject10, add, 0))
+  // timeInLoop('objectReduce2', 1e5, () => objectReduce2(numericObject10, add, 0))
+  // timeInLoop('objectReduce3', 1e5, () => objectReduce3(numericObject10, add, 0))
+
+  // numericObject50
+  // const numericObject50 = NumericObject(50)
+  // timeInLoop('objectReduce1', 1e5, () => objectReduce1(numericObject50, add, 0))
+  // timeInLoop('objectReduce2', 1e5, () => objectReduce2(numericObject50, add, 0))
+  // timeInLoop('objectReduce3', 1e5, () => objectReduce3(numericObject50, add, 0))
 
   // numericObject100
   // const numericObject100 = NumericObject(100)
   // timeInLoop('objectReduce1', 1e4, () => objectReduce1(numericObject100, add, 0))
   // timeInLoop('objectReduce2', 1e4, () => objectReduce2(numericObject100, add, 0))
+  // timeInLoop('objectReduce3', 1e4, () => objectReduce3(numericObject100, add, 0))
 
   // numericObject1000
   // const numericObject1000 = NumericObject(1000)
   // timeInLoop('objectReduce1', 1e4, () => objectReduce1(numericObject1000, add, 0))
   // timeInLoop('objectReduce2', 1e4, () => objectReduce2(numericObject1000, add, 0))
+  // timeInLoop('objectReduce3', 1e4, () => objectReduce3(numericObject1000, add, 0))
 
   // numericObject1e4
   // const numericObject1e4 = NumericObject(1e4)
   // timeInLoop('objectReduce1', 1e3, () => objectReduce1(numericObject1e4, add, 0))
   // timeInLoop('objectReduce2', 1e3, () => objectReduce2(numericObject1e4, add, 0))
+  // timeInLoop('objectReduce3', 1e3, () => objectReduce3(numericObject1e4, add, 0))
 
   // numericObject1e5
   // const numericObject1e5 = NumericObject(1e5)
   // timeInLoop('objectReduce1', 1e2, () => objectReduce1(numericObject1e5, add, 0))
   // timeInLoop('objectReduce2', 1e2, () => objectReduce2(numericObject1e5, add, 0))
+  // timeInLoop('objectReduce3', 1e2, () => objectReduce3(numericObject1e5, add, 0))
 
   // numericObject1e6
   // const numericObject1e6 = NumericObject(1e6)
   // timeInLoop('objectReduce1', 1, () => objectReduce1(numericObject1e6, add, 0))
   // timeInLoop('objectReduce2', 1, () => objectReduce2(numericObject1e6, add, 0))
+  // timeInLoop('objectReduce3', 1, () => objectReduce3(numericObject1e6, add, 0))
 
   // empty
   // timeInLoop('objectReduce1', 1e6, () => objectReduce1(empty, add, 0))
   // timeInLoop('objectReduce2', 1e6, () => objectReduce2(empty, add, 0))
+  // timeInLoop('objectReduce3', 1e6, () => objectReduce3(empty, add, 0))
 
   // async numbers
   // timeInLoop.async('objectReduce1', 1e5, () => objectReduce1(numbers, asyncAdd, 0))
   // timeInLoop.async('objectReduce2', 1e5, () => objectReduce2(numbers, asyncAdd, 0))
+  // timeInLoop.async('objectReduce3', 1e5, () => objectReduce3(numbers, asyncAdd, 0))
 }
 
 /**
