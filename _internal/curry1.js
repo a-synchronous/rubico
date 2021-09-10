@@ -15,7 +15,7 @@ const __ = require('./placeholder')
  * ```
  *
  * @description
- *
+ * Curry a unary function.
  */
 const curry1 = (func, arg0) => arg0 == __
   ? _arg0 => curry1(func, _arg0)
