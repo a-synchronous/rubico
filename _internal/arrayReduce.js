@@ -23,7 +23,7 @@ const arrayReduceAsync = async function (
 ) {
   const length = array.length
   while (++index < length) {
-    result = reducer(result, array[index])
+    result = reducer(result, array[index], index, array)
     if (isPromise(result)) {
       result = await result
     }
@@ -50,7 +50,7 @@ const arrayReduce = function (array, reducer, result) {
     result = array[++index]
   }
   while (++index < arrayLength) {
-    result = reducer(result, array[index])
+    result = reducer(result, array[index], index, array)
     if (isPromise(result)) {
       return result.then(curry4(arrayReduceAsync, array, reducer, __, index))
     }
