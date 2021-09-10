@@ -22,7 +22,7 @@ const arrayExtendMap = function (
   const valuesLength = values.length
   let arrayIndex = array.length - 1
   while (++valuesIndex < valuesLength) {
-    array[++arrayIndex] = valuesMapper(values[valuesIndex])
+    array[++arrayIndex] = valuesMapper(values[valuesIndex], valuesIndex, array)
   }
   return array
 }

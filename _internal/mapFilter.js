@@ -31,7 +31,7 @@ const mapFilter = function (map, predicate) {
   const result = new Map(),
     promises = []
   for (const [key, item] of map) {
-    const predication = predicate(item)
+    const predication = predicate(item, key, map)
     if (isPromise(predication)) {
       promises.push(predication.then(curry3(thunkConditional,
         __,

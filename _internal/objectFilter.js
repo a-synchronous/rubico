@@ -21,7 +21,7 @@ const objectFilter = function (object, predicate) {
     promises = []
   for (const key in object) {
     const item = object[key],
-      shouldIncludeItem = predicate(item)
+      shouldIncludeItem = predicate(item, key, object)
     if (isPromise(shouldIncludeItem)) {
       promises.push(shouldIncludeItem.then(
         curry4(objectSetIf, result, key, object[key], __)))
