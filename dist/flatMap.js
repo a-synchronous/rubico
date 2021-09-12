@@ -1,5 +1,5 @@
 /**
- * rubico v1.8.0
+ * rubico v1.8.1
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2021 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -728,9 +728,8 @@ const setMap = function (set, mapper) {
   const result = new Set(),
     promises = []
   for (const item of set) {
-    const resultItem = mapper(item)
+    const resultItem = mapper(item, item, set)
     if (isPromise(resultItem)) {
-      // promises.push(resultItem.then(curry2(setAdd, result, __)))
       promises.push(resultItem.then(curry3(callPropUnary, result, 'add', __)))
     } else {
       result.add(resultItem)

@@ -1,5 +1,5 @@
 /**
- * rubico v1.8.0
+ * rubico v1.8.1
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2021 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -239,7 +239,7 @@ const setFilter = function (value, predicate) {
     resultAdd = result.add.bind(result),
     promises = []
   for (const item of value) {
-    const predication = predicate(item)
+    const predication = predicate(item, item, value)
     if (isPromise(predication)) {
       promises.push(predication.then(curry3(
         thunkConditional, __, thunkify1(resultAdd, item), noop)))
