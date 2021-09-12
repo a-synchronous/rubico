@@ -23,25 +23,33 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * Filterable<T> = Array<T>|Object<T>|Set<T>|Map<T>
- *   |Iterator<T>|AsyncIterator<T>|{ filter: (T=>boolean)=>any }
- * Reducer<T> = (any, T)=>Promise|any
+ * filter(
+ *   arrayPredicate (value any, index number, array Array)=>Promise|boolean
+ * )(array) -> filteredArray Promise|Array
  *
- * var T any,
- *   predicate T=>Promise|boolean,
- *   filterable Filterable<T>,
- *   args ...any,
- *   generatorFunction ...args=>Generator<Promise|T>,
- *   asyncGeneratorFunction ...args=>AsyncGenerator<T>,
- *   reducer Reducer<T>
+ * filter(
+ *   objectPredicate (value any, key string, object Object)=>Promise|boolean
+ * )(object) -> filteredObject Promise|Object
  *
- * filter(predicate)(filterable) -> Promise|Filterable<T>
+ * filter(
+ *   setPredicate (value any, value, set Set)=>Promise|boolean
+ * )(set) -> filteredSet Promise|Set
  *
- * filter(predicate)(generatorFunction) -> ...args=>Generator<T>
+ * filter(
+ *   mapPredicate (value any, key any, map Map)=>Promise|boolean
+ * )(map) -> filteredMap Promise|Map
  *
- * filter(predicate)(asyncGeneratorFunction) -> ...args=>AsyncGenerator<T>
+ * filter(
+ *   predicate (value any)=>Promise|boolean
+ * )(generatorFunction GeneratorFunction) -> filteringGeneratorFunction GeneratorFunction
  *
- * filter(predicate)(reducer) -> Reducer<T>
+ * filter(
+ *   predicate (value any)=>Promise|boolean
+ * )(asyncGeneratorFunction AsyncGeneratorFunction) -> filteringAsyncGeneratorFunction AsyncGeneratorFunction
+ *
+ * filter(
+ *   predicate (value any)=>Promise|boolean
+ * )(reducer Reducer) -> filteringReducer Reducer
  * ```
  *
  * @description
