@@ -9,19 +9,27 @@ const genericReduce = require('./_internal/genericReduce')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * Reducer<T> = (any, T)=>Promise|any
- * Foldable<T> = Iterable<T>|AsyncIterable<T>|{ reduce: Reducer<T>=>any }|Object<T>
+ * reduce(
+ *   arrayReducer (result any, value any, index number, array Array)=>Promise|any,
+ *   init? (array=>Promise|any)|any,
+ * )(array) -> Promise|result
  *
- * var T any,
- *   args ...any,
- *   reducer Reducer<T>,
- *   init (...args=>Promise|any)|any,
- *   foldable Foldable<T>
- *   generatorFunction ...args=>Generator<Promise|T>,
- *   asyncGeneratorFunction ...args=>AsyncGenerator<T>,
- *   moreReducers ...Reducer<T>
+ * reduce(
+ *   objectReducer (result any, value any, key string, object Object)=>Promise|any,
+ *   init? (object=>Promise|any)|any,
+ * )(object) -> Promise|result
  *
- * reduce(reducer, init?)(foldable) -> Promise|any
+ * reduce(
+ *   mapReducer (result any, value any, key any, map Map)=>Promise|any,
+ *   init?,
+ * )(map) -> Promise|result
+ *
+ * Foldable = Iterable|AsyncIterable|{ reduce: (reducer, result?)=>any }
+ *
+ * reduce(
+ *   reducer (result any, value any)=>Promise|any,
+ *   init?,
+ * )(foldable Foldable) -> Promise|result
  *
  * reduce(reducer, init?)(generatorFunction) -> ...args=>Promise|any
  *
