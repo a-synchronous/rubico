@@ -27,26 +27,32 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  * @synopsis
  * ```coffeescript [specscript]
  * map(
- *   arrayMapper (value any, index number, array Array)
+ *   arrayMapper (value any, index number, array Array)=>Promise|any
  * )(array) -> mappedArray Promise|Array
  *
  * map(
- *   objectMapper (value any, key string, object Object)
+ *   objectMapper (value any, key string, object Object)=>Promise|any
  * )(object) -> mappedObject Promise|Array
  *
  * map(
- *   setMapper (value any, value, set Set)
+ *   setMapper (value any, value, set Set)=>Promise|any
  * )(set) -> mappedSet Promise|Set
  *
  * map(
- *   mapMapper (value any, key any, originalMap Map)
+ *   mapMapper (value any, key any, originalMap Map)=>Promise|any
  * )(originalMap) -> mappedMap Promise|Map
  *
- * map(mapper)(generatorFunction) -> mappingGeneratorFunction ...args=>Generator
+ * map(
+ *   probablyShouldBeSyncMapper (value any)=>any
+ * )(generatorFunction) -> mappingGeneratorFunction ...args=>Generator
  *
- * map(mapper)(asyncGeneratorFunction) -> mappingAsyncGeneratorFunction ...args=>AsyncGenerator
+ * map(
+ *   mapper (value any)=>Promise|any
+ * )(asyncGeneratorFunction) -> mappingAsyncGeneratorFunction ...args=>AsyncGenerator
  *
- * map(mapper)(originalReducer Reducer) -> mappingReducer Reducer
+ * map(
+ *   mapper (value any)=>Promise|any
+ * )(originalReducer Reducer) -> mappingReducer Reducer
  * ```
  *
  * @description
