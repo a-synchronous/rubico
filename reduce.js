@@ -21,19 +21,25 @@ const genericReduce = require('./_internal/genericReduce')
  *
  * reduce(
  *   mapReducer (result any, value any, key any, map Map)=>Promise|any,
- *   init?,
+ *   init? (map=>Promise|any)|any,
  * )(map) -> Promise|result
  *
  * Foldable = Iterable|AsyncIterable|{ reduce: (reducer, result?)=>any }
  *
  * reduce(
  *   reducer (result any, value any)=>Promise|any,
- *   init?,
- * )(foldable Foldable) -> Promise|result
+ *   init? ((foldable Foldable)=>Promise|any)|any,
+ * )(foldable) -> Promise|result
  *
- * reduce(reducer, init?)(generatorFunction) -> ...args=>Promise|any
+ * reduce(
+ *   reducer (result any, value any)=>Promise|any,
+ *   init? (()=>Promise|any)|any,
+ * )(generatorFunction) -> reducingGeneratorValuesFunction (...generatorFunctionArgs)=>Promise|any
  *
- * reduce(reducer, init?)(asyncGeneratorFunction) -> ...args=>Promise|any
+ * reduce(
+ *   reducer (result any, value any)=>Promise|any,
+ *   init? (()=>Promise|any)|any,
+ * )(asyncGeneratorFunction) -> reducingAsyncGeneratorValuesFunction (...asyncGeneratorFunctionArgs)=>Promise|any
  *
  * reduce(reducer, init?)(...moreReducers) -> ...args=>Promise|any
  * ```
