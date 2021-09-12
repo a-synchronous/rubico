@@ -24,9 +24,8 @@ const setMap = function (set, mapper) {
   const result = new Set(),
     promises = []
   for (const item of set) {
-    const resultItem = mapper(item)
+    const resultItem = mapper(item, item, set)
     if (isPromise(resultItem)) {
-      // promises.push(resultItem.then(curry2(setAdd, result, __)))
       promises.push(resultItem.then(curry3(callPropUnary, result, 'add', __)))
     } else {
       result.add(resultItem)
