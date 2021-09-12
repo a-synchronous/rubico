@@ -650,6 +650,7 @@ TestsMap.set('reduce', reduce => [
   .case({ chain: flatMapper => flatMapper(1) }, 1)
   .case({ flatMap: flatMapper => flatMapper(1) }, 1)
   .case({ a: 1, b: 2, c: 3, d: 4, e: 5 }, 15)
+  .case(new Map([[1, 1], [3, 3], [5, 5]]), 9)
   .case(1, 1),
 
   Test(
@@ -687,6 +688,7 @@ TestsMap.set('reduce', reduce => [
   .case({ chain: flatMapper => flatMapper(1) }, 1)
   .case({ flatMap: flatMapper => flatMapper(1) }, 1)
   .case({ a: 1, b: 2, c: 3, d: 4, e: 5 }, 15)
+  .case(new Map([[1, 1], [3, 3], [5, 5]]), 9)
   .case(1, 1),
 
   Test(
@@ -724,6 +726,7 @@ TestsMap.set('reduce', reduce => [
   .case({ chain: flatMapper => flatMapper(1) }, result => assert(isNaN(result)))
   .case({ flatMap: flatMapper => flatMapper(1) }, result => assert(isNaN(result)))
   .case({ a: 1, b: 2, c: 3, d: 4, e: 5 }, 15)
+  .case(new Map([[1, 1], [3, 3], [5, 5]]), 9)
   .case(1, result => assert(isNaN(result))),
 
   Test(
@@ -761,6 +764,7 @@ TestsMap.set('reduce', reduce => [
   .case({ chain: flatMapper => flatMapper(1) }, result => assert(isNaN(result)))
   .case({ flatMap: flatMapper => flatMapper(1) }, result => assert(isNaN(result)))
   .case({ a: 1, b: 2, c: 3, d: 4, e: 5 }, 15)
+  .case(new Map([[1, 1], [3, 3], [5, 5]]), 9)
   .case(1, result => assert(isNaN(result))),
 ])
 
