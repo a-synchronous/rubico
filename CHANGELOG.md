@@ -1,7 +1,11 @@
-## v1.8.0 - latest
- * map supplies index and reference to original value for arrays, objects, and maps
- * filter supplies index and reference to original value for arrays, objects, and maps
- * reduce supplies index and reference to original value for arrays, objects, and maps
+## v1.8.1 - latest
+ * map supplies key and reference to original value for sets
+ * filter supplies key and reference to original value for sets
+
+## v1.8.0
+ * map supplies index/key and reference to original value for arrays, objects, and maps
+ * filter supplies index/key and reference to original value for arrays, objects, and maps
+ * reduce supplies index/key and reference to original value for arrays, objects, and maps
  * reduce object performance improvements
 
 ## v1.7.3
