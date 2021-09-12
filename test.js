@@ -7,6 +7,7 @@ const rubico = require('./rubico')
 const isDeepEqual = require('./x/isDeepEqual')
 const { Readable, Writable } = require('stream')
 const mapFrom = require('./_internal/mapFrom')
+const sha256 = require('./_internal/sha256')
 
 const {
   pipe, tap,
@@ -1824,6 +1825,22 @@ reduce(
         await reduce(asyncAdd, 0)(numbers), 0)
       assert.strictEqual(
         await reduce(variadicAsyncAdd, 0)(numbers), 0)
+    })
+    it('collection Map<[string, number]>', async () => {
+      const StringNumberMap = function (size) {
+        const result = new Map()
+        let index = -1
+        while (++index < size) {
+          result.set(sha256(String(index)), index)
+        }
+        return result
+      }
+      const stringNumberMap5 = StringNumberMap(5)
+      assert.equal(reduce(add, 0)(stringNumberMap5), 10)
+      assert.equal(reduce(add, () => 0)(stringNumberMap5), 10)
+      assert.equal(await reduce(add, async () => 0)(stringNumberMap5), 10)
+      assert.equal(await reduce(asyncAdd, async () => 0)(stringNumberMap5), 10)
+      assert.equal(reduce(add)(stringNumberMap5), 10)
     })
     it('collection Reducer<number>', async () => {
       const reducers = [

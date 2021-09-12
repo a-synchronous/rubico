@@ -11,6 +11,7 @@ const curry2 = require('./curry2')
 const curryArgs3 = require('./curryArgs3')
 const arrayReduce = require('./arrayReduce')
 const objectReduce = require('./objectReduce')
+const mapReduce = require('./mapReduce')
 const generatorFunctionReduce = require('./generatorFunctionReduce')
 const asyncGeneratorFunctionReduce = require('./asyncGeneratorFunctionReduce')
 const reducerConcat = require('./reducerConcat')
@@ -65,6 +66,9 @@ const genericReduce = function (args, reducer, result) {
       : reducer(result, collection)
   }
 
+  if (collection.constructor == Map) {
+    return mapReduce(collection, reducer, result)
+  }
   if (typeof collection[symbolIterator] == 'function') {
     return iteratorReduce(
       collection[symbolIterator](), reducer, result)

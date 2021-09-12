@@ -289,6 +289,8 @@ map.series = mapper => function mappingInSeries(value) {
  * map.pool(2, delayedLog)([1, 2, 3, 4, 5])
  * ```
  *
+ * @TODO objectMapPool
+ *
  * @execution concurrent
  */
 map.pool = (concurrencyLimit, mapper) => function concurrentPoolMapping(value) {

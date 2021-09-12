@@ -1,4 +1,3 @@
-const crypto = require('crypto')
 const timeInLoop = require('../x/timeInLoop')
 const { reduce } = require('..')
 const R = require('ramda')
@@ -7,6 +6,7 @@ const _fp = require('lodash/fp')
 const curry4 = require('../_internal/curry4')
 const curry5 = require('../_internal/curry5')
 const __ = require('../_internal/placeholder')
+const sha256 = require('../_internal/sha256')
 
 const isPromise = value => value != null && typeof value.then == 'function'
 
@@ -443,8 +443,6 @@ const objectReduce3 = function (object, reducer, result) {
      f: 6, g: 7, h: 8, i: 9, j: 10,
   }
 
-  const sha256 = value => crypto.createHash('sha256').update(value).digest('hex')
-
   const HashObject = function (size) {
     const result = {}
     let index = -1
@@ -556,6 +554,155 @@ const objectReduce3 = function (object, reducer, result) {
   // timeInLoop.async('objectReduce1', 1e5, () => objectReduce1(numbers, asyncAdd, 0))
   // timeInLoop.async('objectReduce2', 1e5, () => objectReduce2(numbers, asyncAdd, 0))
   // timeInLoop.async('objectReduce3', 1e5, () => objectReduce3(numbers, asyncAdd, 0))
+}
+
+// maybe dust this off for concurrent reduce
+const mapReduceForEach = function (map, reducer, result) {
+}
+
+const mapReduceEntriesAsync = async function (
+  map, reducer, result, mapEntriesIter,
+) {
+  for (const [key, value] of mapEntriesIter) {
+    result = reducer(result, value, key, map)
+    if (isPromise(result)) {
+      result = await result
+    }
+  }
+  return result
+}
+
+const mapReduceEntries = function (map, reducer, result) {
+  const mapEntriesIter = map.entries()
+  if (result === undefined) {
+    const firstIteration = mapEntriesIter.next()
+    if (firstIteration.done) {
+      return result
+    }
+    result = firstIteration.value[1]
+  }
+  for (const [key, value] of mapEntriesIter) {
+    result = reducer(result, value, key, map)
+    if (isPromise(result)) {
+      return result.then(curry4(
+        mapReduceEntriesAsync, map, reducer, __, mapEntriesIter))
+    }
+  }
+  return result
+}
+
+const mapReduceEntriesArrayAsync = async function (
+  map, reducer, result, mapEntriesArray, index,
+) {
+  const mapEntriesArrayLength = mapEntriesArray.length
+  while (++index < mapEntriesArrayLength) {
+    const [key, value] = mapEntriesArray[index]
+    result = reducer(result, value, key, map)
+    if (isPromise(result)) {
+      result = await result
+    }
+  }
+  return result
+}
+
+const mapReduceEntriesArray = function (map, reducer, result) {
+  const mapEntriesArray = [...map.entries()],
+    mapEntriesArrayLength = mapEntriesArray.length
+  let index = -1
+  if (result === undefined) {
+    if (mapEntriesArrayLength == 0) {
+      return result
+    }
+    result = mapEntriesArray[++index][1]
+  }
+  while (++index < mapEntriesArrayLength) {
+    const [key, value] = mapEntriesArray[index]
+    result = reducer(result, value, key, map)
+    if (isPromise(result)) {
+      return result.then(curry5(
+        mapReduceEntriesArrayAsync, map, reducer, __, mapEntriesArray, index))
+    }
+  }
+  return result
+}
+
+/**
+ * @name mapReduce
+ *
+ * @benchmark
+ * # stringNumberMap5
+ * mapReduceEntries: 1e+6: 99.731ms
+ * mapReduceEntriesArray: 1e+6: 98.929ms
+ *
+ * # stringNumberMap10
+ * mapReduceEntries: 1e+6: 167.5ms
+ * mapReduceEntriesArray: 1e+6: 165.228ms
+ *
+ * # stringNumberMap50
+ * mapReduceEntries: 1e+5: 90.172ms
+ * mapReduceEntriesArray: 1e+5: 91.254ms
+ *
+ * # stringObjectMap5
+ * mapReduceEntries: 1e+6: 98.921ms
+ * mapReduceEntriesArray: 1e+6: 482.66ms
+ *
+ * # stringObjectMap10
+ * mapReduceEntries: 1e+5: 34.198ms
+ * mapReduceEntriesArray: 1e+5: 96.555ms
+ *
+ * # stringObjectMap50
+ * mapReduceEntries: 1e+5: 93.92ms
+ * mapReduceEntriesArray: 1e+5: 351.628ms
+ */
+
+{
+  const add = (a, b) => a + b
+  const addValue = (a, b) => a + b.value
+
+  const StringNumberMap = function (size) {
+    const result = new Map()
+    let index = -1
+    while (++index < size) {
+      result.set(sha256(String(index)), index)
+    }
+    return result
+  }
+
+  const StringObjectMap = function (size) {
+    const result = new Map()
+    let index = -1
+    while (++index < size) {
+      const hash = sha256(String(index))
+      result.set(hash, { value: index })
+    }
+    return result
+  }
+
+  const stringNumberMap5 = StringNumberMap(5)
+  const stringNumberMap10 = StringNumberMap(10)
+  const stringNumberMap50 = StringNumberMap(50)
+  const stringObjectMap5 = StringObjectMap(5)
+  const stringObjectMap10 = StringObjectMap(10)
+  const stringObjectMap50 = StringObjectMap(50)
+  // console.log(mapReduceEntries(stringNumberMap5, add, 0))
+  // console.log(mapReduceEntries(stringNumberMap5, add))
+  // console.log(mapReduceEntriesArray(stringNumberMap5, add, 0))
+  // console.log(mapReduceEntriesArray(stringNumberMap5, add))
+  // console.log(mapReduceEntries(stringObjectMap5, addValue, 0))
+
+  // timeInLoop('mapReduceEntries', 1e6, () => mapReduceEntries(stringNumberMap5, add, 0))
+  // timeInLoop('mapReduceEntriesArray', 1e6, () => mapReduceEntries(stringNumberMap5, add, 0))
+  // timeInLoop('mapReduceEntries', 1e6, () => mapReduceEntries(stringNumberMap10, add, 0))
+  // timeInLoop('mapReduceEntriesArray', 1e6, () => mapReduceEntries(stringNumberMap10, add, 0))
+  // timeInLoop('mapReduceEntries', 1e5, () => mapReduceEntries(stringNumberMap50, add, 0))
+  // timeInLoop('mapReduceEntriesArray', 1e5, () => mapReduceEntries(stringNumberMap50, add, 0))
+
+  // timeInLoop('mapReduceEntries', 1e6, () => mapReduceEntries(stringObjectMap5, addValue, 0))
+  // timeInLoop('mapReduceEntriesArray', 1e6, () => mapReduceEntriesArray(stringObjectMap5, addValue, 0))
+  // timeInLoop('mapReduceEntries', 1e5, () => mapReduceEntries(stringObjectMap10, addValue, 0))
+  // timeInLoop('mapReduceEntriesArray', 1e5, () => mapReduceEntriesArray(stringObjectMap10, addValue, 0))
+  // timeInLoop('mapReduceEntries', 1e5, () => mapReduceEntries(stringObjectMap50, addValue, 0))
+  // timeInLoop('mapReduceEntriesArray', 1e5, () => mapReduceEntriesArray(stringObjectMap50, addValue, 0))
 }
 
 /**
