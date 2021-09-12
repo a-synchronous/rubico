@@ -26,25 +26,27 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * Functor<T> = Array<T>|Object<T>|Set<T>|Map<T>
- *   |Iterator<T>|AsyncIterator<T>|{ map: (T=>any)=>any }
- * Reducer<T> = (any, T)=>Promise|any
+ * map(
+ *   arrayMapper (value any, index number, array Array)
+ * )(array) -> mappedArray Promise|Array
  *
- * var T any,
- *   mapper T=>Promise|any,
- *   functor Functor<T>
- *   args ...any,
- *   generatorFunction ...args=>Generator<T>,
- *   asyncGeneratorFunction ...args=>AsyncGenerator<T>,
- *   reducer Reducer<T>
+ * map(
+ *   objectMapper (value any, key string, object Object)
+ * )(object) -> mappedObject Promise|Array
  *
- * map(mapper)(functor) -> Promise|Functor
+ * map(
+ *   setMapper (value any, value, set Set)
+ * )(set) -> mappedSet Promise|Set
  *
- * map(mapper)(generatorFunction) -> ...args=>Generator
+ * map(
+ *   mapMapper (value any, key any, originalMap Map)
+ * )(originalMap) -> mappedMap Promise|Map
  *
- * map(mapper)(asyncGeneratorFunction) -> ...args=>AsyncGenerator
+ * map(mapper)(generatorFunction) -> mappingGeneratorFunction ...args=>Generator
  *
- * map(mapper)(reducer) -> Reducer
+ * map(mapper)(asyncGeneratorFunction) -> mappingAsyncGeneratorFunction ...args=>AsyncGenerator
+ *
+ * map(mapper)(originalReducer Reducer) -> mappingReducer Reducer
  * ```
  *
  * @description
