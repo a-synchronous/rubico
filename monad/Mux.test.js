@@ -498,14 +498,14 @@ describe('Mux', () => {
     it('x undefined; TypeError', async () => {
       assert.throws(
         () => Mux.flatten(undefined),
-        new TypeError('Cannot read property \'Symbol(Symbol.asyncIterator)\' of undefined')
+        { name: 'TypeError' },
       )
     })
 
     it('x null; TypeError', async () => {
       assert.throws(
         () => Mux.flatten(null),
-        new TypeError('Cannot read property \'Symbol(Symbol.asyncIterator)\' of null')
+        { name: 'TypeError' },
       )
     })
   })
