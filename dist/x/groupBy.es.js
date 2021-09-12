@@ -215,7 +215,7 @@ const arrayReduceAsync = async function (
 ) {
   const length = array.length
   while (++index < length) {
-    result = reducer(result, array[index])
+    result = reducer(result, array[index], index, array)
     if (isPromise(result)) {
       result = await result
     }
@@ -230,9 +230,129 @@ const arrayReduce = function (array, reducer, result) {
     result = array[++index]
   }
   while (++index < arrayLength) {
-    result = reducer(result, array[index])
+    result = reducer(result, array[index], index, array)
     if (isPromise(result)) {
       return result.then(curry4(arrayReduceAsync, array, reducer, __, index))
+    }
+  }
+  return result
+}
+
+// argument resolver for curry5
+const curry5ResolveArg0 = (
+  baseFunc, arg1, arg2, arg3, arg4,
+) => function arg0Resolver(arg0) {
+  return baseFunc(arg0, arg1, arg2, arg3, arg4)
+}
+
+// argument resolver for curry5
+const curry5ResolveArg1 = (
+  baseFunc, arg0, arg2, arg3, arg4,
+) => function arg1Resolver(arg1) {
+  return baseFunc(arg0, arg1, arg2, arg3, arg4)
+}
+
+// argument resolver for curry5
+const curry5ResolveArg2 = (
+  baseFunc, arg0, arg1, arg3, arg4,
+) => function arg2Resolver(arg2) {
+  return baseFunc(arg0, arg1, arg2, arg3, arg4)
+}
+
+// argument resolver for curry5
+const curry5ResolveArg3 = (
+  baseFunc, arg0, arg1, arg2, arg4,
+) => function arg3Resolver(arg3) {
+  return baseFunc(arg0, arg1, arg2, arg3, arg4)
+}
+
+// argument resolver for curry5
+const curry5ResolveArg4 = (
+  baseFunc, arg0, arg1, arg2, arg3,
+) => function arg3Resolver(arg4) {
+  return baseFunc(arg0, arg1, arg2, arg3, arg4)
+}
+
+const curry5 = function (baseFunc, arg0, arg1, arg2, arg3, arg4) {
+  if (arg0 == __) {
+    return curry5ResolveArg0(baseFunc, arg1, arg2, arg3, arg4)
+  }
+  if (arg1 == __) {
+    return curry5ResolveArg1(baseFunc, arg0, arg2, arg3, arg4)
+  }
+  if (arg2 == __) {
+    return curry5ResolveArg2(baseFunc, arg0, arg1, arg3, arg4)
+  }
+  if (arg3 == __) {
+    return curry5ResolveArg3(baseFunc, arg0, arg1, arg2, arg4)
+  }
+  return curry5ResolveArg4(baseFunc, arg0, arg1, arg2, arg3)
+}
+
+const objectKeys = Object.keys
+
+const objectGetFirstKey = function (object) {
+  for (const key in object) {
+    return key
+  }
+  return undefined
+}
+
+const objectReduceAsync = async function (object, reducer, result, keys, index) {
+  const keysLength = keys.length
+  while (++index < keysLength) {
+    const key = keys[index]
+    result = reducer(result, object[key], key, object)
+    if (isPromise(result)) {
+      result = await result
+    }
+  }
+  return result
+}
+
+const objectReduce = function (object, reducer, result) {
+  const keys = objectKeys(object),
+    keysLength = keys.length
+  let index = -1
+  if (result === undefined) {
+    result = object[keys[++index]]
+  }
+  while (++index < keysLength) {
+    const key = keys[index]
+    result = reducer(result, object[key], key, object)
+    if (isPromise(result)) {
+      return result.then(curry5(objectReduceAsync, object, reducer, __, keys, index))
+    }
+  }
+  return result
+}
+
+const mapReduceAsync = async function (
+  map, reducer, result, mapEntriesIter,
+) {
+  for (const [key, value] of mapEntriesIter) {
+    result = reducer(result, value, key, map)
+    if (isPromise(result)) {
+      result = await result
+    }
+  }
+  return result
+}
+
+const mapReduce = function (map, reducer, result) {
+  const mapEntriesIter = map.entries()
+  if (result === undefined) {
+    const firstIteration = mapEntriesIter.next()
+    if (firstIteration.done) {
+      return result
+    }
+    result = firstIteration.value[1]
+  }
+  for (const [key, value] of mapEntriesIter) {
+    result = reducer(result, value, key, map)
+    if (isPromise(result)) {
+      return result.then(curry4(
+        mapReduceAsync, map, reducer, __, mapEntriesIter))
     }
   }
   return result
@@ -291,6 +411,9 @@ const genericReduce = function (args, reducer, result) {
       : reducer(result, collection)
   }
 
+  if (collection.constructor == Map) {
+    return mapReduce(collection, reducer, result)
+  }
   if (typeof collection[symbolIterator] == 'function') {
     return iteratorReduce(
       collection[symbolIterator](), reducer, result)
@@ -309,7 +432,7 @@ const genericReduce = function (args, reducer, result) {
     return collection.flatMap(curry2(reducer, result, __))
   }
   if (collection.constructor == Object) {
-    return arrayReduce(objectValues(collection), reducer, result)
+    return objectReduce(collection, reducer, result)
   }
   return result === undefined
     ? curry2(reducer, collection, __)

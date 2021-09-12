@@ -92,7 +92,7 @@ const arrayMap = function (array, mapper) {
     isAsync = false
 
   while (++index < arrayLength) {
-    const resultItem = mapper(array[index])
+    const resultItem = mapper(array[index], index, array)
     if (isPromise(resultItem)) {
       isAsync = true
     }
@@ -254,7 +254,7 @@ const mapMap = function (value, mapper) {
   const result = new Map(),
     promises = []
   for (const [key, item] of value) {
-    const resultItem = mapper(item)
+    const resultItem = mapper(item, key, value)
     if (isPromise(resultItem)) {
       promises.push(resultItem.then(
         curry4(callPropBinary, result, 'set', key, __)))
@@ -296,7 +296,7 @@ const objectMap = function (object, mapper) {
   const result = {}
   let isAsync = false
   for (const key in object) {
-    const resultItem = mapper(object[key])
+    const resultItem = mapper(object[key], key, object)
     if (isPromise(resultItem)) {
       isAsync = true
     }

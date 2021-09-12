@@ -114,7 +114,7 @@ const arrayExtendMap = function (
   const valuesLength = values.length
   let arrayIndex = array.length - 1
   while (++valuesIndex < valuesLength) {
-    array[++arrayIndex] = valuesMapper(values[valuesIndex])
+    array[++arrayIndex] = valuesMapper(values[valuesIndex], valuesIndex, array)
   }
   return array
 }
@@ -262,7 +262,7 @@ const mapFilter = function (map, predicate) {
   const result = new Map(),
     promises = []
   for (const [key, item] of map) {
-    const predication = predicate(item)
+    const predication = predicate(item, key, map)
     if (isPromise(predication)) {
       promises.push(predication.then(curry3(thunkConditional,
         __,
@@ -289,7 +289,7 @@ const objectFilter = function (object, predicate) {
     promises = []
   for (const key in object) {
     const item = object[key],
-      shouldIncludeItem = predicate(item)
+      shouldIncludeItem = predicate(item, key, object)
     if (isPromise(shouldIncludeItem)) {
       promises.push(shouldIncludeItem.then(
         curry4(objectSetIf, result, key, object[key], __)))
