@@ -26,7 +26,7 @@ const setFilter = function (value, predicate) {
     resultAdd = result.add.bind(result),
     promises = []
   for (const item of value) {
-    const predication = predicate(item)
+    const predication = predicate(item, item, value)
     if (isPromise(predication)) {
       promises.push(predication.then(curry3(
         thunkConditional, __, thunkify1(resultAdd, item), noop)))
