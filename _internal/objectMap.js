@@ -20,7 +20,7 @@ const objectMap = function (object, mapper) {
   const result = {}
   let isAsync = false
   for (const key in object) {
-    const resultItem = mapper(object[key])
+    const resultItem = mapper(object[key], key, object)
     if (isPromise(resultItem)) {
       isAsync = true
     }
