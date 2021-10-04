@@ -1,4 +1,7 @@
-## v1.8.2 - latest
+## v1.8.3 - latest
+ * distribute rest of the functions with .mjs extension as ESM
+
+## v1.8.2
  * distribute rubico.mjs and rubico.min.mjs as ESM
 
 ## v1.8.1
