@@ -45,7 +45,6 @@ const defaultsDeep = require('rubico/x/defaultsDeep')
 
 import `rubico` globally
 ```html [htmlmixed]
-<!-- development -->
 <script src="https://unpkg.com/rubico"></script>
 <script src="https://unpkg.com/rubico/dist/pipe.js"></script>
 <script src="https://unpkg.com/rubico/dist/tap.js"></script>
@@ -57,7 +56,7 @@ console.log(tap) // [Function: tap]
 console.log(defaultsDeep) // [Function: defaultsDeep]
 </script>
 
-<!-- production -->
+<!-- minified -->
 <script src="https://unpkg.com/rubico/dist/rubico.min.js"></script>
 <script src="https://unpkg.com/rubico/dist/pipe.min.js"></script>
 <script src="https://unpkg.com/rubico/dist/tap.min.js"></script>
@@ -70,19 +69,32 @@ console.log(defaultsDeep) // [Function: defaultsDeep]
 </script>
 ```
 
-import `rubico` via ES ([JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)) Modules
+import `rubico` in the browser via ES ([JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)) Modules
 ```javascript
-// development
-import rubico from 'https://unpkg.com/rubico/es.js'
+import rubico from 'https://unpkg.com/rubico/dist/rubico.es.js'
 import pipe from 'https://unpkg.com/rubico/dist/pipe.es.js'
 import tap from 'https://unpkg.com/rubico/dist/tap.es.js'
 import defaultsDeep from 'https://unpkg.com/rubico/dist/x/defaultsDeep.es.js'
 
-// production
+// minified
 import rubico from 'https://unpkg.com/rubico/dist/rubico.es.min.js'
 import pipe from 'https://unpkg.com/rubico/dist/pipe.es.min.js'
 import tap from 'https://unpkg.com/rubico/dist/tap.es.min.js'
 import defaultsDeep from 'https://unpkg.com/rubico/dist/x/defaultsDeep.es.min.js'
+```
+
+import `rubico` as ESM in Node 16 and up
+```javascript
+import rubico from 'rubico/dist/rubico.mjs'
+import pipe from 'rubico/dist/pipe.mjs'
+import tap from 'rubico/dist/tap.mjs'
+import defaultsDeep from 'rubico/dist/x/defaultsDeep.mjs'
+
+// minified
+import rubico from 'rubico/dist/rubico.min.mjs'
+import pipe from 'rubico/dist/pipe.min.mjs'
+import tap from 'rubico/dist/tap.min.mjs'
+import defaultsDeep from 'rubico/dist/x/defaultsDeep.min.mjs'
 ```
 
 # Motivation
