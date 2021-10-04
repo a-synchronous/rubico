@@ -148,6 +148,60 @@ pipe([
       })),
 
       map(switchCase([
+        or([
+          ({ distPath }) => distPath.endsWith('rubico.mjs'),
+          ({ distPath }) => distPath.endsWith('rubico.es.js'),
+        ]),
+        assign({
+          codeBundle: ({ name, baseCodeBundle }) => `
+/**
+ * rubico v${rubicoVersion}
+ * https://github.com/a-synchronous/rubico
+ * (c) 2019-2021 Richard Tong
+ * rubico may be freely distributed under the MIT license.
+ */
+${baseCodeBundle}export {
+  pipe, tap,
+  switchCase, tryCatch,
+  fork, assign, get, set, pick, omit,
+  map, filter, reduce, transform, flatMap,
+  and, or, not, any, all,
+  eq, gt, lt, gte, lte,
+  thunkify, always,
+  curry, __,
+}
+
+export default ${name}
+`.trimStart(),
+        }),
+
+        or([
+          ({ distPath }) => distPath.endsWith('rubico.min.mjs'),
+          ({ distPath }) => distPath.endsWith('rubico.es.min.js'),
+        ]),
+        assign({
+          codeBundle: async ({ name, baseCodeBundle }) => `
+/**
+ * rubico v${rubicoVersion}
+ * https://github.com/a-synchronous/rubico
+ * (c) 2019-2021 Richard Tong
+ * rubico may be freely distributed under the MIT license.
+ */
+${(await minify(`${baseCodeBundle}export {
+  pipe, tap,
+  switchCase, tryCatch,
+  fork, assign, get, set, pick, omit,
+  map, filter, reduce, transform, flatMap,
+  and, or, not, any, all,
+  eq, gt, lt, gte, lte,
+  thunkify, always,
+  curry, __,
+}
+
+export default ${name}`)).code}
+`.trimStart(),
+        }),
+
         eq('esm', get('type')),
         assign({
           codeBundle: ({ name, baseCodeBundle }) => `
@@ -160,6 +214,7 @@ pipe([
 ${baseCodeBundle}export default ${name}
 `.trimStart(),
         }),
+
         eq('esm-minified', get('type')),
         assign({
           codeBundle: async ({ name, baseCodeBundle }) => `
@@ -172,6 +227,7 @@ ${baseCodeBundle}export default ${name}
 ${(await minify(`${baseCodeBundle}export default ${name}`)).code}
 `.trimStart(),
         }),
+
         eq('cjs', get('type')),
         assign({
           codeBundle: ({ name, baseCodeBundle }) => `
@@ -191,6 +247,7 @@ ${baseCodeBundle}return ${name}
 }())))
 `.trimStart(),
         }),
+
         eq('cjs-minified', get('type')),
         assign({
           codeBundle: async ({ name, baseCodeBundle }) => `
@@ -340,12 +397,23 @@ ${baseCodeBundle}return ${name}
       path: pathResolve(__dirname, 'rubico.js'),
       distPath: pathResolve(__dirname, 'dist', 'rubico.es.js'),
     },
-
     {
       name: 'rubico',
       type: 'esm-minified',
       path: pathResolve(__dirname, 'rubico.js'),
       distPath: pathResolve(__dirname, 'dist', 'rubico.es.min.js'),
+    },
+    {
+      name: 'rubico',
+      type: 'esm',
+      path: pathResolve(__dirname, 'rubico.js'),
+      distPath: pathResolve(__dirname, 'dist', 'rubico.mjs'),
+    },
+    {
+      name: 'rubico',
+      type: 'esm-minified',
+      path: pathResolve(__dirname, 'rubico.js'),
+      distPath: pathResolve(__dirname, 'dist', 'rubico.min.mjs'),
     },
     {
       name: 'rubico',
