@@ -1,4 +1,7 @@
-## v1.8.1 - latest
+## v1.8.2 - latest
+ * distribute rubico.mjs and rubico.min.mjs as ESM
+
+## v1.8.1
  * map supplies key and reference to original value for sets
  * filter supplies key and reference to original value for sets
 
