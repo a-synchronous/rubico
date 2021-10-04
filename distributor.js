@@ -317,6 +317,23 @@ ${baseCodeBundle}return ${name}
     }),
 
     assign({
+      type: always('esm'),
+      distPath: pipe([
+        get('name'),
+        name => `${name}.mjs`,
+        curry.arity(3, pathResolve, __dirname, 'dist', __),
+      ]),
+    }),
+    assign({
+      type: always('esm-minified'),
+      distPath: pipe([
+        get('name'),
+        name => `${name}.min.mjs`,
+        curry.arity(3, pathResolve, __dirname, 'dist', __),
+      ]),
+    }),
+
+    assign({
       type: always('cjs'),
       distPath: pipe([
         get('name'),
@@ -333,6 +350,7 @@ ${baseCodeBundle}return ${name}
       ]),
     }),
   ])),
+
   Object.keys(rubicoX).map(pipe([
     fork({
       name: identity,
@@ -356,6 +374,23 @@ ${baseCodeBundle}return ${name}
       distPath: pipe([
         get('name'),
         name => `${name}.es.min.js`,
+        curry.arity(3, pathResolve, __dirname, 'dist/x', __),
+      ]),
+    }),
+
+    assign({
+      type: always('esm'),
+      distPath: pipe([
+        get('name'),
+        name => `${name}.mjs`,
+        curry.arity(3, pathResolve, __dirname, 'dist/x', __),
+      ]),
+    }),
+    assign({
+      type: always('esm-minified'),
+      distPath: pipe([
+        get('name'),
+        name => `${name}.min.mjs`,
         curry.arity(3, pathResolve, __dirname, 'dist/x', __),
       ]),
     }),

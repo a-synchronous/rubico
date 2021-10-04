@@ -1,0 +1,7 @@
+/**
+ * rubico v1.8.2
+ * https://github.com/a-synchronous/rubico
+ * (c) 2019-2021 Richard Tong
+ * rubico may be freely distributed under the MIT license.
+ */
+const isPromise=r=>null!=r&&"function"==typeof r.then,__=Symbol.for("placeholder"),curry3ResolveArg0=(r,e,t)=>function(c){return r(c,e,t)},curry3ResolveArg1=(r,e,t)=>function(c){return r(e,c,t)},curry3ResolveArg2=(r,e,t)=>function(c){return r(e,t,c)},curry3=function(r,e,t,c){return e==__?curry3ResolveArg0(r,t,c):t==__?curry3ResolveArg1(r,e,c):curry3ResolveArg2(r,e,t)},catcherApply=function(r,e,t){return r(e,...t)},tryCatch=(r,e)=>function(...t){try{const y=r(...t);return null!=(l=y)&&"function"==typeof l.then?y.catch((c=catcherApply,u=__,o=t,(n=e)==__?curry3ResolveArg0(c,u,o):u==__?curry3ResolveArg1(c,n,o):curry3ResolveArg2(c,n,u))):y}catch(r){return e(r,...t)}var c,n,u,o,l};export default tryCatch;

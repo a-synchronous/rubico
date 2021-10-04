@@ -1,0 +1,7 @@
+/**
+ * rubico v1.8.2
+ * https://github.com/a-synchronous/rubico
+ * (c) 2019-2021 Richard Tong
+ * rubico may be freely distributed under the MIT license.
+ */
+const isPromise=r=>null!=r&&"function"==typeof r.then,always=r=>function(){return r},tapSync=r=>function(...n){return r(...n),n[0]},thunkifyArgs=(r,n)=>function(){return r(...n)},thunkConditional=(r,n,t)=>r?n():t(),__=Symbol.for("placeholder"),curry3ResolveArg0=(r,n,t)=>function(e){return r(e,n,t)},curry3ResolveArg1=(r,n,t)=>function(e){return r(n,e,t)},curry3ResolveArg2=(r,n,t)=>function(e){return r(n,t,e)},curry3=function(r,n,t,e){return n==__?curry3ResolveArg0(r,t,e):t==__?curry3ResolveArg1(r,n,e):curry3ResolveArg2(r,n,t)},tap=r=>function(...n){const t=n[0],e=r(...n);return isPromise(e)?e.then(always(t)):t};tap.sync=tapSync,tap.if=(r,n)=>function(...t){const e=r(...t);if(isPromise(e))return e.then((u=thunkConditional,o=__,c=thunkifyArgs(tap(n),t),i=always(t[0]),o==__?curry3ResolveArg0(u,c,i):c==__?curry3ResolveArg1(u,o,i):curry3ResolveArg2(u,o,c)));var u,o,c,i;if(e){const r=n(...t);if(isPromise(r))return r.then(always(t[0]))}return t[0]};export default tap;

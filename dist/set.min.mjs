@@ -1,0 +1,7 @@
+/**
+ * rubico v1.8.2
+ * https://github.com/a-synchronous/rubico
+ * (c) 2019-2021 Richard Tong
+ * rubico may be freely distributed under the MIT license.
+ */
+const isArray=Array.isArray,isObject=t=>{if(null==t)return!1;const e=typeof t;return"object"==e||"function"==e},memoizeCappedUnary=function(t,e){const r=new Map,i=function(i){if(r.has(i))return r.get(i);const s=t(i);return r.set(i,s),r.size>e&&r.clear(),s};return i.cache=r,i},pathDelimiters=/[.|[|\]]+/,parsePropertyPath=function(t){const e=t.length-1,r="["==t[0],i="]"==t[e];return r&&i?t.slice(1,e).split(pathDelimiters):r?t.slice(1).split(pathDelimiters):i?t.slice(0,e).split(pathDelimiters):t.split(pathDelimiters)},memoizedCappedParsePropertyPath=memoizeCappedUnary(parsePropertyPath,500),propertyPathToArray=t=>isArray(t)?t:"string"==typeof t?memoizedCappedParsePropertyPath(t):[t],setByPath=function(t,e,r){if(!isObject(t))return t;const i=propertyPathToArray(r),s=i.length,n=s-1,a={...t};let o=a,p=-1;for(;++p<s;){const t=i[p];if(p==n)o[t]=e;else{const e=o[t],r=isArray(e)?e.slice():{...e};o[t]=r,o=r}}return a},set=(t,e)=>function(r){return setByPath(r,e,t)};export default set;

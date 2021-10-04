@@ -1,0 +1,7 @@
+/**
+ * rubico v1.8.2
+ * https://github.com/a-synchronous/rubico
+ * (c) 2019-2021 Richard Tong
+ * rubico may be freely distributed under the MIT license.
+ */
+const last=t=>{if(null==t)return;const e=t.length;return"number"==typeof e?t[e-1]:void 0};export default last;

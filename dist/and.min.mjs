@@ -1,0 +1,7 @@
+/**
+ * rubico v1.8.2
+ * https://github.com/a-synchronous/rubico
+ * (c) 2019-2021 Richard Tong
+ * rubico may be freely distributed under the MIT license.
+ */
+const isPromise=r=>null!=r&&"function"==typeof r.then,__=Symbol.for("placeholder"),curry3ResolveArg0=(r,n,e)=>function(t){return r(t,n,e)},curry3ResolveArg1=(r,n,e)=>function(t){return r(n,t,e)},curry3ResolveArg2=(r,n,e)=>function(t){return r(n,e,t)},curry3=function(r,n,e,t){return n==__?curry3ResolveArg0(r,e,t):e==__?curry3ResolveArg1(r,n,t):curry3ResolveArg2(r,n,e)},thunkConditional=(r,n,e)=>r?n():e(),thunkify3=(r,n,e,t)=>function(){return r(n,e,t)},always=r=>function(){return r},asyncAnd=async function(r,n,e){const t=r.length;for(;++e<t;){let t=r[e](n);if(isPromise(t)&&(t=await t),!t)return!1}return!0},and=r=>function(n){if(null!=n&&"function"==typeof n.and)return n.and(r);const e=r.length;let t=-1;for(;++t<e;){const e=r[t](n);if(isPromise(e))return e.then((u=thunkConditional,o=__,c=thunkify3(asyncAnd,r,n,t),i=always(!1),o==__?curry3ResolveArg0(u,c,i):c==__?curry3ResolveArg1(u,o,i):curry3ResolveArg2(u,o,c)));if(!e)return!1}var u,o,c,i;return!0};export default and;
