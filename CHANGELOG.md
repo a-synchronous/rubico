@@ -1,4 +1,7 @@
-## v1.8.7 - latest
+## v1.8.8 - latest
+ * FlatMappingAsyncIterator don't await if async iterator is done already
+
+## v1.8.7
  * FlatMappingAsyncIterator use Promise.race over promiseAnyRejectOnce
 
 ## v1.8.6
