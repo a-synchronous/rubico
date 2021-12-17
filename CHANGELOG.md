@@ -1,4 +1,7 @@
-## v1.8.5 - latest
+## v1.8.6 - latest
+ * fix bug where FlatMappingAsyncIterator wasn't fully consuming the input async iterator
+
+## v1.8.5
  * fix bug where map and filter weren't recognizing async iterator and iterator objects
 
 ## v1.8.3
