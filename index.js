@@ -1559,11 +1559,33 @@ const FlatMappingIterator = function (iterator, flatMapper) {
   }
 }
 
+const once = function (func) {
+  let didCall = false
+  return function onceFunc(...args) {
+    if (didCall) {
+      return undefined
+    }
+    didCall = true
+    return func(...args)
+  }
+}
+
+const promiseAnyRejectOnce = function (promises) {
+  return new Promise((resolve, reject) => {
+    const resolveOnce = once(resolve)
+    const rejectOnce = once(reject)
+    promises.forEach(promise => {
+      promise.then(resolveOnce, rejectOnce)
+    })
+  })
+}
+
 const FlatMappingAsyncIterator = function (asyncIterator, flatMapper) {
   const buffer = [],
     promises = new Set()
 
   return {
+    isAsyncIteratorDone: false,
     [symbolAsyncIterator]() {
       return this
     },
@@ -1573,41 +1595,32 @@ const FlatMappingAsyncIterator = function (asyncIterator, flatMapper) {
 
     
     async next() {
-      if (buffer.length > 0) {
-        return { value: buffer.shift(), done: false }
-      }
-      const { value, done } = await asyncIterator.next()
-      if (done) {
-        while (promises.size > 0) {
-          await new Promise(resolve => setTimeout(resolve, 25))
-          if (buffer.length > 0) {
-            return { value: buffer.shift(), done: false }
+      while (
+        !this.isAsyncIteratorDone || buffer.length > 0 || promises.size > 0
+      ) {
+        const { value, done } = await asyncIterator.next()
+        if (done) {
+          this.isAsyncIteratorDone = done
+        } else {
+          const monad = flatMapper(value)
+          if (isPromise(monad)) {
+            const bufferLoading = monad.then(
+            curryArgs3(genericReduce, __, arrayPush, buffer))
+            const promise = bufferLoading.then(() => promises.delete(promise))
+            promises.add(promise)
+          } else {
+            const bufferLoading = genericReduce([monad], arrayPush, buffer)
+            if (isPromise(bufferLoading)) {
+              const promise = bufferLoading.then(() => promises.delete(promise))
+              promises.add(promise)
+            }
           }
         }
-        return { value: undefined, done: true }
-      }
-
-      const monad = flatMapper(value)
-      if (isPromise(monad)) {
-        const bufferLoading = monad.then(
-          curryArgs3(genericReduce, __, arrayPush, buffer))
-        const promise = bufferLoading.then(() => promises.delete(promise))
-        promises.add(promise)
-      } else {
-        const bufferLoading = genericReduce([monad], arrayPush, buffer)
         if (buffer.length > 0) {
           return { value: buffer.shift(), done: false }
         }
-        if (isPromise(bufferLoading)) {
-          const promise = bufferLoading.then(() => promises.delete(promise))
-          promises.add(promise)
-        }
-      }
-
-      while (promises.size > 0) {
-        await new Promise(resolve => setTimeout(resolve, 25))
-        if (buffer.length > 0) {
-          return { value: buffer.shift(), done: false }
+        if (promises.size > 0) {
+          await promiseAnyRejectOnce(promises)
         }
       }
       return { value: undefined, done: true }
