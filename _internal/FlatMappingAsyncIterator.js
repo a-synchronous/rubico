@@ -4,7 +4,7 @@ const symbolAsyncIterator = require('./symbolAsyncIterator')
 const arrayPush = require('./arrayPush')
 const curryArgs3 = require('./curryArgs3')
 const __ = require('./placeholder')
-const promiseAnyRejectOnce = require('./promiseAnyRejectOnce')
+const promiseRace = require('./promiseRace')
 
 /**
  * @name FlatMappingAsyncIterator
@@ -69,7 +69,7 @@ const FlatMappingAsyncIterator = function (asyncIterator, flatMapper) {
           return { value: buffer.shift(), done: false }
         }
         if (promises.size > 0) {
-          await promiseAnyRejectOnce(promises)
+          await promiseRace(promises)
         }
       }
       return { value: undefined, done: true }
