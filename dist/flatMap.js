@@ -502,21 +502,23 @@ const FlatMappingAsyncIterator = function (asyncIterator, flatMapper) {
       while (
         !this.isAsyncIteratorDone || buffer.length > 0 || promises.size > 0
       ) {
-        const { value, done } = await asyncIterator.next()
-        if (done) {
-          this.isAsyncIteratorDone = done
-        } else {
-          const monad = flatMapper(value)
-          if (isPromise(monad)) {
-            const bufferLoading = monad.then(
-            curryArgs3(genericReduce, __, arrayPush, buffer))
-            const promise = bufferLoading.then(() => promises.delete(promise))
-            promises.add(promise)
+        if (!this.isAsyncIteratorDone) {
+          const { value, done } = await asyncIterator.next()
+          if (done) {
+            this.isAsyncIteratorDone = done
           } else {
-            const bufferLoading = genericReduce([monad], arrayPush, buffer)
-            if (isPromise(bufferLoading)) {
+            const monad = flatMapper(value)
+            if (isPromise(monad)) {
+              const bufferLoading = monad.then(
+              curryArgs3(genericReduce, __, arrayPush, buffer))
               const promise = bufferLoading.then(() => promises.delete(promise))
               promises.add(promise)
+            } else {
+              const bufferLoading = genericReduce([monad], arrayPush, buffer)
+              if (isPromise(bufferLoading)) {
+                const promise = bufferLoading.then(() => promises.delete(promise))
+                promises.add(promise)
+              }
             }
           }
         }
