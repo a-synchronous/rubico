@@ -554,14 +554,14 @@ const map = mapper => function mapping(value) {
   if (value.constructor == Map) {
     return mapMap(value, mapper)
   }
-  if (value.constructor == Object) {
-    return objectMap(value, mapper)
-  }
   if (typeof value[symbolIterator] == 'function') {
     return MappingIterator(value[symbolIterator](), mapper)
   }
   if (typeof value[symbolAsyncIterator] == 'function') {
     return MappingAsyncIterator(value[symbolAsyncIterator](), mapper)
+  }
+  if (value.constructor == Object) {
+    return objectMap(value, mapper)
   }
   return mapper(value)
 }

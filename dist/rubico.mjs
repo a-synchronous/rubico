@@ -725,14 +725,14 @@ const map = mapper => function mapping(value) {
   if (value.constructor == Map) {
     return mapMap(value, mapper)
   }
-  if (value.constructor == Object) {
-    return objectMap(value, mapper)
-  }
   if (typeof value[symbolIterator] == 'function') {
     return MappingIterator(value[symbolIterator](), mapper)
   }
   if (typeof value[symbolAsyncIterator] == 'function') {
     return MappingAsyncIterator(value[symbolAsyncIterator](), mapper)
+  }
+  if (value.constructor == Object) {
+    return objectMap(value, mapper)
   }
   return mapper(value)
 }
@@ -1030,14 +1030,14 @@ const filter = predicate => function filtering(value) {
   if (typeof value.filter == 'function') {
     return value.filter(predicate)
   }
-  if (value.constructor == Object) {
-    return objectFilter(value, predicate)
-  }
   if (typeof value[symbolIterator] == 'function') {
     return FilteringIterator(value[symbolIterator](), predicate)
   }
   if (typeof value[symbolAsyncIterator] == 'function') {
     return FilteringAsyncIterator(value[symbolAsyncIterator](), predicate)
+  }
+  if (value.constructor == Object) {
+    return objectFilter(value, predicate)
   }
   return value
 }
