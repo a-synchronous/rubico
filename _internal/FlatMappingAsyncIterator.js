@@ -23,9 +23,9 @@ const promiseAnyRejectOnce = require('./promiseAnyRejectOnce')
 const FlatMappingAsyncIterator = function (asyncIterator, flatMapper) {
   const buffer = [],
     promises = new Set()
-  let isAsyncIteratorDone = false
 
   return {
+    isAsyncIteratorDone: false,
     [symbolAsyncIterator]() {
       return this
     },
@@ -44,10 +44,12 @@ const FlatMappingAsyncIterator = function (asyncIterator, flatMapper) {
      * ```
      */
     async next() {
-      while (!isAsyncIteratorDone || buffer.length > 0 || promises.size > 0) {
+      while (
+        !this.isAsyncIteratorDone || buffer.length > 0 || promises.size > 0
+      ) {
         const { value, done } = await asyncIterator.next()
         if (done) {
-          isAsyncIteratorDone = done
+          this.isAsyncIteratorDone = done
         } else {
           const monad = flatMapper(value)
           if (isPromise(monad)) {
