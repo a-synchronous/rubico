@@ -177,14 +177,14 @@ const filter = predicate => function filtering(value) {
   if (typeof value.filter == 'function') {
     return value.filter(predicate)
   }
-  if (value.constructor == Object) {
-    return objectFilter(value, predicate)
-  }
   if (typeof value[symbolIterator] == 'function') {
     return FilteringIterator(value[symbolIterator](), predicate)
   }
   if (typeof value[symbolAsyncIterator] == 'function') {
     return FilteringAsyncIterator(value[symbolAsyncIterator](), predicate)
+  }
+  if (value.constructor == Object) {
+    return objectFilter(value, predicate)
   }
   return value
 }
