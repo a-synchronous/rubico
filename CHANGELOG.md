@@ -1,4 +1,7 @@
-## v1.8.3 - latest
+## v1.8.5 - latest
+ * fix bug where map and filter weren't recognizing async iterator and iterator objects
+
+## v1.8.3
  * distribute rest of the functions with .mjs extension as ESM
 
 ## v1.8.2
