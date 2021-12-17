@@ -482,26 +482,7 @@ const FlatMappingIterator = function (iterator, flatMapper) {
   }
 }
 
-const once = function (func) {
-  let didCall = false
-  return function onceFunc(...args) {
-    if (didCall) {
-      return undefined
-    }
-    didCall = true
-    return func(...args)
-  }
-}
-
-const promiseAnyRejectOnce = function (promises) {
-  return new Promise((resolve, reject) => {
-    const resolveOnce = once(resolve)
-    const rejectOnce = once(reject)
-    promises.forEach(promise => {
-      promise.then(resolveOnce, rejectOnce)
-    })
-  })
-}
+const promiseRace = Promise.race.bind(Promise)
 
 const FlatMappingAsyncIterator = function (asyncIterator, flatMapper) {
   const buffer = [],
@@ -543,7 +524,7 @@ const FlatMappingAsyncIterator = function (asyncIterator, flatMapper) {
           return { value: buffer.shift(), done: false }
         }
         if (promises.size > 0) {
-          await promiseAnyRejectOnce(promises)
+          await promiseRace(promises)
         }
       }
       return { value: undefined, done: true }
