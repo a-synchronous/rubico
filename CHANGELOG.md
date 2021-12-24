@@ -1,4 +1,7 @@
-## v1.8.8 - latest
+## v1.8.9 - latest
+ * FlatMappingAsyncIterator account for indefinite buffer loading promises
+
+## v1.8.8
  * FlatMappingAsyncIterator don't await if async iterator is done already
 
 ## v1.8.7
