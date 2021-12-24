@@ -642,6 +642,10 @@ const FlatMappingIterator = function (iterator, flatMapper) {
 
 const promiseRace = Promise.race.bind(Promise)
 
+const sleep = time => new Promise(resolve => {
+  setTimeout(resolve, time)
+})
+
 const FlatMappingAsyncIterator = function (asyncIterator, flatMapper) {
   const buffer = [],
     promises = new Set()
@@ -684,7 +688,7 @@ const FlatMappingAsyncIterator = function (asyncIterator, flatMapper) {
           return { value: buffer.shift(), done: false }
         }
         if (promises.size > 0) {
-          await promiseRace(promises)
+          await promiseRace([sleep(1000), ...promises])
         }
       }
       return { value: undefined, done: true }

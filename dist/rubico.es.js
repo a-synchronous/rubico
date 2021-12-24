@@ -797,22 +797,24 @@ const FilteringIterator = (iterator, predicate) => ({
   },
 })
 
-const FilteringAsyncIterator = (iter, predicate) => ({
+const FilteringAsyncIterator = (asyncIterator, predicate) => ({
+  isAsyncIteratorDone: false,
   [symbolAsyncIterator]() {
     return this
   },
   async next() {
-    let iteration = await iter.next()
-
-    while (!iteration.done) {
-      const { value } = iteration,
-        predication = predicate(value)
-      if (isPromise(predication) ? await predication : predication) {
-        return { value, done: false }
+    while (!this.isAsyncIteratorDone) {
+      const { value, done } = await asyncIterator.next()
+      if (done) {
+        this.isAsyncIteratorDone = true
+      } else {
+        const predication = predicate(value)
+        if (isPromise(predication) ? await predication : predication) {
+          return { value, done: false }
+        }
       }
-      iteration = await iter.next()
     }
-    return iteration
+    return { value: undefined, done: true }
   },
 })
 
@@ -1553,6 +1555,10 @@ const FlatMappingIterator = function (iterator, flatMapper) {
   }
 }
 
+const sleep = time => new Promise(resolve => {
+  setTimeout(resolve, time)
+})
+
 const FlatMappingAsyncIterator = function (asyncIterator, flatMapper) {
   const buffer = [],
     promises = new Set()
@@ -1595,7 +1601,7 @@ const FlatMappingAsyncIterator = function (asyncIterator, flatMapper) {
           return { value: buffer.shift(), done: false }
         }
         if (promises.size > 0) {
-          await promiseRace(promises)
+          await promiseRace([sleep(1000), ...promises])
         }
       }
       return { value: undefined, done: true }

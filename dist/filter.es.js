@@ -28,22 +28,24 @@ const isPromise = value => value != null && typeof value.then == 'function'
 
 const symbolAsyncIterator = Symbol.asyncIterator
 
-const FilteringAsyncIterator = (iter, predicate) => ({
+const FilteringAsyncIterator = (asyncIterator, predicate) => ({
+  isAsyncIteratorDone: false,
   [symbolAsyncIterator]() {
     return this
   },
   async next() {
-    let iteration = await iter.next()
-
-    while (!iteration.done) {
-      const { value } = iteration,
-        predication = predicate(value)
-      if (isPromise(predication) ? await predication : predication) {
-        return { value, done: false }
+    while (!this.isAsyncIteratorDone) {
+      const { value, done } = await asyncIterator.next()
+      if (done) {
+        this.isAsyncIteratorDone = true
+      } else {
+        const predication = predicate(value)
+        if (isPromise(predication) ? await predication : predication) {
+          return { value, done: false }
+        }
       }
-      iteration = await iter.next()
     }
-    return iteration
+    return { value: undefined, done: true }
   },
 })
 
