@@ -431,9 +431,9 @@ const muxRaceAsync = async function*(x) {
     const [prevP, iter, { value, done }] = await promiseRace(promises)
     promises.delete(prevP)
     if (done) continue
-    yield value
     const p = iter.next().then(res => [p, iter, res])
     promises.add(p)
+    yield value
   }
 }
 
