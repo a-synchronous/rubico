@@ -1,3 +1,6 @@
+## v1.8.10 - next release
+ * Mux.race - yield value after adding promise versus yielding before
+
 ## v1.8.9 - latest
  * FlatMappingAsyncIterator account for indefinite buffer loading promises
 
