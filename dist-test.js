@@ -1745,6 +1745,37 @@ TestsMap.set('prepend', prepend => [
   .case([], [1, 2, 3]),
 ])
 
+TestsMap.set('reject', reject => [
+  Test('rejects values that test true by the predicate', reject(number => number % 2 == 1))
+  .case([1, 2, 3, 4, 5], [2, 4])
+  .case([], [])
+  .case({ a: 1, b: 2, c: 3 }, { b: 2 })
+  .case(new Set([1, 2, 3, 4, 5]), new Set([2, 4]))
+  .case(new Map([['a', 1], ['b', 2], ['c', 3]]), new Map([['b', 2]]))
+  .case(function* (array) {
+    for (const value of array) {
+      yield value
+    }
+  }, oddsRejectingGeneratorFunc => {
+    const evensArray = []
+    for (const number of oddsRejectingGeneratorFunc([1, 2, 3, 4, 5])) {
+      evensArray.push(number)
+    }
+    assert.deepEqual(evensArray, [2, 4])
+  })
+  .case(async function* (array) {
+    for (const value of array) {
+      yield value
+    }
+  }, async oddsRejectingGeneratorFunc => {
+    const evensArray = []
+    for await (const number of oddsRejectingGeneratorFunc([1, 2, 3, 4, 5])) {
+      evensArray.push(number)
+    }
+    assert.deepEqual(evensArray, [2, 4])
+  })
+])
+
 TestsMap.set('size', size => [
   Test('size', size)
   .case('abc', 3)
