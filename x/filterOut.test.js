@@ -1,9 +1,9 @@
 const assert = require('assert')
-const reject = require('./reject')
+const filterOut = require('./filterOut')
 
-describe('reject', () => {
+describe('filterOut', () => {
   it('rejects values that test true by the predicate from an array', () => {
-    const rejectOdds = reject(number => number % 2 == 1)
+    const rejectOdds = filterOut(number => number % 2 == 1)
     assert.deepEqual(
       rejectOdds([1, 2, 3, 4, 5]),
       [2, 4],
@@ -15,7 +15,7 @@ describe('reject', () => {
   })
 
   it('rejects values that test true by the predicate from an object', () => {
-    const rejectOdds = reject(number => number % 2 == 1)
+    const rejectOdds = filterOut(number => number % 2 == 1)
     assert.deepEqual(
       rejectOdds({ a: 1, b: 2, c: 3 }),
       { b: 2 },
@@ -23,7 +23,7 @@ describe('reject', () => {
   })
 
   it('rejects values that test true by the predicate from a set', () => {
-    const rejectOdds = reject(number => number % 2 == 1)
+    const rejectOdds = filterOut(number => number % 2 == 1)
     assert.deepEqual(
       rejectOdds(new Set([1, 2, 3, 4, 5])),
       new Set([2, 4]),
@@ -31,7 +31,7 @@ describe('reject', () => {
   })
 
   it('rejects values that test true by the predicate from a map', () => {
-    const rejectOdds = reject(number => number % 2 == 1)
+    const rejectOdds = filterOut(number => number % 2 == 1)
     assert.deepEqual(
       rejectOdds(new Map([['a', 1], ['b', 2], ['c', 3]])),
       new Map([['b', 2]]),
@@ -39,7 +39,7 @@ describe('reject', () => {
   })
 
   it('creates a rejecting generator function when passed a generator', () => {
-    const rejectOdds = reject(number => number % 2 == 1)
+    const rejectOdds = filterOut(number => number % 2 == 1)
     const oddsRejectingGeneratorFunc = rejectOdds(function* (array) {
       for (const value of array) {
         yield value
@@ -53,7 +53,7 @@ describe('reject', () => {
   })
 
   it('creates a rejecting generator function when passed an async generator', async () => {
-    const asyncRejectOdds = reject(async number => number % 2 == 1)
+    const asyncRejectOdds = filterOut(async number => number % 2 == 1)
     const oddsRejectingGeneratorFunc = asyncRejectOdds(async function* (array) {
       for (const value of array) {
         yield value
