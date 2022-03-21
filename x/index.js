@@ -2,6 +2,7 @@ const append = require('./append')
 const callProp = require('./callProp')
 const defaultsDeep = require('./defaultsDeep')
 const differenceWith = require('./differenceWith')
+const filterOut = require('./filterOut')
 const find = require('./find')
 const findIndex = require('./findIndex')
 const first = require('./first')
@@ -22,7 +23,6 @@ const last = require('./last')
 const noop = require('./noop')
 const pluck = require('./pluck')
 const prepend = require('./prepend')
-const reject = require('./reject')
 const size = require('./size')
 const trace = require('./trace')
 const unionWith = require('./unionWith')
@@ -36,6 +36,7 @@ const rubicoX = {
   callProp,
   defaultsDeep,
   differenceWith,
+  filterOut,
   find,
   findIndex,
   first,
@@ -56,7 +57,6 @@ const rubicoX = {
   noop,
   pluck,
   prepend,
-  reject,
   size,
   trace,
   unionWith,
