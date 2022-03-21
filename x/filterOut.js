@@ -2,35 +2,35 @@ const filter = require('../filter')
 const not = require('../not')
 
 /**
- * @name reject
+ * @name filterOut
  *
  * @synopsis
  * ```coffeescript [specscript]
- * reject(
+ * filterOut(
  *   arrayPredicate (value any, index number, array Array)=>Promise|boolean
  * )(array) -> rejectedArray Promise|Array
  *
- * reject(
+ * filterOut(
  *   objectPredicate (value any, key string, object Object)=>Promise|boolean
  * )(object) -> rejectedObject Promise|Object
  *
- * reject(
+ * filterOut(
  *   setPredicate (value any, value, set Set)=>Promise|boolean
  * )(set) -> rejectedSet Promise|Set
  *
- * reject(
+ * filterOut(
  *   mapPredicate (value any, key any, map Map)=>Promise|boolean
  * )(map) -> rejectedMap Promise|Map
  *
- * reject(
+ * filterOut(
  *   predicate (value any)=>Promise|boolean
  * )(generatorFunction GeneratorFunction) -> rejectingGeneratorFunction GeneratorFunction
  *
- * reject(
+ * filterOut(
  *   predicate (value any)=>Promise|boolean
  * )(asyncGeneratorFunction AsyncGeneratorFunction) -> rejectingAsyncGeneratorFunction AsyncGeneratorFunction
  *
- * reject(
+ * filterOut(
  *   predicate (value any)=>Promise|boolean
  * )(reducer Reducer) -> rejectingReducer Reducer
  * ```
@@ -38,6 +38,6 @@ const not = require('../not')
  * @description
  * The inverse of `filter`. Values that test true by the predicate are filtered out, or "rejected".
  */
-const reject = predicate => filter(not(predicate))
+const filterOut = predicate => filter(not(predicate))
 
-module.exports = reject
+module.exports = filterOut
