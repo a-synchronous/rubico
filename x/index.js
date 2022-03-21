@@ -22,6 +22,7 @@ const last = require('./last')
 const noop = require('./noop')
 const pluck = require('./pluck')
 const prepend = require('./prepend')
+const reject = require('./reject')
 const size = require('./size')
 const trace = require('./trace')
 const unionWith = require('./unionWith')
@@ -55,6 +56,7 @@ const rubicoX = {
   noop,
   pluck,
   prepend,
+  reject,
   size,
   trace,
   unionWith,
