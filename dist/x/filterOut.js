@@ -409,7 +409,7 @@ const notSync = func => function notSync(...args) {
 
 not.sync = notSync
 
-const reject = predicate => filter(not(predicate))
+const filterOut = predicate => filter(not(predicate))
 
 return filterOut
 }())))
