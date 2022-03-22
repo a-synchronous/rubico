@@ -10,8 +10,37 @@
   else if (typeof define == 'function') define(() => isDeepEqual) // AMD
   else (root.isDeepEqual = isDeepEqual) // Browser
 }(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+const __ = Symbol.for('placeholder')
 
 const isArray = Array.isArray
+
+const isPromise = value => value != null && typeof value.then == 'function'
+
+const promiseAll = Promise.all.bind(Promise)
+
+const spread2 = func => function spreading2([arg0, arg1]) {
+  return func(arg0, arg1)
+}
+
+// argument resolver for curry2
+const curry2ResolveArg0 = (
+  baseFunc, arg1,
+) => function arg0Resolver(arg0) {
+  return baseFunc(arg0, arg1)
+}
+
+// argument resolver for curry2
+const curry2ResolveArg1 = (
+  baseFunc, arg0,
+) => function arg1Resolver(arg1) {
+  return baseFunc(arg0, arg1)
+}
+
+const curry2 = function (baseFunc, arg0, arg1) {
+  return arg0 == __
+    ? curry2ResolveArg0(baseFunc, arg1)
+    : curry2ResolveArg1(baseFunc, arg0)
+}
 
 const objectKeysLength = object => {
   let numKeys = 0
@@ -71,7 +100,7 @@ const areArraysDeepEqual = function (leftArray, rightArray) {
   return true
 }
 
-const isDeepEqual = function (left, right) {
+const areValuesDeepEqual = function (left, right) {
   const isLeftArray = isArray(left),
     isRightArray = isArray(right)
   if (isLeftArray || isRightArray) {
@@ -101,6 +130,52 @@ const isDeepEqual = function (left, right) {
       && areObjectsDeepEqual(left, right)
   }
   return sameValueZero(left, right)
+}
+
+const isDeepEqual = function (left, right) {
+  const isLeftResolver = typeof left == 'function',
+    isRightResolver = typeof right == 'function'
+  if (isLeftResolver && isRightResolver) {
+    return function isDeepEqualBy(value) {
+      const leftValue = left(value),
+        rightValue = right(value)
+      const isLeftPromise = isPromise(leftValue),
+        isRightPromise = isPromise(rightValue)
+      if (isLeftPromise && isRightPromise) {
+        return promiseAll([
+          leftValue,
+          rightValue,
+        ]).then(spread2(areValuesDeepEqual))
+      }
+      if (isLeftPromise) {
+        return leftValue.then(curry2(areValuesDeepEqual, __, rightValue))
+      }
+      if (isRightPromise) {
+        return rightValue.then(curry2(areValuesDeepEqual, leftValue, __))
+      }
+      return areValuesDeepEqual(leftValue, rightValue)
+    }
+  }
+
+  if (isLeftResolver) {
+    return function isDeepEqualBy(value) {
+      const leftValue = left(value)
+      return isPromise(leftValue)
+        ? leftValue.then(curry2(areValuesDeepEqual, __, right))
+        : areValuesDeepEqual(leftValue, right)
+    }
+  }
+
+  if (isRightResolver) {
+    return function isDeepEqualBy(value) {
+      const rightValue = right(value)
+      return isPromise(rightValue)
+        ? rightValue.then(curry2(areValuesDeepEqual, left, __))
+        : areValuesDeepEqual(left, rightValue)
+    }
+  }
+
+  return areValuesDeepEqual(left, right)
 }
 
 return isDeepEqual

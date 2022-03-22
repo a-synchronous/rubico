@@ -1665,6 +1665,18 @@ TestsMap.set('isDeepEqual', isDeepEqual => [
   .case({ a: 1, b: 2, c: [] }, { a: 1, b: 2, c: [] }, true)
   .case({ a: 1, b: 2, c: [1] }, { a: 1, b: 2, c: [] }, false)
   .case({ a: 1, b: 2, c: [1, { e: 5 }] }, { a: 1, b: 2, c: [1, { e: 5 }] }, true)
+  .case([1, 2, 3], array => array, isDeepEqual123 => {
+    assert.strictEqual(isDeepEqual123([1, 2, 3]), true)
+    assert.strictEqual(isDeepEqual123([]), false)
+  })
+  .case(array => array, [1, 2, 3], isDeepEqual123 => {
+    assert.strictEqual(isDeepEqual123([1, 2, 3]), true)
+    assert.strictEqual(isDeepEqual123([]), false)
+  })
+  .case(array => array, () => [1, 2, 3], isDeepEqual123 => {
+    assert.strictEqual(isDeepEqual123([1, 2, 3]), true)
+    assert.strictEqual(isDeepEqual123([]), false)
+  })
   .case({}, {}, true)
   .case([], {}, false)
   .case([], [], true)
