@@ -61,6 +61,11 @@ describe('isDeepEqual', () => {
     assert.strictEqual(isDeepEqual([1, 2, 3], array => array)([1, 2, 3]), true)
     assert.strictEqual(isDeepEqual(array => array, [1, 2, 3])([1, 2, 3]), true)
     assert.strictEqual(isDeepEqual(array => array, () => [1, 2, 3])([1, 2, 3]), true)
+    assert.strictEqual(await isDeepEqual([1, 2, 3], async array => array)([1, 2, 3]), true)
+    assert.strictEqual(await isDeepEqual(async array => array, [1, 2, 3])([1, 2, 3]), true)
+    assert.strictEqual(await isDeepEqual(async array => array, async () => [1, 2, 3])([1, 2, 3]), true)
+    assert.strictEqual(await isDeepEqual(async array => array, () => [1, 2, 3])([1, 2, 3]), true)
+    assert.strictEqual(await isDeepEqual(array => array, async () => [1, 2, 3])([1, 2, 3]), true)
   })
 
   it('treats nullish (null and undefined) differently', async () => {
