@@ -1,9 +1,9 @@
-## v1.8.10 - next release
+## v1.8.10 - latest
  * Mux.race - yield value after adding promise versus yielding before
  * isDeepEqual takes functions as arguments, returning a partially applied function
  * rubico/x/filterOut - the inverse of filter
 
-## v1.8.9 - latest
+## v1.8.9
  * FlatMappingAsyncIterator account for indefinite buffer loading promises
 
 ## v1.8.8
