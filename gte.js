@@ -14,14 +14,22 @@ const __ = require('./_internal/placeholder')
  * var value any,
  *   leftCompare any,
  *   rightCompare any,
- *   left (value=>Promise|leftCompare)|leftCompare,
- *   right (value=>Promise|rightCompare)|rightCompare
+ *   left value|(value=>Promise|leftCompare)|leftCompare,
+ *   right value|(value=>Promise|rightCompare)|rightCompare
+ *
+ * gte(left, right) -> boolean
  *
  * gte(left, right)(value) -> Promise|boolean
  * ```
  *
  * @description
  * Test if a left value is greater than or equal (`>=`) to a right value. Either parameter may be an actual value.
+ *
+ * ```javascript [playground]
+ * const isAdultAge = gte(18, 20)
+ *
+ * console.log(isAdultAge) // true
+ * ```
  *
  * ```javascript [playground]
  * const identity = value => value
@@ -36,6 +44,11 @@ const __ = require('./_internal/placeholder')
 const gte = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
+
+  if (!isLeftResolver && !isRightResolver) {
+    return left >= right
+  }
+
   if (isLeftResolver && isRightResolver) {
     return function greaterThanOrEqualBy(value) {
       const leftResolve = left(value),

@@ -14,14 +14,22 @@ const __ = require('./_internal/placeholder')
  * var value any,
  *   leftCompare any,
  *   rightCompare any,
- *   left (value=>Promise|leftCompare)|leftCompare,
- *   right (value=>Promise|rightCompare)|rightCompare
+ *   left value|(value=>Promise|leftCompare)|leftCompare,
+ *   right value|(value=>Promise|rightCompare)|rightCompare
+ *
+ * gt(left, right) -> boolean
  *
  * gt(left, right)(value) -> Promise|boolean
  * ```
  *
  * @description
  * Test if a left value is greater than (`>`) a right value. Either parameter may be an actual value.
+ *
+ * ```javascript [playground]
+ * const isAgeGreater21 = gt(21, 40)
+ *
+ * console.log(isAgeGreater21) // true
+ * ```
  *
  * ```javascript [playground]
  * const isOfLegalAge = gt(21, person => person.age)
@@ -34,6 +42,11 @@ const __ = require('./_internal/placeholder')
 const gt = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
+
+  if (!isLeftResolver && !isRightResolver) {
+    return left > right
+  }
+
   if (isLeftResolver && isRightResolver) {
     return function greaterThanBy(value) {
       const leftResolve = left(value),

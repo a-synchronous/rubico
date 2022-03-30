@@ -14,14 +14,22 @@ const __ = require('./_internal/placeholder')
  * var value any,
  *   leftCompare any,
  *   rightCompare any,
- *   left (value=>Promise|leftCompare)|leftCompare,
- *   right (value=>Promise|rightCompare)|rightCompare
+ *   left value|(value=>Promise|leftCompare)|leftCompare,
+ *   right value|(value=>Promise|rightCompare)|rightCompare
+ *
+ * lte(left, right) -> boolean
  *
  * lte(left, right)(value) -> Promise|boolean
  * ```
  *
  * @description
  * Test if a left value is less than or equal (`<=`) to a right value. Either parameter may be an actual value.
+ *
+ * ```javascript [playground]
+ * console.log(lte(1, 3)) // true
+ * console.log(lte(3, 3)) // true
+ * console.log(lte(4, 3)) // false
+ * ```
  *
  * ```javascript [playground]
  * const identity = value => value
@@ -36,6 +44,11 @@ const __ = require('./_internal/placeholder')
 const lte = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
+
+  if (!isLeftResolver && !isRightResolver) {
+    return left <= right
+  }
+
   if (isLeftResolver && isRightResolver) {
     return function lessThanOrEqualBy(value) {
       const leftResolve = left(value),

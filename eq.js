@@ -14,14 +14,23 @@ const __ = require('./_internal/placeholder')
  * var value any,
  *   leftCompare any,
  *   rightCompare any,
- *   left (value=>Promise|leftCompare)|leftCompare,
- *   right (value=>Promise|rightCompare)|rightCompare
+ *   left value|(value=>Promise|leftCompare)|leftCompare,
+ *   right value|(value=>Promise|rightCompare)|rightCompare
+ *
+ * eq(left, right) -> boolean
  *
  * eq(left, right)(value) -> Promise|boolean
+ *
  * ```
  *
  * @description
  * Test for [SameValueZero](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero) between the returns of two functions. Either parameter may be an actual value for comparison.
+ *
+ * ```javascript [playground]
+ * const isNamesEqual = eq('Ted', 'George')
+ *
+ * console.log(isNamesEqual) // false
+ * ```
  *
  * ```javascript [playground]
  * const personIsGeorge = eq(person => person.name, 'George')
@@ -38,6 +47,11 @@ const __ = require('./_internal/placeholder')
 const eq = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
+
+  if (!isLeftResolver && !isRightResolver) {
+    return sameValueZero(left, right)
+  }
+
   if (isLeftResolver && isRightResolver) {
     return function equalBy(value) {
       const leftResolve = left(value),
