@@ -4064,9 +4064,9 @@ eq(
   `, () => {
 
     const cases = [
-      [eq(NaN, NaN), undefined, true], // SameValueZero
-      [eq(+0, -0), undefined, true], // SameValueZero
-      [eq(0, 0), undefined, true],
+      [() => eq(NaN, NaN), undefined, true], // SameValueZero
+      [() => eq(+0, -0), undefined, true], // SameValueZero
+      [() => eq(0, 0), undefined, true],
       [eq(0, () => 0), undefined, true],
       [eq(0, async () => 0), undefined, true],
       [eq(() => 0, 0), undefined, true],
@@ -4075,7 +4075,7 @@ eq(
       [eq(async () => 0, () => 0), undefined, true],
       [eq(() => 0, async () => 0), undefined, true],
       [eq(async () => 0, async () => 0), undefined, true],
-      [eq(1, 0), undefined, false],
+      [() => eq(1, 0), undefined, false],
       [eq(1, () => 0), undefined, false],
       [eq(1, async () => 0), undefined, false],
       [eq(() => 1, 0), undefined, false],
@@ -4084,7 +4084,7 @@ eq(
       [eq(async () => 1, () => 0), undefined, false],
       [eq(async () => 1, async () => 0), undefined, false],
       [eq(async () => 1, async () => 0), undefined, false],
-      [eq(0, '0'), undefined, false],
+      [() => eq(0, '0'), undefined, false],
       [eq(0, () => '0'), undefined, false],
       [eq(0, async () => '0'), undefined, false],
       [eq(() => 0, '0'), undefined, false],
@@ -4101,23 +4101,24 @@ eq(
       })
     })
 
-    it('defer .eq', async () => {
-      Test(eq)
-        .before(function () {
-          this.left = null
-          this.right = null
-        })
-        .case(1, 1, predicate => {
-          const lexed = predicate({
-            eq: (left, right) => {
-              this.left = left
-              this.right = right
-            }
-          })
-          assert(this.left == 1)
-          assert(this.right == 1)
-        })()
-    })
+    // it('defer .eq', async () => {
+    //   Test(eq)
+    //     .before(function () {
+    //       this.left = null
+    //       this.right = null
+    //     })
+    //     .case(1, 1, predicate => {
+    //       const lexed = predicate({
+    //         eq: (left, right) => {
+    //           this.left = left
+    //           this.right = right
+    //         }
+    //       })
+
+    //       assert(this.left == 1)
+    //       assert(this.right == 1)
+    //     })()
+    // })
   })
 
   describe('eq - v1.5.15 regression', () => {
@@ -4148,12 +4149,12 @@ eq(
       ase(await eq(async x => x, 'hey')('hey'), true)
       ase(await eq('ho', async x => x)(1), false)
     })
-    it('[sync] eq(valueA, valueB)(x) == (valueA == valueB)', async () => {
-      ase(eq('hey', 'hey')('ayylmao'), true)
-      ase(eq('hey', 'ho')('ayylmao'), false)
+    it('[sync] eq(valueA, valueB) == (valueA == valueB)', () => {
+      ase(eq('hey', 'hey'), true)
+      ase(eq('hey', 'ho'), false)
     })
-    it('false for eq(string,)', async () => {
-      assert.strictEqual(eq('hey',)(), false)
+    it('false for eq(string,)', () => {
+      assert.strictEqual(eq('hey',), false)
     })
     it('false for too many arguments', async () => {
       assert.strictEqual(eq('hey', () => {}, 'ho')(), false)
@@ -4191,35 +4192,35 @@ eq(
       ase(await gt(async x => x, 1)(1), false)
       ase(await gt(async x => x, 2)(1), false)
     })
-    it('[sync] gt(valueA, valueB)(x) === (valueA > valueB)', async () => {
-      ase(gt(1, 0)('ayylmao'), true)
-      ase(gt(1, 1)('ayylmao'), false)
-      ase(gt(0, 1)('ayylmao'), false)
+    it('[sync] gt(valueA, valueB) === (valueA > valueB)', () => {
+      ase(gt(1, 0), true)
+      ase(gt(1, 1), false)
+      ase(gt(0, 1), false)
     })
     it('throws RangeError on not enough arguments', async () => {
-      assert.strictEqual(gt('hey')(), false)
+      assert.strictEqual(gt('hey'), false)
     })
     it('throws RangeError on too many arguments', async () => {
       assert.strictEqual(gt('hey', () => {}, 'ho')(), false)
     })
 
-    it('defer .gt', async () => {
-      Test(gt)
-        .before(function () {
-          this.left = null
-          this.right = null
-        })
-        .case(1, 1, predicate => {
-          const lexed = predicate({
-            gt: (left, right) => {
-              this.left = left
-              this.right = right
-            }
-          })
-          assert(this.left == 1)
-          assert(this.right == 1)
-        })()
-    })
+    // it('defer .gt', async () => {
+    //   Test(gt)
+    //     .before(function () {
+    //       this.left = null
+    //       this.right = null
+    //     })
+    //     .case(1, 1, predicate => {
+    //       const lexed = predicate({
+    //         gt: (left, right) => {
+    //           this.left = left
+    //           this.right = right
+    //         }
+    //       })
+    //       assert(this.left == 1)
+    //       assert(this.right == 1)
+    //     })()
+    // })
   })
 
   describe('lt', () => {
@@ -4253,35 +4254,35 @@ eq(
       ase(await lt(async x => x, 1)(1), false)
       ase(await lt(async x => x, 2)(1), true)
     })
-    it('[sync] lt(valueA, valueB)(x) === (valueA < valueB)', async () => {
-      ase(lt(1, 0)('ayylmao'), false)
-      ase(lt(1, 1)('ayylmao'), false)
-      ase(lt(0, 1)('ayylmao'), true)
+    it('[sync] lt(valueA, valueB) === (valueA < valueB)', () => {
+      ase(lt(1, 0), false)
+      ase(lt(1, 1), false)
+      ase(lt(0, 1), true)
     })
-    it('throws RangeError on not enough arguments', async () => {
-      assert.strictEqual(lt('hey')(), false)
+    it('throws RangeError on not enough arguments', () => {
+      assert.strictEqual(lt('hey'), false)
     })
     it('throws RangeError on too many arguments', async () => {
       assert.strictEqual(lt('hey', () => {}, 'ho')(), false)
     })
 
-    it('defer .lt', async () => {
-      Test(lt)
-        .before(function () {
-          this.left = null
-          this.right = null
-        })
-        .case(1, 1, predicate => {
-          const lexed = predicate({
-            lt: (left, right) => {
-              this.left = left
-              this.right = right
-            }
-          })
-          assert(this.left == 1)
-          assert(this.right == 1)
-        })()
-    })
+    // it('defer .lt', async () => {
+    //   Test(lt)
+    //     .before(function () {
+    //       this.left = null
+    //       this.right = null
+    //     })
+    //     .case(1, 1, predicate => {
+    //       const lexed = predicate({
+    //         lt: (left, right) => {
+    //           this.left = left
+    //           this.right = right
+    //         }
+    //       })
+    //       assert(this.left == 1)
+    //       assert(this.right == 1)
+    //     })()
+    // })
   })
 
   describe('gte', () => {
@@ -4315,35 +4316,35 @@ eq(
       ase(await gte(async x => x, 1)(1), true)
       ase(await gte(async x => x, 2)(1), false)
     })
-    it('[sync] gte(valueA, valueB)(x) === (valueA >= valueB)', async () => {
-      ase(gte(1, 0)('ayylmao'), true)
-      ase(gte(1, 1)('ayylmao'), true)
-      ase(gte(0, 1)('ayylmao'), false)
+    it('[sync] gte(valueA, valueB)(x) === (valueA >= valueB)', () => {
+      ase(gte(1, 0), true)
+      ase(gte(1, 1), true)
+      ase(gte(0, 1), false)
     })
-    it('throws RangeError on not enough arguments', async () => {
-      assert.strictEqual(gte('hey')(), false)
+    it('throws RangeError on not enough arguments', () => {
+      assert.strictEqual(gte('hey'), false)
     })
     it('throws RangeError on too many arguments', async () => {
       assert.strictEqual(gte('hey', () => {}, 'ho')(), false)
     })
 
-    it('defer .gte', async () => {
-      Test(gte)
-        .before(function () {
-          this.left = null
-          this.right = null
-        })
-        .case(1, 1, predicate => {
-          const lexed = predicate({
-            gte: (left, right) => {
-              this.left = left
-              this.right = right
-            }
-          })
-          assert(this.left == 1)
-          assert(this.right == 1)
-        })()
-    })
+    // it('defer .gte', async () => {
+    //   Test(gte)
+    //     .before(function () {
+    //       this.left = null
+    //       this.right = null
+    //     })
+    //     .case(1, 1, predicate => {
+    //       const lexed = predicate({
+    //         gte: (left, right) => {
+    //           this.left = left
+    //           this.right = right
+    //         }
+    //       })
+    //       assert(this.left == 1)
+    //       assert(this.right == 1)
+    //     })()
+    // })
   })
 
   describe('lte', () => {
@@ -4377,35 +4378,35 @@ eq(
       ase(await lte(async x => x, 1)(1), true)
       ase(await lte(async x => x, 2)(1), true)
     })
-    it('[sync] lte(valueA, valueB)(x) === (valueA <= valueB)', async () => {
-      ase(lte(1, 0)('ayylmao'), false)
-      ase(lte(1, 1)('ayylmao'), true)
-      ase(lte(0, 1)('ayylmao'), true)
+    it('[sync] lte(valueA, valueB)(x) === (valueA <= valueB)', () => {
+      ase(lte(1, 0), false)
+      ase(lte(1, 1), true)
+      ase(lte(0, 1), true)
     })
-    it('throws RangeError on not enough arguments', async () => {
-      assert.strictEqual(lte('hey')(), false)
+    it('throws RangeError on not enough arguments', () => {
+      assert.strictEqual(lte('hey'), false)
     })
     it('throws RangeError on too many arguments', async () => {
       assert.strictEqual(lte('hey', () => {}, 'ho')(), false)
     })
 
-    it('defer .lte', async () => {
-      Test(lte)
-        .before(function () {
-          this.left = null
-          this.right = null
-        })
-        .case(1, 1, predicate => {
-          const lexed = predicate({
-            lte: (left, right) => {
-              this.left = left
-              this.right = right
-            }
-          })
-          assert(this.left == 1)
-          assert(this.right == 1)
-        })()
-    })
+    // it('defer .lte', async () => {
+    //   Test(lte)
+    //     .before(function () {
+    //       this.left = null
+    //       this.right = null
+    //     })
+    //     .case(1, 1, predicate => {
+    //       const lexed = predicate({
+    //         lte: (left, right) => {
+    //           this.left = left
+    //           this.right = right
+    //         }
+    //       })
+    //       assert(this.left == 1)
+    //       assert(this.right == 1)
+    //     })()
+    // })
   })
 
   describe('thunkify', () => {
