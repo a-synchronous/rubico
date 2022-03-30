@@ -48,6 +48,11 @@ const always = value => function getter() { return value }
 const gt = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
+
+  if (!isLeftResolver && !isRightResolver) {
+    return left > right
+  }
+
   if (isLeftResolver && isRightResolver) {
     return function greaterThanBy(value) {
       const leftResolve = left(value),
