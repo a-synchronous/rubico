@@ -48,6 +48,11 @@ const always = value => function getter() { return value }
 const lt = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
+
+  if (!isLeftResolver && !isRightResolver) {
+    return left < right
+  }
+
   if (isLeftResolver && isRightResolver) {
     return function lessThanBy(value) {
       const leftResolve = left(value),

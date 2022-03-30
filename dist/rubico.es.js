@@ -2295,6 +2295,11 @@ const sameValueZero = function (left, right) {
 const eq = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
+
+  if (!isLeftResolver && !isRightResolver) {
+    return sameValueZero(left, right)
+  }
+
   if (isLeftResolver && isRightResolver) {
     return function equalBy(value) {
       const leftResolve = left(value),
@@ -2341,6 +2346,11 @@ const greaterThan = (left, right) => left > right
 const gt = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
+
+  if (!isLeftResolver && !isRightResolver) {
+    return left > right
+  }
+
   if (isLeftResolver && isRightResolver) {
     return function greaterThanBy(value) {
       const leftResolve = left(value),
@@ -2387,6 +2397,11 @@ const lessThan = (left, right) => left < right
 const lt = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
+
+  if (!isLeftResolver && !isRightResolver) {
+    return left < right
+  }
+
   if (isLeftResolver && isRightResolver) {
     return function lessThanBy(value) {
       const leftResolve = left(value),
@@ -2433,6 +2448,11 @@ const greaterThanOrEqual = (left, right) => left >= right
 const gte = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
+
+  if (!isLeftResolver && !isRightResolver) {
+    return left >= right
+  }
+
   if (isLeftResolver && isRightResolver) {
     return function greaterThanOrEqualBy(value) {
       const leftResolve = left(value),
@@ -2479,6 +2499,11 @@ const lessThanOrEqual = (left, right) => left <= right
 const lte = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
+
+  if (!isLeftResolver && !isRightResolver) {
+    return left <= right
+  }
+
   if (isLeftResolver && isRightResolver) {
     return function lessThanOrEqualBy(value) {
       const leftResolve = left(value),
