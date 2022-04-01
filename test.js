@@ -4100,25 +4100,6 @@ eq(
         asserter(await func(value), result)
       })
     })
-
-    // it('defer .eq', async () => {
-    //   Test(eq)
-    //     .before(function () {
-    //       this.left = null
-    //       this.right = null
-    //     })
-    //     .case(1, 1, predicate => {
-    //       const lexed = predicate({
-    //         eq: (left, right) => {
-    //           this.left = left
-    //           this.right = right
-    //         }
-    //       })
-
-    //       assert(this.left == 1)
-    //       assert(this.right == 1)
-    //     })()
-    // })
   })
 
   describe('eq - v1.5.15 regression', () => {
@@ -4203,24 +4184,6 @@ eq(
     it('throws RangeError on too many arguments', async () => {
       assert.strictEqual(gt('hey', () => {}, 'ho')(), false)
     })
-
-    // it('defer .gt', async () => {
-    //   Test(gt)
-    //     .before(function () {
-    //       this.left = null
-    //       this.right = null
-    //     })
-    //     .case(1, 1, predicate => {
-    //       const lexed = predicate({
-    //         gt: (left, right) => {
-    //           this.left = left
-    //           this.right = right
-    //         }
-    //       })
-    //       assert(this.left == 1)
-    //       assert(this.right == 1)
-    //     })()
-    // })
   })
 
   describe('lt', () => {
@@ -4265,24 +4228,6 @@ eq(
     it('throws RangeError on too many arguments', async () => {
       assert.strictEqual(lt('hey', () => {}, 'ho')(), false)
     })
-
-    // it('defer .lt', async () => {
-    //   Test(lt)
-    //     .before(function () {
-    //       this.left = null
-    //       this.right = null
-    //     })
-    //     .case(1, 1, predicate => {
-    //       const lexed = predicate({
-    //         lt: (left, right) => {
-    //           this.left = left
-    //           this.right = right
-    //         }
-    //       })
-    //       assert(this.left == 1)
-    //       assert(this.right == 1)
-    //     })()
-    // })
   })
 
   describe('gte', () => {
@@ -4327,24 +4272,6 @@ eq(
     it('throws RangeError on too many arguments', async () => {
       assert.strictEqual(gte('hey', () => {}, 'ho')(), false)
     })
-
-    // it('defer .gte', async () => {
-    //   Test(gte)
-    //     .before(function () {
-    //       this.left = null
-    //       this.right = null
-    //     })
-    //     .case(1, 1, predicate => {
-    //       const lexed = predicate({
-    //         gte: (left, right) => {
-    //           this.left = left
-    //           this.right = right
-    //         }
-    //       })
-    //       assert(this.left == 1)
-    //       assert(this.right == 1)
-    //     })()
-    // })
   })
 
   describe('lte', () => {
@@ -4389,24 +4316,6 @@ eq(
     it('throws RangeError on too many arguments', async () => {
       assert.strictEqual(lte('hey', () => {}, 'ho')(), false)
     })
-
-    // it('defer .lte', async () => {
-    //   Test(lte)
-    //     .before(function () {
-    //       this.left = null
-    //       this.right = null
-    //     })
-    //     .case(1, 1, predicate => {
-    //       const lexed = predicate({
-    //         lte: (left, right) => {
-    //           this.left = left
-    //           this.right = right
-    //         }
-    //       })
-    //       assert(this.left == 1)
-    //       assert(this.right == 1)
-    //     })()
-    // })
   })
 
   describe('thunkify', () => {

@@ -11,24 +11,21 @@ const __ = require('./_internal/placeholder')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * var value any,
- *   leftCompare any,
- *   rightCompare any,
- *   left value|(value=>Promise|leftCompare)|leftCompare,
- *   right value|(value=>Promise|rightCompare)|rightCompare
- *
- * gt(left, right) -> boolean
- *
- * gt(left, right)(value) -> Promise|boolean
+ * gt(leftValue any, rightValue any) -> boolean
+ * gt(leftValue any, right function)(value any) -> Promise|boolean
+ * gt(left function, rightValue any)(value any) -> Promise|boolean
+ * gt(left function, right function)(value any) -> Promise|boolean
  * ```
  *
  * @description
  * Test if a left value is greater than (`>`) a right value. Either parameter may be an actual value.
  *
  * ```javascript [playground]
- * const isAgeGreater21 = gt(21, 40)
+ * const age = 40
  *
- * console.log(isAgeGreater21) // true
+ * const isAgeGreaterThan21 = gt(age, 21)
+ *
+ * console.log(isAgeGreaterThan21) // true
  * ```
  *
  * ```javascript [playground]
@@ -42,10 +39,6 @@ const __ = require('./_internal/placeholder')
 const gt = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
-
-  if (!isLeftResolver && !isRightResolver) {
-    return left > right
-  }
 
   if (isLeftResolver && isRightResolver) {
     return function greaterThanBy(value) {
@@ -81,11 +74,8 @@ const gt = function (left, right) {
         : left > rightResolve
     }
   }
-  return function greaterThanBy(value) {
-    return value != null && typeof value.eq == 'function'
-      ? value.gt(left, right)
-      : left > right
-  }
+
+  return left > right
 }
 
 module.exports = gt

@@ -11,15 +11,10 @@ const __ = require('./_internal/placeholder')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * var value any,
- *   leftCompare any,
- *   rightCompare any,
- *   left value|(value=>Promise|leftCompare)|leftCompare,
- *   right value|(value=>Promise|rightCompare)|rightCompare
- *
- * gte(left, right) -> boolean
- *
- * gte(left, right)(value) -> Promise|boolean
+ * gte(leftValue any, rightValue any) -> boolean
+ * gte(leftValue any, right function)(value any) -> Promise|boolean
+ * gte(left function, rightValue any)(value any) -> Promise|boolean
+ * gte(left function, right function)(value any) -> Promise|boolean
  * ```
  *
  * @description
@@ -44,10 +39,6 @@ const __ = require('./_internal/placeholder')
 const gte = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
-
-  if (!isLeftResolver && !isRightResolver) {
-    return left >= right
-  }
 
   if (isLeftResolver && isRightResolver) {
     return function greaterThanOrEqualBy(value) {
@@ -83,11 +74,8 @@ const gte = function (left, right) {
         : left >= rightResolve
     }
   }
-  return function greaterThanOrEqualBy(value) {
-    return value != null && typeof value.eq == 'function'
-      ? value.gte(left, right)
-      : left >= right
-  }
+
+  return left >= right
 }
 
 module.exports = gte

@@ -11,26 +11,26 @@ const __ = require('./_internal/placeholder')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * var value any,
- *   leftCompare any,
- *   rightCompare any,
- *   left value|(value=>Promise|leftCompare)|leftCompare,
- *   right value|(value=>Promise|rightCompare)|rightCompare
- *
- * eq(left, right) -> boolean
- *
- * eq(left, right)(value) -> Promise|boolean
- *
+ * eq(leftValue any, rightValue any) -> boolean
+ * eq(leftValue any, right function)(value any) -> Promise|boolean
+ * eq(left function, rightValue any)(value any) -> Promise|boolean
+ * eq(left function, right function)(value any) -> Promise|boolean
  * ```
  *
  * @description
  * Test for [SameValueZero](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero) between the returns of two functions. Either parameter may be an actual value for comparison.
  *
- * ```javascript [playground]
- * const isNamesEqual = eq('Ted', 'George')
+ * If both arguments are values, `eq` eagerly computes and returns a boolean value.
  *
- * console.log(isNamesEqual) // false
+ * ```javascript [playground]
+ * const areNamesEqual = eq('Ted', 'George')
+ *
+ * console.log(areNamesEqual) // false
  * ```
+ *
+ * If both arguments are functions, `eq` treats those functions as argument resolvers and returns a function that first resolves its arguments by the argument resolvers before making the comparison.
+ *
+ * If only one argument is a function, `eq` still returns a function that resolves its arguments by the argument resolver, treating the value (non function) argument as an already resolved value for comparison.
  *
  * ```javascript [playground]
  * const personIsGeorge = eq(person => person.name, 'George')
@@ -47,10 +47,6 @@ const __ = require('./_internal/placeholder')
 const eq = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
-
-  if (!isLeftResolver && !isRightResolver) {
-    return sameValueZero(left, right)
-  }
 
   if (isLeftResolver && isRightResolver) {
     return function equalBy(value) {
@@ -86,11 +82,8 @@ const eq = function (left, right) {
         : sameValueZero(left, rightResolve)
     }
   }
-  return function equalBy(value) {
-    return value != null && typeof value.eq == 'function'
-      ? value.eq(left, right)
-      : sameValueZero(left, right)
-  }
+
+  return sameValueZero(left, right)
 }
 
 module.exports = eq
