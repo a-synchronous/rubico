@@ -51,10 +51,6 @@ const eq = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
 
-  if (!isLeftResolver && !isRightResolver) {
-    return sameValueZero(left, right)
-  }
-
   if (isLeftResolver && isRightResolver) {
     return function equalBy(value) {
       const leftResolve = left(value),
@@ -89,11 +85,8 @@ const eq = function (left, right) {
         : sameValueZero(left, rightResolve)
     }
   }
-  return function equalBy(value) {
-    return value != null && typeof value.eq == 'function'
-      ? value.eq(left, right)
-      : sameValueZero(left, right)
-  }
+
+  return sameValueZero(left, right)
 }
 
 return eq
