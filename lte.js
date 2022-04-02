@@ -20,11 +20,17 @@ const __ = require('./_internal/placeholder')
  * @description
  * Test if a left value is less than or equal (`<=`) to a right value. Either parameter may be an actual value.
  *
+ * If both arguments are values, `lte` eagerly computes and returns a boolean value.
+ *
  * ```javascript [playground]
  * console.log(lte(1, 3)) // true
  * console.log(lte(3, 3)) // true
  * console.log(lte(4, 3)) // false
  * ```
+ *
+ * If both arguments are functions, `lte` treats those functions as argument resolvers and returns a function that first resolves its arguments by the argument resolvers before making the comparison.
+ *
+ * If only one argument is a function, `lte` still returns a function that resolves its arguments by the argument resolver, treating the value (non function) argument as an already resolved value for comparison.
  *
  * ```javascript [playground]
  * const identity = value => value

@@ -20,6 +20,8 @@ const __ = require('./_internal/placeholder')
  * @description
  * Test if a left value is greater than (`>`) a right value. Either parameter may be an actual value.
  *
+ * If both arguments are values, `gt` eagerly computes and returns a boolean value.
+ *
  * ```javascript [playground]
  * const age = 40
  *
@@ -27,6 +29,10 @@ const __ = require('./_internal/placeholder')
  *
  * console.log(isAgeGreaterThan21) // true
  * ```
+ *
+ * If both arguments are functions, `gt` treats those functions as argument resolvers and returns a function that first resolves its arguments by the argument resolvers before making the comparison.
+ *
+ * If only one argument is a function, `gt` still returns a function that resolves its arguments by the argument resolver, treating the value (non function) argument as an already resolved value for comparison.
  *
  * ```javascript [playground]
  * const isOfLegalAge = gt(21, person => person.age)

@@ -20,11 +20,17 @@ const __ = require('./_internal/placeholder')
  * @description
  * Test if a left value is less than (`<`) a right value. Either parameter may be an actual value.
  *
+ * If both arguments are values, `lt` eagerly computes and returns a boolean value.
+ *
  * ```javascript [playground]
  * console.log(lt(1, 3)) // true
  * console.log(lt(3, 3)) // false
  * console.log(lt(4, 3)) // false
  * ```
+ *
+ * If both arguments are functions, `lt` treats those functions as argument resolvers and returns a function that first resolves its arguments by the argument resolvers before making the comparison.
+ *
+ * If only one argument is a function, `lt` still returns a function that resolves its arguments by the argument resolver, treating the value (non function) argument as an already resolved value for comparison.
  *
  * ```javascript [playground]
  * const identity = value => value
