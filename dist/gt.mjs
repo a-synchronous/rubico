@@ -43,10 +43,6 @@ const gt = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
 
-  if (!isLeftResolver && !isRightResolver) {
-    return left > right
-  }
-
   if (isLeftResolver && isRightResolver) {
     return function greaterThanBy(value) {
       const leftResolve = left(value),
@@ -81,11 +77,8 @@ const gt = function (left, right) {
         : left > rightResolve
     }
   }
-  return function greaterThanBy(value) {
-    return value != null && typeof value.eq == 'function'
-      ? value.gt(left, right)
-      : left > right
-  }
+
+  return left > right
 }
 
 export default gt

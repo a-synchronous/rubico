@@ -49,10 +49,6 @@ const gte = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
 
-  if (!isLeftResolver && !isRightResolver) {
-    return left >= right
-  }
-
   if (isLeftResolver && isRightResolver) {
     return function greaterThanOrEqualBy(value) {
       const leftResolve = left(value),
@@ -87,11 +83,8 @@ const gte = function (left, right) {
         : left >= rightResolve
     }
   }
-  return function greaterThanOrEqualBy(value) {
-    return value != null && typeof value.eq == 'function'
-      ? value.gte(left, right)
-      : left >= right
-  }
+
+  return left >= right
 }
 
 return gte

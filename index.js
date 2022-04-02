@@ -2302,10 +2302,6 @@ const eq = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
 
-  if (!isLeftResolver && !isRightResolver) {
-    return sameValueZero(left, right)
-  }
-
   if (isLeftResolver && isRightResolver) {
     return function equalBy(value) {
       const leftResolve = left(value),
@@ -2340,11 +2336,8 @@ const eq = function (left, right) {
         : sameValueZero(left, rightResolve)
     }
   }
-  return function equalBy(value) {
-    return value != null && typeof value.eq == 'function'
-      ? value.eq(left, right)
-      : sameValueZero(left, right)
-  }
+
+  return sameValueZero(left, right)
 }
 
 const greaterThan = (left, right) => left > right
@@ -2352,10 +2345,6 @@ const greaterThan = (left, right) => left > right
 const gt = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
-
-  if (!isLeftResolver && !isRightResolver) {
-    return left > right
-  }
 
   if (isLeftResolver && isRightResolver) {
     return function greaterThanBy(value) {
@@ -2391,11 +2380,8 @@ const gt = function (left, right) {
         : left > rightResolve
     }
   }
-  return function greaterThanBy(value) {
-    return value != null && typeof value.eq == 'function'
-      ? value.gt(left, right)
-      : left > right
-  }
+
+  return left > right
 }
 
 const lessThan = (left, right) => left < right
@@ -2403,10 +2389,6 @@ const lessThan = (left, right) => left < right
 const lt = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
-
-  if (!isLeftResolver && !isRightResolver) {
-    return left < right
-  }
 
   if (isLeftResolver && isRightResolver) {
     return function lessThanBy(value) {
@@ -2442,11 +2424,8 @@ const lt = function (left, right) {
         : left < rightResolve
     }
   }
-  return function lessThanBy(value) {
-    return value != null && typeof value.eq == 'function'
-      ? value.lt(left, right)
-      : left < right
-  }
+
+  return left < right
 }
 
 const greaterThanOrEqual = (left, right) => left >= right
@@ -2454,10 +2433,6 @@ const greaterThanOrEqual = (left, right) => left >= right
 const gte = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
-
-  if (!isLeftResolver && !isRightResolver) {
-    return left >= right
-  }
 
   if (isLeftResolver && isRightResolver) {
     return function greaterThanOrEqualBy(value) {
@@ -2493,11 +2468,8 @@ const gte = function (left, right) {
         : left >= rightResolve
     }
   }
-  return function greaterThanOrEqualBy(value) {
-    return value != null && typeof value.eq == 'function'
-      ? value.gte(left, right)
-      : left >= right
-  }
+
+  return left >= right
 }
 
 const lessThanOrEqual = (left, right) => left <= right
@@ -2505,10 +2477,6 @@ const lessThanOrEqual = (left, right) => left <= right
 const lte = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
-
-  if (!isLeftResolver && !isRightResolver) {
-    return left <= right
-  }
 
   if (isLeftResolver && isRightResolver) {
     return function lessThanOrEqualBy(value) {
@@ -2544,11 +2512,8 @@ const lte = function (left, right) {
         : left <= rightResolve
     }
   }
-  return function lessThanOrEqualBy(value) {
-    return value != null && typeof value.eq == 'function'
-      ? value.lte(left, right)
-      : left <= right
-  }
+
+  return left <= right
 }
 
 const memoizeCappedUnary = function (func, cap) {

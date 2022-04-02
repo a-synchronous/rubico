@@ -43,10 +43,6 @@ const lte = function (left, right) {
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
 
-  if (!isLeftResolver && !isRightResolver) {
-    return left <= right
-  }
-
   if (isLeftResolver && isRightResolver) {
     return function lessThanOrEqualBy(value) {
       const leftResolve = left(value),
@@ -81,11 +77,8 @@ const lte = function (left, right) {
         : left <= rightResolve
     }
   }
-  return function lessThanOrEqualBy(value) {
-    return value != null && typeof value.eq == 'function'
-      ? value.lte(left, right)
-      : left <= right
-  }
+
+  return left <= right
 }
 
 export default lte
