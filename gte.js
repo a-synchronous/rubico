@@ -23,7 +23,9 @@ const __ = require('./_internal/placeholder')
  * If both arguments are values, `gte` eagerly computes and returns a boolean value.
  *
  * ```javascript [playground]
- * const isAdultAge = gte(18, 20)
+ * const age = 20
+ *
+ * const isAdultAge = gte(age, 18)
  *
  * console.log(isAdultAge) // true
  * ```
