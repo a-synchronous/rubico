@@ -1,3 +1,6 @@
+## v1.8.11 - next release
+ * eq, gt, gte, lt, lte should return a boolean when both arguments are values (not functions) - [#203](https://github.com/a-synchronous/rubico/pull/203) - [lulldev](https://github.com/lulldev)
+
 ## v1.8.10 - latest
  * Mux.race - yield value after adding promise versus yielding before
  * isDeepEqual takes functions as arguments, returning a partially applied function
