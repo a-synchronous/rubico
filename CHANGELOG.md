@@ -1,7 +1,8 @@
-## v1.8.11 - next release
+## v1.8.11 - latest
  * eq, gt, gte, lt, lte should return a boolean when both arguments are values (not functions) - [#203](https://github.com/a-synchronous/rubico/pull/203) - [lulldev](https://github.com/lulldev)
+ * not behaves like ! when passed a value (not function) - [#204](https://github.com/a-synchronous/rubico/pull/211)
 
-## v1.8.10 - latest
+## v1.8.10
  * Mux.race - yield value after adding promise versus yielding before
  * isDeepEqual takes functions as arguments, returning a partially applied function
  * rubico/x/filterOut - the inverse of filter
