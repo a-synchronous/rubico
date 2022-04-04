@@ -15,7 +15,16 @@ const _not = value => !value
  * ```
  *
  * @description
- * Negate a predicate (`!`)
+ * Negate a value (`!`)
+ *
+ * ```javascript [playground]
+ * const myObj = { a: 1 }
+ *
+ * console.log(not('a' in myObj)) // false
+ * console.log(not('b' in myObj)) // true
+ * ```
+ *
+ * If passed a function predicate, `not` returns a logically inverted predicate that returns true everywhere the original predicate would have returned false and vice versa.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -24,17 +33,15 @@ const _not = value => !value
  *   not(isOdd)(3),
  * ) // false
  * ```
- *
- * @TODO
- * const not = funcNot
- * funcNotSync
  */
-const not = func => function logicalInverter(value) {
-  if (value != null && typeof value.not == 'function') {
-    return value.not(func)
+const not = function (funcOrValue) {
+  if (typeof funcOrValue == 'function') {
+    return function logicalInverter(value) {
+      const boolean = funcOrValue(value)
+      return isPromise(boolean) ? boolean.then(_not) : !boolean
+    }
   }
-  const boolean = func(value)
-  return isPromise(boolean) ? boolean.then(_not) : !boolean
+  return !funcOrValue
 }
 
 /**

@@ -3910,6 +3910,12 @@ all(predicate all=>Promise|boolean)(value Foldable) -> Promise|boolean
   })
 
   describe('not', () => {
+    it('not(someValue) -> !someValue', async () => {
+      assert.strictEqual(not(false), true)
+      assert.strictEqual(not(null), true)
+      assert.strictEqual(not(1), false)
+      assert.strictEqual(not(0), true)
+    })
     it('[sync] not(isOdd)(x) === !isOdd(x)', async () => {
       ase(not(isOdd)(2), true)
       ase(not(isOdd)(1), false)
@@ -3918,21 +3924,6 @@ all(predicate all=>Promise|boolean)(value Foldable) -> Promise|boolean
       aok(not(asyncIsEven)(2) instanceof Promise)
       ase(await not(asyncIsEven)(2), false)
       ase(await not(asyncIsEven)(1), true)
-    })
-
-    it('defer .not', async () => {
-      Test(not)
-        .before(function () {
-          this.predicates = []
-        })
-        .case([1, 2, 3], predicate => {
-          const lexed = predicate({
-            not: predicates => {
-              this.predicates = predicates
-            }
-          })
-          assert.deepEqual(this.predicates, [1, 2, 3])
-        })()
     })
   })
 
