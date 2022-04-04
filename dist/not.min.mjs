@@ -4,4 +4,4 @@
  * (c) 2019-2021 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
-const isPromise=n=>null!=n&&"function"==typeof n.then,_not=n=>!n,not=n=>function(t){if(null!=t&&"function"==typeof t.not)return t.not(n);const o=n(t);return isPromise(o)?o.then(_not):!o},notSync=n=>function(...t){return!n(...t)};not.sync=notSync;export default not;
+const isPromise=n=>null!=n&&"function"==typeof n.then,_not=n=>!n,not=function(n){return"function"==typeof n?function(t){const o=n(t);return isPromise(o)?o.then(_not):!o}:!n},notSync=n=>function(...t){return!n(...t)};not.sync=notSync;export default not;

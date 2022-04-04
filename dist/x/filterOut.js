@@ -395,12 +395,14 @@ filter.withIndex = predicate => function filteringWithIndex(value) {
 // true -> false
 const _not = value => !value
 
-const not = func => function logicalInverter(value) {
-  if (value != null && typeof value.not == 'function') {
-    return value.not(func)
+const not = function (funcOrValue) {
+  if (typeof funcOrValue == 'function') {
+    return function logicalInverter(value) {
+      const boolean = funcOrValue(value)
+      return isPromise(boolean) ? boolean.then(_not) : !boolean
+    }
   }
-  const boolean = func(value)
-  return isPromise(boolean) ? boolean.then(_not) : !boolean
+  return !funcOrValue
 }
 
 const notSync = func => function notSync(...args) {

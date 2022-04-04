@@ -1013,32 +1013,28 @@ TestsMap.set('or', or => [
 ])
 
 TestsMap.set('not', not => [
+  Test( 'not value', () => {
+    assert.strictEqual(not(true), false)
+    assert.strictEqual(not(false), true)
+    assert.strictEqual(not(null), true)
+    const myObj = { a: 1 }
+    assert.strictEqual(not('a' in myObj), false)
+    assert.strictEqual(not('b' in myObj), false)
+  }),
+
   Test(
-    'not sync',
+    'not sync function',
     not(number => number == 1))
     .case(0, true)
     .case(1, false)
     .case(2, true),
 
   Test(
-    'not async',
+    'not async function',
     not(async number => number == 1))
     .case(0, true)
     .case(1, false)
     .case(2, true),
-
-  Test(not)
-    .before(function () {
-      this.predicates = []
-    })
-    .case([1, 2, 3], predicate => {
-      const lexed = predicate({
-        not: predicates => {
-          this.predicates = predicates
-        }
-      })
-      assert.deepEqual(this.predicates, [1, 2, 3])
-    }),
 ])
 
 TestsMap.set('any', any => [
