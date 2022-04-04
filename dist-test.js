@@ -1013,14 +1013,14 @@ TestsMap.set('or', or => [
 ])
 
 TestsMap.set('not', not => [
-  Test( 'not value', () => {
+  Test('not value', () => {
     assert.strictEqual(not(true), false)
     assert.strictEqual(not(false), true)
     assert.strictEqual(not(null), true)
     const myObj = { a: 1 }
     assert.strictEqual(not('a' in myObj), false)
-    assert.strictEqual(not('b' in myObj), false)
-  }),
+    assert.strictEqual(not('b' in myObj), true)
+  }).case(),
 
   Test(
     'not sync function',
