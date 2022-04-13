@@ -20,7 +20,7 @@ const getSearchResult = pipe([
 const selectFoundedNames = result => result[1]
 
 const render = resultContent => {
-  resultList.innerHTML = reduce((html, item) => html + template.replace(/\{name\}/g, item), '')(resultContent)
+  resultList.innerHTML = resultContent.reduce((html, item) => html + template.replace(/\{name\}/g, item), '')
 }
 
 const runSearch = pipe([
