@@ -1,16 +1,18 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <title>rubico | Wikipedia type to search example</title>
-</head>
-<body>
-  <h2>Type to search Wikipedia</h2>
-  <input type="text" id="search" autofocus autocomplete="off" placeholder="Search Wikipedia">
-  <ul id="results"></ul>
-  <div id="template" style="display: none">
-    <li><a href="https://en.wikipedia.org/wiki/{name}" target="_BLANK">{name}</a></li>
-  </div>
-  <script type="module" src="app.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>rubico | Wikipedia type to search example</title>
+  </head>
+  <body>
+    <h2>Type to search Wikipedia</h2>
+    <input type="text" id="search" autofocus autocomplete="off" placeholder="Search Wikipedia" />
+    <ul id="results"></ul>
+    <div id="template" style="display: none">
+      <li><a href="https://en.wikipedia.org/wiki/{name}" target="_BLANK">{name}</a></li>
+    </div>
+    <script defer src="https://unpkg.com/rubico@1.8.11/dist/rubico.min.js" crossorigin></script>
+    <script defer src="https://unpkg.com/fetch-jsonp@1.2.1/build/fetch-jsonp.js" crossorigin></script>
+    <script defer src="app.js"></script>
+  </body>
 </html>

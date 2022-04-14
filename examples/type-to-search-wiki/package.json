@@ -2,18 +2,12 @@
   "name": "type-to-search-wiki",
   "version": "1.0.0",
   "description": "Vanilla js example by rubico",
-  "source": "src/index.html",
   "scripts": {
-    "start": "parcel",
-    "build": "parcel build"
+    "start": "serve ./src"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "parcel": "^2.4.1",
-    "rollup": "^2.70.1"
-  },
-  "dependencies": {
-    "fetch-jsonp": "^1.2.1"
+    "serve": "^13.0.2"
   }
 }
