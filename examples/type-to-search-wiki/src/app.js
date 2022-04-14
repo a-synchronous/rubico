@@ -1,9 +1,4 @@
-const pipe = require('../../../pipe')
-const reduce = require('../../../reduce')
-const switchCase = require('../../../switchCase')
-const noop = require('../../../x/noop')
-const fetchJsonp = require('fetch-jsonp')
-const { debounce } = require('./utils')
+const { pipe, switchCase, noop } = rubico
 
 const searchInput = document.getElementById('search')
 const resultList = document.getElementById('results')
@@ -35,6 +30,16 @@ const runSearch = pipe([
   ]),
 ])
 
+const debounce = (func, timeout = 300) => {
+  // eslint-disable-next-line init-declarations
+  let timer
+  return (...args) => {
+    clearTimeout(timer)
+    timer = setTimeout(() => {
+      func.apply(this, args)
+    }, timeout)
+  }
+}
 
 searchInput.onkeyup = function (event) {
   debounce(() => runSearch(event.target.value), 500)()
