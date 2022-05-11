@@ -1,7 +1,8 @@
-## v1.8.12 - next release
+## v1.8.12 - latest
  * new example [type-to-search-wiki](https://github.com/a-synchronous/rubico/tree/master/examples/type-to-search-wiki) - [#210](https://github.com/a-synchronous/rubico/pull/210) - [lulldev](https://github.com/lulldev)
+ * require('rubico/global') imports the core rubico methods globally
 
-## v1.8.11 - latest
+## v1.8.11
  * eq, gt, gte, lt, lte should return a boolean when both arguments are values (not functions) - [#203](https://github.com/a-synchronous/rubico/pull/203) - [lulldev](https://github.com/lulldev)
  * not behaves like ! when passed a value (not function) - [#204](https://github.com/a-synchronous/rubico/pull/211)
 
