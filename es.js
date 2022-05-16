@@ -38,11 +38,18 @@ const asyncGeneratorFunctionTag = '[object AsyncGeneratorFunction]'
 
 const isAsyncGeneratorFunction = value => objectToString(value) == asyncGeneratorFunctionTag
 
-const pipe = function (funcs) {
+const pipe = function (...args) {
+  const funcs = args.pop()
+
+  if (args.length > 0) {
+    return funcs.reduce(funcConcat)(...args)
+  }
+
   let functionPipeline = noop,
     functionComposition = noop
   return function pipeline(...args) {
     const firstArg = args[0]
+
     if (
       typeof firstArg == 'function'
         && !isGeneratorFunction(firstArg)
@@ -51,11 +58,12 @@ const pipe = function (funcs) {
       if (functionComposition == noop) {
         functionComposition = funcs.reduceRight(funcConcat)
       }
-      return functionComposition(...args)
+      return functionComposition(firstArg)
     }
-      if (functionPipeline == noop) {
-        functionPipeline = funcs.reduce(funcConcat)
-      }
+
+    if (functionPipeline == noop) {
+      functionPipeline = funcs.reduce(funcConcat)
+    }
     return functionPipeline(...args)
   }
 }

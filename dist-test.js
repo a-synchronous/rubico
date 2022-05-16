@@ -59,6 +59,9 @@ TestsMap.set('pipe', pipe => [
     }, reducer => {
       assert.strictEqual([1, 2, 3, 4, 5].reduce(reducer, 0), 15)
     }),
+
+  Test('eager pipe', pipe)
+  .case(1, 2, 3, [Array.of], [1, 2, 3]),
 ])
 
 TestsMap.set('pipe.sync', pipeSync => [
