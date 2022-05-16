@@ -60,17 +60,34 @@ const isAsyncGeneratorFunction = require('./_internal/isAsyncGeneratorFunction')
  * ) // [1, 9, 25]
  * ```
  *
+ * For the sake of a sane API, pipe behaves eagerly when passed any amount of arguments before the array of functions.
+ *
+ * ```javascript [playground]
+ * pipe(1, 2, 3, [
+ *   Array.of,
+ *   map(number => number * 3),
+ *   console.log, // [3, 6, 9]
+ * ])
+ * ```
+ *
  * @execution series
  *
  * @transducing
  *
  * @since 1.6.0
  */
-const pipe = function (funcs) {
+const pipe = function (...args) {
+  const funcs = args.pop()
+
+  if (args.length > 0) {
+    return funcs.reduce(funcConcat)(...args)
+  }
+
   let functionPipeline = noop,
     functionComposition = noop
   return function pipeline(...args) {
     const firstArg = args[0]
+
     if (
       typeof firstArg == 'function'
         && !isGeneratorFunction(firstArg)
@@ -79,11 +96,12 @@ const pipe = function (funcs) {
       if (functionComposition == noop) {
         functionComposition = funcs.reduceRight(funcConcat)
       }
-      return functionComposition(...args)
+      return functionComposition(firstArg)
     }
-      if (functionPipeline == noop) {
-        functionPipeline = funcs.reduce(funcConcat)
-      }
+
+    if (functionPipeline == noop) {
+      functionPipeline = funcs.reduce(funcConcat)
+    }
     return functionPipeline(...args)
   }
 }
