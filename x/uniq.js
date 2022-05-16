@@ -1,5 +1,4 @@
 const isArray = require('../_internal/isArray')
-const reduce = require('../reduce')
 
 /**
  * @name uniq
@@ -25,15 +24,7 @@ const reduce = require('../reduce')
  */
 const uniq = arr => {
   if (!isArray(arr)) throw Error('uniq(arr): arr is not an array')
-
-  const seenSet = new Set()
-  return reduce((acc, value) => {
-    if (seenSet.has(value)) {
-      return acc
-    }
-    seenSet.add(value)
-    return [...acc, value]
-  }, [])(arr)
+  return [...new Set(arr)]
 }
 
 module.exports = uniq
