@@ -448,3 +448,23 @@ const toBoolean2 = value => !!value
 // timeInLoop('Boolean(true)', 1e7, () => Boolean(true))
 
 // timeInLoop('!!true', 1e7, () => toBoolean2(true))
+
+/**
+ * @name argumentsVsArgs
+ *
+ * @benchmark
+ * evaluateArguments(): 1e+7: 17.668ms
+ * evaluateArgs(): 1e+7: 17.169ms
+ */
+
+const evaluateArguments = function () {
+  arguments
+}
+
+const evaluateArgs = function (...args) {
+  args
+}
+
+// timeInLoop('evaluateArguments()', 1e7, () => evaluateArguments())
+
+// timeInLoop('evaluateArgs()', 1e7, () => evaluateArgs())
