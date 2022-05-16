@@ -274,6 +274,13 @@ MockFoldable.prototype = {
 
 describe('rubico', () => {
   describe('pipe', () => {
+    it('behaves eagerly when passed any amount of arguments before the array of functions', async () => {
+      const array = pipe(1, 2, 3, [
+        Array.of,
+        numbers => numbers.map(number => number * 3),
+      ])
+      assert.deepEqual(array, [3, 6, 9])
+    })
     it('chains async and regular functions together', async () => {
       ase(await pipe([hi, ho, asyncHey])('yo'), 'yohihohey')
     })
