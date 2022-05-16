@@ -1,4 +1,7 @@
-## v1.8.12 - latest
+## v1.8.15 - latest
+ * eager pipe - [#219](https://github.com/a-synchronous/rubico/pull/219)
+
+## v1.8.12
  * new example [type-to-search-wiki](https://github.com/a-synchronous/rubico/tree/master/examples/type-to-search-wiki) - [#210](https://github.com/a-synchronous/rubico/pull/210) - [lulldev](https://github.com/lulldev)
  * require('rubico/global') imports the core rubico methods globally
 
