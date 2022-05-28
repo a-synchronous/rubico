@@ -52,6 +52,8 @@ const arrayConditional = require('./_internal/arrayConditional')
  * console.log(questionableIsOdd(1)) // true
  * console.log(questionableIsOdd(6)) // false
  * ```
+ *
+ * @execution series
  */
 const switchCase = funcsOrValues => {
   if (areFuncsOrValuesAllValues(funcsOrValues)) {
