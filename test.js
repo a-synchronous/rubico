@@ -648,6 +648,14 @@ describe('rubico', () => {
   })
 
   describe('switchCase', () => {
+    it('switches on values, evaluating eagerly', async () => {
+      ase(switchCase([true, 'hey', 'ho']), 'hey')
+      ase(switchCase([false, 'hey', false, 'hey', true, 'ho']), 'ho')
+      ase(switchCase([false, 'hey', false, 'hey', false, 'ho']), undefined)
+    })
+    it('defaults with undefined for an even number of cases', async () => {
+      ase(switchCase([false, 'hey', false, 'hey', false, 'hey']), undefined)
+    })
     it('switches on provided sync functions', async () => {
       ase(
         switchCase([
@@ -722,45 +730,20 @@ describe('rubico', () => {
         'hey',
       )
     })
-    it('acts as identity for a single case', async () => {
-      assert.throws(
-        () => switchCase([])(),
-        new TypeError('funcs[funcsIndex] is not a function'),
-      )
+    it('undefined for empty array', async () => {
+      ase(switchCase([]), undefined)
     })
     it('acts as identity for a single case', async () => {
       assert.strictEqual(switchCase([() => false])(), false)
     })
-    it('first function must always return true for only two cases', async () => {
+    it('even number of array items default returns undefined', async () => {
       assert.strictEqual(switchCase([() => true, () => 'hey'])(), 'hey')
-      assert.throws(
-        () => switchCase([() => false, () => 'hey'])(),
-        new TypeError('funcs[funcsIndex] is not a function'),
-      )
-    })
-    it('throws a TypeError if passed a non array', async () => {
-      assert.throws(
-        () => switchCase('hey')(),
-        new TypeError('predicate is not a function'),
-      )
-    })
-    it('does not throw if passed an even number of functions', async () => {
-      assert.strictEqual(
-        switchCase([() => false, () => 'hey', () => true, () => 'ho'])(),
-        'ho',
-      )
-    })
-    it('however, throws TypeError if even number of functions and all cases are false', async () => {
-      assert.throws(
-        () => switchCase([() => false, () => 'hey'])(),
-        new TypeError('funcs[funcsIndex] is not a function'),
-      )
-    })
-    it('throws a TypeError if any item of the funcs array is not a function', async () => {
-      assert.throws(
-        () => switchCase([() => true, 'hey', () => true, () => 'ho', () => 'hi'])(),
-        new TypeError('resolver is not a function'),
-      )
+      assert.strictEqual(switchCase([() => false, () => 'hey'])(), undefined)
+      assert.strictEqual(switchCase([
+        () => false, 'hey',
+        false, 'hey',
+        false, 'hey',
+      ])(), undefined)
     })
   })
 

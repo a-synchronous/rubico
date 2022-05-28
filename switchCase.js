@@ -1,4 +1,6 @@
-const funcConditional = require('./_internal/funcConditional')
+const funcsOrValuesConditional = require('./_internal/funcsOrValuesConditional')
+const areFuncsOrValuesAllValues = require('./_internal/areFuncsOrValuesAllValues')
+const arrayConditional = require('./_internal/arrayConditional')
 
 /**
  * @name switchCase
@@ -51,8 +53,13 @@ const funcConditional = require('./_internal/funcConditional')
  * console.log(questionableIsOdd(6)) // false
  * ```
  */
-const switchCase = funcs => function switchingCases(...args) {
-  return funcConditional(funcs, args, -2)
+const switchCase = funcsOrValues => {
+  if (areFuncsOrValuesAllValues(funcsOrValues)) {
+    return arrayConditional(funcsOrValues)
+  }
+  return function switchingCases(...args) {
+    return funcsOrValuesConditional(funcsOrValues, args, -2)
+  }
 }
 
 module.exports = switchCase
