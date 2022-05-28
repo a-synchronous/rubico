@@ -4,6 +4,7 @@ const thunkifyArgs = require('./thunkifyArgs')
 const thunkify3 = require('./thunkify3')
 const __ = require('./placeholder')
 const curry3 = require('./curry3')
+const always = require('./always')
 
 /**
  * @name funcsOrValuesConditional
