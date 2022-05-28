@@ -7,13 +7,15 @@
  * ```
  */
 const arrayConditional = function (array) {
-  const length = array.length
+  const length = array.length,
+    lastIndex = length - 1
   let index = -2
-  while ((index += 2) < length) {
+  while ((index += 2) < lastIndex) {
     if (array[index]) {
       return array[index + 1]
     }
   }
+  // even number of array values
   if (index == length) {
     return undefined
   }

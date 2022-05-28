@@ -650,6 +650,7 @@ describe('rubico', () => {
   describe('switchCase', () => {
     it('switches on values, evaluating eagerly', async () => {
       ase(switchCase([true, 'hey', 'ho']), 'hey')
+      ase(switchCase([false, 'hey', false, 'ho', 'default']), 'default')
       ase(switchCase([false, 'hey', false, 'hey', true, 'ho']), 'ho')
       ase(switchCase([false, 'hey', false, 'hey', false, 'ho']), undefined)
     })
