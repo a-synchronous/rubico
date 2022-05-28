@@ -1,4 +1,4 @@
-## v1.8.16 - latest
+## v1.9.0 - latest
  * switchCase handles non-function values - [#220](https://github.com/a-synchronous/rubico/pull/220)
 
 ## v1.8.15

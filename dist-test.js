@@ -300,8 +300,29 @@ TestsMap.set('omit', omit => [
 ])
 
 TestsMap.set('switchCase', switchCase => [
+  Test('switchCase values', switchCase)
+  .case([false, 1, 2], 2)
+  .case([true, 1, 2], 1)
+  .case([false, 1], undefined)
+  .case([true, 1], 1)
+  .case([false, Promise.resolve(1), 2], 2)
+  .case([true, 1, Promise.resolve(2)], 1)
+  .case([Promise.resolve(false), 1], undefined)
+  .case([Promise.resolve(true), 1], 1),
+
   Test(
-    'switchCase',
+    'switchCase functions and values',
+    switchCase([
+      number => number == 1, 'one',
+      number => number == 2, () => 'two',
+      'something',
+    ]))
+    .case(1, 'one')
+    .case(2, 'two')
+    .case(3, 'something'),
+
+  Test(
+    'switchCase sync functions',
     switchCase([
       number => number == 1, () => 'one',
       number => number == 2, () => 'two',
