@@ -21,7 +21,7 @@ const arrayConditional = require('./_internal/arrayConditional')
  * ```
  *
  * @description
- * Conditional operator for functions. Cases are defined as pairings of `predicate` and `resolver`, with the exception of the last, default case.
+ * Conditional operator for values or functions. Cases are defined as pairings of `predicate` and `value` (or `resolver` thereof), with the exception of the last, default resolver or value.
  *
  * ```javascript [playground]
  * const fruitIsYellow = fruit => fruit.color == 'yellow'
@@ -37,20 +37,28 @@ const arrayConditional = require('./_internal/arrayConditional')
  * ) // plantain is possibly a banana
  * ```
  *
- * If an even number of functions is supplied, the last predicate should always return true.
+ * A mixture of functions and values can be supplied as any of the array items.
  *
  * ```javascript [playground]
- * const questionableIsOdd = switchCase([
- *   number => number === 1, () => true,
- *   number => number === 2, () => false,
- *   number => number === 3, () => true,
- *   number => number === 4, () => false,
- *   number => number === 5, () => true,
- *   () => true, number => number % 2 === 1,
- * ])
+ * switchCase([
+ *   async function asyncFalse() {
+ *     return false
+ *   },
+ *   'something not returned',
+ *   'default',
+ * ]).then(console.log) // default
+ * ```
  *
- * console.log(questionableIsOdd(1)) // true
- * console.log(questionableIsOdd(6)) // false
+ * If every item in the argument array to switchCase is a value, switchCase should behave as the ternary ? : operator. Any promises are resolved serially.
+ *
+ * ```javascript [playground]
+ * const a = 1
+ *
+ * switchCase([
+ *   a == 1,
+ *   Promise.resolve('hello world'),
+ *   'default',
+ * ]).then(console.log) // hello world
  * ```
  *
  * @execution series
