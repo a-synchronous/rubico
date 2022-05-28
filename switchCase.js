@@ -37,16 +37,16 @@ const arrayConditional = require('./_internal/arrayConditional')
  * ) // plantain is possibly a banana
  * ```
  *
- * A mixture of functions and values can be supplied as any of the array items.
+ * A mixture of possibly async functions and values can be supplied as any of the array items.
  *
  * ```javascript [playground]
  * switchCase([
- *   async function asyncFalse() {
- *     return false
+ *   async function asyncIdentity(value) {
+ *     return value
  *   },
- *   'something not returned',
+ *   'something',
  *   'default',
- * ]).then(console.log) // default
+ * ])(false).then(console.log) // default
  * ```
  *
  * If every item in the argument array to switchCase is a value, switchCase should behave as the ternary ? : operator. Any promises are resolved serially.
