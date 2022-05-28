@@ -648,8 +648,28 @@ describe('rubico', () => {
   })
 
   describe('switchCase', () => {
-    it('switches on values, evaluating eagerly', async () => {
+    it('switches on values (including Promises), evaluating eagerly', async () => {
       ase(switchCase([true, 'hey', 'ho']), 'hey')
+      ase(await switchCase([
+        Promise.resolve(true),
+        Promise.resolve('hey'),
+        'ho',
+      ]), 'hey')
+      ase(await switchCase([
+        true,
+        Promise.resolve('hey'),
+        'ho',
+      ]), 'hey')
+      ase(await switchCase([
+        false,
+        Promise.resolve('hey'),
+        'ho',
+      ]), 'ho')
+      ase(await switchCase([
+        false,
+        Promise.resolve('hey'),
+        Promise.resolve('ho'),
+      ]), 'ho')
       ase(switchCase([false, 'hey', false, 'ho', 'default']), 'default')
       ase(switchCase([false, 'hey', false, 'hey', true, 'ho']), 'ho')
       ase(switchCase([false, 'hey', false, 'hey', false, 'ho']), undefined)
@@ -691,7 +711,7 @@ describe('rubico', () => {
         'hey',
       )
     })
-    it('switches on provided async functions', async () => {
+    it('switches on provided async functions or values', async () => {
       aok(
         switchCase([
           async x => x === 1, async () => 'hi',
@@ -709,6 +729,14 @@ describe('rubico', () => {
       ase(
         await switchCase([
           async x => x === 1, async () => 'hi',
+          async x => x === 2, async () => 'ho',
+          async () => 'hey',
+        ])(1),
+        'hi',
+      )
+      ase(
+        await switchCase([
+          async x => x === 1, 'hi',
           async x => x === 2, async () => 'ho',
           async () => 'hey',
         ])(1),

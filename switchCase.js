@@ -55,7 +55,7 @@ const arrayConditional = require('./_internal/arrayConditional')
  */
 const switchCase = funcsOrValues => {
   if (areFuncsOrValuesAllValues(funcsOrValues)) {
-    return arrayConditional(funcsOrValues)
+    return arrayConditional(funcsOrValues, -2)
   }
   return function switchingCases(...args) {
     return funcsOrValuesConditional(funcsOrValues, args, -2)
