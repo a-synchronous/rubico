@@ -1,4 +1,7 @@
-## v1.8.15 - latest
+## v1.8.16 - latest
+ * switchCase handles non-function values - [#220](https://github.com/a-synchronous/rubico/pull/220)
+
+## v1.8.15
  * eager pipe - [#219](https://github.com/a-synchronous/rubico/pull/219)
 
 ## v1.8.12
