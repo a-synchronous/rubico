@@ -1,6 +1,6 @@
-const funcsOrValuesConditional = require('./_internal/funcsOrValuesConditional')
-const areFuncsOrValuesAllValues = require('./_internal/areFuncsOrValuesAllValues')
 const arrayConditional = require('./_internal/arrayConditional')
+const areAllValuesNonfunctions = require('./_internal/areAllValuesNonfunctions')
+const nonfunctionsConditional = require('./_internal/nonfunctionsConditional')
 
 /**
  * @name switchCase
@@ -21,7 +21,7 @@ const arrayConditional = require('./_internal/arrayConditional')
  * ```
  *
  * @description
- * Conditional operator for values or functions. Cases are defined as pairings of `predicate` and `value` (or `resolver` thereof), with the exception of the last, default resolver or value.
+ * Conditional operator with cases specified as pairings of `predicate` and `value`, with the exception of the last, default value. Any `predicate` or `value` can be a function, in which case it is evaluated against the point.
  *
  * ```javascript [playground]
  * const fruitIsYellow = fruit => fruit.color == 'yellow'
@@ -37,7 +37,7 @@ const arrayConditional = require('./_internal/arrayConditional')
  * ) // plantain is possibly a banana
  * ```
  *
- * A mixture of possibly async functions and values can be supplied as any of the array items.
+ * A mixture of functions and nonfunctions can be supplied as any of the array items. Any Promises are resolved in series.
  *
  * ```javascript [playground]
  * switchCase([
@@ -49,7 +49,7 @@ const arrayConditional = require('./_internal/arrayConditional')
  * ])(false).then(console.log) // default
  * ```
  *
- * If every item in the argument array to switchCase is a value, switchCase should behave as the ternary ? : operator. Any promises are resolved serially.
+ * If every item in the argument array to switchCase is a value, switchCase should behave as the ternary ? : operator.
  *
  * ```javascript [playground]
  * const a = 1
@@ -63,12 +63,12 @@ const arrayConditional = require('./_internal/arrayConditional')
  *
  * @execution series
  */
-const switchCase = funcsOrValues => {
-  if (areFuncsOrValuesAllValues(funcsOrValues)) {
-    return arrayConditional(funcsOrValues, -2)
+const switchCase = values => {
+  if (areAllValuesNonfunctions(values)) {
+    return nonfunctionsConditional(values, -2)
   }
   return function switchingCases(...args) {
-    return funcsOrValuesConditional(funcsOrValues, args, -2)
+    return arrayConditional(values, args, -2)
   }
 }
 

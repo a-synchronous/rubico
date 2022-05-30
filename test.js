@@ -3956,25 +3956,34 @@ all(predicate all=>Promise|boolean)(value Foldable) -> Promise|boolean
 
   describe(`
 and(
-  predicates Array<...args=>Promise|boolean>
-)(args ...any) -> Promise|boolean
+  predicates Array<predicate function|nonfunction>
+)(point any) -> Promise|boolean
   `, () => {
-    it('predicates 3', async () => {
+    it('all nonfunctions', async () => {
+      assert.strictEqual(and([true, true, true]), true)
+      assert.strictEqual(and([true, true, false]), false)
+      assert.strictEqual(and([false, true, true]), false)
+      assert.strictEqual(await and([Promise.resolve(true), true, true]), true)
+      assert.strictEqual(await and([true, true, Promise.resolve(false)]), false)
+      assert.strictEqual(await and([Promise.resolve(false), true, true]), false)
+    })
+
+    it('predicates', async () => {
       const isOdd = number => number % 2 == 1
       const isEven = number => number % 2 == 0
       const variadicAsyncIsOdd = number => number % 2 == 1 ? Promise.resolve(true) : false
-      assert.strictEqual(and([isOdd, isOdd, isOdd])(3), true)
+      assert.strictEqual(and([isOdd, isOdd, isOdd, true])(3), true)
       assert.strictEqual(and([isOdd, isOdd, isOdd])(2), false)
       assert.strictEqual(and([isEven, isEven, isOdd])(2), false)
-      assert.strictEqual(await and([async(isOdd), isOdd, isOdd])(3), true)
+      assert.strictEqual(await and([async(isOdd), isOdd, isOdd, true])(3), true)
       assert.strictEqual(await and([isOdd, async(isOdd), isOdd])(3), true)
       assert.strictEqual(await and([isOdd, isOdd, async(isOdd)])(3), true)
       assert.strictEqual(await and([async(isOdd), async(isOdd), async(isOdd)])(3), true)
       assert.strictEqual(await and([variadicAsyncIsOdd, variadicAsyncIsOdd, variadicAsyncIsOdd])(3), true)
     })
 
-    it('predicates 0', async () => {
-      assert.strictEqual(and([])(1), true)
+    it('0 predicates true', async () => {
+      assert.strictEqual(and([]), true)
     })
 
     it('null', async () => {
@@ -3984,21 +3993,6 @@ and(
     it('undefined', async () => {
       assert.strictEqual(and([isOdd, isOdd, isOdd])(undefined), false)
       assert.strictEqual(and([isOdd, isOdd, isOdd])(), false)
-    })
-
-    it('defer .and', async () => {
-      Test(and)
-        .before(function () {
-          this.predicates = []
-        })
-        .case([1, 2, 3], predicate => {
-          const lexed = predicate({
-            and: predicates => {
-              this.predicates = predicates
-            }
-          })
-          assert.deepEqual(this.predicates, [1, 2, 3])
-        })()
     })
   })
 
@@ -4017,18 +4011,27 @@ and(
 
   describe(`
 or(
-  predicates Array<...args=>Promise|boolean>
-)(args ...any) -> Promise|boolean
+  predicates Array<predicate function|nonfunction>,
+)(point any) -> Promise|boolean
   `, () => {
+    it('all nonfunctions', async () => {
+      assert.strictEqual(or([true, true, true]), true)
+      assert.strictEqual(or([false, false, false]), false)
+      assert.strictEqual(or([false, false, true]), true)
+      assert.strictEqual(await or([true, true, Promise.resolve(true)]), true)
+      assert.strictEqual(await or([Promise.resolve(false), false, false]), false)
+      assert.strictEqual(await or([false, false, Promise.resolve(true)]), true)
+    })
+
     const isOdd = number => number % 2 == 1
     const isEven = number => number % 2 == 0
     const variadicAsyncIsOdd = number => number % 2 == 1 ? Promise.resolve(true) : false
     it('predicates', async () => {
-      assert.strictEqual(or([isOdd, isEven])(0), true)
+      assert.strictEqual(or([isOdd, isEven, true])(0), true)
       assert.strictEqual(or([isOdd, isOdd, isOdd])(0), false)
       assert.strictEqual(or([isOdd, isOdd, isOdd])(1), true)
-      assert.strictEqual(or([isOdd, isOdd, isOdd])(3955), true)
-      assert.strictEqual(await or([variadicAsyncIsOdd, variadicAsyncIsOdd, variadicAsyncIsOdd])(3955), true)
+      assert.strictEqual(or([isOdd, isOdd, isOdd, false])(3955), true)
+      assert.strictEqual(await or([false, variadicAsyncIsOdd, variadicAsyncIsOdd, variadicAsyncIsOdd])(3955), true)
       assert.strictEqual(await or([variadicAsyncIsOdd, () => false, () => false])(3955), true)
       assert.strictEqual(await or([variadicAsyncIsOdd, () => false, () => false])(3956), false)
       assert.strictEqual(await or([() => false, variadicAsyncIsOdd, () => false])(3955), true)
@@ -4048,21 +4051,6 @@ or(
       aok(or([asyncIsEven, isGreaterThan1])(2) instanceof Promise)
       ase(await or([asyncIsEven, isGreaterThan1])(2), true)
       ase(await or([asyncIsEven, isGreaterThan1])(1), false)
-    })
-
-    it('defer .or', async () => {
-      Test(or)
-        .before(function () {
-          this.predicates = []
-        })
-        .case([1, 2, 3], predicate => {
-          const lexed = predicate({
-            or: predicates => {
-              this.predicates = predicates
-            }
-          })
-          assert.deepEqual(this.predicates, [1, 2, 3])
-        })()
     })
   })
 
