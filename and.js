@@ -88,6 +88,14 @@ const asyncArePredicatesAllTruthy = async function (predicates, point, index) {
  * ) // true
  * ```
  *
+ * `and` behaves eagerly if provided only nonfunction values
+ *
+ * ```javascript [playground]
+ * console.log(
+ *   and([true, true, true]),
+ * ) // true
+ * ```
+ *
  * @execution series
  *
  * @note ...args slows down here by an order of magnitude

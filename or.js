@@ -86,6 +86,14 @@ const asyncArePredicatesAnyTruthy = async function (predicates, point, index) {
  * ) // true
  * ```
  *
+ * `or` behaves eagerly if provided only nonfunction values
+ *
+ * ```javascript [playground]
+ * console.log(
+ *   or([false, false, true]),
+ * ) // true
+ * ```
+ *
  * @execution series
  *
  * @note ...args slows down here by an order of magnitude
