@@ -2,29 +2,61 @@ const isPromise = require('./_internal/isPromise')
 const curry3 = require('./_internal/curry3')
 const __ = require('./_internal/placeholder')
 const thunkConditional = require('./_internal/thunkConditional')
+const areAllValuesNonfunctions = require('./_internal/areAllValuesNonfunctions')
+const thunkify2 = require('./_internal/thunkify2')
 const thunkify3 = require('./_internal/thunkify3')
 const always = require('./_internal/always')
 
 /**
- * @name asyncAnd
+ * @name areAllNonfunctionsTruthy
  *
  * @synopsis
  * ```coffeescript [specscript]
- * asyncAnd(
+ * areAllNonfunctionsTruthy(predicates Array<value>) -> Promise|boolean
+ * ```
+ */
+const areAllNonfunctionsTruthy = function (predicates, index) {
+  const length = predicates.length
+  while (++index < length) {
+    let predicate = predicates[index]
+    if (isPromise(predicate)) {
+      return predicate.then(curry3(
+        thunkConditional,
+        __,
+        thunkify2(areAllNonfunctionsTruthy, predicates, index),
+        always(false),
+      ))
+    }
+    if (!predicate) {
+      return false
+    }
+  }
+  return true
+}
+
+/**
+ * @name asyncArePredicatesAllTruthy
+ *
+ * @synopsis
+ * ```coffeescript [specscript]
+ * asyncArePredicatesAllTruthy(
  *   predicates Array<value=>Promise|boolean>
- *   value any,
+ *   point any,
  *   index number,
  * ) -> allTruthy boolean
  * ```
  */
-const asyncAnd = async function (predicates, value, index) {
+const asyncArePredicatesAllTruthy = async function (predicates, point, index) {
   const length = predicates.length
   while (++index < length) {
-    let predication = predicates[index](value)
-    if (isPromise(predication)) {
-      predication = await predication
+    let predicate = predicates[index]
+    if (typeof predicate == 'function') {
+      predicate = predicate(point)
     }
-    if (!predication) {
+    if (isPromise(predicate)) {
+      predicate = await predicate
+    }
+    if (!predicate) {
       return false
     }
   }
@@ -36,14 +68,13 @@ const asyncAnd = async function (predicates, value, index) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * var value any,
- *   predicates Array<value=>Promise|boolean>
- *
- * and(predicates)(value) -> Promise|boolean
+ * and(
+ *   predicates Array<predicate function|nonfunction>
+ * )(point any) -> Promise|boolean
  * ```
  *
  * @description
- * Test an array of predicates concurrently against a single input, returning true if all test truthy.
+ * Test an array of predicates or nonfunction values concurrently against a single input, returning true if all test truthy.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -57,32 +88,37 @@ const asyncAnd = async function (predicates, value, index) {
  * ) // true
  * ```
  *
- * @execution serial
+ * @execution series
  *
  * @note ...args slows down here by an order of magnitude
  */
-const and = predicates => function allPredicates(value) {
-  if (value != null && typeof value.and == 'function') {
-    return value.and(predicates)
+const and = predicates => {
+  if (areAllValuesNonfunctions(predicates)) {
+    return areAllNonfunctionsTruthy(predicates, -1)
   }
-  const length = predicates.length,
-    promises = []
-  let index = -1
+  return function arePredicatesAllTruthy(point) {
+    const length = predicates.length
+    let index = -1
 
-  while (++index < length) {
-    const predication = predicates[index](value)
-    if (isPromise(predication)) {
-      return predication.then(curry3(
-        thunkConditional,
-        __,
-        thunkify3(asyncAnd, predicates, value, index),
-        always(false)))
+    while (++index < length) {
+      let predicate = predicates[index]
+      if (typeof predicate == 'function') {
+        predicate = predicate(point)
+      }
+      if (isPromise(predicate)) {
+        return predicate.then(curry3(
+          thunkConditional,
+          __,
+          thunkify3(asyncArePredicatesAllTruthy, predicates, point, index),
+          always(false),
+        ))
+      }
+      if (!predicate) {
+        return false
+      }
     }
-    if (!predication) {
-      return false
-    }
+    return true
   }
-  return true
 }
 
 module.exports = and

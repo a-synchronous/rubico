@@ -967,11 +967,17 @@ TestsMap.set('flatMap', flatMap => [
 ])
 
 TestsMap.set('and', and => [
+  Test('and nonfunctions', and)
+  .case([true, true, true], true)
+  .case([true, true, false], false)
+  .case([false, false, false], false)
+
   Test(
     'and sync',
     and([
       number => number % 2 == 1,
       number => number > 0,
+      true,
     ]))
     .case(1, true)
     .case(2, false)
@@ -982,31 +988,25 @@ TestsMap.set('and', and => [
     and([
       async number => number % 2 == 1,
       async number => number > 0,
+      true,
     ]))
     .case(1, true)
     .case(2, false)
     .case(-1, false),
-
-  Test(and)
-    .before(function () {
-      this.predicates = []
-    })
-    .case([1, 2, 3], predicate => {
-      const lexed = predicate({
-        and: predicates => {
-          this.predicates = predicates
-        }
-      })
-      assert.deepEqual(this.predicates, [1, 2, 3])
-    }),
 ])
 
 TestsMap.set('or', or => [
+  Test('or nonfunctions', or)
+  .case([true, true, true], true)
+  .case([false, false, true], true)
+  .case([false, false, false], false)
+
   Test(
     'or sync',
     or([
       number => number % 2 == 1,
       number => number > 0,
+      false,
     ]))
     .case(0, false)
     .case(1, true)
@@ -1017,23 +1017,11 @@ TestsMap.set('or', or => [
     or([
       async number => number % 2 == 1,
       async number => number > 0,
+      false,
     ]))
     .case(0, false)
     .case(1, true)
     .case(2, true),
-
-  Test(or)
-    .before(function () {
-      this.predicates = []
-    })
-    .case([1, 2, 3], predicate => {
-      const lexed = predicate({
-        or: predicates => {
-          this.predicates = predicates
-        }
-      })
-      assert.deepEqual(this.predicates, [1, 2, 3])
-    }),
 ])
 
 TestsMap.set('not', not => [
