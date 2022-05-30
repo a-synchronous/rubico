@@ -44,48 +44,90 @@ const thunkConditional = (
   conditionalExpression, thunkOnTruthy, thunkOnFalsy,
 ) => conditionalExpression ? thunkOnTruthy() : thunkOnFalsy()
 
+const areAllValuesNonfunctions = function (values) {
+  const length = values.length
+  let index = -1
+  while (++index < length) {
+    if (typeof values[index] == 'function') {
+      return false
+    }
+  }
+  return true
+}
+
+const thunkify2 = (func, arg0, arg1) => function thunk() {
+  return func(arg0, arg1)
+}
+
 const thunkify3 = (func, arg0, arg1, arg2) => function thunk() {
   return func(arg0, arg1, arg2)
 }
 
 const always = value => function getter() { return value }
 
-const asyncAnd = async function (predicates, value, index) {
+const areAllNonfunctionsTruthy = function (predicates, index) {
   const length = predicates.length
   while (++index < length) {
-    let predication = predicates[index](value)
-    if (isPromise(predication)) {
-      predication = await predication
+    let predicate = predicates[index]
+    if (isPromise(predicate)) {
+      return predicate.then(curry3(
+        thunkConditional,
+        __,
+        thunkify2(areAllNonfunctionsTruthy, predicates, index),
+        always(false),
+      ))
     }
-    if (!predication) {
+    if (!predicate) {
       return false
     }
   }
   return true
 }
 
-const and = predicates => function allPredicates(value) {
-  if (value != null && typeof value.and == 'function') {
-    return value.and(predicates)
-  }
-  const length = predicates.length,
-    promises = []
-  let index = -1
-
+const asyncArePredicatesAllTruthy = async function (predicates, point, index) {
+  const length = predicates.length
   while (++index < length) {
-    const predication = predicates[index](value)
-    if (isPromise(predication)) {
-      return predication.then(curry3(
-        thunkConditional,
-        __,
-        thunkify3(asyncAnd, predicates, value, index),
-        always(false)))
+    let predicate = predicates[index]
+    if (typeof predicate == 'function') {
+      predicate = predicate(point)
     }
-    if (!predication) {
+    if (isPromise(predicate)) {
+      predicate = await predicate
+    }
+    if (!predicate) {
       return false
     }
   }
   return true
+}
+
+const and = predicates => {
+  if (areAllValuesNonfunctions(predicates)) {
+    return areAllNonfunctionsTruthy(predicates, -1)
+  }
+  return function arePredicatesAllTruthy(point) {
+    const length = predicates.length
+    let index = -1
+
+    while (++index < length) {
+      let predicate = predicates[index]
+      if (typeof predicate == 'function') {
+        predicate = predicate(point)
+      }
+      if (isPromise(predicate)) {
+        return predicate.then(curry3(
+          thunkConditional,
+          __,
+          thunkify3(asyncArePredicatesAllTruthy, predicates, point, index),
+          always(false),
+        ))
+      }
+      if (!predicate) {
+        return false
+      }
+    }
+    return true
+  }
 }
 
 export default and

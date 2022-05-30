@@ -970,7 +970,7 @@ TestsMap.set('and', and => [
   Test('and nonfunctions', and)
   .case([true, true, true], true)
   .case([true, true, false], false)
-  .case([false, false, false], false)
+  .case([false, false, false], false),
 
   Test(
     'and sync',
@@ -999,7 +999,7 @@ TestsMap.set('or', or => [
   Test('or nonfunctions', or)
   .case([true, true, true], true)
   .case([false, false, true], true)
-  .case([false, false, false], false)
+  .case([false, false, false], false),
 
   Test(
     'or sync',

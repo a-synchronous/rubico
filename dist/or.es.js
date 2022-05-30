@@ -40,43 +40,95 @@ const curry3 = function (baseFunc, arg0, arg1, arg2) {
   return curry3ResolveArg2(baseFunc, arg0, arg1)
 }
 
-const asyncOr = async function (predicates, value) {
-  const length = predicates.length
+const thunkConditional = (
+  conditionalExpression, thunkOnTruthy, thunkOnFalsy,
+) => conditionalExpression ? thunkOnTruthy() : thunkOnFalsy()
+
+const areAllValuesNonfunctions = function (values) {
+  const length = values.length
   let index = -1
   while (++index < length) {
-    let predication = predicates[index](value)
-    if (isPromise(predication)) {
-      predication = await predication
+    if (typeof values[index] == 'function') {
+      return false
     }
-    if (predication) {
+  }
+  return true
+}
+
+const thunkify2 = (func, arg0, arg1) => function thunk() {
+  return func(arg0, arg1)
+}
+
+const thunkify3 = (func, arg0, arg1, arg2) => function thunk() {
+  return func(arg0, arg1, arg2)
+}
+
+const always = value => function getter() { return value }
+
+const areAnyNonfunctionsTruthy = function (predicates, index) {
+  const length = predicates.length
+  while (++index < length) {
+    let predicate = predicates[index]
+    if (isPromise(predicate)) {
+      return predicate.then(curry3(
+        thunkConditional,
+        __,
+        always(true),
+        thunkify2(areAnyNonfunctionsTruthy, predicates, index),
+      ))
+    }
+    if (predicate) {
       return true
     }
   }
   return false
 }
 
-// handles the first predication before asyncOr
-const _asyncOrInterlude = (
-  predicates, value, firstPredication,
-) => firstPredication ? true : asyncOr(predicates, value)
-
-const or = predicates => function anyPredicates(value) {
-  if (value != null && typeof value.or == 'function') {
-    return value.or(predicates)
-  }
+const asyncAreAnyPredicatesTruthy = async function (predicates, point, index) {
   const length = predicates.length
-  let index = -1
-
   while (++index < length) {
-    const predication = predicates[index](value)
-    if (isPromise(predication)) {
-      return predication.then(curry3(_asyncOrInterlude, predicates, value, __))
+    let predicate = predicates[index]
+    if (typeof predicate == 'function') {
+      predicate = predicate(point)
     }
-    if (predication) {
+    console.log('hey - or', predicate)
+    if (isPromise(predicate)) {
+      predicate = await predicate
+    }
+    if (predicate) {
       return true
     }
   }
   return false
+}
+
+const or = predicates => {
+  if (areAllValuesNonfunctions(predicates)) {
+    return areAnyNonfunctionsTruthy(predicates, -1)
+  }
+  return function areAnyPredicatesTruthy(point) {
+    const length = predicates.length
+    let index = -1
+
+    while (++index < length) {
+      let predicate = predicates[index]
+      if (typeof predicate == 'function') {
+        predicate = predicate(point)
+      }
+      if (isPromise(predicate)) {
+        return predicate.then(curry3(
+          thunkConditional,
+          __,
+          always(true),
+          thunkify3(asyncAreAnyPredicatesTruthy, predicates, point, index),
+        ))
+      }
+      if (predicate) {
+        return true
+      }
+    }
+    return false
+  }
 }
 
 export default or
