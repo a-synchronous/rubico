@@ -1,3 +1,6 @@
+## v1.9.1 - next release
+ * more performant uniq - [#218](https://github.com/a-synchronous/rubico/pull/218) - [jasir](https://github.com/jasir)
+
 ## v1.9.0 - latest
  * switchCase handles non-function values - [#220](https://github.com/a-synchronous/rubico/pull/220)
 
