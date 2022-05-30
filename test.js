@@ -4031,6 +4031,8 @@ or(
       assert.strictEqual(or([isOdd, isOdd, isOdd])(0), false)
       assert.strictEqual(or([isOdd, isOdd, isOdd])(1), true)
       assert.strictEqual(or([isOdd, isOdd, isOdd, false])(3955), true)
+      assert.strictEqual(await or([isOdd, isEven])(0), true)
+      assert.strictEqual(await or([isOdd, async(isOdd), false, async(isEven)])(0), true)
       assert.strictEqual(await or([false, variadicAsyncIsOdd, variadicAsyncIsOdd, variadicAsyncIsOdd])(3955), true)
       assert.strictEqual(await or([variadicAsyncIsOdd, () => false, () => false])(3955), true)
       assert.strictEqual(await or([variadicAsyncIsOdd, () => false, () => false])(3956), false)

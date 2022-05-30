@@ -35,24 +35,25 @@ const areAnyNonfunctionsTruthy = function (predicates, index) {
 }
 
 /**
- * @name asyncArePredicatesAnyTruthy
+ * @name asyncAreAnyPredicatesTruthy
  *
  * @synopsis
  * ```coffeescript [specscript]
- * asyncArePredicatesAnyTruthy(
+ * asyncAreAnyPredicatesTruthy(
  *   predicates Array<predicate function|nonfunction>,
  *   point any,
  *   index number,
  * ) -> allTruthy boolean
  * ```
  */
-const asyncArePredicatesAnyTruthy = async function (predicates, point, index) {
+const asyncAreAnyPredicatesTruthy = async function (predicates, point, index) {
   const length = predicates.length
   while (++index < length) {
     let predicate = predicates[index]
     if (typeof predicate == 'function') {
       predicate = predicate(point)
     }
+    console.log('hey - or', predicate)
     if (isPromise(predicate)) {
       predicate = await predicate
     }
@@ -102,7 +103,7 @@ const or = predicates => {
   if (areAllValuesNonfunctions(predicates)) {
     return areAnyNonfunctionsTruthy(predicates, -1)
   }
-  return function arePredicatesAnyTruthy(point) {
+  return function areAnyPredicatesTruthy(point) {
     const length = predicates.length
     let index = -1
 
@@ -116,7 +117,7 @@ const or = predicates => {
           thunkConditional,
           __,
           always(true),
-          thunkify3(asyncArePredicatesAnyTruthy, predicates, point, index),
+          thunkify3(asyncAreAnyPredicatesTruthy, predicates, point, index),
         ))
       }
       if (predicate) {
