@@ -1,5 +1,5 @@
-const { tryCatch } = require('..')
-const { timeInLoop } = require('../x')
+const tryCatch = require('../tryCatch')
+const timeInLoop = require('../x/timeInLoop')
 
 const isPromise = value => value != null && typeof value.then == 'function'
 
@@ -75,6 +75,8 @@ const tryCatch3 = (tryer, catcher) => function tryCatcher(...args) {
  * @benchmark
  * tryCatch2: 1e+6: 36.369ms
  * tryCatch3: 1e+6: 17.027ms
+ *
+ * TODO find the date
  */
 
 {
@@ -90,4 +92,17 @@ const tryCatch3 = (tryer, catcher) => function tryCatcher(...args) {
   // timeInLoop('tryCatch2', 1e6, () => tryCatch2(identity, noop)('yo'))
 
   // timeInLoop('tryCatch3', 1e6, () => tryCatch3(identity, noop)('yo'))
+}
+
+/**
+ * @name tryCatch 2022-06-13
+ *
+ * @benchmark
+ * tryCatch: 1e+6: tryCatch: 1e+6: 39.787ms
+ */
+
+{
+  const identity = value => value
+  const noop = () => {}
+  timeInLoop('tryCatch', 1e6, () => tryCatch2(identity, noop)('yo'))
 }
