@@ -355,6 +355,119 @@ TestsMap.set('switchCase', switchCase => [
     .case(3, 'something'),
 ])
 
+TestsMap.set('tryCatch', tryCatch => [
+  Test(
+    'eager sync tryCatch',
+    function testEagerTryCatch() {
+      const add = (a, b) => a + b
+
+      let sum = null
+
+      tryCatch(1, 2, 3, function throwSum(...numbers) {
+        const sum = numbers.reduce(add)
+        throw new Error(`${sum}`)
+      }, function logErrorMessage(error) {
+        sum = Number(error.message)
+      })
+
+      assert.equal(sum, 6)
+    },
+  ).case(),
+
+  Test(
+    'eager async tryCatch',
+    async function testEagerTryCatch() {
+      const add = (a, b) => a + b
+
+      let sum = null
+
+      await tryCatch(1, 2, 3, async function throwSum(...numbers) {
+        const sum = numbers.reduce(add)
+        throw new Error(`${sum}`)
+      }, async function logErrorMessage(error) {
+        sum = Number(error.message)
+      })
+
+      assert.equal(sum, 6)
+    },
+  ).case(),
+
+  Test(
+    'sync tryCatch',
+    function () {
+      const errProp = (err, x) => { err.x = x; return err }
+      const throwError = x => { throw new Error(x) }
+      assert.strictEqual(tryCatch(x => x + 1, errProp)(1), 2)
+      const e1 = tryCatch(throwError, errProp)(1)
+      assert.ok(e1 instanceof Error)
+      assert.strictEqual(e1.name, 'Error')
+      assert.strictEqual(e1.message, '1')
+      assert.strictEqual(e1.x, 1)
+    },
+  ).case(),
+
+  Test(
+    'async tryer sync catcher tryCatch',
+    async function () {
+      const errProp = (err, x) => { err.x = x; return err }
+      const asyncThrowError = async x => { throw new Error(x) }
+      const reject = x => Promise.reject(new Error(x))
+      assert.ok(tryCatch(async x => x + 1, errProp)(1) instanceof Promise)
+      assert.strictEqual(await tryCatch(async x => x + 1, errProp)(1), 2)
+      assert.ok(tryCatch(asyncThrowError, errProp)(1) instanceof Promise)
+      const e1 = await tryCatch(asyncThrowError, errProp)(1)
+      assert.ok(e1 instanceof Error)
+      assert.strictEqual(e1.name, 'Error')
+      assert.strictEqual(e1.message, '1')
+      assert.strictEqual(e1.x, 1)
+      assert.ok(tryCatch(reject, errProp)(1) instanceof Promise)
+      const e2 = await tryCatch(reject, errProp)(1)
+      assert.ok(e2 instanceof Error)
+      assert.strictEqual(e2.name, 'Error')
+      assert.strictEqual(e2.message, '1')
+      assert.strictEqual(e2.x, 1)
+    },
+  ).case(),
+
+  Test(
+    'sync tryer async catcher tryCatch',
+    async function () {
+      const asyncErrProp = async (err, x) => { err.x = x; return err }
+      const throwError = x => { throw new Error(x) }
+      assert.strictEqual(tryCatch(x => x + 1, asyncErrProp)(1), 2)
+      assert.ok(tryCatch(throwError, asyncErrProp)(1) instanceof Promise)
+      const e1 = await tryCatch(throwError, asyncErrProp)(1)
+      assert.ok(e1 instanceof Error)
+      assert.strictEqual(e1.name, 'Error')
+      assert.strictEqual(e1.message, '1')
+      assert.strictEqual(e1.x, 1)
+    },
+  ).case(),
+
+  Test(
+    'async tryCatch',
+    async function () {
+      const asyncErrProp = async (err, x) => { err.x = x; return err }
+      const asyncThrowError = async x => { throw new Error(x) }
+      const reject = x => Promise.reject(new Error(x))
+      assert.ok(tryCatch(async x => x + 1, asyncErrProp)(1) instanceof Promise)
+      assert.strictEqual(await tryCatch(async x => x + 1, asyncErrProp)(1), 2)
+      assert.ok(tryCatch(asyncThrowError, asyncErrProp)(1) instanceof Promise)
+      const e1 = await tryCatch(asyncThrowError, asyncErrProp)(1)
+      assert.ok(e1 instanceof Error)
+      assert.strictEqual(e1.name, 'Error')
+      assert.strictEqual(e1.message, '1')
+      assert.strictEqual(e1.x, 1)
+      assert.ok(tryCatch(reject, asyncErrProp)(1) instanceof Promise)
+      const e2 = await tryCatch(reject, asyncErrProp)(1)
+      assert.ok(e2 instanceof Error)
+      assert.strictEqual(e2.name, 'Error')
+      assert.strictEqual(e2.message, '1')
+      assert.strictEqual(e2.x, 1)
+    },
+  ).case(),
+])
+
 TestsMap.set('map', map => [
   Test(
     'map syncMapper',

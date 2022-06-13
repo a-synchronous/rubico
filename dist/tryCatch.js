@@ -50,14 +50,31 @@ const catcherApply = function (catcher, err, args) {
   return catcher(err, ...args)
 }
 
-const tryCatch = (tryer, catcher) => function tryCatcher(...args) {
-  try {
-    const result = tryer(...args)
-    return isPromise(result)
-      ? result.catch(curry3(catcherApply, catcher, __, args))
-      : result
-  } catch (err) {
-    return catcher(err, ...args)
+const tryCatch = function (...args) {
+  if (args.length > 2) {
+    const catcher = args.pop(),
+      tryer = args.pop()
+    try {
+      const result = tryer(...args)
+      return isPromise(result)
+        ? result.catch(curry3(catcherApply, catcher, __, args))
+        : result
+    } catch (error) {
+      return catcher(error, ...args)
+    }
+  }
+
+  const tryer = args[0],
+    catcher = args[1]
+  return function tryCatcher(...args) {
+    try {
+      const result = tryer(...args)
+      return isPromise(result)
+        ? result.catch(curry3(catcherApply, catcher, __, args))
+        : result
+    } catch (error) {
+      return catcher(error, ...args)
+    }
   }
 }
 
