@@ -574,6 +574,36 @@ describe('rubico', () => {
   })
 
   describe('tryCatch', () => {
+    it('behaves eagerly when supplied any amount of arguments before the tryer and catcher', async () => {
+      const add = (a, b) => a + b
+
+      let sum = null
+
+      tryCatch(1, 2, 3, function throwSum(...numbers) {
+        const sum = numbers.reduce(add)
+        throw new Error(`${sum}`)
+      }, function logErrorMessage(error) {
+        sum = Number(error.message)
+      })
+
+      assert.equal(sum, 6)
+    })
+
+    it('async eager tryCatch', async () => {
+      const add = (a, b) => a + b
+
+      let sum = null
+
+      await tryCatch(1, 2, 3, async function throwSum(...numbers) {
+        const sum = numbers.reduce(add)
+        throw new Error(`${sum}`)
+      }, async function logErrorMessage(error) {
+        sum = Number(error.message)
+      })
+
+      assert.equal(sum, 6)
+    })
+
     it('tries a sync function and catches with a sync function', async () => {
       const errProp = (err, x) => { err.x = x; return err }
       const throwError = x => { throw new Error(x) }
