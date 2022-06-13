@@ -1,4 +1,7 @@
-## v1.9.1 - latest
+## v1.9.2 - latest
+ * eager tryCatch - [#222](https://github.com/a-synchronous/rubico/pull/218)
+
+## v1.9.1
  * more performant uniq - [#218](https://github.com/a-synchronous/rubico/pull/218) - [jasir](https://github.com/jasir)
  * and and or handle nonfunction values - [#221](https://github.com/a-synchronous/rubico/pull/221)
 
