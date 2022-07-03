@@ -1,3 +1,6 @@
+## v1.9.3 - next release
+ * property value passed to set may be a resolver - [#224](https://github.com/a-synchronous/rubico/pull/224)
+
 ## v1.9.2 - latest
  * eager tryCatch - [#222](https://github.com/a-synchronous/rubico/pull/218)
 
