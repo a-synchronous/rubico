@@ -3621,6 +3621,20 @@ flatMap(
       ade(set('a[0].b.c', 4)({ 'a': [{ 'b': { 'c': 3 } }] }), { 'a': [{ 'b': { 'c': 4 } }] })
       ade(set('a.b.c.d', 1)({}), { a: { b: { c: { d: 1 } }}})
     })
+
+    it('the property value may be a resolver', async () => {
+      { // sync
+        const myObj = { a: 1 }
+        const myNewObj = set('b', obj => obj.a + 2)(myObj)
+        assert.deepEqual(myNewObj, { a: 1, b: 3 })
+      }
+
+      { // async
+        const myObj = { a: 1 }
+        const myNewObj = await set('b', async obj => obj.a + 2)(myObj)
+        assert.deepEqual(myNewObj, { a: 1, b: 3 })
+      }
+    })
   })
 
   describe('pick', () => {

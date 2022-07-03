@@ -1,4 +1,7 @@
+const isPromise = require('./_internal/isPromise')
 const setByPath = require('./_internal/setByPath')
+const curry3 = require('./_internal/curry3')
+const __ = require('./_internal/placeholder')
 
 /**
  * @name set
@@ -29,10 +32,29 @@ const setByPath = require('./_internal/setByPath')
  * ) // { a: [{ b: { c: 4 } }] }
  * ```
  *
+ * The property value may be a function, in which case it is treated as a resolver and passed the argument object to resolve the value to set.
+ *
+ * ```javascript [playground]
+ * const myObj = { a: 1 }
+ *
+ * const myNewObj = set('b', obj => obj.a + 2)(myObj)
+ *
+ * console.log(myNewObj) // { a: 1, b: 3 }
+ * ```
+ *
  * @since 1.7.0
  */
 
 const set = (path, value) => function setter(obj) {
+  if (typeof value == 'function') {
+    const actualValue = value(obj)
+    if (isPromise(actualValue)) {
+      return actualValue.then(
+        curry3(setByPath, obj, __, path)
+      )
+    }
+    return setByPath(obj, actualValue, path)
+  }
   return setByPath(obj, value, path)
 }
 
