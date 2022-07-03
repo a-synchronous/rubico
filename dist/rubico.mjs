@@ -2742,6 +2742,15 @@ const setByPath = function (obj, value, path) {
 }
 
 const set = (path, value) => function setter(obj) {
+  if (typeof value == 'function') {
+    const actualValue = value(obj)
+    if (isPromise(actualValue)) {
+      return actualValue.then(
+        curry3(setByPath, obj, __, path)
+      )
+    }
+    return setByPath(obj, actualValue, path)
+  }
   return setByPath(obj, value, path)
 }
 

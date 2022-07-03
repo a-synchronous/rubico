@@ -241,6 +241,20 @@ TestsMap.set('set', set => [
   .case({}, { a: { b: 1 } })
   .case({ a: 1 }, { a: { b: 1 } })
   .case({ b: 2 }, { a: { b: 1 }, b: 2 }),
+
+  Test('set - resolver', async function () {
+    { // sync
+      const myObj = { a: 1 }
+      const myNewObj = set('b', obj => obj.a + 2)(myObj)
+      assert.deepEqual(myNewObj, { a: 1, b: 3 })
+    }
+
+    { // async
+      const myObj = { a: 1 }
+      const myNewObj = await set('b', async obj => obj.a + 2)(myObj)
+      assert.deepEqual(myNewObj, { a: 1, b: 3 })
+    }
+  }).case()
 ])
 
 TestsMap.set('pick', pick => [

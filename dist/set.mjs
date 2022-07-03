@@ -5,6 +5,8 @@
  * rubico may be freely distributed under the MIT license.
  */
 
+const isPromise = value => value != null && typeof value.then == 'function'
+
 const isArray = Array.isArray
 
 const isObject = value => {
@@ -85,7 +87,49 @@ const setByPath = function (obj, value, path) {
   return result
 }
 
+const __ = Symbol.for('placeholder')
+
+// argument resolver for curry3
+const curry3ResolveArg0 = (
+  baseFunc, arg1, arg2,
+) => function arg0Resolver(arg0) {
+  return baseFunc(arg0, arg1, arg2)
+}
+
+// argument resolver for curry3
+const curry3ResolveArg1 = (
+  baseFunc, arg0, arg2,
+) => function arg1Resolver(arg1) {
+  return baseFunc(arg0, arg1, arg2)
+}
+
+// argument resolver for curry3
+const curry3ResolveArg2 = (
+  baseFunc, arg0, arg1,
+) => function arg2Resolver(arg2) {
+  return baseFunc(arg0, arg1, arg2)
+}
+
+const curry3 = function (baseFunc, arg0, arg1, arg2) {
+  if (arg0 == __) {
+    return curry3ResolveArg0(baseFunc, arg1, arg2)
+  }
+  if (arg1 == __) {
+    return curry3ResolveArg1(baseFunc, arg0, arg2)
+  }
+  return curry3ResolveArg2(baseFunc, arg0, arg1)
+}
+
 const set = (path, value) => function setter(obj) {
+  if (typeof value == 'function') {
+    const actualValue = value(obj)
+    if (isPromise(actualValue)) {
+      return actualValue.then(
+        curry3(setByPath, obj, __, path)
+      )
+    }
+    return setByPath(obj, actualValue, path)
+  }
   return setByPath(obj, value, path)
 }
 
