@@ -1642,6 +1642,12 @@ then(() => {
   })
 
   describe('reduce', () => {
+    it('eager', async () => {
+      const numbers = [1, 2, 3, 4, 5]
+      const sum = reduce(numbers, (a, b) => a + b)
+      assert.equal(sum, 15)
+    })
+
     describe(`
 Reducer<T> (any, T)=>Promise|any
 

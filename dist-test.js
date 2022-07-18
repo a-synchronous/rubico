@@ -766,6 +766,12 @@ TestsMap.set('filter.withIndex', filterWithIndex => [
 ])
 
 TestsMap.set('reduce', reduce => [
+  Test('eager reduce', async function () {
+    const numbers = [1, 2, 3, 4, 5]
+    const sum = reduce(numbers, (a, b) => a + b)
+    assert.equal(sum, 15)
+  }).case(),
+
   Test(
     'reduce sync init 0',
     reduce(function add(a, b) { return a + b }, 0))
