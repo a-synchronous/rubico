@@ -1,5 +1,7 @@
 const MappingIterator = require('./_internal/MappingIterator')
 const MappingAsyncIterator = require('./_internal/MappingAsyncIterator')
+const __ = require('./_internal/placeholder')
+const curry2 = require('./_internal/curry2')
 const isArray = require('./_internal/isArray')
 const isObject = require('./_internal/isObject')
 const isGeneratorFunction = require('./_internal/isGeneratorFunction')
@@ -22,33 +24,120 @@ const symbolIterator = require('./_internal/symbolIterator')
 const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
 
 /**
+ * @name _map
+ *
+ * @synopsis
+ * ```coffeescript [specscript]
+ * _map(
+ *   array Array,
+ *   arrayMapper (value any, index number, array Array)=>Promise|any
+ * ) -> mappedArray Promise|Array
+ *
+ * _map(
+ *   object Object,
+ *   objectMapper (value any, key string, object Object)=>Promise|any
+ * ) -> mappedObject Promise|Array
+ *
+ * _map(
+ *   set Set,
+ *   setMapper (value any, value, set Set)=>Promise|any
+ * ) -> mappedSet Promise|Set
+ *
+ * _map(
+ *   originalMap Map,
+ *   mapMapper (value any, key any, originalMap Map)=>Promise|any
+ * ) -> mappedMap Promise|Map
+ *
+ * _map(
+ *   generatorFunction ...args=>Generator,
+ *   syncMapper (value any)=>any,
+ * ) -> mappingGeneratorFunction ...args=>Generator
+ *
+ * _map(
+ *   asyncGeneratorFunction ...args=>AsyncGenerator,
+ *   mapper (value any)=>Promise|any
+ * ) -> mappingAsyncGeneratorFunction ...args=>AsyncGenerator
+ *
+ * _map(
+ *   originalReducer Reducer,
+ *   mapper (value any)=>Promise|any,
+ * ) -> mappingReducer Reducer
+ * ```
+ */
+const _map = function (value, mapper) {
+  if (isArray(value)) {
+    return arrayMap(value, mapper)
+  }
+  if (typeof value == 'function') {
+    if (isGeneratorFunction(value)) {
+      return generatorFunctionMap(value, mapper)
+    }
+    if (isAsyncGeneratorFunction(value)) {
+      return asyncGeneratorFunctionMap(value, mapper)
+    }
+    return reducerMap(value, mapper)
+  }
+  if (value == null) {
+    return value
+  }
+
+  if (typeof value.then == 'function') {
+    return value.then(mapper)
+  }
+  if (typeof value.map == 'function') {
+    return value.map(mapper)
+  }
+  if (typeof value == 'string' || value.constructor == String) {
+    return stringMap(value, mapper)
+  }
+  if (value.constructor == Set) {
+    return setMap(value, mapper)
+  }
+  if (value.constructor == Map) {
+    return mapMap(value, mapper)
+  }
+  if (typeof value[symbolIterator] == 'function') {
+    return MappingIterator(value[symbolIterator](), mapper)
+  }
+  if (typeof value[symbolAsyncIterator] == 'function') {
+    return MappingAsyncIterator(value[symbolAsyncIterator](), mapper)
+  }
+  if (value.constructor == Object) {
+    return objectMap(value, mapper)
+  }
+  return mapper(value)
+}
+
+/**
  * @name map
  *
  * @synopsis
  * ```coffeescript [specscript]
  * map(
  *   arrayMapper (value any, index number, array Array)=>Promise|any
- * )(array) -> mappedArray Promise|Array
+ * )(array Array) -> mappedArray Promise|Array
  *
  * map(
  *   objectMapper (value any, key string, object Object)=>Promise|any
- * )(object) -> mappedObject Promise|Array
+ * )(object Object) -> mappedObject Promise|Array
  *
  * map(
- *   setMapper (value any, value, set Set)=>Promise|any
- * )(set) -> mappedSet Promise|Set
+ *   setMapper (value any, value, set Set)=>Promise|any,
+ * )(set Set) -> mappedSet Promise|Set
  *
  * map(
- *   mapMapper (value any, key any, originalMap Map)=>Promise|any
- * )(originalMap) -> mappedMap Promise|Map
+ *   mapMapper (value any, key any, originalMap Map)=>Promise|any,
+ * )(originalMap Map) -> mappedMap Promise|Map
  *
  * map(
- *   probablyShouldBeSyncMapper (value any)=>any
- * )(generatorFunction) -> mappingGeneratorFunction ...args=>Generator
+ *   syncMapper (value any)=>any
+ * )(generatorFunction GeneratorFunction)
+ *   -> mappingGeneratorFunction ...args=>Generator
  *
  * map(
  *   mapper (value any)=>Promise|any
- * )(asyncGeneratorFunction) -> mappingAsyncGeneratorFunction ...args=>AsyncGenerator
+ * )(asyncGeneratorFunction AsyncGeneratorFunction)
+ *   -> mappingAsyncGeneratorFunction ...args=>AsyncGenerator
  *
  * map(
  *   mapper (value any)=>Promise|any
@@ -152,48 +241,12 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  * @TODO streamMap
  */
 
-const map = mapper => function mapping(value) {
-  if (isArray(value)) {
-    return arrayMap(value, mapper)
+const map = (...args) => {
+  const mapper = args.pop()
+  if (args.length > 0) {
+    return _map(args[0], mapper)
   }
-  if (typeof value == 'function') {
-    if (isGeneratorFunction(value)) {
-      return generatorFunctionMap(value, mapper)
-    }
-    if (isAsyncGeneratorFunction(value)) {
-      return asyncGeneratorFunctionMap(value, mapper)
-    }
-    return reducerMap(value, mapper)
-  }
-  if (value == null) {
-    return value
-  }
-
-  if (typeof value.then == 'function') {
-    return value.then(mapper)
-  }
-  if (typeof value.map == 'function') {
-    return value.map(mapper)
-  }
-  if (typeof value == 'string' || value.constructor == String) {
-    return stringMap(value, mapper)
-  }
-  if (value.constructor == Set) {
-    return setMap(value, mapper)
-  }
-  if (value.constructor == Map) {
-    return mapMap(value, mapper)
-  }
-  if (typeof value[symbolIterator] == 'function') {
-    return MappingIterator(value[symbolIterator](), mapper)
-  }
-  if (typeof value[symbolAsyncIterator] == 'function') {
-    return MappingAsyncIterator(value[symbolAsyncIterator](), mapper)
-  }
-  if (value.constructor == Object) {
-    return objectMap(value, mapper)
-  }
-  return mapper(value)
+  return curry2(_map, __, mapper)
 }
 
 /**
