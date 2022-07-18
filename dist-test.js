@@ -487,7 +487,7 @@ TestsMap.set('map', map => [
     const myArray = [1, 2, 3]
     const mappedArray = map(myArray, number => number ** 2)
     assert.deepEqual(mappedArray, [1, 4, 9])
-  }),
+  }).case(),
 
   Test(
     'map syncMapper',
