@@ -160,6 +160,16 @@ const genericReduce = require('./_internal/genericReduce')
  * ) // { A: true, B: true, C: true }
  * ```
  *
+ * `reduce`, when passed a single non-function argument before the reducer function, treats that argument as the value to be reduced.
+ *
+ * ```javascript [playground]
+ * const numbers = [1, 2, 3, 4, 5]
+ *
+ * const sum = reduce(numbers, (a, b) => a + b)
+ *
+ * assert.equal(sum, 15)
+ * ```
+ *
  * @execution series
  *
  * @transducing
