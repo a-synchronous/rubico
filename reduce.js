@@ -11,37 +11,37 @@ const genericReduce = require('./_internal/genericReduce')
  * ```coffeescript [specscript]
  * reduce(
  *   arrayReducer (result any, value any, index number, array Array)=>Promise|any,
- *   init? (array=>Promise|any)|any,
+ *   initialValue? (array=>Promise|any)|any,
  * )(array) -> Promise|result
  *
  * reduce(
  *   objectReducer (result any, value any, key string, object Object)=>Promise|any,
- *   init? (object=>Promise|any)|any,
+ *   initialValue? (object=>Promise|any)|any,
  * )(object) -> Promise|result
  *
  * reduce(
  *   mapReducer (result any, value any, key any, map Map)=>Promise|any,
- *   init? (map=>Promise|any)|any,
+ *   initialValue? (map=>Promise|any)|any,
  * )(map) -> Promise|result
  *
  * Foldable = Iterable|AsyncIterable|{ reduce: (reducer, result?)=>any }
  *
  * reduce(
  *   reducer (result any, value any)=>Promise|any,
- *   init? ((foldable Foldable)=>Promise|any)|any,
+ *   initialValue? ((foldable Foldable)=>Promise|any)|any,
  * )(foldable) -> Promise|result
  *
  * reduce(
  *   reducer (result any, value any)=>Promise|any,
- *   init? (()=>Promise|any)|any,
+ *   initialValue? (()=>Promise|any)|any,
  * )(generatorFunction) -> reducingGeneratorValuesFunction (...generatorFunctionArgs)=>Promise|any
  *
  * reduce(
  *   reducer (result any, value any)=>Promise|any,
- *   init? (()=>Promise|any)|any,
+ *   initialValue? (()=>Promise|any)|any,
  * )(asyncGeneratorFunction) -> reducingAsyncGeneratorValuesFunction (...asyncGeneratorFunctionArgs)=>Promise|any
  *
- * reduce(reducer, init?)(...moreReducers) -> ...args=>Promise|any
+ * reduce(reducer, initialValue?)(...moreReducers) -> ...args=>Promise|any
  * ```
  *
  * @description
@@ -169,16 +169,23 @@ const genericReduce = require('./_internal/genericReduce')
  * @TODO reduce.concurrent
  */
 
-const reduce = function (reducer, init) {
-  if (typeof init == 'function') {
+const reduce = function (...args) {
+  if (typeof args[0] != 'function') {
+    const reducer = args[1]
+    const initialValue = args[2]
+    return genericReduce([args[0]], reducer, initialValue)
+  }
+  const reducer = args[0]
+  const initialValue = args[1]
+  if (typeof initialValue == 'function') {
     return function reducing(...args) {
-      const result = init(...args)
+      const result = initialValue(...args)
       return isPromise(result)
         ? result.then(curry3(genericReduce, args, reducer, __))
         : genericReduce(args, reducer, result)
     }
   }
-  return curryArgs3(genericReduce, __, reducer, init)
+  return curryArgs3(genericReduce, __, reducer, initialValue)
 }
 
 module.exports = reduce
