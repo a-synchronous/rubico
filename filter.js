@@ -228,6 +228,16 @@ const _filter = function (value, predicate) {
  * ) // [1, 3, 5]
  * ```
  *
+ * `filter`, when passed a single argument before the predicate function, treats that argument as the value to be filtered.
+ *
+ * ```javascript [playground]
+ * const numbers = [1, 2, 3]
+ *
+ * const odds = filter(numbers, number => number % 2 == 1)
+ *
+ * console.log(odds) // [1, 3]
+ * ```
+ *
  * @execution concurrent
  *
  * @transducing
