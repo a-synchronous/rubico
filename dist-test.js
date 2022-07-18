@@ -662,6 +662,12 @@ TestsMap.set('map.withIndex', mapWithIndex => [
 ])
 
 TestsMap.set('filter', filter => [
+  Test('eager filter', async function () {
+    const numbers = [1, 2, 3]
+    const odds = filter(numbers, number => number % 2 == 1)
+    assert.deepEqual(odds, [1, 3])
+  }).case()
+
   Test(
     'filter syncPredicate',
     filter(number => number % 2 == 1))

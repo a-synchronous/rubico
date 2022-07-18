@@ -1,3 +1,5 @@
+const __ = require('./_internal/placeholder')
+const curry2 = require('./_internal/curry2')
 const FilteringIterator = require('./_internal/FilteringIterator')
 const FilteringAsyncIterator = require('./_internal/FilteringAsyncIterator')
 const isArray = require('./_internal/isArray')
@@ -16,6 +18,88 @@ const symbolIterator = require('./_internal/symbolIterator')
 const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
 
 /**
+ * @name _filter
+ *
+ * @synopsis
+ * ```coffeescript [specscript]
+ * _filter(
+ *   array Array,
+ *   arrayPredicate (value any, index number, array Array)=>Promise|boolean
+ * ) -> filteredArray Promise|Array
+ *
+ * _filter(
+ *   object Object,
+ *   objectPredicate (value any, key string, object Object)=>Promise|boolean
+ * ) -> filteredObject Promise|Object
+ *
+ * _filter(
+ *   set Set,
+ *   setPredicate (value any, value, set Set)=>Promise|boolean
+ * ) -> filteredSet Promise|Set
+ *
+ * _filter(
+ *   map Map,
+ *   mapPredicate (value any, key any, map Map)=>Promise|boolean
+ * ) -> filteredMap Promise|Map
+ *
+ * _filter(
+ *   generatorFunction GeneratorFunction,
+ *   predicate (value any)=>Promise|boolean
+ * ) -> filteringGeneratorFunction GeneratorFunction
+ *
+ * _filter(
+ *   asyncGeneratorFunction AsyncGeneratorFunction,
+ *   predicate (value any)=>Promise|boolean
+ * ) -> filteringAsyncGeneratorFunction AsyncGeneratorFunction
+ *
+ * _filter(
+ *   reducer Reducer,
+ *   predicate (value any)=>Promise|boolean
+ * ) -> filteringReducer Reducer
+ * ```
+ */
+const _filter = function (value, predicate) {
+  if (isArray(value)) {
+    return arrayFilter(value, predicate)
+  }
+  if (typeof value == 'function') {
+    if (isGeneratorFunction(value)) {
+      return generatorFunctionFilter(value, predicate)
+    }
+    if (isAsyncGeneratorFunction(value)) {
+      return asyncGeneratorFunctionFilter(value, predicate)
+    }
+    return reducerFilter(value, predicate)
+  }
+  if (value == null) {
+    return value
+  }
+
+  if (typeof value == 'string' || value.constructor == String) {
+    return stringFilter(value, predicate)
+  }
+  if (value.constructor == Set) {
+    return setFilter(value, predicate)
+  }
+  if (value.constructor == Map) {
+    return mapFilter(value, predicate)
+  }
+  if (typeof value.filter == 'function') {
+    return value.filter(predicate)
+  }
+  if (typeof value[symbolIterator] == 'function') {
+    return FilteringIterator(value[symbolIterator](), predicate)
+  }
+  if (typeof value[symbolAsyncIterator] == 'function') {
+    return FilteringAsyncIterator(value[symbolAsyncIterator](), predicate)
+  }
+  if (value.constructor == Object) {
+    return objectFilter(value, predicate)
+  }
+  return value
+}
+
+/**
  * @name filter
  *
  * @catchphrase
@@ -25,19 +109,19 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  * ```coffeescript [specscript]
  * filter(
  *   arrayPredicate (value any, index number, array Array)=>Promise|boolean
- * )(array) -> filteredArray Promise|Array
+ * )(array Array) -> filteredArray Promise|Array
  *
  * filter(
  *   objectPredicate (value any, key string, object Object)=>Promise|boolean
- * )(object) -> filteredObject Promise|Object
+ * )(object Object) -> filteredObject Promise|Object
  *
  * filter(
  *   setPredicate (value any, value, set Set)=>Promise|boolean
- * )(set) -> filteredSet Promise|Set
+ * )(set Set) -> filteredSet Promise|Set
  *
  * filter(
  *   mapPredicate (value any, key any, map Map)=>Promise|boolean
- * )(map) -> filteredMap Promise|Map
+ * )(map Map) -> filteredMap Promise|Map
  *
  * filter(
  *   predicate (value any)=>Promise|boolean
@@ -148,45 +232,13 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  *
  * @transducing
  */
-const filter = predicate => function filtering(value) {
-  if (isArray(value)) {
-    return arrayFilter(value, predicate)
-  }
-  if (typeof value == 'function') {
-    if (isGeneratorFunction(value)) {
-      return generatorFunctionFilter(value, predicate)
-    }
-    if (isAsyncGeneratorFunction(value)) {
-      return asyncGeneratorFunctionFilter(value, predicate)
-    }
-    return reducerFilter(value, predicate)
-  }
-  if (value == null) {
-    return value
-  }
 
-  if (typeof value == 'string' || value.constructor == String) {
-    return stringFilter(value, predicate)
+const filter = function (...args) {
+  const predicate = args.pop()
+  if (args.length > 0) {
+    return _filter(args[0], predicate)
   }
-  if (value.constructor == Set) {
-    return setFilter(value, predicate)
-  }
-  if (value.constructor == Map) {
-    return mapFilter(value, predicate)
-  }
-  if (typeof value.filter == 'function') {
-    return value.filter(predicate)
-  }
-  if (typeof value[symbolIterator] == 'function') {
-    return FilteringIterator(value[symbolIterator](), predicate)
-  }
-  if (typeof value[symbolAsyncIterator] == 'function') {
-    return FilteringAsyncIterator(value[symbolAsyncIterator](), predicate)
-  }
-  if (value.constructor == Object) {
-    return objectFilter(value, predicate)
-  }
-  return value
+  return curry2(_filter, __, predicate)
 }
 
 /**
