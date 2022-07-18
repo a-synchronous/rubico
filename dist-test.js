@@ -483,6 +483,12 @@ TestsMap.set('tryCatch', tryCatch => [
 ])
 
 TestsMap.set('map', map => [
+  Test('eager map', function () {
+    const myArray = [1, 2, 3]
+    const mappedArray = map(myArray, number => number ** 2)
+    assert.deepEqual(mappedArray, [1, 4, 9])
+  }),
+
   Test(
     'map syncMapper',
     map(number => number ** 2))
