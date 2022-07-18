@@ -64,6 +64,7 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  * ) -> mappingReducer Reducer
  * ```
  */
+
 const _map = function (value, mapper) {
   if (isArray(value)) {
     return arrayMap(value, mapper)
@@ -232,6 +233,16 @@ const _map = function (value, mapper) {
  * console.log(
  *   [1, 2, 3, 4, 5].reduce(squareConcatReducer, ''),
  * ) // '1491625'
+ * ```
+ *
+ * `map`, when passed a single argument before the mapper function, treats that argument as the value to be mapped.
+ *
+ * ```javascript [playground]
+ * const myArray = [1, 2, 3]
+ *
+ * const mappedArray = map(myArray, number => number ** 2)
+ *
+ * console.log(mappedArray) // [1, 4, 9]
  * ```
  *
  * @execution concurrent
