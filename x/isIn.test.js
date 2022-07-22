@@ -48,5 +48,9 @@ describe('isIn', () => {
       assert.strictEqual(isIn(1, new Map([[1, 1], [2, 2], [3, 3]])), true)
       assert.strictEqual(isIn(4, new Map([[1, 1], [2, 2], [3, 3]])), false)
     })
+    it('check if container is falsy', () => {
+      assert.strictEqual(isIn(1, null), false)
+      assert.strictEqual(isIn(1, undefined), false)
+    })
   })
 })
