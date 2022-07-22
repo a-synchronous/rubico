@@ -31,6 +31,7 @@ const uniq = require('./uniq')
 const unless = require('./unless')
 const values = require('./values')
 const when = require('./when')
+const isIn = require('./isIn')
 
 const rubicoX = {
   append,
@@ -66,6 +67,7 @@ const rubicoX = {
   unless,
   values,
   when,
+  isIn,
 }
 
 module.exports = rubicoX
