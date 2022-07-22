@@ -63,7 +63,7 @@ const curry2 = function (baseFunc, arg0, arg1) {
 }
 
 const _isIn = function (value, container) {
-  if (container == null || value == null) {
+  if (!container) {
     return false
   }
   if (container.constructor == Set) {
