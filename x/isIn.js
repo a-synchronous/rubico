@@ -62,7 +62,7 @@ const __ = require('../_internal/placeholder')
  * ```
  */
 const _isIn = function (value, container) {
-  if (!container) {
+  if (container == null) {
     return false
   }
   if (container.constructor == Set) {
