@@ -1,7 +1,12 @@
-## v1.9.3 - next release
+## v1.9.3 - latest
  * property value passed to set may be a resolver - [#224](https://github.com/a-synchronous/rubico/pull/224)
+ * rubico/x/isIn - counterpart to includes - [#228](https://github.com/a-synchronous/rubico/pull/228) - [lulldev](https://github.com/lulldev)
+ * rubico/x/maxBy - finds the item that is the max by a property denoted by path - [#229](https://github.com/a-synchronous/rubico/pull/229)
+ * eager map - [#225](https://github.com/a-synchronous/rubico/pull/225)
+ * eager filter - [#226](https://github.com/a-synchronous/rubico/pull/226)
+ * eager reduce - [#227](https://github.com/a-synchronous/rubico/pull/227)
 
-## v1.9.2 - latest
+## v1.9.2
  * eager tryCatch - [#222](https://github.com/a-synchronous/rubico/pull/218)
 
 ## v1.9.1
