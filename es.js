@@ -422,6 +422,26 @@ const MappingAsyncIterator = (asyncIterator, mapper) => ({
   }
 })
 
+// argument resolver for curry2
+const curry2ResolveArg0 = (
+  baseFunc, arg1,
+) => function arg0Resolver(arg0) {
+  return baseFunc(arg0, arg1)
+}
+
+// argument resolver for curry2
+const curry2ResolveArg1 = (
+  baseFunc, arg0,
+) => function arg1Resolver(arg1) {
+  return baseFunc(arg0, arg1)
+}
+
+const curry2 = function (baseFunc, arg0, arg1) {
+  return arg0 == __
+    ? curry2ResolveArg0(baseFunc, arg1)
+    : curry2ResolveArg1(baseFunc, arg0)
+}
+
 const isObject = value => {
   if (value == null) {
     return false
@@ -461,26 +481,6 @@ const asyncGeneratorFunctionMap = function (asyncGeneratorFunc, mapper) {
       yield mapper(item)
     }
   }
-}
-
-// argument resolver for curry2
-const curry2ResolveArg0 = (
-  baseFunc, arg1,
-) => function arg0Resolver(arg0) {
-  return baseFunc(arg0, arg1)
-}
-
-// argument resolver for curry2
-const curry2ResolveArg1 = (
-  baseFunc, arg0,
-) => function arg1Resolver(arg1) {
-  return baseFunc(arg0, arg1)
-}
-
-const curry2 = function (baseFunc, arg0, arg1) {
-  return arg0 == __
-    ? curry2ResolveArg0(baseFunc, arg1)
-    : curry2ResolveArg1(baseFunc, arg0)
 }
 
 const reducerMap = (
@@ -782,7 +782,7 @@ const mapMapEntries = function (source, mapper) {
     : promiseAll(promises).then(always(result))
 }
 
-const map = mapper => function mapping(value) {
+const _map = function (value, mapper) {
   if (isArray(value)) {
     return arrayMap(value, mapper)
   }
@@ -824,6 +824,14 @@ const map = mapper => function mapping(value) {
     return objectMap(value, mapper)
   }
   return mapper(value)
+}
+
+const map = (...args) => {
+  const mapper = args.pop()
+  if (args.length > 0) {
+    return _map(args[0], mapper)
+  }
+  return curry2(_map, __, mapper)
 }
 
 map.entries = function mapEntries(mapper) {
@@ -1088,7 +1096,7 @@ const arrayFilterWithIndex = function (array, predicate) {
   return result
 }
 
-const filter = predicate => function filtering(value) {
+const _filter = function (value, predicate) {
   if (isArray(value)) {
     return arrayFilter(value, predicate)
   }
@@ -1127,6 +1135,14 @@ const filter = predicate => function filtering(value) {
     return objectFilter(value, predicate)
   }
   return value
+}
+
+const filter = function (...args) {
+  const predicate = args.pop()
+  if (args.length > 0) {
+    return _filter(args[0], predicate)
+  }
+  return curry2(_filter, __, predicate)
 }
 
 filter.withIndex = predicate => function filteringWithIndex(value) {
@@ -1446,16 +1462,23 @@ const genericReduce = function (args, reducer, result) {
     : reducer(result, collection)
 }
 
-const reduce = function (reducer, init) {
-  if (typeof init == 'function') {
+const reduce = function (...args) {
+  if (typeof args[0] != 'function') {
+    const reducer = args[1]
+    const initialValue = args[2]
+    return genericReduce([args[0]], reducer, initialValue)
+  }
+  const reducer = args[0]
+  const initialValue = args[1]
+  if (typeof initialValue == 'function') {
     return function reducing(...args) {
-      const result = init(...args)
+      const result = initialValue(...args)
       return isPromise(result)
         ? result.then(curry3(genericReduce, args, reducer, __))
         : genericReduce(args, reducer, result)
     }
   }
-  return curryArgs3(genericReduce, __, reducer, init)
+  return curryArgs3(genericReduce, __, reducer, initialValue)
 }
 
 const isBinary = ArrayBuffer.isView

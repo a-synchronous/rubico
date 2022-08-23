@@ -58,6 +58,28 @@ const MappingAsyncIterator = (asyncIterator, mapper) => ({
   }
 })
 
+const __ = Symbol.for('placeholder')
+
+// argument resolver for curry2
+const curry2ResolveArg0 = (
+  baseFunc, arg1,
+) => function arg0Resolver(arg0) {
+  return baseFunc(arg0, arg1)
+}
+
+// argument resolver for curry2
+const curry2ResolveArg1 = (
+  baseFunc, arg0,
+) => function arg1Resolver(arg1) {
+  return baseFunc(arg0, arg1)
+}
+
+const curry2 = function (baseFunc, arg0, arg1) {
+  return arg0 == __
+    ? curry2ResolveArg0(baseFunc, arg1)
+    : curry2ResolveArg1(baseFunc, arg0)
+}
+
 const isArray = Array.isArray
 
 const isObject = value => {
@@ -115,28 +137,6 @@ const asyncGeneratorFunctionMap = function (asyncGeneratorFunc, mapper) {
       yield mapper(item)
     }
   }
-}
-
-const __ = Symbol.for('placeholder')
-
-// argument resolver for curry2
-const curry2ResolveArg0 = (
-  baseFunc, arg1,
-) => function arg0Resolver(arg0) {
-  return baseFunc(arg0, arg1)
-}
-
-// argument resolver for curry2
-const curry2ResolveArg1 = (
-  baseFunc, arg0,
-) => function arg1Resolver(arg1) {
-  return baseFunc(arg0, arg1)
-}
-
-const curry2 = function (baseFunc, arg0, arg1) {
-  return arg0 == __
-    ? curry2ResolveArg0(baseFunc, arg1)
-    : curry2ResolveArg1(baseFunc, arg0)
 }
 
 const reducerMap = (
@@ -522,7 +522,7 @@ const mapMapEntries = function (source, mapper) {
     : promiseAll(promises).then(always(result))
 }
 
-const map = mapper => function mapping(value) {
+const _map = function (value, mapper) {
   if (isArray(value)) {
     return arrayMap(value, mapper)
   }
@@ -564,6 +564,14 @@ const map = mapper => function mapping(value) {
     return objectMap(value, mapper)
   }
   return mapper(value)
+}
+
+const map = (...args) => {
+  const mapper = args.pop()
+  if (args.length > 0) {
+    return _map(args[0], mapper)
+  }
+  return curry2(_map, __, mapper)
 }
 
 map.entries = function mapEntries(mapper) {

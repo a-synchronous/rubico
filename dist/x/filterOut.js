@@ -10,6 +10,27 @@
   else if (typeof define == 'function') define(() => filterOut) // AMD
   else (root.filterOut = filterOut) // Browser
 }(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+const __ = Symbol.for('placeholder')
+
+// argument resolver for curry2
+const curry2ResolveArg0 = (
+  baseFunc, arg1,
+) => function arg0Resolver(arg0) {
+  return baseFunc(arg0, arg1)
+}
+
+// argument resolver for curry2
+const curry2ResolveArg1 = (
+  baseFunc, arg0,
+) => function arg1Resolver(arg1) {
+  return baseFunc(arg0, arg1)
+}
+
+const curry2 = function (baseFunc, arg0, arg1) {
+  return arg0 == __
+    ? curry2ResolveArg0(baseFunc, arg1)
+    : curry2ResolveArg1(baseFunc, arg0)
+}
 
 const symbolIterator = Symbol.iterator
 
@@ -70,8 +91,6 @@ const isGeneratorFunction = value => objectToString(value) == generatorFunctionT
 const asyncGeneratorFunctionTag = '[object AsyncGeneratorFunction]'
 
 const isAsyncGeneratorFunction = value => objectToString(value) == asyncGeneratorFunctionTag
-
-const __ = Symbol.for('placeholder')
 
 // argument resolver for curry4
 const curry4ResolveArg0 = (
@@ -344,7 +363,7 @@ const arrayFilterWithIndex = function (array, predicate) {
   return result
 }
 
-const filter = predicate => function filtering(value) {
+const _filter = function (value, predicate) {
   if (isArray(value)) {
     return arrayFilter(value, predicate)
   }
@@ -383,6 +402,14 @@ const filter = predicate => function filtering(value) {
     return objectFilter(value, predicate)
   }
   return value
+}
+
+const filter = function (...args) {
+  const predicate = args.pop()
+  if (args.length > 0) {
+    return _filter(args[0], predicate)
+  }
+  return curry2(_filter, __, predicate)
 }
 
 filter.withIndex = predicate => function filteringWithIndex(value) {

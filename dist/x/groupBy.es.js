@@ -439,16 +439,23 @@ const genericReduce = function (args, reducer, result) {
     : reducer(result, collection)
 }
 
-const reduce = function (reducer, init) {
-  if (typeof init == 'function') {
+const reduce = function (...args) {
+  if (typeof args[0] != 'function') {
+    const reducer = args[1]
+    const initialValue = args[2]
+    return genericReduce([args[0]], reducer, initialValue)
+  }
+  const reducer = args[0]
+  const initialValue = args[1]
+  if (typeof initialValue == 'function') {
     return function reducing(...args) {
-      const result = init(...args)
+      const result = initialValue(...args)
       return isPromise(result)
         ? result.then(curry3(genericReduce, args, reducer, __))
         : genericReduce(args, reducer, result)
     }
   }
-  return curryArgs3(genericReduce, __, reducer, init)
+  return curryArgs3(genericReduce, __, reducer, initialValue)
 }
 
 // (mapOfArrays Map<any=>Array>, key any, item any) => mapOfArrays

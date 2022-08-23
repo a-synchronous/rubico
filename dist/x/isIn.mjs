@@ -1,5 +1,5 @@
 /**
- * rubico v1.9.1
+ * rubico v1.9.2
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2021 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -57,7 +57,7 @@ const curry2 = function (baseFunc, arg0, arg1) {
 }
 
 const _isIn = function (value, container) {
-  if (!container) {
+  if (container == null) {
     return false
   }
   if (container.constructor == Set) {
