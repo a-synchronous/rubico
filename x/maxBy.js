@@ -55,8 +55,8 @@ const _maxBy = function (array, path) {
  * const numbers = [1, 2, 3]
  *
  * const maxItem = pipe(numbers, [
- *   number => number ** 2,
- *   number => ({ a: { b: { c: number } } }),
+ *   map(number => number ** 2),
+ *   map(number => ({ a: { b: { c: number } } })),
  *   maxBy('a.b.c')
  * ])
  *
