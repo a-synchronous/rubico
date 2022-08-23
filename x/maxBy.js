@@ -38,6 +38,8 @@ const _maxBy = function (array, path) {
  * Finds the item that is the max by a property denoted by path.
  *
  * ```javascript [playground]
+ * import maxBy from 'https://unpkg.com/rubico/dist/x/maxBy.es.js'
+ *
  * const array = [{ a: 1 }, { a: 2 }, { a: 3 }]
  *
  * const maxItem = maxBy(array, 'a')
@@ -48,6 +50,8 @@ const _maxBy = function (array, path) {
  * `maxBy` composes in a pointfree way.
  *
  * ```javascript [playground]
+ * import maxBy from 'https://unpkg.com/rubico/dist/x/maxBy.es.js'
+ *
  * const numbers = [1, 2, 3]
  *
  * const maxItem = pipe(numbers, [
