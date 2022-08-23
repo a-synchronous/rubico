@@ -20,6 +20,7 @@ const isObject = require('./isObject')
 const isString = require('./isString')
 const keys = require('./keys')
 const last = require('./last')
+const maxBy = require('./maxBy')
 const noop = require('./noop')
 const pluck = require('./pluck')
 const prepend = require('./prepend')
@@ -54,6 +55,7 @@ const rubicoX = {
   isString,
   keys,
   last,
+  maxBy,
   noop,
   pluck,
   prepend,

@@ -1819,6 +1819,30 @@ TestsMap.set('last', last => [
   .case(undefined, undefined)
 ])
 
+TestsMap.set('maxBy', maxBy => [
+  Test('maxBy', async function () {
+    { // Finds the item that is the max by a property denoted by path
+      const array = [{ a: 1 }, { a: 2 }, { a: 3 }]
+      const maxItem = maxBy(array, 'a')
+      assert.deepEqual(maxItem, { a: 3 })
+    }
+
+    { // composes in a pointfree way
+      const numbers = [1, 2, 3]
+      const maxItem = pipe(numbers, [
+        map(number => number ** 2),
+        map(number => ({ a: { b: { c: number } } })),
+        maxBy('a.b.c'),
+      ])
+      assert.deepEqual(maxItem, { a: { b: { c: 9 } } })
+    }
+
+    { // returns undefined for empty array
+      assert.strictEqual(maxBy([], 'a'), undefined)
+    }
+  }).case()
+])
+
 TestsMap.set('pluck', pluck => [
   Test('pluck', pluck('a'))
   .case([{ a: 1 }, { a: 2 }, { a: 3 }], [1, 2, 3])
