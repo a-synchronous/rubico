@@ -89,14 +89,11 @@ const pipeSync = funcs => funcs.reduce(funcConcatSync)
  *
  * @synopsis
  * ```coffeescript [specscript]
- * var args ...any,
- *   funcs [...args=>any, ...Array<any=>any>]
- *
- * pipe.sync(funcs) -> syncPipeline ...args=>any
+ * pipe.sync(funcs Array<function>) -> syncPipeline function
  * ```
  *
  * @description
- * `pipe` that doesn't automatically resolve promises. This variant is a good option if more performance is desired or if manual promise handling is required.
+ * A synchronous version of `pipe` that does not resolve promises by default.
  *
  * ```javascript [playground]
  * pipe.sync([
