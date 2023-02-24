@@ -9,9 +9,9 @@ const isAsyncGeneratorFunction = require('./_internal/isAsyncGeneratorFunction')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * pipe(funcs Array<function>)(...argumentsForFirstFunction) -> result any
+ * pipe(funcs Array<function>)(...args) -> result Promise|any
  *
- * pipe(...argumentsForFirstFunction, funcs Array<function>) -> result any
+ * pipe(...args, funcs Array<function>) -> result Promise|any
  * ```
  *
  * @description
@@ -89,7 +89,7 @@ const pipeSync = funcs => funcs.reduce(funcConcatSync)
  *
  * @synopsis
  * ```coffeescript [specscript]
- * pipe.sync(funcs Array<function>) -> syncPipeline function
+ * pipe.sync(funcs Array<function>)(...args) -> result Promise|any
  * ```
  *
  * @description
