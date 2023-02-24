@@ -9,58 +9,33 @@ const isAsyncGeneratorFunction = require('./_internal/isAsyncGeneratorFunction')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * Reducer<T> = (any, T)=>Promise|any
+ * pipe(funcs Array<function>)(...argumentsForFirstFunction) -> result any
  *
- * var args ...any,
- *   funcs [
- *     ...args=>Promise|any,
- *     ...Array<any=>Promise|any>,
- *   ],
- *   transducers Array<Reducer=>Reducer>
- *   reducer Reducer,
- *
- * pipe(funcs)(...args) -> Promise|any
- *
- * pipe(transducers)(reducer) -> Reducer
+ * pipe(...argumentsForFirstFunction, funcs Array<function>) -> result any
  * ```
  *
  * @description
- * Create a function pipeline, where each function passes its return value as a single argument to the next function until all functions have executed. The result of a pipeline execution is the return of its last function.
+ * Create a function pipeline where each function passes its return value as a single argument to the next function until all functions have executed. The result of a pipeline execution is the return of its last function. If any function of the pipeline is asynchronous, the result of the execution is a Promise.
  *
  * ```javascript [playground]
- * console.log(
- *   pipe([
- *     number => number + 1,
- *     number => number + 2,
- *     number => number + 3,
- *   ])(5),
- * ) // 11
- * ```
- *
- * In order to create pipelines of transducers that read left to right, `pipe` chains the functions (assuming they are transducers) in reverse when passed a reducer in argument position. This results in a reducer with chained functionality. For more information on this behavior, see [this blog post on transducers](https://rubico.land/blog/2020/10/02/transducers-crash-course).
- *
- * ```javascript [playground]
- * const isOdd = number => number % 2 == 1
- *
- * const square = number => number ** 2
- *
- * const add = (a, b) => a + b
- *
- * const squaredOdds = pipe([
- *   filter(isOdd),
- *   map(square),
+ * const syncAdd123 = pipe([
+ *   number => number + 1,
+ *   number => number + 2,
+ *   number => number + 3,
  * ])
  *
- * console.log(
- *   [1, 2, 3, 4, 5].reduce(squaredOdds(add), 0),
- * ) // 35
+ * console.log(syncAdd123(5)) // 11
  *
- * console.log(
- *   squaredOdds([1, 2, 3, 4, 5])
- * ) // [1, 9, 25]
+ * const asyncAdd123 = pipe([
+ *   async number => number + 1,
+ *   async number => number + 2,
+ *   async number => number + 3,
+ * ])
+ *
+ * asyncAdd123(5).then(console.log) // 11
  * ```
  *
- * For the sake of a sane API, pipe behaves eagerly when passed any amount of arguments before the array of functions.
+ * When passed any amount of arguments before the array of functions, `pipe` executes eagerly; the array of functions is immediately invoked with the supplied arguments.
  *
  * ```javascript [playground]
  * pipe(1, 2, 3, [
