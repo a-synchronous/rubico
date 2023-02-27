@@ -9,26 +9,39 @@ const funcObjectAll = require('./_internal/funcObjectAll')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * var source Object,
- *   funcsObject Object<source=>Promise|any>
- *
- * assign(funcsObject)(source) -> resultsMergedWithSource Promise|Object
+ * assign(resolvers Object<function>)(object Object) -> result Promise|Object
  * ```
  *
  * @description
- * Compose an object from a source object merged with its evaluations with a specifying object of functions. Functions of the specifying object may return Promises.
+ * Accepts an object of resolver functions and an argument object. Creates a result object from the argument object, evaluates each resolver with the argument object, and assigns to the result object the evaluations at the corresponding resolver keys.
  *
  * ```javascript [playground]
- * console.log(
- *   assign({
- *     squared: ({ number }) => number ** 2,
- *     cubed: ({ number }) => number ** 3,
- *   })({ number: 3 }),
- * ) // { number: 3, squared: 9, cubed: 27 }
+ * const assignSquaredAndCubed = assign({
+ *   squared: ({ number }) => number ** 2,
+ *   cubed: ({ number }) => number ** 3,
+ * })
  *
- * assign({
- *   asyncNumber: async ({ number }) => number,
- * })({ number: 3 }).then(console.log) // { number: 3, asyncNumber: 3 }
+ * console.log(assignSquaredAndCubed({ number: 2 }))
+ * // { number: 2, squared: 4, cubed: 8 }
+ *
+ * console.log(assignSquaredAndCubed({ number: 3 }))
+ * // { number: 3, squared: 9, cubed: 27 }
+ * ```
+ *
+ * Any of the resolvers may be asynchronous and return Promises.
+ *
+ * ```javascript [playground]
+ * const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+ *
+ * const asyncAssignTotal = assign({
+ *   async total({ numbers }) {
+ *     await sleep(500)
+ *     return numbers.reduce((a, b) => a + b)
+ *   },
+ * })
+ *
+ * asyncAssignTotal({ numbers: [1, 2, 3, 4, 5] }).then(console.log)
+ * // { numbers: [1, 2, 3, 4, 5], total: 15 }
  * ```
  *
  * @execution concurrent
