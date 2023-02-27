@@ -7,21 +7,11 @@ const nonfunctionsConditional = require('./_internal/nonfunctionsConditional')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * var args ...any,
- *   result any,
- *   predicate ...args=>Promise|boolean,
- *   resolver ...args=>Promise|result,
- *   defaultResolver ...args=>Promise|result,
- *   conditionalFunctions [
- *     ...Array<predicate|resolver>,
- *     defaultResolver,
- *   ]
- *
- * switchCase(conditionalFunctions)(...args) -> Promise|result
+ * switchCase(conditionalFuncs Array<function>)(...args) -> Promise|any
  * ```
  *
  * @description
- * Conditional operator with cases specified as pairings of `predicate` and `value`, with the exception of the last, default value. Any `predicate` or `value` can be a function, in which case it is evaluated against the point.
+ * Conditional operator higher order function that accepts an array of conditional functions that specifies cases as pairings of `predicate` and `resolver` functions with the exception of the last, default resolver. All functions are provided with the same arguments and executed in series.
  *
  * ```javascript [playground]
  * const fruitIsYellow = fruit => fruit.color == 'yellow'
@@ -32,12 +22,14 @@ const nonfunctionsConditional = require('./_internal/nonfunctionsConditional')
  *   fruit => fruit.name + ' is probably not a banana',
  * ])
  *
- * console.log(
- *   fruitsGuesser({ name: 'plantain', color: 'yellow' }),
- * ) // plantain is possibly a banana
+ * console.log(fruitsGuesser({ name: 'plantain', color: 'yellow' }))
+ * // plantain is possibly a banana
+ *
+ * console.log(fruitsGuesser({ name: 'apple', color: 'red' }))
+ * // apple is probably not a banana
  * ```
  *
- * A mixture of functions and nonfunctions can be supplied as any of the array items. Any Promises are resolved in series.
+ * For convenience, any function can be replaced with a nonfunction value (object or primitive value) in which case the value is treated as an already resolved value.
  *
  * ```javascript [playground]
  * switchCase([
@@ -47,18 +39,6 @@ const nonfunctionsConditional = require('./_internal/nonfunctionsConditional')
  *   'something',
  *   'default',
  * ])(false).then(console.log) // default
- * ```
- *
- * If every item in the argument array to switchCase is a value, switchCase should behave as the ternary ? : operator.
- *
- * ```javascript [playground]
- * const a = 1
- *
- * switchCase([
- *   a == 1,
- *   Promise.resolve('hello world'),
- *   'default',
- * ]).then(console.log) // hello world
  * ```
  *
  * @execution series
