@@ -11,22 +11,22 @@ const __ = require('./_internal/placeholder')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * var args ...any,
- *   tapper ...args=>Promise|any
- *
- * tap(tapper)(...args) -> Promise|args[0]
+ * tap(func function)(...args) -> Promise|args[0]
  * ```
  *
  * @description
  * Call a function with a value, returning the value. Promises created by the tapper are resolved before returning the value.
  *
  * ```javascript [playground]
- * pipe([
- *   tap(console.log),
- *   value => value + 'bar',
- *   tap(console.log),
- * ])('foo') // 'foo'
- *           // 'foobar'
+ * const pipeline = pipe([
+ *   tap(value => console.log(value)),
+ *   tap(value => console.log(value + 'bar')),
+ *   tap(value => console.log(value + 'barbaz')),
+ * ])
+ *
+ * pipeline('foo') // 'foo'
+ *                 // 'foobar'
+ *                 // 'foobarbaz'
  * ```
  */
 const tap = func => function tapping(...args) {
@@ -40,21 +40,20 @@ const tap = func => function tapping(...args) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * var args ...any,
- *   tapper ...args=>any
- *
- * tap.sync(tapper)(...args) -> args[0]
+ * tap.sync(func function)(...args) -> args[0]
  * ```
  *
  * @description
  * Synchronous `tap`
  *
  * ```javascript [playground]
- * pipe([
+ * const pipeline = pipe([
  *   tap.sync(number => console.log('square', number ** 2)),
  *   tap.sync(number => console.log('cube', number ** 3)),
- * ])(3) // 9
- *       // 27
+ * ])
+ *
+ * pipeline(3) // 9
+ *             // 27
  * ```
  */
 tap.sync = tapSync
@@ -64,28 +63,23 @@ tap.sync = tapSync
  *
  * @synopsis
  * ```coffeescript [specscript]
- * var args ...any,
- *   predicate ...args=>Promise|boolean,
- *   tapper ...args=>Promise|any
- *
- * tap.if(predicate, tapper)(...args) -> Promise|args[0]
+ * tap.if(predicate function, func function)(...args) -> Promise|args[0]
  * ```
  *
  * @description
- * Conditional `tap` by predicate
+ * A version of `tap` that accepts a predicate function (a function that returns a boolean value) before the function to execute. Only executes the function if the predicate function tests true for the same arguments provided to the execution function.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
  *
  * const logIfOdd = tap.if(
  *   isOdd,
- *   number => console.log(number, 'is an odd number'))
+ *   number => console.log(number, 'is an odd number')
+ * )
  *
  * logIfOdd(2)
  * logIfOdd(3) // 3 is an odd number
  * ```
- *
- * @related tap
  */
 tap.if = (predicate, func) => function tappingIf(...args) {
   const predication = predicate(...args)
