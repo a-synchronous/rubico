@@ -8,32 +8,35 @@ const catcherApply = require('./_internal/catcherApply')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * var args ...any,
- *   tryer ...args=>Promise|any,
- *   catcher (error Error, ...args)=>Promise|any
- *
- * tryCatch(tryer, catcher)(...args) -> Promise|any
+ * tryCatch(tryer function, catcher function)(...args) -> Promise|any
  * ```
  *
  * @description
- * Try a `tryer`, catch with `catcher`. On error or rejected promise, call the `catcher` with the error followed by any arguments to the tryer.
+ * A higher order function that handles errors with a `tryer` and a `catcher` function. Calls the `tryer` function with the provided arguments and catches any errors thrown by the `tryer` function with a `catcher` function. If the `tryer` function is asynchronous (returns a Promise), the catcher will execute with the value of the rejected promise. The `catcher` function is called with the error and all arguments supplied to the `tryer` function.
  *
  * ```javascript [playground]
- * const errorThrower = tryCatch(
- *   message => {
- *     throw new Error(message)
- *   },
- *   (error, message) => {
- *     console.log(error)
- *     return `${message} from catcher`
- *   },
- * )
+ * const throwsIfOdd = number => {
+ *   if (number % 2 == 1) {
+ *     throw new Error(`${number} is odd`)
+ *   }
+ *   console.log('did not throw for', number)
+ * }
  *
- * console.log(errorThrower('hello')) // Error: hello
- *                                    // hello from catcher
+ * const errorHandler = tryCatch(throwsIfOdd, (error, number) => {
+ *   console.log('caught error from number', number)
+ *   console.log(error)
+ * })
+ *
+ * errorHandler(2) // did not throw for 2
+ *
+ * errorHandler(3) // caught error from number 3
+ *                 // Error: 3 is odd
+ *                 //     at throwsIfOdd (...)
+ *                 //     ...
+ *
  * ```
  *
- * `tryCatch` behaves eagerly when passed any amount of arguments before the tryer and catcher.
+ * `tryCatch` behaves eagerly (executes immediately with a single call and not with multiple calls like a higher order function) when passed any amount of nonfunction (primitive or object) arguments before the `tryer` and `catcher` functions.
  *
  * ```javascript [playground]
  * const add = (a, b) => a + b
