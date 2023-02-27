@@ -8,30 +8,34 @@ const funcAllSeries = require('./_internal/funcAllSeries')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * var args ...any,
- *   funcsArray Array<...args=>Promise|any>,
- *   funcsObject Object<...args=>Promise|any>
+ * fork(funcsArray Array<function>)(...args) -> result Promise|Array
  *
- * fork(funcsArray)(...args) -> parallelized Promise|Array
- *
- * fork(funcsObject)(...args) -> parallelized Promise|Object
+ * fork(funcsObject Object<function>)(...args) -> result Promise|Object
  * ```
  *
  * @description
- * Run an array or object of functions in parallel, returning an array or object result.
+ * A higher order function that accepts either an array of functions or an object of functions as the values. Calls each function in parallel with the provided arguments.
  *
  * ```javascript [playground]
- * console.log(
- *   fork({
- *     greetings: fork([
- *       greeting => greeting + ' world',
- *       greeting => greeting + ' mom',
- *     ]),
- *   })('hello'),
- * ) // { greetings: ['hello world', 'hello mom'] }
+ * const createArrayOfGreetingsFor = fork([
+ *   name => `Hi ${name}`,
+ *   name => `Hey ${name}`,
+ *   name => `Hello ${name}`,
+ * ])
+ *
+ * createArrayOfGreetingsFor('Fred') // ['Hi Fred', 'Hey Fred', 'Hello Fred']
+ *
+ * const createObjectOfGreetingsFor = fork({
+ *   hi: name => `Hi ${name}`,
+ *   hey: name => `Hey ${name}`,
+ *   hello: name => `Hello ${name}`,
+ * })
+ *
+ * createObjectOfGreetingsFor('Jane')
+ * // { hi: 'Hi Jane', hey: 'Hey Jane', hello: 'Hello Jane' }
  * ```
  *
- * Use `fork` to simultaneously compose objects and handle async.
+ * `fork` can simultaneously compose objects and handle promises.
  *
  * ```javascript [playground]
  * const identity = value => value
@@ -41,7 +45,7 @@ const funcAllSeries = require('./_internal/funcAllSeries')
  *
  * const getUserByID = async id => userbase.get(id)
  *
- * pipe([
+ * const getAndLogUserById = pipe([
  *   fork({
  *     id: identity,
  *     user: getUserByID,
@@ -49,7 +53,9 @@ const funcAllSeries = require('./_internal/funcAllSeries')
  *   tap(({ id, user }) => {
  *     console.log(`Got user ${JSON.stringify(user)} by id ${id}`)
  *   }),
- * ])('1')
+ * ])
+ *
+ * getAndLogUserById('1') // Got user {"_id":1,"name":"George"} by id 1
  * ```
  *
  * @execution concurrent
@@ -61,14 +67,13 @@ const fork = funcs => isArray(funcs) ? funcAll(funcs) : funcObjectAll(funcs)
  *
  * @synopsis
  * ```coffeescript [specscript]
- * var args ...any,
- *   funcs Array<...args=>Promise|any>
+ * fork.series(funcsArray Array<function>)(...args) -> result Promise|Array
  *
- * fork.series(funcs)(...args) => forkedInSeries Promise|Array
+ * fork.series(funcsObject Object<function>)(...args) -> result Promise|Object
  * ```
  *
  * @description
- * `fork` with serial execution.
+ * Same as `fork` but with serial instead of parallel execution.
  *
  * ```javascript [playground]
  * const sleep = ms => () => new Promise(resolve => setTimeout(resolve, ms))
@@ -78,10 +83,10 @@ const fork = funcs => isArray(funcs) ? funcAll(funcs) : funcObjectAll(funcs)
  *   sleep(1000),
  *   greeting => console.log(greeting + ' mom'),
  *   sleep(1000),
- *   greeting => console.log(greeting + ' darkness'),
+ *   greeting => console.log(greeting + ' goodbye'),
  * ])('hello') // hello world
  *             // hello mom
- *             // hello darkness
+ *             // hello goodbye
  * ```
  *
  * @execution series
