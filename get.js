@@ -5,32 +5,31 @@ const getByPath = require('./_internal/getByPath')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * var value any,
+ * get(
  *   path string|number|Array<string|number>,
- *   defaultValue (value=>any)|any
- *
- * get(path, defaultValue?) -> getter value=>any
+ *   defaultValue function|any
+ * )(object Object) -> result any
  * ```
  *
  * @description
- * Create a getter that accesses a property on a value denoted by path.
+ * Accesses a property of an object given a path denoted by a string, number, or an array of string or numbers.
  *
  * ```javascript [playground]
- * console.log(
- *   get('hello')({ hello: 'world' }),
- * ) // world
+ * const getHello = get('hello')
+ *
+ * console.log(getHello({ hello: 'world' })) // world
  * ```
  *
- * It is possible to return a default value on not found by supplying the value or resolver of such value as the second parameter.
+ * If the value at the end of the path is not found on the object, returns an optional default value. The default value can be a function resolver that takes the object as an argument. If no default value is provided, returns `undefined`.
  *
  * ```javascript [playground]
- * console.log(
- *   get('hello', 'default')({ foo: 'bar' }),
- * ) // default
+ * const getHelloWithDefaultValue = get('hello', 'default')
  *
- * console.log(
- *   get('hello', object => object.foo)({ foo: 'bar' }),
- * ) // bar
+ * console.log(getHelloWithDefaultValue({ foo: 'bar' })) // default
+ *
+ * const getHelloWithDefaultResolver = get('hello', object => object.foo)
+ *
+ * console.log(getHelloWithDefaultResolver({ foo: 'bar' })) // bar
  * ```
  *
  * `get` supports three types of path patterns for nested property access.
@@ -40,25 +39,17 @@ const getByPath = require('./_internal/getByPath')
  *  * an array of keys or indices - `['a', 0, 'value']`
  *
  * ```javascript [playground]
- * const nestedABC0 = { a: { b: { c: ['hello'] } } }
+ * const getABC0 = get('a.b.c[0]')
  *
- * console.log(
- *   get('a.b.c[0]')(nestedABC0),
- * ) // hello
+ * console.log(getABC0({ a: { b: { c: ['hello'] } } })) // hello
  *
- * const nested00000 = [[[[['foo']]]]]
+ * const get00000DotNotation = get('0.0.0.0.0')
+ * const get00000BracketNotation = get('[0][0][0][0][0]')
+ * const get00000ArrayNotation = get([0, 0, 0, 0, 0])
  *
- * console.log(
- *   get('0.0.0.0.0')(nested00000),
- * ) // foo
- *
- * console.log(
- *   get('[0][0][0][0][0]')(nested00000),
- * ) // foo
- *
- * console.log(
- *   get([0, 0, 0, 0, 0])(nested00000),
- * ) // foo
+ * console.log(get00000DotNotation([[[[['foo']]]]])) // foo
+ * console.log(get00000BracketNotation([[[[['foo']]]]])) // foo
+ * console.log(get00000ArrayNotation([[[[['foo']]]]])) // foo
  * ```
  */
 const get = (path, defaultValue) => function getter(value) {
