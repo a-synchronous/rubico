@@ -13,7 +13,7 @@ const copyDeep = require('./_internal/copyDeep')
  * ```
  *
  * @description
- * Create a new object by excluding specific paths on a source object.
+ * Create a new object by excluding provided paths on a source object.
  *
  * ```javascript [playground]
  * console.log(
@@ -21,7 +21,7 @@ const copyDeep = require('./_internal/copyDeep')
  * ) // { name: 'George' }
  * ```
  *
- * Path patterns are the same as those supported by `get`:
+ * `omit` supports three types of path patterns for nested property access
  *
  *  * dot delimited - `'a.b.c'`
  *  * bracket notation - `'a[0].value'`
