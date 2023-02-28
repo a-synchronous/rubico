@@ -16,10 +16,18 @@ const setByPath = require('./_internal/setByPath')
  * console.log(
  *   pick(['hello', 'world'])({ goodbye: 1, world: 2 }),
  * ) // { world: 2 }
+ * ```
  *
- * console.log(
- *   pick(['a.b.c.d'])({ a: { b: { c: { d: 1, e: [2, 3] } } } }),
- * ) // { a: { b: { c: { d: 1 } } } }
+ * `pick` supports three types of path patterns for nested property access
+ *
+ *  * dot delimited - `'a.b.c'`
+ *  * bracket notation - `'a[0].value'`
+ *  * an array of keys or indices - `['a', 0, 'value']`
+ *
+ * ```javascript [playground]
+ * const nested = { a: { b: { c: { d: 1, e: [2, 3] } } } }
+ *
+ * console.log(pick(['a.b.c.d'])(nested)) // { a: { b: { c: { d: 1 } } } }
  * ```
  */
 
