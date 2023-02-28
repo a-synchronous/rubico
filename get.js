@@ -8,7 +8,7 @@ const getByPath = require('./_internal/getByPath')
  * get(
  *   path string|number|Array<string|number>,
  *   defaultValue function|any
- * )(object Object) -> result any
+ * )(object Object) -> result Promise|Object
  * ```
  *
  * @description
@@ -20,7 +20,7 @@ const getByPath = require('./_internal/getByPath')
  * console.log(getHello({ hello: 'world' })) // world
  * ```
  *
- * If the value at the end of the path is not found on the object, returns an optional default value. The default value can be a function resolver that takes the object as an argument. If no default value is provided, returns `undefined`.
+ * If the value at the end of the path is not found on the object, returns an optional default value. The default value can be a function resolver that takes the object as an argument. If no default value is provided, returns `undefined`. The function resolver may be asynchronous (returns a promise).
  *
  * ```javascript [playground]
  * const getHelloWithDefaultValue = get('hello', 'default')
