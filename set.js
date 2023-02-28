@@ -8,31 +8,34 @@ const __ = require('./_internal/placeholder')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * var value any,
+ * set(
  *   path string|Array<string|number>,
- *   value (value=>any)|any
- *
- * set(path, value) -> setter  object=>object
+ *   value function|any,
+ * )(object Object) -> result Promise|Object
  * ```
  *
  * @description
- * Create a setter that sets a property on an object denoted by path.
+ * Sets a property on a new object shallow cloned from the argument object given a path denoted by a string, number, or an array of string or numbers.
+ *
+ * `set` supports three types of path patterns for nested property access.
+ *
+ *  * dot delimited - `'a.b.c'`
+ *  * bracket notation - `'a[0].value'`
+ *  * an array of keys or indices - `['a', 0, 'value']`
  *
  * ```javascript [playground]
- * console.log(
- *   set('a', 1)({ b: 2 })
- * ) // { a: 1, b: 2 }
+ * console.log(set('a', 1)({ b: 2 })) // { a: 1, b: 2 }
  *
- * console.log(
- *   set('a.b', 1)({ a: { c: 2 } }),
- * ) // { a : { b: 1, c: 2 }}
+ * const nestedAC2 = { a: { c: 2 } }
  *
- * console.log(
- *   set('a[0].b.c', 4)({ a: [{ b: { c: 3 } }] }),
- * ) // { a: [{ b: { c: 4 } }] }
+ * console.log(set('a.b', 1)(nestedAC2)) // { a : { b: 1, c: 2 }}
+ *
+ * const nestedA0BC3 = { a: [{ b: { c: 3 } }] }
+ *
+ * console.log(set('a[0].b.c', 4)(nestedA0BC3)) // { a: [{ b: { c: 4 } }] }
  * ```
  *
- * The property value may be a function, in which case it is treated as a resolver and passed the argument object to resolve the value to set.
+ * The property value may be a function, in which case it is treated as a resolver and provided the argument object to resolve the value to set.
  *
  * ```javascript [playground]
  * const myObj = { a: 1 }
