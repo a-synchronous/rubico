@@ -6,14 +6,11 @@ const setByPath = require('./_internal/setByPath')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * var keys Array<string>,
- *   source Object
- *
- * pick(keys)(source) -> picked Object
+ * pick(keys Array<string>)(object Object) -> result Object
  * ```
  *
  * @description
- * Create a new object by including specific keys.
+ * Creates a new object from a source object by selecting provided keys. If a provided key does not exist on the source object, excludes it from the resulting object.
  *
  * ```javascript [playground]
  * console.log(
