@@ -114,140 +114,169 @@ const _map = function (value, mapper) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * map(
- *   arrayMapper (value any, index number, array Array)=>Promise|any
- * )(array Array) -> mappedArray Promise|Array
+ * arrayMapperFunc (value any, index number, array Array)=>Promise|any
  *
- * map(
- *   objectMapper (value any, key string, object Object)=>Promise|any
- * )(object Object) -> mappedObject Promise|Array
+ * map(arrayMapperFunc)(value Array) -> result Promise|Array
+ * map(value Array, arrayMapperFunc) -> result Promise|Array
  *
- * map(
- *   setMapper (value any, value, set Set)=>Promise|any,
- * )(set Set) -> mappedSet Promise|Set
+ * objectMapperFunc (value any, key string, object Object)=>Promise|any
  *
- * map(
- *   mapMapper (value any, key any, originalMap Map)=>Promise|any,
- * )(originalMap Map) -> mappedMap Promise|Map
+ * map(objectMapperFunc)(value Object) -> result Promise|Array
+ * map(value Object, objectMapperFunc) -> result Promise|Array
  *
- * map(
- *   syncMapper (value any)=>any
- * )(generatorFunction GeneratorFunction)
- *   -> mappingGeneratorFunction ...args=>Generator
+ * setMapperFunc (value any, value, set Set)=>Promise|any
  *
- * map(
- *   mapper (value any)=>Promise|any
- * )(asyncGeneratorFunction AsyncGeneratorFunction)
- *   -> mappingAsyncGeneratorFunction ...args=>AsyncGenerator
+ * map(setMapperFunc)(value Set) -> result Promise|Set
+ * map(value Set, setMapperFunc) -> result Promise|Set
  *
- * map(
- *   mapper (value any)=>Promise|any
- * )(originalReducer Reducer) -> mappingReducer Reducer
+ * mapMapperFunc (value any, key any, originalMap Map)=>Promise|any
+ *
+ * map(mapMapperFunc)(value Map) -> result Promise|Map
+ * map(value Map, mapMapperFunc) -> result Promise|Map
+ *
+ * iteratorMapperFunc (value any)=>any
+ *
+ * map(iteratorMapperFunc)(value Iterator) -> result Iterator
+ * map(value Iterator, iteratorMapperFunc) -> result Iterator
+ *
+ * asyncIteratorMapperFunc (value any)=>Promise|any
+ *
+ * map(asyncIteratorMapperFunc)(value AsyncIterator) -> result AsyncIterator
+ * map(value AsyncIterator, asyncIteratorMapperFunc) -> result AsyncIterator
  * ```
  *
  * @description
- * Apply a mapper concurrently to each item of a functor, returning the results in a functor of the same type. If order is implied by the collection, it is maintained in the result. The following list describes `map` behavior with vanilla JavaScript functors.
+ * Applies a function to each item of a collection, returning the results in a new collection of the same type. If order is implied by the collection, it is maintained in the result. `map` accepts the following collections:
  *
- *  * `Array` - apply a mapper to items, returning a new array of results
- *  * `Object` - apply a mapper to object values, returning a new object of results
- *  * `Set` - apply a mapper to Set items, returning a new `Set` of results
- *  * `Map` - apply a mapper to Map values (not entries), returning a new `Map` of results
- *  * `Iterator`/`Generator` - return an iterator that applies a mapper to each iteration's value, yielding mapped iterations
- *  * `AsyncIterator`/`AsyncGenerator` - return an async iterator that applies a mapper to each async iteration's value, yielding Promises of a mapped iterations
- *  * `{ map: function }` - call `.map` directly with mapper
+ *  * `Array`
+ *  * `Object`
+ *  * `Set`
+ *  * `Map`
+ *  * `Iterator`/`Generator`
+ *  * `AsyncIterator`/`AsyncGenerator`
+ *  * Special types with a `.map` method `{ map: function }`
+ *
+ * With arrays (type `Array`), `map` applies the function to each item of the array, returning the transformed results in a new array ordered the same as the original array.
  *
  * ```javascript [playground]
  * const square = number => number ** 2
  *
- * console.log(
- *   map(square)([1, 2, 3, 4, 5]),
- * ) // [1, 4, 9, 16, 25]
+ * const array = [1, 2, 3, 4, 5]
  *
- * console.log(
- *   map(square)(new Map([['a', 1], ['b', 2], ['c', 3], ['d', 4], ['e', 5]])),
- * ) // Map { 'a' => 1, 'b' => 4, 'c' => 9, 'd' => 16, 'e' => 25 }
- *
- * console.log(
- *   map(square)({ a: 1, b: 2, c: 3, d: 4, e: 5 }),
- * ) // { a: 1, b: 4, c: 9, d: 16, e: 25 }
+ * console.log(map(array, square)) // [1, 4, 9, 16, 25]
+ * console.log(map(square)(array)) // [1, 4, 9, 16, 25]
  * ```
  *
- * `map` recognizes three types of functions in functor position:
+ * With objects (type `Object`), `map` applies the function to each value of the object, returning the transformed results as values in a new object ordered by the keys of the original object
  *
- *  * Generator Functions `function* () {}` - `map(mapper)(generatorFunction)` creates a generator function that generates generators of mapped values. Async mappers are yielded synchronously and may lead to unexpected results.
- *  * Async Generator Functions `async function* () {}` - `map(mapper)(asyncGeneratorFunction)` creates an async generator function that generates async generators of mapped values. Promises produced by async mappers are resolved.
- *  * Reducers `(accumulator, item)=>accumulator` - `map(mapper)(reducer)` creates a transducer that, when called with another reducer, creates a mapping step for each item of the reducer's reducing operation. Promises produced by async mappers are resolved.
+ * ```javascript [playground]
+ * const square = number => number ** 2
  *
- * Use mapping generator functions to create lazy computations executed at iteration time.
+ * const obj = { a: 1, b: 2, c: 3, d: 4, e: 5 }
+ *
+ * console.log(map(square)(obj)) // { a: 1, b: 4, c: 9, d: 16, e: 25 }
+ * console.log(map(obj, square)) // { a: 1, b: 4, c: 9, d: 16, e: 25 }
+ * ```
+ *
+ * With sets (type `Set`), `map` applies the function to each value of the set, returning the transformed results unordered in a new set.
+ *
+ * ```javascript [playground]
+ * const square = number => number ** 2
+ *
+ * const set = new Set([1, 2, 3, 4, 5])
+ *
+ * console.log(map(set, square)) // [1, 4, 9, 16, 25]
+ * console.log(map(square)(set)) // [1, 4, 9, 16, 25]
+ * ```
+ *
+ * With maps (type `Map`), `map` applies the function to each value of the map, returning the results at the same keys in a new map. The entries of the resulting map are in the same order as those of the original map
+ *
+ * ```javascript [playground]
+ * const square = number => number ** 2
+ *
+ * const m = new Map([['a', 1], ['b', 2], ['c', 3], ['d', 4], ['e', 5]])
+ *
+ * console.log(map(square)(m)) // Map { 'a' => 1, 'b' => 4, 'c' => 9, 'd' => 16, 'e' => 25 }
+ * console.log(map(m, square)) // Map { 'a' => 1, 'b' => 4, 'c' => 9, 'd' => 16, 'e' => 25 }
+ * ```
+ *
+ * With general iterators (type `Iterator` or `Generator`), `map` applies the function lazily to each value of the iterator, creating a new iterator with transformed iterations.
  *
  * ```javascript [playground]
  * const capitalize = string => string.toUpperCase()
  *
- * const abc = function* () {
+ * const abcGeneratorFunc = function* () {
  *   yield 'a'; yield 'b'; yield 'c'
  * }
  *
- * const ABC = map(capitalize)(abc)
+ * const abcGenerator = abcGeneratorFunc()
+ * const ABCGenerator = map(abcGeneratorFunc(), capitalize)
+ * const ABCGenerator2 = map(capitalize)(abcGeneratorFunc())
  *
- * const abcIter = abc()
+ * console.log([...abcGenerator]) // ['a', 'b', 'c']
  *
- * const ABCIter = ABC()
+ * console.log([...ABCGenerator]) // ['A', 'B', 'C']
  *
- * console.log([...abcIter]) // ['a', 'b', 'c']
- *
- * console.log([...ABCIter]) // ['A', 'B', 'C']
+ * console.log([...ABCGenerator2]) // ['A', 'B', 'C']
  * ```
  *
- * Create a mapping transducer by supplying `map` with a reducer. A reducer is a variadic function that depicts a relationship between an accumulator and any number of arguments. A transducer is a function that accepts a reducer as an argument and returns another reducer.
+ * With general asyncIterators (type `AsyncIterator`, or `AsyncGenerator`), `map` applies the function lazily to each value of the asyncIterator, creating a new asyncIterator with transformed iterations
  *
- * ```coffeescript [specscript]
- * Reducer<T> = (any, T)=>Promise|any
+ * ```javascript [playground]
+ * const capitalize = string => string.toUpperCase()
  *
- * Transducer = Reducer=>Reducer
+ * const abcAsyncGeneratorFunc = async function* () {
+ *   yield 'a'; yield 'b'; yield 'c'
+ * }
+ *
+ * const abcAsyncGenerator = abcAsyncGeneratorFunc()
+ * const ABCGenerator = map(abcAsyncGeneratorFunc(), capitalize)
+ * const ABCGenerator2 = map(capitalize)(abcAsyncGeneratorFunc())
+ *
+ * ;(async function () {
+ *   for await (const letter of abcAsyncGenerator) {
+ *     console.log(letter)
+ *     // a
+ *     // b
+ *     // c
+ *   }
+ *
+ *   for await (const letter of ABCGenerator) {
+ *     console.log(letter)
+ *     // A
+ *     // B
+ *     // C
+ *   }
+ *
+ *   for await (const letter of ABCGenerator2) {
+ *     console.log(letter)
+ *     // A
+ *     // B
+ *     // C
+ *   }
+ * })()
  * ```
  *
- * The transducer signature enables chaining functionality for reducers. `map` is core to this mechanism, and provides a way via transducers to transform items of reducers. To `map`, reducers are just another category.
+ * For any special type with a `.map` method such as the `Maybe` monad, `map` calls the `.map` method with the mapper function directly
  *
  * ```javascript [playground]
  * const square = number => number ** 2
  *
- * const concat = (array, item) => array.concat(item)
+ * const Maybe = value => ({
+ *   map(mapperFunc) {
+ *     return value == null ? Maybe(value) : Maybe(mapperFunc(value))
+ *   },
+ *   chain(flatMapperFunc) {
+ *     return value == null ? value : flatMapperFunc(value)
+ *   },
+ * })
  *
- * const mapSquare = map(square)
- * // mapSquare could potentially be a transducer, but at this point, it is
- * // undifferentiated and not necessarily locked in to transducer behavior.
+ * Maybe(5).map(square).chain(console.log) // 25
  *
- * console.log(
- *   mapSquare([1, 2, 3, 4, 5]),
- * ) // [1, 4, 9, 16, 25]
- *
- * const squareConcatReducer = mapSquare(concat)
- * // now mapSquare is passed the function concat, so it assumes transducer
- * // position. squareConcatReducer is a reducer with chained functionality
- * // square and concat.
- *
- * console.log(
- *   [1, 2, 3, 4, 5].reduce(squareConcatReducer, []),
- * ) // [1, 4, 9, 16, 25]
- *
- * console.log(
- *   [1, 2, 3, 4, 5].reduce(squareConcatReducer, ''),
- * ) // '1491625'
- * ```
- *
- * `map`, when passed a single argument before the mapper function, treats that argument as the value to be mapped.
- *
- * ```javascript [playground]
- * const myArray = [1, 2, 3]
- *
- * const mappedArray = map(myArray, number => number ** 2)
- *
- * console.log(mappedArray) // [1, 4, 9]
+ * Maybe(null).map(square).chain(console.log)
  * ```
  *
  * @execution concurrent
- *
- * @transducing
  *
  * @TODO streamMap
  */
