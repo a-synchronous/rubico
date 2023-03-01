@@ -300,13 +300,17 @@ const map = (...args) => {
  * ```
  *
  * @description
- * `map` over the entries of a `Map` or `Object`.
+ * `map` over the entries rather than the values of a collection. Accepts collections of type `Map` or `Object`.
+ *
  * ```javascript [playground]
- * console.log(
- *   map.entries(
- *     ([key, value]) => [key.toUpperCase(), value ** 2],
- *   )({ a: 1, b: 2, c: 3 })
- * ) // { A: 1, B: 4, C: 9 }
+ * const upperCaseKeysAndSquareValues =
+ *   map.entries(([key, value]) => [key.toUpperCase(), value ** 2])
+ *
+ * console.log(upperCaseKeysAndSquareValues({ a: 1, b: 2, c: 3 }))
+ * // { A: 1, B: 4, C: 9 }
+ *
+ * console.log(upperCaseKeysAndSquareValues(new Map([['a', 1], ['b', 2], ['c', 3]])))
+ * // Map(3) { 'A' => 1, 'B' => 4, 'C' => 9 }
  * ```
  *
  * @since v1.7.0
