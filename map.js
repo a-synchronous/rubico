@@ -200,7 +200,7 @@ const _map = function (value, mapper) {
  * console.log(map(m, square)) // Map { 'a' => 1, 'b' => 4, 'c' => 9, 'd' => 16, 'e' => 25 }
  * ```
  *
- * With iterators (type `Iterator` or `Generator`), `map` applies the mapper function lazily to each value of the iterator, creating a new iterator with transformed iterations.
+ * With iterators (type `Iterator`) or generators (type `Generator`), `map` applies the mapper function lazily to each value of the iterator/generator, creating a new iterator with transformed iterations.
  *
  * ```javascript [playground]
  * const capitalize = string => string.toUpperCase()
@@ -255,25 +255,6 @@ const _map = function (value, mapper) {
  *     // C
  *   }
  * })()
- * ```
- *
- * For any special type with a `.map` method such as the `Maybe` monad, `map` calls the `.map` method with the mapper function directly
- *
- * ```javascript [playground]
- * const square = number => number ** 2
- *
- * const Maybe = value => ({
- *   map(mapperFunc) {
- *     return value == null ? Maybe(value) : Maybe(mapperFunc(value))
- *   },
- *   chain(flatMapperFunc) {
- *     return value == null ? value : flatMapperFunc(value)
- *   },
- * })
- *
- * Maybe(5).map(square).chain(console.log) // 25
- *
- * Maybe(null).map(square).chain(console.log)
  * ```
  *
  * @execution concurrent
