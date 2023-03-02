@@ -123,6 +123,20 @@ const _filter = function (value, predicate) {
  *
  * filter(mapPredicate)(map Map) -> filteredMap Promise|Map
  * filter(map Map, mapPredicate) -> filteredMap Promise|Map
+ *
+ * iteratorPredicate (value any)=>any
+ *
+ * filter(iteratorPredicate)(iterator Iterator|Generator)
+ *   -> filteredIterator Iterator|Generator
+ * filter(iterator Iterator|Generator, iteratorPredicate)
+ *   -> filteredIterator Iterator|Generator
+ *
+ * asyncIteratorPredicate (value any)=>Promise|any
+ *
+ * filter(asyncIteratorPredicate)(asyncIterator AsyncIterator|AsyncGenerator)
+ *   -> filteredAsyncIterator AsyncIterator|AsyncGenerator
+ * filter(asyncIterator AsyncIterator|AsyncGenerator, asyncIteratorPredicate)
+ *   -> filteredAsyncIterator AsyncIterator|AsyncGenerator
  * ```
  *
  * @description
