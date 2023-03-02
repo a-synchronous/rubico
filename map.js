@@ -200,7 +200,7 @@ const _map = function (value, mapper) {
  * console.log(map(m, square)) // Map { 'a' => 1, 'b' => 4, 'c' => 9, 'd' => 16, 'e' => 25 }
  * ```
  *
- * With general iterators (type `Iterator` or `Generator`), `map` applies the mapper function lazily to each value of the iterator, creating a new iterator with transformed iterations.
+ * With iterators (type `Iterator` or `Generator`), `map` applies the mapper function lazily to each value of the iterator, creating a new iterator with transformed iterations.
  *
  * ```javascript [playground]
  * const capitalize = string => string.toUpperCase()
@@ -220,7 +220,7 @@ const _map = function (value, mapper) {
  * console.log([...ABCGenerator2]) // ['A', 'B', 'C']
  * ```
  *
- * With general asyncIterators (type `AsyncIterator`, or `AsyncGenerator`), `map` applies the mapper function lazily to each value of the asyncIterator, creating a new asyncIterator with transformed iterations
+ * With asyncIterators (type `AsyncIterator`, or `AsyncGenerator`), `map` applies the mapper function lazily to each value of the asyncIterator, creating a new asyncIterator with transformed iterations
  *
  * ```javascript [playground]
  * const capitalize = string => string.toUpperCase()
