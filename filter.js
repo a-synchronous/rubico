@@ -148,7 +148,6 @@ const _filter = function (value, predicate) {
  *  * `Map`
  *  * `Iterator`/`Generator`
  *  * `AsyncIterator`/`AsyncGenerator`
- *  * Special types with a `.filter` method `{ filter: function }`
  *
  * With arrays (type `Array`), `filter` applies the predicate function to each item of the array, returning a new array containing only the items that tested truthy by the predicate. The order of the items is preserved.
  *

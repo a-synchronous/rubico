@@ -156,7 +156,6 @@ const _map = function (value, mapper) {
  *  * `Map`
  *  * `Iterator`/`Generator`
  *  * `AsyncIterator`/`AsyncGenerator`
- *  * Special types with a `.map` method `{ map: function }`
  *
  * With arrays (type `Array`), `map` applies the mapper function to each item of the array, returning the transformed results in a new array ordered the same as the original array.
  *
