@@ -136,13 +136,15 @@ const _map = function (value, mapper) {
  *
  * iteratorMapperFunc (value any)=>any
  *
- * map(iteratorMapperFunc)(value Iterator) -> result Iterator
- * map(value Iterator, iteratorMapperFunc) -> result Iterator
+ * map(iteratorMapperFunc)(value Iterator|Generator) -> result Iterator
+ * map(value Iterator|Generator, iteratorMapperFunc) -> result Iterator
  *
  * asyncIteratorMapperFunc (value any)=>Promise|any
  *
- * map(asyncIteratorMapperFunc)(value AsyncIterator) -> result AsyncIterator
- * map(value AsyncIterator, asyncIteratorMapperFunc) -> result AsyncIterator
+ * map(asyncIteratorMapperFunc)(value AsyncIterator|AsyncGenerator)
+ *   -> result AsyncIterator
+ * map(value AsyncIterator|AsyncGenerator, asyncIteratorMapperFunc)
+ *   -> result AsyncIterator
  * ```
  *
  * @description
