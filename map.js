@@ -146,7 +146,7 @@ const _map = function (value, mapper) {
  * ```
  *
  * @description
- * Applies a function to each item of a collection, returning the results in a new collection of the same type. If order is implied by the collection, it is maintained in the result. `map` accepts the following collections:
+ * Applies a synchronous or asynchronous mapper function to each item of a collection, returning the results in a new collection of the same type. If order is implied by the collection, it is maintained in the result. `map` accepts the following collections:
  *
  *  * `Array`
  *  * `Object`
@@ -156,7 +156,7 @@ const _map = function (value, mapper) {
  *  * `AsyncIterator`/`AsyncGenerator`
  *  * Special types with a `.map` method `{ map: function }`
  *
- * With arrays (type `Array`), `map` applies the function to each item of the array, returning the transformed results in a new array ordered the same as the original array.
+ * With arrays (type `Array`), `map` applies the mapper function to each item of the array, returning the transformed results in a new array ordered the same as the original array.
  *
  * ```javascript [playground]
  * const square = number => number ** 2
@@ -167,7 +167,7 @@ const _map = function (value, mapper) {
  * console.log(map(square)(array)) // [1, 4, 9, 16, 25]
  * ```
  *
- * With objects (type `Object`), `map` applies the function to each value of the object, returning the transformed results as values in a new object ordered by the keys of the original object
+ * With objects (type `Object`), `map` applies the mapper function to each value of the object, returning the transformed results as values in a new object ordered by the keys of the original object
  *
  * ```javascript [playground]
  * const square = number => number ** 2
@@ -178,7 +178,7 @@ const _map = function (value, mapper) {
  * console.log(map(obj, square)) // { a: 1, b: 4, c: 9, d: 16, e: 25 }
  * ```
  *
- * With sets (type `Set`), `map` applies the function to each value of the set, returning the transformed results unordered in a new set.
+ * With sets (type `Set`), `map` applies the mapper function to each value of the set, returning the transformed results unordered in a new set.
  *
  * ```javascript [playground]
  * const square = number => number ** 2
@@ -189,7 +189,7 @@ const _map = function (value, mapper) {
  * console.log(map(square)(set)) // [1, 4, 9, 16, 25]
  * ```
  *
- * With maps (type `Map`), `map` applies the function to each value of the map, returning the results at the same keys in a new map. The entries of the resulting map are in the same order as those of the original map
+ * With maps (type `Map`), `map` applies the mapper function to each value of the map, returning the results at the same keys in a new map. The entries of the resulting map are in the same order as those of the original map
  *
  * ```javascript [playground]
  * const square = number => number ** 2
@@ -200,7 +200,7 @@ const _map = function (value, mapper) {
  * console.log(map(m, square)) // Map { 'a' => 1, 'b' => 4, 'c' => 9, 'd' => 16, 'e' => 25 }
  * ```
  *
- * With general iterators (type `Iterator` or `Generator`), `map` applies the function lazily to each value of the iterator, creating a new iterator with transformed iterations.
+ * With general iterators (type `Iterator` or `Generator`), `map` applies the mapper function lazily to each value of the iterator, creating a new iterator with transformed iterations.
  *
  * ```javascript [playground]
  * const capitalize = string => string.toUpperCase()
@@ -220,7 +220,7 @@ const _map = function (value, mapper) {
  * console.log([...ABCGenerator2]) // ['A', 'B', 'C']
  * ```
  *
- * With general asyncIterators (type `AsyncIterator`, or `AsyncGenerator`), `map` applies the function lazily to each value of the asyncIterator, creating a new asyncIterator with transformed iterations
+ * With general asyncIterators (type `AsyncIterator`, or `AsyncGenerator`), `map` applies the mapper function lazily to each value of the asyncIterator, creating a new asyncIterator with transformed iterations
  *
  * ```javascript [playground]
  * const capitalize = string => string.toUpperCase()
@@ -335,11 +335,9 @@ map.entries = function mapEntries(mapper) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * var T any,
- *   mapper T=>Promise|any,
- *   array Array<T>
- *
- * map.series(mapper)(array) -> Promise|Array
+ * map.series(
+ *   mapperFunc (value any)=>Promise|any,
+ * )(array Array) -> Promise|Array
  * ```
  *
  * @description
@@ -371,27 +369,29 @@ map.series = mapper => function mappingInSeries(value) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * var maxConcurrency number,
- *   T any,
- *   mapper T=>Promise|any,
- *   array Array<T>
- *
- * map.pool(maxConcurrency, mapper)(array) -> Promise|Array
+ * map.pool(
+ *   maxConcurrency number,
+ *   mapper (value any)=>Promise|any,
+ * )(array Array) -> result Promise|Array
  * ```
  *
  * @description
- * `map` with limited concurrency.
+ * `map` that specifies the maximum concurrency (number of ongoing promises at any time) of the execution. Only works for arrays.
  *
  * ```javascript [playground]
- * const delayedLog = x => new Promise(function (resolve) {
- *   setTimeout(function () {
- *     console.log(x)
- *     resolve()
- *   }, 1000)
- * })
+ * const ids = [1, 2, 3, 4, 5]
  *
- * console.log('start')
- * map.pool(2, delayedLog)([1, 2, 3, 4, 5])
+ * const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+ *
+ * const delayedIdentity = async value => {
+ *   await sleep(1000)
+ *   return value
+ * }
+ *
+ * map.pool(2, pipe([
+ *   delayedIdentity,
+ *   console.log,
+ * ]))(ids)
  * ```
  *
  * @TODO objectMapPool
@@ -410,20 +410,17 @@ map.pool = (concurrencyLimit, mapper) => function concurrentPoolMapping(value) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * var T any,
- *   index number,
- *   array Array<T>,
- *   indexedMapper (T, index, array)=>Promise|any
- *
- * map.withIndex(indexedMapper)(array) -> Promise|Array
+ * map.withIndex(
+ *   indexedMapperFunc (item any, index numberl, array Array)=>Promise|any,
+ * )(array Array) -> result Promise|Array
  * ```
  *
  * @description
  * `map` with an indexed mapper.
  *
  * ```javascript [playground]
- * const range = length => map.withIndex(
- *   (_, index) => index + 1)(Array(length))
+ * const range = length =>
+ *   map.withIndex((_, index) => index + 1)(Array(length))
  *
  * console.log(range(5)) // [1, 2, 3, 4, 5]
  * ```
@@ -432,6 +429,8 @@ map.pool = (concurrencyLimit, mapper) => function concurrentPoolMapping(value) {
  *
  * @related
  * map, filter.withIndex
+ *
+ * @DEPRECATED
  */
 map.withIndex = mapper => function mappingWithIndex(value) {
   if (isArray(value)) {
@@ -445,15 +444,14 @@ map.withIndex = mapper => function mappingWithIndex(value) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * var T any,
- *   object Object<T>,
- *   mapper T=>Promise|any
- *
- * map.own(mapper)(object) -> Promise|Object
+ * map.own(
+ *   mapperFunc (item any)=>Promise|any,
+ * )(object Object) -> result Promise|Object
  * ```
  *
  * @description
- * `map` over an object's own properties.
+ * Applies a mapper function concurrently to an object's own values, returning an object of results. Mapper may be asynchronous.
+ * Guards mapping by validating that each property is the object's own and not inherited from the prototype chain.
  *
  * ```javascript [playground]
  * const Person = function (name) {
@@ -472,6 +470,8 @@ map.withIndex = mapper => function mappingWithIndex(value) {
  *   map.own(square)(david)
  * ) // { name: NaN, a: 1, b: 4, c: 9 }
  * ```
+ *
+ * @DEPRECATED
  */
 map.own = mapper => function mappingOwnProperties(value) {
   if (isObject(value) && !isArray(value)) {
