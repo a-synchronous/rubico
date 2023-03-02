@@ -146,7 +146,7 @@ const _map = function (value, mapper) {
  * ```
  *
  * @description
- * Applies a synchronous or asynchronous mapper function to each item of a collection, returning the results in a new collection of the same type. If order is implied by the collection, it is maintained in the result. `map` accepts the following collections:
+ * Applies a synchronous or asynchronous mapper function concurrently to each item of a collection, returning the results in a new collection of the same type. If order is implied by the collection, it is maintained in the result. `map` accepts the following collections:
  *
  *  * `Array`
  *  * `Object`
