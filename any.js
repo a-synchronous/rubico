@@ -28,7 +28,7 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  * ) // true
  * ```
  *
- * The collection can be any iterable, async iterable, or values iterable collection. Below is an example of `any` accepting an async generator as the collection.
+ * The collection can be any iterable, async iterable, or object values iterable collection. Below is an example of `any` accepting an async generator as the collection.
  *
  * ```javascript [playground]
  * const toTodosUrl = id => 'https://jsonplaceholder.typicode.com/todos/' + id
