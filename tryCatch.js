@@ -9,6 +9,8 @@ const catcherApply = require('./_internal/catcherApply')
  * @synopsis
  * ```coffeescript [specscript]
  * tryCatch(tryer function, catcher function)(...args) -> Promise|any
+ *
+ * tryCatch(...args, tryer function, catcher function) -> Promise|any
  * ```
  *
  * @description
