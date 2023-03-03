@@ -9,20 +9,14 @@ const always = require('./_internal/always')
  * ```
  *
  * @description
- * Create a function that always returns a value.
+ * Creates a function from a value that always returns the provided value.
  *
  * ```javascript [playground]
  * const always5 = always(5)
  *
  * console.log(always5()) // 5
- *
- * console.log(
- *   fork({
- *     a: always(1),
- *     b: always(2),
- *     c: always(3),
- *   })(),
- * ) // { a: 1, b: 2, c: 3 }
+ * console.log(always5()) // 5
+ * console.log(always5()) // 5
  * ```
  */
 
