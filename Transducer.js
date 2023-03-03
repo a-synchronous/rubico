@@ -4,7 +4,15 @@
  * @description
  * Temporary repository of transducer functionality throughout rubico v1
  */
-const Transducer = function () {}
+const Transducer = {}
+
+/**
+ * @name Transducer.pipe
+ *
+ * @description
+ * Composes transducers
+ */
+Transducer.pipe = function () {}
 
 /**
  * @name Transducer.map
@@ -49,5 +57,25 @@ const Transducer = function () {}
  *
  */
 Transducer.map = function map() {}
+
+/**
+ * @name Transducer.filter
+ *
+ * @description
+ * A reducer in filterable position creates a filtering reducer - one that skips items of the reducer's reducing operation if they test falsy by the predicate. It is possible to use an asynchronous predicate when filtering a reducer, however the implementation of `reduce` must support asynchronous operations. This library provides such an implementation as `reduce`.
+ *
+ * ```javascript [playground]
+ * const isOdd = number => number % 2 == 1
+ *
+ * const concat = (array, item) => array.concat(item)
+ *
+ * const concatOddNumbers = filter(isOdd)(concat)
+ *
+ * console.log(
+ *   [1, 2, 3, 4, 5].reduce(concatOddNumbers, []),
+ * ) // [1, 3, 5]
+ * ```
+ */
+Transducer.filter = function filter() {}
 
 module.exports = Transducer
