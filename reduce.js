@@ -9,165 +9,159 @@ const genericReduce = require('./_internal/genericReduce')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * reduce(
- *   arrayReducer (result any, value any, index number, array Array)=>Promise|any,
- *   initialValue? (array=>Promise|any)|any,
- * )(array) -> Promise|result
+ * arrayReducer (result any, value any, index number, array Array)=>Promise|any
+ * initialValue function|any
  *
- * reduce(
- *   objectReducer (result any, value any, key string, object Object)=>Promise|any,
- *   initialValue? (object=>Promise|any)|any,
- * )(object) -> Promise|result
+ * reduce(arrayReducer, initialValue?)(array Array) -> result Promise|any
+ * reduce(array Array, arrayReducer, initialValue?) -> result Promise|any
  *
- * reduce(
- *   mapReducer (result any, value any, key any, map Map)=>Promise|any,
- *   initialValue? (map=>Promise|any)|any,
- * )(map) -> Promise|result
+ * objectReducer (result any, value any, key string, object Object)=>Promise|any
  *
- * Foldable = Iterable|AsyncIterable|{ reduce: (reducer, result?)=>any }
+ * reduce(objectReducer, initialValue?)(object Object) -> result Promise|any
+ * reduce(object Object, objectReducer, initialValue?) -> result Promise|any
  *
- * reduce(
- *   reducer (result any, value any)=>Promise|any,
- *   initialValue? ((foldable Foldable)=>Promise|any)|any,
- * )(foldable) -> Promise|result
+ * mapReducer (result any, value any, key any, map Map)=>Promise|any
  *
- * reduce(
- *   reducer (result any, value any)=>Promise|any,
- *   initialValue? (()=>Promise|any)|any,
- * )(generatorFunction) -> reducingGeneratorValuesFunction (...generatorFunctionArgs)=>Promise|any
+ * reduce(mapReducer, initialValue?)(m Map) -> result Promise|any
+ * reduce(m Map, mapReducer, initialValue?) -> result Promise|any
  *
- * reduce(
- *   reducer (result any, value any)=>Promise|any,
- *   initialValue? (()=>Promise|any)|any,
- * )(asyncGeneratorFunction) -> reducingAsyncGeneratorValuesFunction (...asyncGeneratorFunctionArgs)=>Promise|any
+ * reducer (result any, value any)=>Promise|any
  *
- * reduce(reducer, initialValue?)(...moreReducers) -> ...args=>Promise|any
+ * reduce(reducer, initialValue?)(iterator Iterator) -> result Promise|any
+ * reduce(iterator Iterator, reducer, initialValue?) -> result Promise|any
+ *
+ * reduce(reducer, initialValue?)(asyncIterator AsyncIterator)
+ *   -> result Promise|any
+ * reduce(asyncIterator AsyncIterator, reducer, initialValue?)
+ *   -> result Promise|any
  * ```
  *
  * @description
- * Execute a reducer for each item of a collection, returning a single output value.
+ * Transforms a collection based on a reducer function and optional initial value. In a reducing operation, the result is defined in the beginning as either the initial value if supplied or the first item of the collection. The reducing operation then iterates through the remaining items in the collection, executing the reducer at each iteration to return the result to be used in the next iteration. The final result is the result of the execution of the reducer at the last item of the iteration. `reduce` accepts the following collections:
+ *
+ *  * `Array`
+ *  * `Object`
+ *  * `Set`
+ *  * `Map`
+ *  * `Iterator`/`Generator`
+ *  * `AsyncIterator`/`AsyncGenerator`
+ *
+ * For arrays (type `Array`), `reduce` executes the reducer function for each item of the array in order, returning a new result at each execution to be used in the next execution.
  *
  * ```javascript [playground]
  * const max = (a, b) => a > b ? a : b
  *
  * console.log(
- *   reduce(max)([1, 3, 5, 4, 2]),
+ *   reduce([1, 3, 5, 4, 2], max)
+ * ) // 5
+ *
+ * console.log(
+ *   reduce(max)([1, 3, 5, 4, 2])
  * ) // 5
  * ```
  *
- * If an optional initialization parameter is supplied, the result starts as that parameter rather than the first item of the collection. For memory and performance, this library makes no assumptions about immutability. Handle references for this initial value with care, as they could be mutated.
+ * If an optional initial value is provided, the result starts as the provided initial value rather than the first item of the collection.
  *
  * ```javascript [playground]
  * const add = (a, b) => a + b
  *
- * console.log(
- *   reduce(add)([1, 2, 3, 4, 5], 0),
- * ) // 15
+ * console.log(reduce([1, 2, 3, 4, 5], add, 0)) // 15
+ * console.log(reduce(add, 0)([1, 2, 3, 4, 5])) // 15
  * ```
  *
- * If the initialization parameter is a function, it is treated as a resolver and called with the input arguments to resolve an initial value for the accumulator at execution time.
+ * If the initialization parameter is a function, it is treated as a resolver and called with the arguments to resolve the initial value.
  *
  * ```javascript [playground]
  * const concatSquares = (array, value) => array.concat(value ** 2)
  *
- * const initEmptyArray = () => []
+ * const contrivedInitializer = array => [`initial length ${array.length}`]
+ *
+ * const array = [1, 2, 3, 4, 5]
+ *
+ * console.log(reduce(concatSquares, contrivedInitializer)(array))
+ * // ['initial length 5', 1, 4, 9, 16, 25]
+ * console.log(reduce(array, concatSquares, contrivedInitializer))
+ * // ['initial length 5', 1, 4, 9, 16, 25]
+ * ```
+ *
+ * For objects (type `Object`), `reduce` executes the reducer function for each value of the object.
+ *
+ * ```javascript [playground]
+ * const add = (a, b) => a + b
+ *
+ * const obj = { a: 1, b: 2, c: 3, d: 4, e: 5 }
  *
  * console.log(
- *   reduce(concatSquares, initEmptyArray)([1, 2, 3, 4, 5]),
- * ) // [1, 4, 9, 16, 25]
- * ```
- *
- * Fully asynchronous reducing operations are possible with asynchronous reducers and asynchronous data streams.
- *
- * ```javascript [playground]
- * const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
- *
- * // asyncAppReducer(
- * //   state { todos: Array },
- * //   action { type: string, todoID: string },
- * // ) -> state
- * const asyncAppReducer = async function (state, action) {
- *   if (action.type == 'FETCH_TODO') {
- *     const todo = await fetch(
- *       'https://jsonplaceholder.typicode.com/todos/' + action.todoID,
- *     ).then(response => response.json())
- *     console.log('fetched', todo)
- *     state.todos.push(todo)
- *     return state
- *   }
- *   return state
- * }
- *
- * const asyncFetchActions = async function* (count) {
- *   let idCount = 0
- *   while (++idCount <= count) {
- *     await sleep(1000)
- *     yield { type: 'FETCH_TODO', todoID: idCount }
- *   }
- * }
- *
- * const state = { todos: [] }
- *
- * reduce(asyncAppReducer, state)(asyncFetchActions(5))
- *   .then(reducedState => console.log('finalState', reducedState))
- *
- * // fetched { userId: 1, id: 1, title: 'delectus aut autem', completed: false }
- * // fetched { userId: 1, id: 2, title: 'quis ut nam facilis...', completed: false }
- * // fetched { userId: 1, id: 3, title: 'fugiat veniam minus', completed: false }
- * // fetched { userId: 1, id: 4, title: 'et porro tempora', completed: true }
- * // fetched { userId: 1, id: 5, title: 'laboriosam mollitia...', completed: false }
- * // finalState {
- * //   todos: [
- * //     { userId: 1, id: 1, title: 'delectus aut autem', completed: false },
- * //     { userId: 1, id: 2, title: 'quis ut nam facilis...', completed: false },
- * //     { userId: 1, id: 3, title: 'fugiat veniam minus', completed: false },
- * //     { userId: 1, id: 4, title: 'et porro tempora', completed: true },
- * //     { userId: 1, id: 5, title: 'laboriosam mollitia...', completed: false },
- * //   ],
- * // }
- * ```
- *
- * If the first argument to a reducing function is a reducer, `reduce` concatenates any reducers in argument position onto the initial reducer, producing a combined reducer that performs a chained operation per each item in a reducing operation.
- *
- * ```javascript [playground]
- * const reducerA = (state, action) => {
- *   if (action.type == 'A') return { ...state, A: true }
- *   return state
- * }
- *
- * const reducerB = (state, action) => {
- *   if (action.type == 'B') return { ...state, B: true }
- *   return state
- * }
- *
- * const reducerC = (state, action) => {
- *   if (action.type == 'C') return { ...state, C: true }
- *   return state
- * }
- *
- * // state => state
- * const traceMiddleware = tap(
- *   (state, action) => console.log('state, action', state, action))
- *
- * const reducingABC = reduce(
- *   traceMiddleware, () => ({}))(reducerA, reducerB, reducerC)
- *
- * const actions = [{ type: 'A' }, { type: 'B' }, { type: 'C' }]
+ *   reduce(obj, add)
+ * ) // 15
  *
  * console.log(
- *   'final state:',
- *   reducingABC(actions),
- * ) // { A: true, B: true, C: true }
+ *   reduce(add)(obj)
+ * ) // 15
  * ```
  *
- * `reduce`, when passed a single non-function argument before the reducer function, treats that argument as the value to be reduced.
+ * For sets (type `Set`), `reduce` executes the reducer function for each item of the set.
  *
  * ```javascript [playground]
- * const numbers = [1, 2, 3, 4, 5]
+ * const add = (a, b) => a + b
  *
- * const sum = reduce(numbers, (a, b) => a + b)
+ * const set = new Set([1, 2, 3, 4, 5])
  *
- * assert.equal(sum, 15)
+ * console.log(
+ *   reduce(set, add)
+ * ) // 15
+ *
+ * console.log(
+ *   reduce(add)(set)
+ * ) // 15
+ * ```
+ *
+ * For maps (type `Map`), `reduce` executes the reducer function for each value of each entry of the map.
+ *
+ * ```javascript [playground]
+ * const add = (a, b) => a + b
+ *
+ * const m = new Map([['a', 1], ['b', 2], ['c', 3], ['d', 4], ['e', 5]])
+ *
+ * console.log(
+ *   reduce(m, add)
+ * ) // 15
+ *
+ * console.log(
+ *   reduce(add)(m)
+ * ) // 15
+ * ```
+ *
+ * For iterators (type `Iterator`) and generators (type `Generator`), `reduce` executes the reducer function for each value of the iterator/generator. The iterator/generator is consumed in the process.
+ *
+ * ```javascript [playground]
+ * const add = (a, b) => a + b
+ *
+ * const generate12345 = function* () {
+ *   yield 1; yield 2; yield 3; yield 4; yield 5
+ * }
+ *
+ * console.log(
+ *   reduce(generate12345(), add)
+ * ) // 15
+ *
+ * console.log(
+ *   reduce(add)(generate12345())
+ * ) // 15
+ * ```
+ *
+ * For asyncIterators (type `AsyncIterator`) and asyncGenerators (type `AsyncGenerator`), `reduce` executes the reducer function for each value of the asyncIterator/asyncGenerator. The asyncIterator/asyncGenerator is consumed in the process.
+ *
+ * ```javascript [playground]
+ * const asyncAdd = async (a, b) => a + b
+ *
+ * const asyncGenerate12345 = async function* () {
+ *   yield 1; yield 2; yield 3; yield 4; yield 5
+ * }
+ *
+ * reduce(asyncGenerate12345(), asyncAdd).then(console.log) // 15
+ *
+ * reduce(asyncAdd)(asyncGenerate12345()).then(console.log) // 15
  * ```
  *
  * @execution series
