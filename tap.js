@@ -15,7 +15,7 @@ const __ = require('./_internal/placeholder')
  * ```
  *
  * @description
- * Call a function with a value, returning the value. Promises created by the tapper are resolved before returning the value.
+ * Call a function with any number of arguments, returning the first argument. Promises created by the tapper are resolved before returning the value.
  *
  * ```javascript [playground]
  * const pipeline = pipe([
