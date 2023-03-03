@@ -24,15 +24,32 @@ const genericTransform = require('./_internal/genericTransform')
  *
  * transform(transducer, init?)(foldable) -> Promise|Semigroup
  *
- * transform(transducer, init?)(generatorFunction) -> ...args=>Promise|Semigroup
  *
- * transform(transducer, init?)(asyncGeneratorFunction) -> ...args=>Promise|Semigroup
+ * type Reducer = (result any, item any)=>(result any)
+ * type Transducer = Reducer=>Reducer
+ * type Semigroup = Array|String|Set|TypedArray|{ concat: function }|{ write: function }|Object
+ * type Foldable = Iterator|AsyncIterator|Object
  *
- * transform(transducer, init?)(...reducers) -> ...args=>Promise|Semigroup
+ * initialValue function|any
+ *
+ * transform(
+ *   transducer Transducer,
+ *   initialValue? Semigroup|((foldable Foldable)=>Promise|Semigroup),
+ * )(foldable Foldable) -> result Promise|Semigroup
  * ```
  *
  * @description
- * Reduce a value by transducer and concatenation, returning a semigroup of transduced items. The initial value may be a function, in which case it is treated as a resolver.
+ * Transforms a semigroup collection into any other semigroup collection. The type of transformation depends on the collection provided by the initial value. If the initial is a function it is used as a resolver for the provided collection. `transform` accepts semigroup collections, or collections that support a concatenation operation:
+ *
+ *  * `Array`; concatenation defined by `result.concat(values)`
+ *  * `string`; concatenation defined by `result + values`
+ *  * `Set`; concatenation defined by `result.add(...values)`
+ *  * `TypedArray`; concatenation defined by `result.set(prevResult); result.set(values, offset)`
+ *  * `{ concat: function }`; concatenation defined by `result.concat(values)`
+ *  * `{ write: function }`; concatenation defined by `result.write(item)`
+ *  * `Object`; concatenation defined by `({ ...result, ...values })`
+ *
+ * `transform` can transform any of the above collections into any of the other above collections.
  *
  * ```javascript [playground]
  * const square = number => number ** 2
@@ -44,29 +61,28 @@ const genericTransform = require('./_internal/genericTransform')
  *   map(square),
  * ])
  *
+ * // transform arrays into arrays
  * console.log(
- *   transform(squaredOdds, () => [])([1, 2, 3, 4, 5]),
+ *   transform(squaredOdds, [])([1, 2, 3, 4, 5])
  * ) // [1, 9, 25]
  *
+ * // transform arrays into strings
  * console.log(
- *   transform(squaredOdds, '')([1, 2, 3, 4, 5]),
+ *   transform(squaredOdds, '')([1, 2, 3, 4, 5])
  * ) // '1925'
  *
+ * // transform arrays into sets
  * console.log(
- *   transform(squaredOdds, () => new Uint8Array())([1, 2, 3, 4, 5]),
+ *   transform(squaredOdds, new Set())([1, 2, 3, 4, 5])
+ * ) // Set (3) { 1, 9, 25 }
+ *
+ * // transform arrays into typed arrays
+ * console.log(
+ *   transform(squaredOdds, new Uint8Array())([1, 2, 3, 4, 5]),
  * ) // Uint8Array(3) [ 1, 9, 25 ]
  * ```
  *
- * A `Semigroup` is any type with some notion of concatenation. This could possibly manifest in a `.concat` method.
- *  * `Array` - `result.concat(values)`
- *  * `string` - `result + values`
- *  * `Set` - `result.add(...values)`
- *  * `TypedArray` - `result.set(prevResult); result.set(values, offset)`
- *  * `{ concat: function }` - `result.concat(values)`
- *  * `{ write: function }` - essentially `item.pipe(result)` or `result.write(item)`
- *  * `Object` - `({ ...result, ...values })`
- *
- * Here is a simple `Semigroup` as an object that implements `.concat`.
+ * `transform` arrays into objects that implement `.concat`.
  *
  * ```javascript [playground]
  * const square = number => number ** 2
@@ -86,7 +102,7 @@ const genericTransform = require('./_internal/genericTransform')
  * // 25
  * ```
  *
- * Here is a transformation of an async generator to a Node.js writable stream, `process.stdout`.
+ * `transform` an async generator into `process.stdout`, a Node.js writable stream that implements `.write`.
  *
  * ```javascript [node]
  * // this example is duplicated in rubico/examples/transformStreamRandomInts.js
@@ -108,44 +124,6 @@ const genericTransform = require('./_internal/genericTransform')
  * transform(
  *   map(pipe([square, toString])), process.stdout,
  * )(streamRandomInts()) // 9216576529289484980147613249169774446246768649...
- * ```
- *
- * `transform`, like `reduce`, supports reducer combination. This variant of state management automatically assigns (`Object.assign`) pipeline objects into the aggregate state object.
- *
- * ```javascript [playground]
- * const reducerA = async (state, action) => {
- *   if (action.type == 'A') return { ...state, A: true }
- *   return state
- * }
- *
- * const reducerB = async (state, action) => {
- *   if (action.type == 'B') return { ...state, B: true }
- *   return state
- * }
- *
- * const reducerC = async (state, action) => {
- *   if (action.type == 'C') return { ...state, C: true }
- *   return state
- * }
- *
- * const logAction = function (action) {
- *   console.log('action', action)
- *   return action
- * }
- *
- * const reducingABC = transform(
- *   map(logAction), // transducer logger middleware
- *   () => ({}), // initial state resolver
- * )(reducerA, reducerB, reducerC)
- *
- * const actions = [{ type: 'A' }, { type: 'B' }, { type: 'C' }]
- *
- * reducingABC(actions).then(
- *   state => console.log('state', state))
- * // action { type: 'A' }
- * // action { type: 'B' }
- * // action { type: 'C' }
- * // state { A: true, B: true, C: true }
  * ```
  *
  * @execution series
