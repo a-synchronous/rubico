@@ -164,8 +164,13 @@ const _map = function (value, mapper) {
  *
  * const array = [1, 2, 3, 4, 5]
  *
- * console.log(map(array, square)) // [1, 4, 9, 16, 25]
- * console.log(map(square)(array)) // [1, 4, 9, 16, 25]
+ * console.log(
+ *   map(array, square)
+ * ) // [1, 4, 9, 16, 25]
+ *
+ * console.log(
+ *   map(square)(array)
+ * ) // [1, 4, 9, 16, 25]
  * ```
  *
  * With objects (type `Object`), `map` applies the mapper function to each value of the object, returning the transformed results as values in a new object ordered by the keys of the original object
@@ -175,8 +180,13 @@ const _map = function (value, mapper) {
  *
  * const obj = { a: 1, b: 2, c: 3, d: 4, e: 5 }
  *
- * console.log(map(square)(obj)) // { a: 1, b: 4, c: 9, d: 16, e: 25 }
- * console.log(map(obj, square)) // { a: 1, b: 4, c: 9, d: 16, e: 25 }
+ * console.log(
+ *   map(square)(obj)
+ * ) // { a: 1, b: 4, c: 9, d: 16, e: 25 }
+ *
+ * console.log(
+ *   map(obj, square)
+ * ) // { a: 1, b: 4, c: 9, d: 16, e: 25 }
  * ```
  *
  * With sets (type `Set`), `map` applies the mapper function to each value of the set, returning the transformed results unordered in a new set.
@@ -186,8 +196,13 @@ const _map = function (value, mapper) {
  *
  * const set = new Set([1, 2, 3, 4, 5])
  *
- * console.log(map(set, square)) // [1, 4, 9, 16, 25]
- * console.log(map(square)(set)) // [1, 4, 9, 16, 25]
+ * console.log(
+ *   map(set, square)
+ * ) // [1, 4, 9, 16, 25]
+ *
+ * console.log(
+ *   map(square)(set)
+ * ) // [1, 4, 9, 16, 25]
  * ```
  *
  * With maps (type `Map`), `map` applies the mapper function to each value of the map, returning the results at the same keys in a new map. The entries of the resulting map are in the same order as those of the original map
@@ -197,8 +212,13 @@ const _map = function (value, mapper) {
  *
  * const m = new Map([['a', 1], ['b', 2], ['c', 3], ['d', 4], ['e', 5]])
  *
- * console.log(map(square)(m)) // Map { 'a' => 1, 'b' => 4, 'c' => 9, 'd' => 16, 'e' => 25 }
- * console.log(map(m, square)) // Map { 'a' => 1, 'b' => 4, 'c' => 9, 'd' => 16, 'e' => 25 }
+ * console.log(
+ *   map(square)(m)
+ * ) // Map { 'a' => 1, 'b' => 4, 'c' => 9, 'd' => 16, 'e' => 25 }
+ *
+ * console.log(
+ *   map(m, square)
+ * ) // Map { 'a' => 1, 'b' => 4, 'c' => 9, 'd' => 16, 'e' => 25 }
  * ```
  *
  * With iterators (type `Iterator`) or generators (type `Generator`), `map` applies the mapper function lazily to each value of the iterator/generator, creating a new iterator with transformed iterations.
