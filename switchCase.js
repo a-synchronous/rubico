@@ -15,7 +15,7 @@ const nonfunctionsConditional = require('./_internal/nonfunctionsConditional')
  * ```
  *
  * @description
- * Conditional operator higher order function that accepts an array of conditional functions that specifies cases as pairings of `predicate` and `resolver` functions with the exception of the last, default resolver. All functions are provided with the same arguments and executed in series.
+ * Accepts an array of conditional functions that specifies cases as pairings of `predicate` and `resolver` functions with the exception of the last, default resolver. All functions are provided with the same arguments and executed in series.
  *
  * ```javascript [playground]
  * const fruitIsYellow = fruit => fruit.color == 'yellow'
