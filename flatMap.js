@@ -21,60 +21,38 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * Stream<T> = { read: ()=>T, write: T=>() }
- * Monad<T> = Array<T>|String<T>|Set<T>
- *   |TypedArray<T>|Stream<T>|Iterator<T>|AsyncIterator<T>
- *   |{ chain: T=>Monad<T> }|{ flatMap: T=>Monad<T> }|Object<T>
- * Reducer<T> = (any, T)=>Promise|any
- * Foldable<T> = Iterable<T>|AsyncIterable<T>|{ reduce: Reducer<T>=>any }|Object<T>
+ * type Monad = Array|String|Set|Iterator|AsyncIterator
+ * type Foldable = Iterable|AsyncIterable|Object
  *
- * var T any,
- *   flatMapper T=>Promise|Monad<T>|Foldable<T>|T,
- *   monad Monad<T>,
- *   args ...any,
- *   generatorFunction ...args=>Generator<Promise|T>,
- *   asyncGeneratorFunction ...args=>AsyncGenerator<T>,
- *   reducer Reducer<T>
- *
- * flatMap(flatMapper)(monad) -> Monad<T>
- *
- * flatMap(flatMapper)(generatorFunction) -> ...args=>Generator<T>
- *
- * flatMap(flatMapper)(asyncGeneratorFunction) -> ...args=>AsyncGenerator<T>
- *
- * flatMap(flatMapper)(reducer) -> Reducer<T>
+ * flatMap(
+ *   flatMapper (item any)=>Promise|Foldable,
+ * )(value Monad) -> result Promise|Monad
  * ```
  *
  * @description
- * Apply a flatMapper concurrently to each item of a monad, flattening the items of each execution into a new monad that is the same type as the original.
+ * Applies a synchronous or asynchronous flatMapper function concurrently to each item of a collection, creating a new collection of the same type. A flatMapping operation iterates through each item of a collection and applies the flatMapper function to each item, flattening the result of the execution into the result collection. The result of an individual execution can be:
  *
- * The following list outlines high level behavior for various input monads.
+ *  * `Iterable` - the execution result is iterated and each item is added to the result collection
+ *  * `AsyncIterable` - the execution result is asynchronously iterated and each item is added to the result collection
+ *  * `Object` - the execution result values are added to the result collection
  *
- *  * `Array` - Apply a flatMapper to each item, pushing (`.push`) the items of each execution into a new array
- *  * `String` - Apply a flatMapper to each character, adding (`+`) the items of each execution into a new string
- *  * `Set` - Apply a flatMapper to each item, adding (`.add`) the items of each execution into a new set
- *  * `TypedArray` - Apply a flatMapper to each byte, setting (`.set`) the items of each execution into a new typed array
- *  * `Buffer (Node.js)` - Apply a flatMapper to each byte, setting (`.set`) the items of each execution into a new Node.js Buffer
- *  * `stream.Duplex (Node.js)` - Apply a flatMapper to each item, writing (`.write`) the items of each execution into a new duplex stream
- *  * `Object` - Apply a flatMapper to each value, assigning (`Object.assign`) the items of each execution into a new object
- *  * `Reducer` - Apply a flatMapper to each item of a reducer's reducing operation, calling each item of each execution with the reducer.
- *  * `{ chain: function }` - Call `.chain` directly with flatMapper
- *  * `{ flatMap: function }` - Call `.flatMap` directly with flatMapper
+ * The following example demonstrates various execution results being flattened into the same array.
  *
  * ```javascript [playground]
- * const duplicate = number => [number, number]
+ * const identity = value => value
  *
- * console.log(
- *   flatMap(duplicate)([1, 2, 3, 4, 5]),
- * ) // [1, 1, 2, 2, 3, 3, 4, 4, 5, 5]
- *
- * const asyncDuplicate = async number => [number, number]
- *
- * flatMap(asyncDuplicate)( // concurrent execution
- *   [1, 2, 3, 4, 5]).then(console.log) // [1, 1, 2, 2, 3, 3, 4, 4, 5, 5]
+ * flatMap(identity)([
+ *   [1, 1], // array
+ *   new Set([2, 2]), // set
+ *   (function* () { yield 3; yield 3 })(), // generator
+ *   (async function* () { yield 7; yield 7 })(), // asyncGenerator
+ *   { a: 5, b: 5 }, // object
+ *   new Uint8Array([8]), // typedArray
+ * ]).then(console.log)
+ * // [1, 1, 2, 3, 3, 5, 5, 8, 7, 7]
  * ```
  *
- * A flatMapping operation concatenates onto the result synchronous values and muxes any asynchronous values. Muxing, or asynchronously "mixing", is the process of combining multiple asynchronous sources into one source, with order determined by the asynchronous resolution of the individual items.
+ * A flatMapping operation concatenates onto the result collection synchronous values and muxes any asynchronous values. Muxing, or asynchronously "mixing", is the process of combining multiple asynchronous sources into one source, with order determined by the asynchronous resolution of the individual items.
  *
  * ```javascript [playground]
  * const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
@@ -95,81 +73,49 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  *   yield message
  * }
  *
- * flatMap(asyncRepeat3)( // async is muxed
- *   ['foo', 'bar', 'baz']).then(console.log)
+ * // async is muxed
+ * flatMap(asyncRepeat3)(['foo', 'bar', 'baz']).then(console.log)
  * // ['foo', 'bar', 'baz', 'foo', 'bar', 'baz', 'foo', 'bar', 'baz']
  * ```
  *
- * In general, flattening is by order of concatenation with the exception of async iterables, which are muxed. Below, the two `4`s are asynchronous and are pushed onto the result after all the synchronous values have been flattened.
+ * For arrays (type `Array`), `flatMap` applies the flatMapper function to each item, pushing (`.push`) the items of each execution into a new array.
  *
  * ```javascript [playground]
- * const identity = value => value
- *
- * flatMap(identity)([
- *   [1, 1],
- *   new Set([2, 2]),
- *   (function* () { yield 3; yield 3 })(),
- *   (async function* () { yield 4; yield 4 })(),
- *   { a: 5, b: 5 },
- *   6,
- *   Promise.resolve(7),
- *   new Uint8Array([8]),
- * ]).then(console.log)
- * // [1, 1, 2, 3, 3, 5, 5, 6, 7, 8, 4, 4]
- * ```
- *
- * Purer functional programming is possible with `flatMap` and explicit monads. An explicit monad is any object that defines a method `.chain` or `.flatMap`.
- *
- * ```javascript [playground]
- * const Maybe = value => ({
- *   chain(flatMapper) {
- *     return value == null ? value : flatMapper(value)
- *   },
- * })
- *
- * const userbase = new Map([
- *   ['1', { _id: '1', name: 'George' }],
- *   ['2', { _id: '2', name: 'Jane' }],
- *   ['3', { _id: '3', name: 'Jim' }],
- * ])
- *
- * const getUserByID = async userID => userbase.get(userID)
- *
- * const logUserByID = pipe([
- *   getUserByID,
- *   Maybe,
- *   flatMap(console.log),
- * ])
- *
- * logUserByID('5')
- *
- * logUserByID('1') // { _id: '1', name: 'George' }
- * ```
- *
- * Additionally, `flatMap` is a powerful option when working with transducers. A flatMapping transducer applies a flatMapper to each item of a reducer's reducing operation, calling each item of each execution with the reducer.
- *
- * ```javascript [playground]
- * const isOdd = number => number % 2 == 1
- *
- * const powers = number => [number, number ** 2, number ** 3]
- *
- * const oddPowers = pipe([
- *   filter(isOdd),
- *   flatMap(powers),
- * ])
- *
- * const arrayConcat = (array, value) => array.concat(value)
+ * const duplicate = value => [value, value]
  *
  * console.log(
- *   reduce(oddPowers(arrayConcat), [])([1, 2, 3, 4, 5]),
- * ) // [1, 1, 1, 3, 9, 27, 5, 25, 125]
+ *   flatMap(duplicate)([1, 2, 3, 4, 5])
+ * ) // [1, 1, 2, 2, 3, 3, 4, 4, 5, 5]
  * ```
  *
- * In the case above, each item of the array of numbers returned by `powers` is called with the reducer `arrayConcat` for flattening into the final result.
+ * For strings (type `String`), `flatMap` applies the flatMapper function to each character, adding (`+`) the items of each execution into a new string
+ *
+ * ```javascript [playground]
+ * const duplicate = value => [value, value]
+ *
+ * console.log(
+ *   flatMap(duplicate)('12345')
+ * ) // 1122334455
+ * ```
+ *
+ * For sets (type `Set`), `flatMap` applies the flatMapper function to each item, adding (`.add`) the items of each execution into a new set
+ *
+ * ```javascript [playground]
+ * const pairPlus100 = value => [value, value + 100]
+ *
+ * console.log(
+ *   flatMap(pairPlus100)(new Set([1, 2, 3, 4, 5]))
+ * ) // Set(10) { 1, 101, 2, 102, 3, 103, 4, 104, 5, 105 }
+ * ```
  *
  * @execution concurrent
  *
  * @transducing
+ *
+ * @archive
+ *  * For typed arrays (type [`TypedArray`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray#typedarray_objects)) and Node.js buffers (type [`Buffer`](https://nodejs.org/api/buffer.html)), `flatMap` applies a flatMapper function to each value of the typed array/buffer, joining the result of each execution with `.set` into the resulting typed array
+ *
+ *  * For Node.js duplex streams (type [Stream](https://nodejs.org/api/stream.html#class-streamduplex)), `flatMap` applies a flatMapper function to each item of the stream, writing (`.write`) each item of each execution into the duplex stream
  */
 const flatMap = flatMapper => function flatMapping(value) {
   if (isArray(value)) {
