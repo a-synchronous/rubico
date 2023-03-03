@@ -78,4 +78,36 @@ Transducer.map = function map() {}
  */
 Transducer.filter = function filter() {}
 
+/**
+ * @name Transducer.flatMap
+ *
+ * @synopsis
+ * ```coffeescript [specscript]
+ * flatMap(flatMapper)(reducer) -> Reducer<T>
+ * ```
+ *
+ * @description
+ * Additionally, `flatMap` is a powerful option when working with transducers. A flatMapping transducer applies a flatMapper to each item of a reducer's reducing operation, calling each item of each execution with the reducer.
+ *
+ * ```javascript [playground]
+ * const isOdd = number => number % 2 == 1
+ *
+ * const powers = number => [number, number ** 2, number ** 3]
+ *
+ * const oddPowers = pipe([
+ *   filter(isOdd),
+ *   flatMap(powers),
+ * ])
+ *
+ * const arrayConcat = (array, value) => array.concat(value)
+ *
+ * console.log(
+ *   reduce(oddPowers(arrayConcat), [])([1, 2, 3, 4, 5]),
+ * ) // [1, 1, 1, 3, 9, 27, 5, 25, 125]
+ * ```
+ *
+ * In the case above, each item of the array of numbers returned by `powers` is called with the reducer `arrayConcat` for flattening into the final result.
+ */
+Transducer.flatMap = function flatMap() {}
+
 module.exports = Transducer
