@@ -8,33 +8,16 @@ const genericTransform = require('./_internal/genericTransform')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * Reducer<T> = (any, T)=>Promise|any
- * Semigroup<T> = Array<T>|String<T>|Set<T>|TypedArray<T>
- *   |{ concat: Reducer<T> }|{ write: Reducer<T> }|Object<T>
- * Foldable<T> = Iterable<T>|AsyncIterable<T>|{ reduce: Reducer<T>=>any }|Object<T>
- *
- * var T any,
- *   args ...any,
- *   transducer Reducer=>Reducer,
- *   init (...args=>Promise|Semigroup<T>)|Semigroup<T>,
- *   foldable Foldable<T>,
- *   generatorFunction ...args=>Generator<T>,
- *   asyncGeneratorFunction ...args=>AsyncGenerator<T>,
- *   reducers ...Reducer<T>
- *
- * transform(transducer, init?)(foldable) -> Promise|Semigroup
- *
- *
  * type Reducer = (result any, item any)=>(result any)
  * type Transducer = Reducer=>Reducer
  * type Semigroup = Array|String|Set|TypedArray|{ concat: function }|{ write: function }|Object
  * type Foldable = Iterator|AsyncIterator|Object
  *
- * initialValue function|any
+ * initialValue Semigroup|((foldable Foldable)=>Promise|Semigroup)
  *
  * transform(
  *   transducer Transducer,
- *   initialValue? Semigroup|((foldable Foldable)=>Promise|Semigroup),
+ *   initialValue?,
  * )(foldable Foldable) -> result Promise|Semigroup
  * ```
  *
