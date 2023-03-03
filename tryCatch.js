@@ -30,11 +30,8 @@ const catcherApply = require('./_internal/catcherApply')
  * })
  *
  * errorHandler(2) // did not throw for 2
- *
  * errorHandler(3) // caught error from number 3
  *                 // Error: 3 is odd
- *                 //     at throwsIfOdd (...)
- *                 //     ...
  *
  * ```
  *
