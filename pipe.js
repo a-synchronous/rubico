@@ -15,7 +15,7 @@ const isAsyncGeneratorFunction = require('./_internal/isAsyncGeneratorFunction')
  * ```
  *
  * @description
- * A higher order function that creates a function pipeline with an array of functions where each function passes its return value as a single argument to the next function until all functions have executed. The result of a pipeline execution is the return of its last function. If any function of the pipeline is asynchronous, the result of the execution is a Promise.
+ * Creates a function pipeline with an array of functions where each function passes its return value as a single argument to the next function until all functions have executed. The result of a pipeline execution is the return of its last function. If any function of the pipeline is asynchronous, the result of the execution is a Promise.
  *
  * ```javascript [playground]
  * const syncAdd123 = pipe([
