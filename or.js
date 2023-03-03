@@ -69,13 +69,27 @@ const asyncAreAnyPredicatesTruthy = async function (predicates, point, index) {
  *
  * @synopsis
  * ```coffeescript [specscript]
+ * or(values Array<boolean>) -> result boolean
+ *
  * or(
- *   predicates Array<predicate function|nonfunction>,
- * )(point any) -> Promise|boolean
+ *   predicatesOrValues Array<function|boolean>
+ * )(value any) -> result Promise|boolean
  * ```
  *
  * @description
- * Test an array of predicates serially against a single input, returning true if any of them test truthy.
+ * Tests an array of boolean values, returning true if any boolean values are truthy.
+ *
+ * ```javascript [playground]
+ * const oneIsLessThanZero = 1 < 0
+ * const oneIsGreaterThanTwo = 1 > 2
+ * const threeIsNotEqualToThree = 3 !== 3
+ *
+ * console.log(
+ *   or([oneIsLessThanZero, oneIsGreaterThanTwo, threeIsNotEqualToThree]),
+ * ) // false
+ * ```
+ *
+ * If any values in the array are synchronous or asynchronous predicate functions, `or` takes another argument to test concurrently against the predicate functions, returning true if any array values or resolved values from the predicates are truthy.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -84,14 +98,6 @@ const asyncAreAnyPredicatesTruthy = async function (predicates, point, index) {
  *
  * console.log(
  *   or([isOdd, isEven])(0),
- * ) // true
- * ```
- *
- * `or` behaves eagerly if provided only nonfunction values
- *
- * ```javascript [playground]
- * console.log(
- *   or([false, false, true]),
  * ) // true
  * ```
  *
