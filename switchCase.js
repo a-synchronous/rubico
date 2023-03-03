@@ -7,7 +7,11 @@ const nonfunctionsConditional = require('./_internal/nonfunctionsConditional')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * switchCase(conditionalFuncs Array<function>)(...args) -> Promise|any
+ * switchCase(conditionalValues Array<boolean|any>) -> Promise|any
+ *
+ * switchCase(
+ *   conditionalFuncsOrValues Array<function|boolean|any>
+ * )(...args) -> Promise|any
  * ```
  *
  * @description
@@ -29,7 +33,7 @@ const nonfunctionsConditional = require('./_internal/nonfunctionsConditional')
  * // apple is probably not a banana
  * ```
  *
- * For convenience, any function can be replaced with a nonfunction value (object or primitive value) in which case the value is treated as an already resolved value.
+ * Any function can be replaced with a nonfunction (object or primitive) value so that the value is treated as an already resolved value.
  *
  * ```javascript [playground]
  * switchCase([
@@ -39,6 +43,16 @@ const nonfunctionsConditional = require('./_internal/nonfunctionsConditional')
  *   'something',
  *   'default',
  * ])(false).then(console.log) // default
+ * ```
+ *
+ * If every item in the conditional array is a nonfunction value, `switchCase` executes eagerly and behaves as the [Conditional (ternary) operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Conditional_Operator).
+ *
+ * ```javascript [playground]
+ * const age = 26
+ *
+ * const myDrink = switchCase([age >= 21, 'Beer', 'Juice'])
+ *
+ * console.log(myDrink) // Beer
  * ```
  *
  * @execution series
