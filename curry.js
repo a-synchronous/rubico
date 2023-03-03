@@ -5,15 +5,18 @@ const curryArity = require('./_internal/curryArity')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * __ = Symbol(placeholder)
+ * type __ = Symbol(placeholder)
+ * type ArgsWithPlaceholder = Array<__|any>
  *
- * var func function,
- *   args ...(__|any),
- *   moreArgs ...(__|any)
+ * args ArgsWithPlaceholder
+ * moreArgs ArgsWithPlaceholder
  *
- * curry(func, ...args) -> curried function|any
+ * curry(
+ *   func function,
+ *   ...args
+ * ) -> curriedFuncOrResult function|any
  *
- * curry(func, ...args)(...moreArgs) -> curried function|any
+ * curriedFuncOrResult(...moreArgs) -> anotherCurriedFuncOrResult function|any
  * ```
  *
  * @description
@@ -40,18 +43,23 @@ const curry = (func, ...args) => curryArity(func.length, func, args)
  *
  * @synopsis
  * ```coffeescript [specscript]
- * __ = Symbol(placeholder)
+ * type __ = Symbol(placeholder)
+ * type ArgsWithPlaceholder = Array<__|any>
  *
- * var arity number,
+ * args ArgsWithPlaceholder
+ * moreArgs ArgsWithPlaceholder
+ *
+ * curry.arity(
+ *   arity number,
  *   func function,
- *   args Array<__|any>,
- *   curried function
+ *   ...args
+ * ) -> curriedFuncOrResult function|any
  *
- * curry.arity(arity, func, ...args) -> curried|any
+ * curriedFuncOrResult(...moreArgs) -> anotherCurriedFuncOrResult function|any
  * ```
  *
  * @description
- * `curry` with specified arity as the first parameter. Useful for locking down variadic functions.
+ * `curry` with specified arity (number of arguments taken by the function) as the first parameter.
  *
  * ```javascript [playground]
  * const add = (a, b, c = 0) => a + b + c
