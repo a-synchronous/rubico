@@ -30,7 +30,7 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  * ```
  *
  * @description
- * Applies a synchronous or asynchronous flatMapper function concurrently to each item of a collection, creating a new collection of the same type. A flatMapping operation iterates through each item of a collection and applies the flatMapper function to each item, flattening the result of the execution into the result collection. The result of an individual execution can be:
+ * Applies a synchronous or asynchronous flatMapper function concurrently to each item of a collection, creating a new collection of the same type. A flatMapping operation iterates through each item of a collection and applies the flatMapper function to each item, flattening the result of the execution into the result collection. The result of an individual execution can be any iterable, async iterable, or object values iterable collection.
  *
  *  * `Iterable` - the execution result is iterated and each item is added to the result collection
  *  * `AsyncIterable` - the execution result is asynchronously iterated and each item is added to the result collection
