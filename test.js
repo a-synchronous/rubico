@@ -1656,8 +1656,12 @@ then(() => {
   describe('reduce', () => {
     it('eager', async () => {
       const numbers = [1, 2, 3, 4, 5]
-      const sum = reduce(numbers, (a, b) => a + b)
-      assert.equal(sum, 15)
+      const sum1 = reduce(numbers, (a, b) => a + b)
+      const sum2 = reduce(numbers, (a, b) => a + b, 0)
+      const sum3 = reduce(numbers, (a, b) => a + b, () => 0)
+      assert.equal(sum1, 15)
+      assert.equal(sum2, 15)
+      assert.equal(sum3, 15)
     })
 
     describe(`
