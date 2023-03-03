@@ -11,7 +11,7 @@ const genericTransform = require('./_internal/genericTransform')
  * type Reducer = (result any, item any)=>(result any)
  * type Transducer = Reducer=>Reducer
  * type Semigroup = Array|String|Set|TypedArray|{ concat: function }|{ write: function }|Object
- * type Foldable = Iterator|AsyncIterator|Object
+ * type Foldable = Iterable|AsyncIterable|Object
  *
  * initialValue Semigroup|((foldable Foldable)=>Promise|Semigroup)
  *
