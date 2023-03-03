@@ -1,5 +1,5 @@
 /**
- * rubico v1.9.3
+ * rubico v1.9.6
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2021 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -1466,10 +1466,15 @@ const reduce = function (...args) {
   if (typeof args[0] != 'function') {
     const reducer = args[1]
     const initialValue = args[2]
+    if (typeof initialValue == 'function') {
+      return genericReduce([args[0]], reducer, initialValue(args[0]))
+    }
     return genericReduce([args[0]], reducer, initialValue)
   }
+
   const reducer = args[0]
   const initialValue = args[1]
+
   if (typeof initialValue == 'function') {
     return function reducing(...args) {
       const result = initialValue(...args)
