@@ -12,15 +12,9 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * Reducer<T> = (any, T)=>Promise|any
- * Foldable<T> = Iterable<T>|AsyncIterable<T>
- *   |{ reduce: Reducer<T>=>any }|Object<T>
+ * type Foldable = Iterable|AsyncIterable|Object
  *
- * var T any,
- *   predicate T=>Promise|boolean,
- *   foldable Foldable<T>
- *
- * all(predicate)(foldable) -> Promise|boolean
+ * all(predicate function)(collection Foldable) -> result Promise|boolean
  * ```
  *
  * @description
@@ -38,7 +32,7 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  * ) // true
  * ```
  *
- * The value may be an asynchronous stream.
+ * The collection can be any iterable, async iterable, or object values iterable collection. Below is an example of `all` accepting an async generator as the collection.
  *
  * ```javascript [playground]
  * const asyncNumbers = async function* () {
