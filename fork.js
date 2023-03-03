@@ -23,7 +23,10 @@ const funcAllSeries = require('./_internal/funcAllSeries')
  *   name => `Hello ${name}`,
  * ])
  *
- * createArrayOfGreetingsFor('Fred') // ['Hi Fred', 'Hey Fred', 'Hello Fred']
+ * const arrayOfGreetingsForFred = createArrayOfGreetingsFor('Fred')
+ *
+ * console.log(arrayOfGreetingsForFred)
+ * // ['Hi Fred', 'Hey Fred', 'Hello Fred']
  *
  * const createObjectOfGreetingsFor = fork({
  *   hi: name => `Hi ${name}`,
@@ -31,7 +34,9 @@ const funcAllSeries = require('./_internal/funcAllSeries')
  *   hello: name => `Hello ${name}`,
  * })
  *
- * createObjectOfGreetingsFor('Jane')
+ * const objectOfGreetingsForJane = createObjectOfGreetingsFor('Jane')
+ *
+ * console.log(objectOfGreetingsForJane)
  * // { hi: 'Hi Jane', hey: 'Hey Jane', hello: 'Hello Jane' }
  * ```
  *
