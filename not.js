@@ -8,14 +8,13 @@ const _not = value => !value
  *
  * @synopsis
  * ```coffeescript [specscript]
- * var args ...any,
- *   predicate ...args=>Promise|boolean
+ * not(value boolean) -> negated boolean
  *
- * not(predicate)(...args) -> boolean
+ * not(predicate function)(...args) -> negatedPredicateResult boolean
  * ```
  *
  * @description
- * Negate a value (`!`)
+ * Negate a value like the [logical NOT (`!`)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Logical_NOT) operator.
  *
  * ```javascript [playground]
  * const myObj = { a: 1 }
@@ -24,7 +23,7 @@ const _not = value => !value
  * console.log(not('b' in myObj)) // true
  * ```
  *
- * If passed a function predicate, `not` returns a logically inverted predicate that returns true everywhere the original predicate would have returned false and vice versa.
+ * If provided a predicate function, `not` returns a logically inverted predicate that returns true everywhere the original predicate would have returned false.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
