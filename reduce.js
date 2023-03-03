@@ -9,23 +9,23 @@ const genericReduce = require('./_internal/genericReduce')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * arrayReducer (result any, value any, index number, array Array)=>Promise|any
+ * arrayReducer (result any, value any, index number, array Array)=>(result Promise|any)
  * initialValue function|any
  *
  * reduce(arrayReducer, initialValue?)(array Array) -> result Promise|any
  * reduce(array Array, arrayReducer, initialValue?) -> result Promise|any
  *
- * objectReducer (result any, value any, key string, object Object)=>Promise|any
+ * objectReducer (result any, value any, key string, object Object)=>(result Promise|any)
  *
  * reduce(objectReducer, initialValue?)(object Object) -> result Promise|any
  * reduce(object Object, objectReducer, initialValue?) -> result Promise|any
  *
- * mapReducer (result any, value any, key any, map Map)=>Promise|any
+ * mapReducer (result any, value any, key any, map Map)=>(result Promise|any)
  *
  * reduce(mapReducer, initialValue?)(m Map) -> result Promise|any
  * reduce(m Map, mapReducer, initialValue?) -> result Promise|any
  *
- * reducer (result any, value any)=>Promise|any
+ * reducer (result any, value any)=>(result Promise|any)
  *
  * reduce(reducer, initialValue?)(iterator Iterator) -> result Promise|any
  * reduce(iterator Iterator, reducer, initialValue?) -> result Promise|any
