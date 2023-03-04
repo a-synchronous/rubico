@@ -14,7 +14,7 @@ const catcherApply = require('./_internal/catcherApply')
  * ```
  *
  * @description
- * A higher order function that handles errors with a `tryer` and a `catcher` function. Calls the `tryer` function with the provided arguments and catches any errors thrown by the `tryer` function with a `catcher` function. If the `tryer` function is asynchronous (returns a Promise), the catcher will execute with the value of the rejected promise. The `catcher` function is called with the error and all arguments supplied to the `tryer` function.
+ * Handles errors with a `tryer` and a `catcher` function. Calls the `tryer` function with the provided arguments and catches any errors thrown by the `tryer` function with the `catcher` function. If the `tryer` function is asynchronous and returns a rejected promise, the `catcher` function will execute with the value of the rejected promise. The `catcher` function is called with the error and all arguments supplied to the `tryer` function.
  *
  * ```javascript [playground]
  * const throwsIfOdd = number => {
