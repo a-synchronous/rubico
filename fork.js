@@ -14,7 +14,7 @@ const funcAllSeries = require('./_internal/funcAllSeries')
  * ```
  *
  * @description
- * A higher order function that accepts either an array of functions or an object of functions as the values. Calls each function in parallel with the provided arguments.
+ * Accepts either an array of functions or an object of functions as the values. Calls each function of the provided array or object in parallel with the provided arguments.
  *
  * ```javascript [playground]
  * const createArrayOfGreetingsFor = fork([
