@@ -14,7 +14,7 @@ const funcAllSeries = require('./_internal/funcAllSeries')
  * ```
  *
  * @description
- * Accepts either an array of functions or an object of functions as the values. Calls each function of the provided array or object in parallel with the provided arguments.
+ * Function executor. Accepts either an array of functions or an object of functions as the values. Calls each function of the provided array or object in parallel with the provided arguments. Returns either an array or object of the results of the function executions.
  *
  * ```javascript [playground]
  * const createArrayOfGreetingsFor = fork([
