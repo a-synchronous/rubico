@@ -15,7 +15,7 @@ const nonfunctionsConditional = require('./_internal/nonfunctionsConditional')
  * ```
  *
  * @description
- * Accepts an array of conditional functions that specifies cases as pairings of `predicate` and `resolver` functions with the exception of the last, default resolver. All functions are provided with the same arguments and executed in series.
+ * Functional equivalent to the [Conditional (ternary) operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Conditional_Operator). Accepts an array of conditional functions that specifies cases as pairings of `predicate` and `resolver` functions with the exception of the last, default resolver. All functions are provided with the same arguments and executed in series. The result of a `switchCase` execution is either the result of the execution the last default resolver, or the result of the execution of the first resolver where the associated predicate tested truthy.
  *
  * ```javascript [playground]
  * const fruitIsYellow = fruit => fruit.color == 'yellow'
@@ -45,7 +45,7 @@ const nonfunctionsConditional = require('./_internal/nonfunctionsConditional')
  * ])(false).then(console.log) // default
  * ```
  *
- * If every item in the conditional array is a nonfunction value, `switchCase` executes eagerly and behaves as the [Conditional (ternary) operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Conditional_Operator).
+ * If every item in the conditional array is a nonfunction value, `switchCase` executes eagerly.
  *
  * ```javascript [playground]
  * const age = 26
