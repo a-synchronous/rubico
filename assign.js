@@ -13,7 +13,7 @@ const funcObjectAll = require('./_internal/funcObjectAll')
  * ```
  *
  * @description
- * Accepts an object of resolver functions and an argument object. Creates a result object from the argument object, evaluates each resolver with the argument object, and assigns to the result object the evaluations at the corresponding resolver keys.
+ * Function executor and composer. Accepts an object of resolver functions and an argument object. Creates a result object from the argument object, evaluates each resolver with the argument object, and assigns to the result object the evaluations at the corresponding resolver keys.
  *
  * ```javascript [playground]
  * const assignSquaredAndCubed = assign({
