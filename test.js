@@ -3735,6 +3735,14 @@ flatMap(
     .case(null, null)
     .case({}, {})
     .case([], []))
+
+    it('eager api', async () => {
+      ade(omit(nested, []), nested)
+      ade(omit([1, 2, 3], []), [1, 2, 3])
+      ade(omit(abc, ['a']), { b: 2, c: 3 })
+      ade(omit(abc, ['a', 'd']), { b: 2, c: 3 })
+      ade(omit(abc, ['d']), { a: 1, b: 2, c: 3 })
+    })
   })
 
   describe(`
