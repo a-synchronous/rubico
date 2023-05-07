@@ -3678,6 +3678,11 @@ flatMap(
       // assert.deepEqual(pick(['a[0][0].d'])({ a: [[{ b: 1, c: 2, d: 3 }]] }), { a: [[{ b: 1, c: 2 }]] })
       // assert.deepEqual(pick(['a[0][0].d'])({ a: [[{ b: 1, c: 2, d: null }]] }), { a: [[{ b: 1, c: 2 }]] })
     })
+    it('eager api', async () => {
+      ade(pick(abc, ['a']), { a: 1 })
+      ade(pick(abc, ['a', 'd']), { a: 1 })
+      ade(pick(abc, ['d']), {})
+    })
   })
 
   describe('omit', () => {
