@@ -273,6 +273,13 @@ TestsMap.set('pick', pick => [
   .case({ a: { c: 3 }, c: 3 }, { a: { c: 3 } })
   .case({}, {})
   .case([], {}),
+
+  Test('pick - eager', async function () {
+    const abc = { a: 1, b: 2, c: 3 }
+    assert.deepEqual(pick(abc, ['a']), { a: 1 })
+    assert.deepEqual(pick(abc, ['a', 'd']), { a: 1 })
+    assert.deepEqual(pick(abc, ['d']), {})
+  }).case()
 ])
 
 TestsMap.set('omit', omit => [
@@ -311,6 +318,16 @@ TestsMap.set('omit', omit => [
     .case(null, null)
     .case({}, {})
     .case([], []),
+
+  Test('omit - eager', async function () {
+    const abc = { a: 1, b: 2, c: 3 }
+    const nested = [[[[[1]]]]]
+    assert.deepEqual(omit(nested, []), nested)
+    assert.deepEqual(omit([1, 2, 3], []), [1, 2, 3])
+    assert.deepEqual(omit(abc, ['a']), { b: 2, c: 3 })
+    assert.deepEqual(omit(abc, ['a', 'd']), { b: 2, c: 3 })
+    assert.deepEqual(omit(abc, ['d']), { a: 1, b: 2, c: 3 })
+  }).case()
 ])
 
 TestsMap.set('switchCase', switchCase => [

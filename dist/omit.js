@@ -139,7 +139,30 @@ const copyDeep = function (value) {
   return value
 }
 
-const omit = paths => function omitting(source) {
+const __ = Symbol.for('placeholder')
+
+// argument resolver for curry2
+const curry2ResolveArg0 = (
+  baseFunc, arg1,
+) => function arg0Resolver(arg0) {
+  return baseFunc(arg0, arg1)
+}
+
+// argument resolver for curry2
+const curry2ResolveArg1 = (
+  baseFunc, arg0,
+) => function arg1Resolver(arg1) {
+  return baseFunc(arg0, arg1)
+}
+
+const curry2 = function (baseFunc, arg0, arg1) {
+  return arg0 == __
+    ? curry2ResolveArg0(baseFunc, arg1)
+    : curry2ResolveArg1(baseFunc, arg0)
+}
+
+// _omit(source Object, paths Array<string>) -> result Object
+const _omit = function (source, paths) {
   const pathsLength = paths.length,
     result = copyDeep(source)
   let pathsIndex = -1
@@ -147,6 +170,13 @@ const omit = paths => function omitting(source) {
     deleteByPath(result, paths[pathsIndex])
   }
   return result
+}
+
+const omit = function (arg0, arg1) {
+  if (arg1 == null) {
+    return curry2(_omit, __, arg0)
+  }
+  return _omit(arg0, arg1)
 }
 
 return omit

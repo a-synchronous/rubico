@@ -105,7 +105,30 @@ const setByPath = function (obj, value, path) {
   return result
 }
 
-const pick = keys => function picking(source) {
+const __ = Symbol.for('placeholder')
+
+// argument resolver for curry2
+const curry2ResolveArg0 = (
+  baseFunc, arg1,
+) => function arg0Resolver(arg0) {
+  return baseFunc(arg0, arg1)
+}
+
+// argument resolver for curry2
+const curry2ResolveArg1 = (
+  baseFunc, arg0,
+) => function arg1Resolver(arg1) {
+  return baseFunc(arg0, arg1)
+}
+
+const curry2 = function (baseFunc, arg0, arg1) {
+  return arg0 == __
+    ? curry2ResolveArg0(baseFunc, arg1)
+    : curry2ResolveArg1(baseFunc, arg0)
+}
+
+// _pick(source Object, keys Array<string>) -> result Object
+const _pick = function (source, keys) {
   if (source == null) {
     return source
   }
@@ -120,6 +143,13 @@ const pick = keys => function picking(source) {
     }
   }
   return result
+}
+
+const pick = (arg0, arg1) => {
+  if (arg1 == null) {
+    return curry2(_pick, __, arg0)
+  }
+  return _pick(arg0, arg1)
 }
 
 return pick

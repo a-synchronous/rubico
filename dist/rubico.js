@@ -2788,7 +2788,8 @@ const set = (path, value) => function setter(obj) {
   return setByPath(obj, value, path)
 }
 
-const pick = keys => function picking(source) {
+// _pick(source Object, keys Array<string>) -> result Object
+const _pick = function (source, keys) {
   if (source == null) {
     return source
   }
@@ -2803,6 +2804,13 @@ const pick = keys => function picking(source) {
     }
   }
   return result
+}
+
+const pick = (arg0, arg1) => {
+  if (arg1 == null) {
+    return curry2(_pick, __, arg0)
+  }
+  return _pick(arg0, arg1)
 }
 
 const deleteByPath = function (object, path) {
@@ -2873,7 +2881,8 @@ const copyDeep = function (value) {
   return value
 }
 
-const omit = paths => function omitting(source) {
+// _omit(source Object, paths Array<string>) -> result Object
+const _omit = function (source, paths) {
   const pathsLength = paths.length,
     result = copyDeep(source)
   let pathsIndex = -1
@@ -2881,6 +2890,13 @@ const omit = paths => function omitting(source) {
     deleteByPath(result, paths[pathsIndex])
   }
   return result
+}
+
+const omit = function (arg0, arg1) {
+  if (arg1 == null) {
+    return curry2(_omit, __, arg0)
+  }
+  return _omit(arg0, arg1)
 }
 
 const thunkify = (func, ...args) => function thunk() {
