@@ -13,3 +13,5 @@
  * Apply arguments to a function.
  */
 const funcApply = (func, args) => func(...args)
+
+module.exports = funcApply
