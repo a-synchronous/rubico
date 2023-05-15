@@ -3,6 +3,19 @@ const __ = require('./_internal/placeholder')
 const curry3 = require('./_internal/curry3')
 const genericReduce = require('./_internal/genericReduce')
 
+// _reduce(collection any, reducer function, initialValue function|any) -> Promise
+const _reduce = function (collection, reducer, initialValue) {
+  if (typeof initialValue == 'function') {
+    const actualInitialValue = initialValue(collection)
+    return isPromise(actualInitialValue)
+      ? actualInitialValue.then(curry3(genericReduce, collection, reducer, __))
+      : genericReduce(collection, reducer, actualInitialValue)
+  }
+  return isPromise(initialValue)
+    ? initialValue.then(curry3(genericReduce, collection, reducer, __))
+    : genericReduce(collection, reducer, initialValue)
+}
+
 /**
  * @name reduce
  *
@@ -173,30 +186,14 @@ const genericReduce = require('./_internal/genericReduce')
  */
 
 const reduce = function (...args) {
-  if (typeof args[0] != 'function') {
-    const reducer = args[1]
-    const initialValue = args[2]
-    if (typeof initialValue == 'function') {
-      return genericReduce(args[0], reducer, initialValue(args[0]))
-    }
-    if (isPromise(initialValue)) {
-      return initialValue.then(curry3(genericReduce, args[0], reducer, __))
-    }
-    return genericReduce(args[0], reducer, initialValue)
+  if (typeof args[0] == 'function') {
+    return curry3(_reduce, __, args[0], args[1])
   }
-
-  const reducer = args[0]
-  const initialValue = args[1]
-
-  if (typeof initialValue == 'function') {
-    return function reducing(collection) {
-      const result = initialValue(collection)
-      return isPromise(result)
-        ? result.then(curry3(genericReduce, collection, reducer, __))
-        : genericReduce(collection, reducer, result)
-    }
+  if (isPromise(args[0])) {
+    return args[0].then(curry3(_reduce, __, args[1], args[2]))
   }
-  return curry3(genericReduce, __, reducer, initialValue)
+  return _reduce(args[0], args[1], args[2])
+
 }
 
 module.exports = reduce
