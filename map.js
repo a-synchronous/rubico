@@ -276,10 +276,10 @@ const _map = function (value, mapper) {
 
 const map = (...args) => {
   const mapper = args.pop()
-  if (args.length > 0) {
-    return _map(args[0], mapper)
+  if (args.length == 0) {
+    return curry2(_map, __, mapper)
   }
-  return curry2(_map, __, mapper)
+  return _map(args[0], mapper)
 }
 
 /**
