@@ -117,17 +117,17 @@ const genericTransform = require('./_internal/genericTransform')
  */
 const transform = function (transducer, init) {
   if (typeof init == 'function') {
-    return function transforming(...args) {
-      const result = init(...args)
+    return function transforming(collection) {
+      const result = init(collection)
       return isPromise(result)
-        ? result.then(curry3(genericTransform, args, transducer, __))
-        : genericTransform(args, transducer, result)
+        ? result.then(curry3(genericTransform, collection, transducer, __))
+        : genericTransform(collection, transducer, result)
     }
   }
-  return function transforming(...args) {
+  return function transforming(collection) {
     return isPromise(init)
-      ? init.then(curry3(genericTransform, args, transducer, __))
-      : genericTransform(args, transducer, init)
+      ? init.then(curry3(genericTransform, collection, transducer, __))
+      : genericTransform(collection, transducer, init)
   }
 }
 

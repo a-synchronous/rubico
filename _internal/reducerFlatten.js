@@ -26,7 +26,7 @@ const genericReduce = require('./genericReduce')
 const reducerFlatten = reducer => function flatteningReducer(
   result, reducerItem,
 ) {
-  return genericReduce([reducerItem], reducer, result)
+  return genericReduce(reducerItem, reducer, result)
 }
 
 module.exports = reducerFlatten
