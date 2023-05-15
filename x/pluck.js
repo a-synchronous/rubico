@@ -7,28 +7,19 @@ const get = require('../get')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * Functor<T> = Array<T>|Object<T>|Iterator<T>|AsyncIterator<T>|{ map: T=>any }
- * Reducer<T> = (any, T)=>Promise|any
+ * pluck(path string)(array Array) -> result Array
  *
- * var T any,
- *   mapper T=>Promise|any,
- *   functor Functor<T>
- *   args ...any,
- *   generatorFunction ...args=>Generator<T>,
- *   asyncGeneratorFunction ...args=>AsyncGenerator<T>,
- *   reducer Reducer<T>
- *
- * pluck(functor) -> Promise|Functor
- *
- * pluck(generatorFunction) -> ...args=>Generator
- *
- * pluck(asyncGeneratorFunction) -> ...args=>AsyncGenerator
- *
- * pluck(reducer) -> Reducer
+ * pluck(array Array, path string) -> result Array
  * ```
  *
  * @description
- * Apply a getter denoted by path across all items of a collection, creating a new collection of plucked values. Also works in transducer position.
+ * Creates an array of picked properties denoted by a path from another array.
+ *
+ * `pluck` supports three types of path patterns for nested property access.
+ *
+ *  * dot delimited - `'a.b.c'`
+ *  * bracket notation - `'a[0].value'`
+ *  * an array of keys or indices - `['a', 0, 'value']`
  *
  * ```javascript [playground]
  * import pluck from 'https://unpkg.com/rubico/dist/x/pluck.es.js'
@@ -39,18 +30,18 @@ const get = require('../get')
  *   { name: 'Jim', age: 22 },
  * ]
  *
- * const usernames = pluck('name')(users)
+ * const usernames = pluck(users, 'name')
  *
  * console.log(usernames) // ['George', 'Jane', 'Jim']
- *
- * const add = (a, b) => a + b
- *
- * console.log(
- *   'total age:',
- *   users.reduce(pluck('age')(add), 0),
- * ) // total age: 96
  * ```
  */
-const pluck = funcConcat(get, map)
+const pluck = function (...args) {
+  const path = args.pop()
+  const getter = get(path)
+  if (args.length == 0) {
+    return map(getter)
+  }
+  return map(args[0], getter)
+}
 
 module.exports = pluck
