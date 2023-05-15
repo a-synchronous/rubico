@@ -1,3 +1,10 @@
+const funcConcat = require('./_internal/funcConcat')
+const reducerMap = require('./_internal/reducerMap')
+const reducerFilter = require('./_internal/reducerFilter')
+const reducerFlatMap = require('./_internal/reducerFlatMap')
+const curry2 = require('./_internal/curry2')
+const __ = require('./_internal/placeholder')
+
 /**
  * @name Transducer
  *
@@ -7,44 +14,38 @@
 const Transducer = {}
 
 /**
- * @name Transducer.pipe
- *
- * @description
- * Composes transducers
- */
-Transducer.pipe = function () {}
-
-/**
  * @name Transducer.map
  *
- * @description
- * Create a mapping transducer by supplying `map` with a reducer. A reducer is a variadic function that depicts a relationship between an accumulator and any number of arguments. A transducer is a function that accepts a reducer as an argument and returns another reducer.
- *
+ * @synopsis
  * ```coffeescript [specscript]
- * Reducer<T> = (any, T)=>Promise|any
+ * type Reducer = (accumulator any, item any)=>(nextAccumulator Promise|any)
+ * type Transducer = Reducer=>Reducer
  *
- * Transducer = Reducer=>Reducer
+ * Transducer.map(mapperFunc function) -> mappingTransducer Transducer
  * ```
  *
- * The transducer signature enables chaining functionality for reducers. `map` is core to this mechanism, and provides a way via transducers to transform items of reducers. To `map`, reducers are just another category.
+ * @description
+ * Creates a mapping transducer with a provided reducer. A reducer is a variadic function that depicts a relationship between an accumulator and any number of arguments. A transducer is a function that accepts a reducer as an argument and returns another reducer.
+ *
+ * ```coffeescript [specscript]
+ * type Reducer = (accumulator any, item any)=>(nextAccumulator Promise|any)
+ *
+ * type Transducer = Reducer=>Reducer
+ * ```
+ *
+ * The transducer signature enables chaining functionality for reducers. `map` is core to this mechanism, and provides a way via transducers to transform the items of reducers.
  *
  * ```javascript [playground]
  * const square = number => number ** 2
  *
  * const concat = (array, item) => array.concat(item)
  *
- * const mapSquare = map(square)
- * // mapSquare could potentially be a transducer, but at this point, it is
- * // undifferentiated and not necessarily locked in to transducer behavior.
- *
- * console.log(
- *   mapSquare([1, 2, 3, 4, 5]),
- * ) // [1, 4, 9, 16, 25]
+ * const mapSquare = Transducer.map(square)
+ * // mapSquare is a transducer
  *
  * const squareConcatReducer = mapSquare(concat)
- * // now mapSquare is passed the function concat, so it assumes transducer
- * // position. squareConcatReducer is a reducer with chained functionality
- * // square and concat.
+ * // now mapSquare is passed the reducer function concat; squareConcatReducer
+ * // is a reducer with chained functionality square and concat
  *
  * console.log(
  *   [1, 2, 3, 4, 5].reduce(squareConcatReducer, []),
@@ -55,11 +56,32 @@ Transducer.pipe = function () {}
  * ) // '1491625'
  * ```
  *
+ * Create reducers with chained functionality by using the `Transducer.map` eager API.
+ *
+ * ```javascript [playground]
+ * const square = number => number ** 2
+ *
+ * const concat = (array, item) => array.concat(item)
+ *
+ * const squareConcatReducer = Transducer.map(concat, square)
+ * // now mapSquare is passed the reducer function concat; squareConcatReducer
+ * // is a reducer with chained functionality square and concat
+ * ```
  */
-Transducer.map = function map() {}
+Transducer.map = function transducerMap(mapper) {
+  return curry2(reducerMap, __, mapper)
+}
 
 /**
  * @name Transducer.filter
+ *
+ * @synopsis
+ * ```coffeescript [specscript]
+ * type Reducer = (accumulator any, item any)=>(nextAccumulator Promise|any)
+ * type Transducer = Reducer=>Reducer
+ *
+ * Transducer.filter(predicate function) -> filteringTransducer Transducer
+ * ```
  *
  * @description
  * A reducer in filterable position creates a filtering reducer - one that skips items of the reducer's reducing operation if they test falsy by the predicate. It is possible to use an asynchronous predicate when filtering a reducer, however the implementation of `reduce` must support asynchronous operations. This library provides such an implementation as `reduce`.
@@ -76,14 +98,19 @@ Transducer.map = function map() {}
  * ) // [1, 3, 5]
  * ```
  */
-Transducer.filter = function filter() {}
+Transducer.filter = function transducerFilter(predicate) {
+  return curry2(reducerFilter, __, predicate)
+}
 
 /**
  * @name Transducer.flatMap
  *
  * @synopsis
  * ```coffeescript [specscript]
- * flatMap(flatMapper)(reducer) -> Reducer<T>
+ * type Reducer = (accumulator any, item any)=>(nextAccumulator Promise|any)
+ * type Transducer = Reducer=>Reducer
+ *
+ * Transducer.flatMap(flatMapper) -> flatMappingTransducer Transducer
  * ```
  *
  * @description
@@ -108,6 +135,8 @@ Transducer.filter = function filter() {}
  *
  * In the case above, each item of the array of numbers returned by `powers` is called with the reducer `arrayConcat` for flattening into the final result.
  */
-Transducer.flatMap = function flatMap() {}
+Transducer.flatMap = function transducerFlatMap(flatMapper) {
+  return curry2(reducerFlatMap, __, flatMapper)
+}
 
 module.exports = Transducer

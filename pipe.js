@@ -1,8 +1,5 @@
-const noop = require('./_internal/noop')
 const funcConcat = require('./_internal/funcConcat')
 const funcConcatSync = require('./_internal/funcConcatSync')
-const isGeneratorFunction = require('./_internal/isGeneratorFunction')
-const isAsyncGeneratorFunction = require('./_internal/isAsyncGeneratorFunction')
 
 /**
  * @name pipe
@@ -15,7 +12,7 @@ const isAsyncGeneratorFunction = require('./_internal/isAsyncGeneratorFunction')
  * ```
  *
  * @description
- * Creates a function pipeline with an array of functions where each function passes its return value as a single argument to the next function until all functions have executed. The result of a pipeline execution is the return of its last function. If any function of the pipeline is asynchronous, the result of the execution is a Promise.
+ * Creates a function pipeline from an array of functions, where each function passes its return value as a single argument to the next function until all functions have executed. The first function is called with the arguments to the pipeline, while the result of the pipeline execution is the return of its last function. If any function of the pipeline is asynchronous, the result of the execution is a Promise.
  *
  * ```javascript [playground]
  * const syncAdd123 = pipe([
@@ -53,6 +50,17 @@ const isAsyncGeneratorFunction = require('./_internal/isAsyncGeneratorFunction')
  */
 const pipe = function (...args) {
   const funcs = args.pop()
+  const pipeline = funcs.reduce(funcConcat)
+
+  if (args.length == 0) {
+    return pipeline
+  }
+  return pipeline(...args)
+}
+
+  /*
+const pipe = function (...args) {
+  const funcs = args.pop()
 
   if (args.length > 0) {
     return funcs.reduce(funcConcat)(...args)
@@ -80,6 +88,7 @@ const pipe = function (...args) {
     return functionPipeline(...args)
   }
 }
+*/
 
 // funcs Array<function> -> pipeline function
 const pipeSync = funcs => funcs.reduce(funcConcatSync)

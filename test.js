@@ -284,10 +284,6 @@ describe('rubico', () => {
     it('chains async and regular functions together', async () => {
       ase(await pipe([hi, ho, asyncHey])('yo'), 'yohihohey')
     })
-    it('chains functions in reverse if passed a function (very contrived)', async () => {
-      ase(await pipe([hi, ho, asyncHey])((y, xi) => y + xi), '(y, xi) => y + xiheyhohi')
-      ase(await pipe([asyncHey, ho, hi])((y, xi) => y + xi), '(y, xi) => y + xihihohey')
-    })
     it('does something without arguments', async () => {
       ase(await pipe([hi, ho, asyncHey])(), 'undefinedhihohey')
     })
@@ -359,13 +355,13 @@ describe('rubico', () => {
         new TypeError('funcB is not a function'),
       )
     })
-    it('handles sync errors good', async () => {
+    it('handles sync errors', async () => {
       assert.throws(
         () => pipe([hi, hi, x => { throw new Error(`throwing ${x}`) }])('yo'),
         new Error('throwing yohihi'),
       )
     })
-    it('handles async errors good', async () => {
+    it('handles async errors', async () => {
       assert.rejects(
         () => pipe([hi, asyncHey, x => { throw new Error(`throwing ${x}`) }])('yo'),
         new Error('throwing yohihey'),
@@ -2208,55 +2204,6 @@ reduce(
       ade(
         await reduce(map(square)((a, b) => (a.push(b), a)), () => [])(emptyAsyncIterator),
         [],
-      )
-    })
-  })
-
-  describe('integration: transducers from pipe, map, filter, reduce', () => {
-    const concat = (y, xi) => y.concat(xi)
-    const add = (y, xi) => y + xi
-    it('reduce with sync transduced reducers', async () => {
-      const squareOdds = pipe([
-        filter(isOdd),
-        map(x => x ** 2),
-      ])
-      ade(
-        reduce(squareOdds(concat), [])([1, 2, 3, 4, 5]),
-        [1, 9, 25],
-      )
-      ade(
-        reduce(squareOdds((y, xi) => y.add(xi)), new Set())([1, 2, 3, 4, 5]),
-        new Set([1, 9, 25]),
-      )
-      const appendAlphas = pipe([
-        map(x => `${x}a`),
-        map(x => `${x}b`),
-        map(x => `${x}c`),
-      ])
-      ase(
-        reduce(appendAlphas(add), '')('123'),
-        '1abc2abc3abc',
-      )
-      ade(
-        reduce(appendAlphas(concat), [])('123'),
-        ['1abc', '2abc', '3abc'],
-      )
-    })
-    it('reduce with an async transduced reducer', async () => {
-      const hosWithHey = pipe([
-        filter(async x => x === 'ho'),
-        map(x => Promise.resolve(`${x}hey`)),
-      ])
-      const hihos = { a: 'hi', b: 'ho', c: 'hi', d: 'ho', e: 'hi', f: 'ho' }
-      aok(reduce(hosWithHey(add), '')(hihos) instanceof Promise),
-      aok(reduce(hosWithHey(concat), [])(hihos) instanceof Promise),
-      ase(
-        await reduce(hosWithHey(add), '')(hihos),
-        'hoheyhoheyhohey',
-      )
-      ade(
-        await reduce(hosWithHey(concat), [])(hihos),
-        ['hohey', 'hohey', 'hohey'],
       )
     })
   })
