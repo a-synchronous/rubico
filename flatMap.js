@@ -1,20 +1,11 @@
 const FlatMappingIterator = require('./_internal/FlatMappingIterator')
 const FlatMappingAsyncIterator = require('./_internal/FlatMappingAsyncIterator')
 const isArray = require('./_internal/isArray')
-const isGeneratorFunction = require('./_internal/isGeneratorFunction')
-const isAsyncGeneratorFunction = require('./_internal/isAsyncGeneratorFunction')
-const isBinary = require('./_internal/isBinary')
 const arrayFlatMap = require('./_internal/arrayFlatMap')
 const objectFlatMap = require('./_internal/objectFlatMap')
 const setFlatMap = require('./_internal/setFlatMap')
 const stringFlatMap = require('./_internal/stringFlatMap')
-const streamFlatMap = require('./_internal/streamFlatMap')
-const binaryFlatMap = require('./_internal/binaryFlatMap')
-const reducerFlatMap = require('./_internal/reducerFlatMap')
-const generatorFunctionFlatMap = require('./_internal/generatorFunctionFlatMap')
-const asyncGeneratorFunctionFlatMap = require('./_internal/asyncGeneratorFunctionFlatMap')
 const symbolIterator = require('./_internal/symbolIterator')
-const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
 const curry2 = require('./_internal/curry2')
 const __ = require('./_internal/placeholder')
 
@@ -36,18 +27,6 @@ const _flatMap = function (value, flatMapper) {
   if (isArray(value)) {
     return arrayFlatMap(value, flatMapper)
   }
-  if (typeof value == 'function') {
-    if (isGeneratorFunction(value)) {
-      return generatorFunctionFlatMap(value, flatMapper)
-    }
-    if (isAsyncGeneratorFunction(value)) {
-      return asyncGeneratorFunctionFlatMap(value, flatMapper)
-    }
-    return reducerFlatMap(value, flatMapper)
-  }
-  if (isBinary(value)) {
-    return binaryFlatMap(value, flatMapper)
-  }
   if (value == null) {
     return flatMapper(value)
   }
@@ -65,12 +44,6 @@ const _flatMap = function (value, flatMapper) {
   }
   if (typeof value.flatMap == 'function') {
     return value.flatMap(flatMapper)
-  }
-  if (
-    typeof value[symbolAsyncIterator] == 'function'
-      && typeof value.write == 'function'
-  ) {
-    return streamFlatMap(value, flatMapper)
   }
   const valueConstructor = value.constructor
   if (valueConstructor == Object) {
