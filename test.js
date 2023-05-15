@@ -2007,6 +2007,10 @@ transform(
             [1, 4, 9, 16, 25],
           )
           assert.deepEqual(
+            await transform(Transducer.map(square), Promise.resolve([]))([1, 2, 3, 4, 5]),
+            [1, 4, 9, 16, 25],
+          )
+          assert.deepEqual(
             transform(Transducer.map(square), () => [])([1, 2, 3, 4, 5]),
             [1, 4, 9, 16, 25],
           )

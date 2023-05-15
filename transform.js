@@ -125,7 +125,9 @@ const transform = function (transducer, init) {
     }
   }
   return function transforming(...args) {
-    return genericTransform(args, transducer, init)
+    return isPromise(init)
+      ? init.then(curry3(genericTransform, args, transducer, __))
+      : genericTransform(args, transducer, init)
   }
 }
 
