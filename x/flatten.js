@@ -74,7 +74,7 @@ const flatten = function (value) {
   if (value.constructor == Object) {
     return objectFlatten(value)
   }
-  return flatMap(identity)(value)
+  return flatMap(value, identity)
 }
 
 module.exports = flatten
