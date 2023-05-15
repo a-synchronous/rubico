@@ -3321,6 +3321,7 @@ flatMap(
 
       it('value number', async () => {
         assert.deepEqual(flatMap(duplicateArray)(1), [1, 1])
+        assert.deepEqual(flatMap(1, duplicateArray), [1, 1])
       })
     })
 
@@ -3335,7 +3336,7 @@ flatMap(
     })
   })
 
-  describe('flatMap - v1.5.12 regression', () => {
+  describe('flatMap - misc', () => {
     it('maps then flattens an array, async + parallel', async () => {
       const asyncPowers = async x => [x ** 2, x ** 3]
       aok(flatMap(asyncPowers)([1, 2, 3, 4, 5]) instanceof Promise)
