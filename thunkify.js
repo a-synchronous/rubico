@@ -1,3 +1,9 @@
+const areAnyValuesPromises = require('./_internal/areAnyValuesPromises')
+const promiseAll = require('./_internal/promiseAll')
+const curry2 = require('./_internal/curry2')
+const __ = require('./_internal/placeholder')
+const funcApply = require('./_internal/funcApply')
+
 /**
  * @name thunkify
  *
@@ -18,6 +24,9 @@
  * ```
  */
 const thunkify = (func, ...args) => function thunk() {
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args).then(curry2(funcApply, func, __))
+  }
   return func(...args)
 }
 
