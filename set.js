@@ -4,10 +4,46 @@ const curry3 = require('./_internal/curry3')
 const __ = require('./_internal/placeholder')
 
 /**
+ * @name _set
+ *
+ * @synopsis
+ * ```coffeescript [specscript]
+ * _set(
+ *   obj Object,
+ *   path string|Array<string|number>,
+ *   value function|any,
+ * ) -> result Promise|Object
+ * ```
+ */
+const _set = function (obj, path, value) {
+  if (typeof value == 'function') {
+    const actualValue = value(obj)
+    if (isPromise(actualValue)) {
+      return actualValue.then(
+        curry3(setByPath, obj, __, path)
+      )
+    }
+    return setByPath(obj, actualValue, path)
+  }
+  if (isPromise(value)) {
+    return value.then(
+      curry3(setByPath, obj, __, path)
+    )
+  }
+  return setByPath(obj, value, path)
+}
+
+/**
  * @name set
  *
  * @synopsis
  * ```coffeescript [specscript]
+ * set(
+ *   object Object,
+ *   path string|Array<string|number>,
+ *   value function|any,
+ * ) -> result Promise|Object
+ *
  * set(
  *   path string|Array<string|number>,
  *   value function|any,
@@ -48,17 +84,15 @@ const __ = require('./_internal/placeholder')
  * @since 1.7.0
  */
 
-const set = (path, value) => function setter(obj) {
-  if (typeof value == 'function') {
-    const actualValue = value(obj)
-    if (isPromise(actualValue)) {
-      return actualValue.then(
-        curry3(setByPath, obj, __, path)
-      )
+const set = function (...args) {
+  if (args.length == 3) {
+    const [obj, path, value] = args
+    if (isPromise(obj)) {
+      return obj.then(curry3(_set, __, path, value))
     }
-    return setByPath(obj, actualValue, path)
+    return _set(obj, path, value)
   }
-  return setByPath(obj, value, path)
+  return curry3(_set, __, args[0], args[1])
 }
 
 module.exports = set
