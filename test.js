@@ -1600,9 +1600,27 @@ then(() => {
       const sum1 = reduce(numbers, (a, b) => a + b)
       const sum2 = reduce(numbers, (a, b) => a + b, 0)
       const sum3 = reduce(numbers, (a, b) => a + b, () => 0)
+      const sum4 = await reduce(numbers, (a, b) => a + b, async () => 0)
+      const sum5 = await reduce(numbers, (a, b) => a + b, Promise.resolve(0))
       assert.equal(sum1, 15)
       assert.equal(sum2, 15)
       assert.equal(sum3, 15)
+      assert.equal(sum4, 15)
+      assert.equal(sum5, 15)
+    })
+
+    it('eager Promise arguments', async () => {
+      const numbers = Promise.resolve([1, 2, 3, 4, 5])
+      const sum1 = await reduce(numbers, (a, b) => a + b)
+      const sum2 = await reduce(numbers, (a, b) => a + b, 0)
+      const sum3 = await reduce(numbers, (a, b) => a + b, () => 0)
+      const sum4 = await reduce(numbers, (a, b) => a + b, async () => 0)
+      const sum5 = await reduce(numbers, (a, b) => a + b, Promise.resolve(0))
+      assert.equal(sum1, 15)
+      assert.equal(sum2, 15)
+      assert.equal(sum3, 15)
+      assert.equal(sum4, 15)
+      assert.equal(sum5, 15)
     })
 
     describe(`
