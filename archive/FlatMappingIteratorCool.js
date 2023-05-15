@@ -21,7 +21,7 @@ const FlatMappingIterator = function (iterator, flatMapper) {
   const buffer = [], promises = [],
     bufferPush = curry3(callPropUnary, buffer, 'push', __),
     bufferPushReducer = funcConcatSync(getArg1, bufferPush),
-    flattenIntoBuffer = curryArgs3(genericReduce, __, bufferPushReducer, null),
+    flattenIntoBuffer = curry3(genericReduce, __, bufferPushReducer, null),
     loadIntoBuffer = funcConcatSync(flattenIntoBuffer, tapSync(bufferLoading => {
       if (isPromise(bufferLoading)) {
         const promise = bufferLoading.then(() => promises.delete(promise))
