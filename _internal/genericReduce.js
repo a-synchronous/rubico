@@ -12,8 +12,6 @@ const curryArgs3 = require('./curryArgs3')
 const arrayReduce = require('./arrayReduce')
 const objectReduce = require('./objectReduce')
 const mapReduce = require('./mapReduce')
-const generatorFunctionReduce = require('./generatorFunctionReduce')
-const asyncGeneratorFunctionReduce = require('./asyncGeneratorFunctionReduce')
 const reducerConcat = require('./reducerConcat')
 
 /**
