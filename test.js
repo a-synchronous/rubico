@@ -1436,15 +1436,6 @@ then(() => {
         )
       })
     })
-    describe('filter(predicate T=>boolean)(GeneratorFunction<args, T>) -> GeneratorFunction<args, T>', () => {
-      it('predicate T=>boolean', async () => {
-        const numbers = function* () { let i = 0; while (++i < 6) yield i }
-        const isOdd = number => number % 2 == 1
-        const oddNumbers = filter(isOdd)(numbers)
-        assert.equal(objectToString(oddNumbers), '[object GeneratorFunction]')
-        assert.deepEqual([...oddNumbers()], [1, 3, 5])
-      })
-    })
     describe('filter(predicate T=>boolean)(Iterator<T>) -> Iterator<T>', () => {
       it('predicate T=>boolean', async () => {
         const numbers = function* () { let i = 0; while (++i < 6) yield i }
@@ -1452,33 +1443,6 @@ then(() => {
         const oddNumbersIterator = filter(isOdd)(numbers())
         assert.equal(objectToString(oddNumbersIterator), '[object Object]')
         assert.deepEqual([...oddNumbersIterator], [1, 3, 5])
-      })
-    })
-    describe('filter(predicate T=>Promise|boolean)(AsyncGeneratorFunction<args, T>) -> AsyncGeneratorFunction<args, T>', () => {
-      const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
-      it('predicate T=>boolean', async () => {
-        const isOdd = number => number % 2 == 1
-        const asyncOddNumbers = filter(isOdd)(asyncNumbers)
-        assert.equal(objectToString(asyncOddNumbers), '[object AsyncGeneratorFunction]')
-        const oddNumbersArray = []
-        for await (const number of asyncOddNumbers()) oddNumbersArray.push(number)
-        assert.deepEqual(oddNumbersArray, [1, 3, 5])
-      })
-      it('predicate T=>Promise<boolean>', async () => {
-        const asyncIsOdd = async number => number % 2 == 1
-        const asyncOddNumbers = filter(asyncIsOdd)(asyncNumbers)
-        assert.equal(objectToString(asyncOddNumbers), '[object AsyncGeneratorFunction]')
-        const oddNumbersArray = []
-        for await (const number of asyncOddNumbers()) oddNumbersArray.push(number)
-        assert.deepEqual(oddNumbersArray, [1, 3, 5])
-      })
-      it('predicate T=>Promise|boolean', async () => {
-        const variadicAsyncIsOdd = number => number % 2 == 1 ? Promise.resolve(true) : false
-        const asyncOddNumbers = filter(variadicAsyncIsOdd)(asyncNumbers)
-        assert.equal(objectToString(asyncOddNumbers), '[object AsyncGeneratorFunction]')
-        const oddNumbersArray = []
-        for await (const number of asyncOddNumbers()) oddNumbersArray.push(number)
-        assert.deepEqual(oddNumbersArray, [1, 3, 5])
       })
     })
     describe('filter(predicate T=>Promise|boolean)(AsyncIterator<T>) -> AsyncIterator<T>', () => {
@@ -1491,33 +1455,17 @@ then(() => {
         for await (const number of asyncOddNumbersIterator) oddNumbersArray.push(number)
         assert.deepEqual(oddNumbersArray, [1, 3, 5])
       })
-      it('predicate T=>Promise<boolean>', async () => {
-        const asyncIsOdd = async number => number % 2 == 1
-        const asyncOddNumbers = filter(asyncIsOdd)(asyncNumbers)
-        assert.equal(objectToString(asyncOddNumbers), '[object AsyncGeneratorFunction]')
-        const oddNumbersArray = []
-        for await (const number of asyncOddNumbers()) oddNumbersArray.push(number)
-        assert.deepEqual(oddNumbersArray, [1, 3, 5])
-      })
-      it('predicate T=>Promise|boolean', async () => {
-        const variadicAsyncIsOdd = number => number % 2 == 1 ? Promise.resolve(true) : false
-        const asyncOddNumbers = filter(variadicAsyncIsOdd)(asyncNumbers)
-        assert.equal(objectToString(asyncOddNumbers), '[object AsyncGeneratorFunction]')
-        const oddNumbersArray = []
-        for await (const number of asyncOddNumbers()) oddNumbersArray.push(number)
-        assert.deepEqual(oddNumbersArray, [1, 3, 5])
-      })
     })
     describe('filter(predicate T=>Promise|boolean)(Reducer<T>) -> Reducer<T>', () => {
       const concat = (array, values) => array.concat(values)
       it('predicate T=>boolean', async () => {
         const isOdd = number => number % 2 == 1
-        const concatOdds = filter(isOdd)(concat)
+        const concatOdds = Transducer.filter(isOdd)(concat)
         assert.deepEqual([1, 2, 3, 4, 5].reduce(concatOdds, []), [1, 3, 5])
       })
       it('predicate T=>Promise<boolean>', async () => {
         const asyncIsOdd = async number => number % 2 == 1
-        const concatOdds = filter(asyncIsOdd)(concat)
+        const concatOdds = Transducer.filter(asyncIsOdd)(concat)
         let oddNumbers = []
         for (const number of [1, 2, 3, 4, 5]) {
           oddNumbers = await concatOdds(oddNumbers, number)
@@ -1526,7 +1474,7 @@ then(() => {
       })
       it('predicate T=>Promise|boolean', async () => {
         const variadicAsyncIsOdd = number => number % 2 == 1 ? Promise.resolve(true) : false
-        const concatOdds = filter(variadicAsyncIsOdd)(concat)
+        const concatOdds = Transducer.filter(variadicAsyncIsOdd)(concat)
         let oddNumbers = []
         for (const number of [1, 2, 3, 4, 5]) {
           oddNumbers = await concatOdds(oddNumbers, number)

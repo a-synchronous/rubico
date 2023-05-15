@@ -40,13 +40,13 @@ describe('filterOut', () => {
 
   it('creates a rejecting generator function when passed a generator', () => {
     const rejectOdds = filterOut(number => number % 2 == 1)
-    const oddsRejectingGeneratorFunc = rejectOdds(function* (array) {
+    const oddsRejectingGenerator = rejectOdds((function* (array) {
       for (const value of array) {
         yield value
       }
-    })
+    })([1, 2, 3, 4, 5]))
     const evensArray = []
-    for (const number of oddsRejectingGeneratorFunc([1, 2, 3, 4, 5])) {
+    for (const number of oddsRejectingGenerator) {
       evensArray.push(number)
     }
     assert.deepEqual(evensArray, [2, 4])
@@ -54,13 +54,13 @@ describe('filterOut', () => {
 
   it('creates a rejecting generator function when passed an async generator', async () => {
     const asyncRejectOdds = filterOut(async number => number % 2 == 1)
-    const oddsRejectingGeneratorFunc = asyncRejectOdds(async function* (array) {
+    const oddsRejectingGenerator = asyncRejectOdds((async function* (array) {
       for (const value of array) {
         yield value
       }
-    })
+    })([1, 2, 3, 4, 5]))
     const evensArray = []
-    for await (const number of oddsRejectingGeneratorFunc([1, 2, 3, 4, 5])) {
+    for await (const number of oddsRejectingGenerator) {
       evensArray.push(number)
     }
     assert.deepEqual(evensArray, [2, 4])

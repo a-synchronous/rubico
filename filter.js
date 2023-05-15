@@ -62,15 +62,6 @@ const _filter = function (value, predicate) {
   if (isArray(value)) {
     return arrayFilter(value, predicate)
   }
-  if (typeof value == 'function') {
-    if (isGeneratorFunction(value)) {
-      return generatorFunctionFilter(value, predicate)
-    }
-    if (isAsyncGeneratorFunction(value)) {
-      return asyncGeneratorFunctionFilter(value, predicate)
-    }
-    return reducerFilter(value, predicate)
-  }
   if (value == null) {
     return value
   }
