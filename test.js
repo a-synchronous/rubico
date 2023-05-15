@@ -283,6 +283,13 @@ describe('rubico', () => {
       ])
       assert.deepEqual(array, [3, 6, 9])
     })
+    it('behaves eagerly and resolves any amount of Promise arguments before the array of functions', async () => {
+      const array = await pipe(Promise.resolve(1), 2, Promise.resolve(3), [
+        Array.of,
+        numbers => numbers.map(number => number * 3),
+      ])
+      assert.deepEqual(array, [3, 6, 9])
+    })
     it('chains async and regular functions together', async () => {
       ase(await pipe([hi, ho, asyncHey])('yo'), 'yohihohey')
     })

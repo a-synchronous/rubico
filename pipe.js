@@ -1,5 +1,10 @@
+const areAnyValuesPromises = require('./_internal/areAnyValuesPromises')
+const promiseAll = require('./_internal/promiseAll')
 const funcConcat = require('./_internal/funcConcat')
 const funcConcatSync = require('./_internal/funcConcatSync')
+const funcApply = require('./_internal/funcApply')
+const curry2 = require('./_internal/curry2')
+const __ = require('./_internal/placeholder')
 
 /**
  * @name pipe
@@ -55,6 +60,11 @@ const pipe = function (...args) {
   if (args.length == 0) {
     return pipeline
   }
+
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args).then(curry2(funcApply, pipeline, __))
+  }
+
   return pipeline(...args)
 }
 
