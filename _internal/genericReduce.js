@@ -45,21 +45,6 @@ const genericReduce = function (args, reducer, result) {
   if (isArray(collection)) {
     return arrayReduce(collection, reducer, result)
   }
-  if (typeof collection == 'function') {
-    if (isGeneratorFunction(collection)) {
-      return generatorFunctionReduce(collection, reducer, result)
-    }
-    if (isAsyncGeneratorFunction(collection)) {
-      return asyncGeneratorFunctionReduce(collection, reducer, result)
-    }
-    return curryArgs3(
-      genericReduce,
-      __,
-      args.length == 1
-        ? reducerConcat(reducer, collection)
-        : args.reduce(reducerConcat, reducer),
-      result)
-  }
   if (collection == null) {
     return result === undefined
       ? curry2(reducer, collection, __)
