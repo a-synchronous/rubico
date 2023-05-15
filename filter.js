@@ -262,10 +262,10 @@ const _filter = function (value, predicate) {
 
 const filter = function (...args) {
   const predicate = args.pop()
-  if (args.length > 0) {
-    return _filter(args[0], predicate)
+  if (args.length == 0) {
+    return curry2(_filter, __, predicate)
   }
-  return curry2(_filter, __, predicate)
+  return _filter(args[0], predicate)
 }
 
 /**
