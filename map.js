@@ -69,15 +69,6 @@ const _map = function (value, mapper) {
   if (isArray(value)) {
     return arrayMap(value, mapper)
   }
-  if (typeof value == 'function') {
-    if (isGeneratorFunction(value)) {
-      return generatorFunctionMap(value, mapper)
-    }
-    if (isAsyncGeneratorFunction(value)) {
-      return asyncGeneratorFunctionMap(value, mapper)
-    }
-    return reducerMap(value, mapper)
-  }
   if (value == null) {
     return value
   }

@@ -3,9 +3,11 @@ const assert = require('assert')
 const stream = require('stream')
 const path = require('path')
 const fs = require('fs')
-const rubico = require('./rubico')
-const isDeepEqual = require('./x/isDeepEqual')
 const { Readable, Writable } = require('stream')
+const Transducer = require('./Transducer')
+const rubico = require('./rubico')
+const compose = require('./compose')
+const isDeepEqual = require('./x/isDeepEqual')
 const mapFrom = require('./_internal/mapFrom')
 const sha256 = require('./_internal/sha256')
 
@@ -896,15 +898,6 @@ describe('rubico', () => {
       })
     })
 
-    describe('map(func A=>B)(GeneratorFunction<A>) -> GeneratorFunction<B>', () => {
-      it('func A=>B; B', async () => {
-        const numbers = function* () { let i = 0; while (++i < 6) yield i }
-        const squares = map(number => number ** 2)(numbers)
-        assert.equal(objectToString(squares), '[object GeneratorFunction]')
-        assert.deepEqual([...squares()], [1, 4, 9, 16, 25])
-      })
-    })
-
     describe('map(func A=>B)(Iterator<A>) -> Iterator<B>', () => {
       it('func A=>B; B', async () => {
         const numbers = function* () { let i = 0; while (++i < 6) yield i }
@@ -912,25 +905,6 @@ describe('rubico', () => {
         assert.strictEqual(`${squaresIterator}`, '[object MappingIterator]')
         assert.equal(objectToString(squaresIterator), '[object Object]')
         assert.deepEqual([...squaresIterator], [1, 4, 9, 16, 25])
-      })
-    })
-
-    describe('map(func A=>Promise|B)(AsyncGeneratorFunction<A>) -> AsyncGeneratorFunction<B>', () => {
-      it('func A=>B; B', async () => {
-        const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
-        const asyncSquares = map(number => number ** 2)(asyncNumbers)
-        assert.equal(objectToString(asyncSquares), '[object AsyncGeneratorFunction]')
-        const squaresArray = []
-        for await (const number of asyncSquares()) squaresArray.push(number)
-        assert.deepEqual(squaresArray, [1, 4, 9, 16, 25])
-      })
-      it('func A=>Promise<B>; Promise<B>', async () => {
-        const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
-        const asyncSquares = map(async number => number ** 2)(asyncNumbers)
-        assert.equal(objectToString(asyncSquares), '[object AsyncGeneratorFunction]')
-        const squaresArray = []
-        for await (const number of asyncSquares()) squaresArray.push(number)
-        assert.deepEqual(squaresArray, [1, 4, 9, 16, 25])
       })
     })
 
@@ -957,13 +931,13 @@ describe('rubico', () => {
       it('func A=>B; Reducer<B>', async () => {
         const add = (a, b) => a + b
         assert.strictEqual(
-          [1, 2, 3, 4, 5].reduce(map(number => number ** 2)(add), 0),
+          [1, 2, 3, 4, 5].reduce(Transducer.map(number => number ** 2)(add), 0),
           55,
         )
       })
       it('func A=>B; async Reducer<A>; Reducer<B>', async () => {
         const asyncAdd = async (a, b) => a + b
-        const asyncReducer = map(number => number ** 2)(asyncAdd)
+        const asyncReducer = Transducer.map(number => number ** 2)(asyncAdd)
         let total = 0
         for (const number of [1, 2, 3, 4, 5]) {
           total = await asyncReducer(total, number)
@@ -972,7 +946,7 @@ describe('rubico', () => {
       })
       it('func A=>Promise<B>; Reducer<B>', async () => {
         const add = (a, b) => a + b
-        const asyncReducer = map(async number => number ** 2)(add)
+        const asyncReducer = Transducer.map(async number => number ** 2)(add)
         let total = 0
         for (const number of [1, 2, 3, 4, 5]) {
           total = await asyncReducer(total, number)
@@ -2256,123 +2230,123 @@ transform(
         const square = number => number ** 2
         it('init []|() => []', async () => {
           assert.deepEqual(
-            transform(map(square), [])([1, 2, 3, 4, 5]),
+            transform(Transducer.map(square), [])([1, 2, 3, 4, 5]),
             [1, 4, 9, 16, 25],
           )
           assert.deepEqual(
-            transform(map(square), () => [])([1, 2, 3, 4, 5]),
+            transform(Transducer.map(square), () => [])([1, 2, 3, 4, 5]),
             [1, 4, 9, 16, 25],
           )
           assert.deepEqual(
-            await transform(map(square), async () => [])([1, 2, 3, 4, 5]),
+            await transform(Transducer.map(square), async () => [])([1, 2, 3, 4, 5]),
             [1, 4, 9, 16, 25],
           )
           assert.deepEqual(
-            transform(map(square), (array, ...rest) => array.concat(rest))(
+            transform(Transducer.map(square), (array, ...rest) => array.concat(rest))(
               [1, 2, 3, 4, 5], 0, 0),
             [1, 2, 3, 4, 5, 0, 0, 1, 4, 9, 16, 25]
           )
           assert.deepEqual(
-            transform(map(square), [])([1, 2, 3, 4, 5][Symbol.iterator]()),
+            transform(Transducer.map(square), [])([1, 2, 3, 4, 5][Symbol.iterator]()),
             [1, 4, 9, 16, 25],
           )
           const duplicate = item => [item, item]
           assert.deepEqual(
-            transform(map(duplicate), [])([1, 2, 3, 4, 5]),
+            transform(Transducer.map(duplicate), [])([1, 2, 3, 4, 5]),
             [1, 1, 2, 2, 3, 3, 4, 4, 5, 5],
           )
           assert.deepEqual(
-            transform(map(duplicate), () => [])([1, 2, 3, 4, 5]),
+            transform(Transducer.map(duplicate), () => [])([1, 2, 3, 4, 5]),
             [1, 1, 2, 2, 3, 3, 4, 4, 5, 5],
           )
           assert.deepEqual(
-            await transform(map(async number => duplicate(number)), async () => [])([1, 2, 3, 4, 5]),
+            await transform(Transducer.map(async number => duplicate(number)), async () => [])([1, 2, 3, 4, 5]),
             [1, 1, 2, 2, 3, 3, 4, 4, 5, 5],
           )
         })
         it('init \'\'|(()=>\'\')', async () => {
           assert.strictEqual(
-            transform(map(square), '')([1, 2, 3, 4, 5]),
+            transform(Transducer.map(square), '')([1, 2, 3, 4, 5]),
             '1491625',
           )
           assert.strictEqual(
-            transform(map(square), () => '')([1, 2, 3, 4, 5]),
+            transform(Transducer.map(square), () => '')([1, 2, 3, 4, 5]),
             '1491625',
           )
           assert.strictEqual(
-            await transform(map(async number => number ** 2), async () => '')([1, 2, 3, 4, 5]),
+            await transform(Transducer.map(async number => number ** 2), async () => '')([1, 2, 3, 4, 5]),
             '1491625',
           )
         })
         it('init Set|()=>Set', async () => {
           assert.deepEqual(
-            transform(map(square), new Set())([1, 2, 3, 4, 5]),
+            transform(Transducer.map(square), new Set())([1, 2, 3, 4, 5]),
             new Set([1, 4, 9, 16, 25]),
           )
           assert.deepEqual(
-            transform(map(square), () => new Set())([1, 2, 3, 4, 5]),
+            transform(Transducer.map(square), () => new Set())([1, 2, 3, 4, 5]),
             new Set([1, 4, 9, 16, 25]),
           )
           assert.deepEqual(
-            await transform(map(square), async () => new Set())([1, 2, 3, 4, 5]),
+            await transform(Transducer.map(square), async () => new Set())([1, 2, 3, 4, 5]),
             new Set([1, 4, 9, 16, 25]),
           )
           const SetWithSquare = number => new Set([number, number ** 2])
           assert.deepEqual(
-            transform(map(SetWithSquare), new Set())([1, 2, 3, 4, 5]),
+            transform(Transducer.map(SetWithSquare), new Set())([1, 2, 3, 4, 5]),
             new Set([1, 2, 4, 3, 9, 4, 16, 5, 25]),
           )
           assert.deepEqual(
-            transform(map(SetWithSquare), () => new Set())([1, 2, 3, 4, 5]),
+            transform(Transducer.map(SetWithSquare), () => new Set())([1, 2, 3, 4, 5]),
             new Set([1, 2, 4, 3, 9, 4, 16, 5, 25]),
           )
           assert.deepEqual(
-            await transform(map(async number => SetWithSquare(number)), async () => new Set())([1, 2, 3, 4, 5]),
+            await transform(Transducer.map(async number => SetWithSquare(number)), async () => new Set())([1, 2, 3, 4, 5]),
             new Set([1, 2, 4, 3, 9, 4, 16, 5, 25]),
           )
         })
         it('init TypedArray|()=>TypedArray', async () => {
           for (const constructor of numberTypedArrayConstructors) {
             assert.deepEqual(
-              transform(map(square), new constructor())([1, 2, 3, 4, 5]),
+              transform(Transducer.map(square), new constructor())([1, 2, 3, 4, 5]),
               new constructor([1, 4, 9, 16, 25])
             )
             assert.deepEqual(
-              transform(map(square), () => new constructor())([1, 2, 3, 4, 5]),
+              transform(Transducer.map(square), () => new constructor())([1, 2, 3, 4, 5]),
               new constructor([1, 4, 9, 16, 25])
             )
             assert.deepEqual(
-              await transform(map(async number => number ** 2), async () => new constructor())([1, 2, 3, 4, 5]),
+              await transform(Transducer.map(async number => number ** 2), async () => new constructor())([1, 2, 3, 4, 5]),
               new constructor([1, 4, 9, 16, 25])
             )
             assert.deepEqual(
-              transform(map(number => new constructor([number ** 2])), () => new constructor())([1, 2, 3, 4, 5]),
+              transform(Transducer.map(number => new constructor([number ** 2])), () => new constructor())([1, 2, 3, 4, 5]),
               new constructor([1, 4, 9, 16, 25])
             )
             assert.deepEqual(
-              await transform(map(async number => new constructor([number ** 2])), async () => new constructor())([1, 2, 3, 4, 5]),
+              await transform(Transducer.map(async number => new constructor([number ** 2])), async () => new constructor())([1, 2, 3, 4, 5]),
               new constructor([1, 4, 9, 16, 25])
             )
           }
           for (const constructor of bigIntTypedArrayConstructors) {
             assert.deepEqual(
-              transform(map(number => number ** 2n), new constructor())([1n, 2n, 3n, 4n, 5n]),
+              transform(Transducer.map(number => number ** 2n), new constructor())([1n, 2n, 3n, 4n, 5n]),
               new constructor([1n, 4n, 9n, 16n, 25n])
             )
             assert.deepEqual(
-              transform(map(number => number ** 2n), () => new constructor())([1n, 2n, 3n, 4n, 5n]),
+              transform(Transducer.map(number => number ** 2n), () => new constructor())([1n, 2n, 3n, 4n, 5n]),
               new constructor([1n, 4n, 9n, 16n, 25n])
             )
             assert.deepEqual(
-              await transform(map(async number => number ** 2n), async () => new constructor())([1n, 2n, 3n, 4n, 5n]),
+              await transform(Transducer.map(async number => number ** 2n), async () => new constructor())([1n, 2n, 3n, 4n, 5n]),
               new constructor([1n, 4n, 9n, 16n, 25n])
             )
             assert.deepEqual(
-              transform(map(number => new constructor([number ** 2n])), () => new constructor())([1n, 2n, 3n, 4n, 5n]),
+              transform(Transducer.map(number => new constructor([number ** 2n])), () => new constructor())([1n, 2n, 3n, 4n, 5n]),
               new constructor([1n, 4n, 9n, 16n, 25n])
             )
             assert.deepEqual(
-              await transform(map(async number => new constructor([number ** 2n])), async () => new constructor())([1n, 2n, 3n, 4n, 5n]),
+              await transform(Transducer.map(async number => new constructor([number ** 2n])), async () => new constructor())([1n, 2n, 3n, 4n, 5n]),
               new constructor([1n, 4n, 9n, 16n, 25n])
             )
           }
@@ -2387,39 +2361,39 @@ transform(
               : Math.max(this.number, otherMax))
           }
           assert.deepEqual(
-            transform(map(number => number ** 2), new Max(-Infinity))([1, 2, 3, 4, 5]),
+            transform(Transducer.map(number => number ** 2), new Max(-Infinity))([1, 2, 3, 4, 5]),
             new Max(25),
           )
           assert.deepEqual(
-            transform(map(number => number ** 2), () => new Max(-Infinity))([1, 2, 3, 4, 5]),
+            transform(Transducer.map(number => number ** 2), () => new Max(-Infinity))([1, 2, 3, 4, 5]),
             new Max(25),
           )
           assert.deepEqual(
-            await transform(map(async number => number ** 2), async () => new Max(-Infinity))([1, 2, 3, 4, 5]),
+            await transform(Transducer.map(async number => number ** 2), async () => new Max(-Infinity))([1, 2, 3, 4, 5]),
             new Max(25),
           )
         })
         it('init { write: function }|()=>({ write: function })', async () => {
           assert.deepEqual(
-            transform(map(number => number ** 2), new MockWritable([]))([1, 2, 3, 4, 5]),
+            transform(Transducer.map(number => number ** 2), new MockWritable([]))([1, 2, 3, 4, 5]),
             new MockWritable([1, 4, 9, 16, 25]),
           )
           assert.deepEqual(
-            transform(map(number => number ** 2), () => new MockWritable([]))([1, 2, 3, 4, 5]),
+            transform(Transducer.map(number => number ** 2), () => new MockWritable([]))([1, 2, 3, 4, 5]),
             new MockWritable([1, 4, 9, 16, 25]),
           )
           assert.deepEqual(
-            await transform(map(async number => number ** 2), async () => new MockWritable([]))([1, 2, 3, 4, 5]),
+            await transform(Transducer.map(async number => number ** 2), async () => new MockWritable([]))([1, 2, 3, 4, 5]),
             new MockWritable([1, 4, 9, 16, 25]),
           )
           const numberToSquaredReadable = number => binaryToReadableStream(Buffer.from([number ** 2]))
           assert.deepEqual(
-            await transform(map(numberToSquaredReadable), new MockWritable([]))([1, 2, 3, 4, 5]),
+            await transform(Transducer.map(numberToSquaredReadable), new MockWritable([]))([1, 2, 3, 4, 5]),
             new MockWritable([1, 4, 9, 16, 25].map(number => new Uint8Array([number]))),
           )
           const numberToNumberObjectReadable = number => arrayToObjectReadableStream([{ number }])
           assert.deepEqual(
-            await transform(map(numberToNumberObjectReadable), new MockWritable([]))([1, 2, 3, 4, 5]),
+            await transform(Transducer.map(numberToNumberObjectReadable), new MockWritable([]))([1, 2, 3, 4, 5]),
             new MockWritable([
               { number: 1 },
               { number: 2 },
@@ -2430,12 +2404,12 @@ transform(
           )
           const numberToDuplicateString = number => `${number}${number}`
           assert.deepEqual(
-            await transform(map(numberToDuplicateString), new MockWritable([]))([1, 2, 3, 4, 5]),
+            await transform(Transducer.map(numberToDuplicateString), new MockWritable([]))([1, 2, 3, 4, 5]),
             new MockWritable(['11', '22', '33', '44', '55']),
           )
           const numberToDuplicateUint8Array = number => new Uint8Array([number, number])
           assert.deepEqual(
-            transform(map(numberToDuplicateUint8Array), new MockWritable([]))([1, 2, 3, 4, 5]),
+            transform(Transducer.map(numberToDuplicateUint8Array), new MockWritable([]))([1, 2, 3, 4, 5]),
             new MockWritable([
               new Uint8Array([1, 1]),
               new Uint8Array([2, 2]),
@@ -2446,7 +2420,7 @@ transform(
           )
           const numberToObjectNumber = number => ({ number })
           assert.deepEqual(
-            transform(map(numberToObjectNumber), new MockWritable([]))([1, 2, 3, 4, 5]),
+            transform(Transducer.map(numberToObjectNumber), new MockWritable([]))([1, 2, 3, 4, 5]),
             new MockWritable([
               { number: 1 },
               { number: 2 },
@@ -2457,16 +2431,16 @@ transform(
           )
           const toNull = () => null
           assert.deepEqual(
-            transform(map(toNull), new MockWritable([]))([1, 2, 3, 4, 5]),
+            transform(Transducer.map(toNull), new MockWritable([]))([1, 2, 3, 4, 5]),
             new MockWritable([null, null, null, null, null]),
           )
           const getEmptyReadable = () => binaryToReadableStream(Buffer.from([]))
           assert.deepEqual(
-            await transform(map(getEmptyReadable), new MockWritable([]))([1, 2, 3, 4, 5]),
+            await transform(Transducer.map(getEmptyReadable), new MockWritable([]))([1, 2, 3, 4, 5]),
             new MockWritable([]),
           )
           assert.throws(
-            () => transform(map(function () {
+            () => transform(Transducer.map(function () {
               throw new Error('hey')
             }), new MockWritable([]))([1, 2, 3, 4, 5]),
             new Error('hey'),
@@ -2474,21 +2448,21 @@ transform(
         })
         it('init 3', async () => {
           assert.strictEqual(
-            transform(map(square), 3)([1, 2, 3, 4, 5]),
+            transform(Transducer.map(square), 3)([1, 2, 3, 4, 5]),
             3,
           )
         })
         it('init null|undefined', async () => {
           assert.strictEqual(
-            transform(map(square), null)([1, 2, 3, 4, 5]),
+            transform(Transducer.map(square), null)([1, 2, 3, 4, 5]),
             null,
           )
           assert.strictEqual(
-            transform(map(square), undefined)([1, 2, 3, 4, 5]),
+            transform(Transducer.map(square), undefined)([1, 2, 3, 4, 5]),
             undefined,
           )
           assert.strictEqual(
-            transform(map(square))([1, 2, 3, 4, 5]),
+            transform(Transducer.map(square))([1, 2, 3, 4, 5]),
             undefined,
           )
         })
@@ -2496,23 +2470,23 @@ transform(
     })
   })
 
-  describe('transform - v1.5.11 regression', () => {
-    const squareOdds = pipe([filter(isOdd), map(square)])
-    const asyncEvens = filter(asyncIsEven)
+  describe('transform - misc', () => {
+    const squareOdds = compose([Transducer.filter(isOdd), Transducer.map(square)])
+    const asyncEvens = Transducer.filter(asyncIsEven)
     const bigNumbers = [1n, 2n, 3n, 4n, 5n]
-    const squareOddsToString = pipe([
-      filter(isOdd),
-      map(pipe([square, x => `${x}`])),
+    const squareOddsToString = compose([
+      Transducer.filter(isOdd),
+      Transducer.map(pipe([square, x => `${x}`])),
     ])
     it('sync transforms iterable to null', async () => {
       let y = ''
-      ase(transform(map(tap(x => { y += x })), null)([1, 2, 3, 4, 5]), null)
+      ase(transform(Transducer.map(tap(x => { y += x })), null)([1, 2, 3, 4, 5]), null)
       ase(y, '12345')
     })
     it('async transforms iterable to null', async () => {
       let y = ''
-      aok(transform(map(tap(async () => {})), null)([1, 2, 3, 4, 5]) instanceof Promise)
-      ase(await transform(map(tap(async x => { y += x })), null)([1, 2, 3, 4, 5]), null)
+      aok(transform(Transducer.map(tap(async () => {})), null)([1, 2, 3, 4, 5]) instanceof Promise)
+      ase(await transform(Transducer.map(tap(async x => { y += x })), null)([1, 2, 3, 4, 5]), null)
       ase(y, '12345')
     })
     it('sync transforms iterable to array', async () => {
@@ -2554,13 +2528,13 @@ transform(
     it('coerces booleans to 0 and 1', async () => {
       for (const constructor of numberTypedArrayConstructors) {
         assert.deepEqual(
-          transform(map(x => x), new constructor(0))([true, false, false]),
+          transform(Transducer.map(x => x), new constructor(0))([true, false, false]),
           new constructor([1, 0, 0])
         )
       }
       for (const constructor of bigIntTypedArrayConstructors) {
         assert.deepEqual(
-          transform(map(x => x), new constructor(0))([true, false, false]),
+          transform(Transducer.map(x => x), new constructor(0))([true, false, false]),
           new constructor([1n, 0n, 0n])
         )
       }
@@ -2576,7 +2550,7 @@ transform(
     it('sync transforms iterable to a bigint TypedArray', async () => {
       const isBigOdd = x => (x % 2n === 1n)
       const bigSquare = x => x ** 2n
-      const squareBigOdds = pipe([filter(isBigOdd), map(bigSquare)])
+      const squareBigOdds = compose([Transducer.filter(isBigOdd), Transducer.map(bigSquare)])
       for (const constructor of bigIntTypedArrayConstructors) {
         ade(
           transform(squareBigOdds, new constructor(0))(bigNumbers),
@@ -2586,7 +2560,7 @@ transform(
     })
     it('async transforms iterable to a bigint TypedArray', async () => {
       const asyncIsBigEven = async x => (x % 2n === 0n)
-      const asyncBigEvens = filter(asyncIsBigEven)
+      const asyncBigEvens = Transducer.filter(asyncIsBigEven)
       for (const constructor of bigIntTypedArrayConstructors) {
         const buffer99 = new constructor([9n, 9n])
         const buffer9924 = transform(asyncBigEvens, buffer99)(bigNumbers)
@@ -2606,9 +2580,9 @@ transform(
       await fs.promises.unlink('./tmp')
     })
     it('async transforms iterable to writeable stream', async () => {
-      const asyncEvensToString = pipe([
-        filter(asyncIsEven),
-        map(x => `${x}`)
+      const asyncEvensToString = compose([
+        Transducer.filter(asyncIsEven),
+        Transducer.map(x => `${x}`)
       ])
       const tmpWriter = fs.createWriteStream(path.join(__dirname, './tmp'))
       tmpWriter.write('99')
@@ -2625,42 +2599,42 @@ transform(
     })
     it('sync transforms an iterable to an object', async () => {
       ade(
-        transform(map(n => ({ [n]: n })), {})([1, 2, 3, 4, 5]),
+        transform(Transducer.map(n => ({ [n]: n })), {})([1, 2, 3, 4, 5]),
         { '1': 1, '2': 2, '3': 3, '4': 4, '5': 5 },
       )
     })
     it('async transforms an iterable to an object', async () => {
       aok(
-        transform(map(async n => [n, n]), {})([1, 2, 3, 4, 5]) instanceof Promise,
+        transform(Transducer.map(async n => [n, n]), {})([1, 2, 3, 4, 5]) instanceof Promise,
       )
       aok(
-        transform(map(async n => ({ [n]: n })), {})([1, 2, 3, 4, 5]) instanceof Promise,
+        transform(Transducer.map(async n => ({ [n]: n })), {})([1, 2, 3, 4, 5]) instanceof Promise,
       )
       ade(
-        await transform(map(async n => ({ [n]: n })), {})([1, 2, 3, 4, 5]),
+        await transform(Transducer.map(async n => ({ [n]: n })), {})([1, 2, 3, 4, 5]),
         { '1': 1, '2': 2, '3': 3, '4': 4, '5': 5 },
       )
     })
     it('initial value can be a function', async () => {
       const square = x => x ** 2
       ade(
-        transform(map(square), () => [])([1, 2, 3]),
+        transform(Transducer.map(square), () => [])([1, 2, 3]),
         [1, 4, 9],
       )
     })
     it('initial value can be an async function', async () => {
       const square = x => x ** 2
       aok(
-        transform(map(square), async () => [])([1, 2, 3]) instanceof Promise,
+        transform(Transducer.map(square), async () => [])([1, 2, 3]) instanceof Promise,
       )
       ade(
-        await transform(map(square), async () => [])([1, 2, 3]),
+        await transform(Transducer.map(square), async () => [])([1, 2, 3]),
         [1, 4, 9],
       )
     })
-    it('referential initial values are unsafe', async () => {
+    it('nonfunction initial values can be unsafe', async () => {
       const square = x => x ** 2
-      const unsafeSquareAllTransform = transform(map(square), [])
+      const unsafeSquareAllTransform = transform(Transducer.map(square), [])
       ade(
         unsafeSquareAllTransform([1, 2, 3]),
         [1, 4, 9],
@@ -2669,7 +2643,7 @@ transform(
         unsafeSquareAllTransform([1, 2, 3]),
         [1, 4, 9, 1, 4, 9],
       )
-      const safeSquareAllTransform = transform(map(square), () => [])
+      const safeSquareAllTransform = transform(Transducer.map(square), () => [])
       ade(
         safeSquareAllTransform([1, 2, 3]),
         [1, 4, 9],
@@ -2682,12 +2656,12 @@ transform(
     it('=> [] for initial () => [] and input []', async () => {
       const square = x => x ** 2
       ade(
-        transform(map(square), () => [])([]),
+        transform(Transducer.map(square), () => [])([]),
         [],
       )
       const emptyAsyncIterator = (async function*(){})()
       ade(
-        await transform(map(square), () => [])(emptyAsyncIterator),
+        await transform(Transducer.map(square), () => [])(emptyAsyncIterator),
         [],
       )
     })
@@ -3371,7 +3345,7 @@ flatMap(
       it('value Reducer', async () => {
         const concat = (array, values) => array.concat(values)
         assert.deepEqual([1, 2, 3, 4, 5].reduce(flatMap(duplicateArray)(concat), []), [1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
-        assert.deepEqual([1, 2, 3, 4, 5].reduce(map(duplicateString)(concat), []), ['11', '22', '33', '44', '55'])
+        assert.deepEqual([1, 2, 3, 4, 5].reduce(Transducer.map(duplicateString)(concat), []), ['11', '22', '33', '44', '55'])
         assert.deepEqual([1, 2, 3, 4, 5].reduce(flatMap(duplicateString)(concat), []), ['1', '1', '2', '2', '3', '3', '4', '4', '5', '5'])
         assert.deepEqual([1, 2, 3, 4, 5].reduce(flatMap(duplicateObject)(concat), []), [1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
         assert.deepEqual([1, 2, 3, 4, 5].reduce(flatMap(duplicateBuffer)(concat), []), [1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
