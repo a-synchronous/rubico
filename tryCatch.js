@@ -1,7 +1,21 @@
 const isPromise = require('./_internal/isPromise')
+const promiseAll = require('./_internal/promiseAll')
 const __ = require('./_internal/placeholder')
 const curry3 = require('./_internal/curry3')
 const catcherApply = require('./_internal/catcherApply')
+const areAnyValuesPromises = require('./_internal/areAnyValuesPromises')
+
+// _tryCatch(tryer function, catcher function, args Array) -> Promise
+const _tryCatch = function (tryer, catcher, args) {
+  try {
+    const result = tryer(...args)
+    return isPromise(result)
+      ? result.catch(curry3(catcherApply, catcher, __, args))
+      : result
+  } catch (error) {
+    return catcher(error, ...args)
+  }
+}
 
 /**
  * @name tryCatch
@@ -53,27 +67,17 @@ const tryCatch = function (...args) {
   if (args.length > 2) {
     const catcher = args.pop(),
       tryer = args.pop()
-    try {
-      const result = tryer(...args)
-      return isPromise(result)
-        ? result.catch(curry3(catcherApply, catcher, __, args))
-        : result
-    } catch (error) {
-      return catcher(error, ...args)
+    if (areAnyValuesPromises(args)) {
+      return promiseAll(args)
+        .then(curry3(_tryCatch, tryer, catcher, __))
     }
+    return _tryCatch(tryer, catcher, args)
   }
 
   const tryer = args[0],
     catcher = args[1]
   return function tryCatcher(...args) {
-    try {
-      const result = tryer(...args)
-      return isPromise(result)
-        ? result.catch(curry3(catcherApply, catcher, __, args))
-        : result
-    } catch (error) {
-      return catcher(error, ...args)
-    }
+    return _tryCatch(tryer, catcher, args)
   }
 }
 
