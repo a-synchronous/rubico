@@ -24,7 +24,7 @@ const callConcat = require('./callConcat')
  * Reducer = (any, any)=>Promise|any
  *
  * identityTransform<
- *   args Array,
+ *   collection any,
  *   transducer Reducer=>Reducer,
  *   result undefined|null,
  * >(args, transducer, result) -> Promise|result
@@ -33,8 +33,8 @@ const callConcat = require('./callConcat')
  * @description
  * Reduce a value, always returning the initial result
  */
-const identityTransform = function (args, transducer, result) {
-  const nil = genericReduce(args, transducer(noop), null)
+const identityTransform = function (collection, transducer, result) {
+  const nil = genericReduce(collection, transducer(noop), null)
   return isPromise(nil) ? nil.then(always(result)) : result
 }
 
@@ -48,44 +48,44 @@ const identityTransform = function (args, transducer, result) {
  *   |{ concat: function }|{ write: function }|Object
  *
  * genericTransform<
- *   args ...any,
+ *   collection any,
  *   transducer Reducer=>Reducer,
  *   result Semigroup|any,
- * >(args, transducer, result) -> result
+ * >(collection, transducer, result) -> result
  * ```
  */
-const genericTransform = function (args, transducer, result) {
+const genericTransform = function (collection, transducer, result) {
   if (isArray(result)) {
-    return genericReduce(args, transducer(arrayExtend), result)
+    return genericReduce(collection, transducer(arrayExtend), result)
   }
   if (isBinary(result)) {
-    const intermediateArray = genericReduce(args, transducer(arrayExtend), [])
+    const intermediateArray = genericReduce(collection, transducer(arrayExtend), [])
     return isPromise(intermediateArray)
       ? intermediateArray.then(curry2(binaryExtend, result, __))
       : binaryExtend(result, intermediateArray)
   }
   if (result == null) {
-    return identityTransform(args, transducer, result)
+    return identityTransform(collection, transducer, result)
   }
 
   const resultConstructor = result.constructor
   if (typeof result == 'string' || resultConstructor == String) {
     // TODO: use array + join over adding
-    return genericReduce(args, transducer(add), result)
+    return genericReduce(collection, transducer(add), result)
   }
   if (typeof result.concat == 'function') {
-    return genericReduce(args, transducer(callConcat), result)
+    return genericReduce(collection, transducer(callConcat), result)
   }
   if (typeof result.write == 'function') {
-    return genericReduce(args, transducer(streamExtend), result)
+    return genericReduce(collection, transducer(streamExtend), result)
   }
   if (resultConstructor == Set) {
-    return genericReduce(args, transducer(setExtend), result)
+    return genericReduce(collection, transducer(setExtend), result)
   }
   if (resultConstructor == Object) {
-    return genericReduce(args, transducer(objectAssign), result)
+    return genericReduce(collection, transducer(objectAssign), result)
   }
-  return identityTransform(args, transducer, result)
+  return identityTransform(collection, transducer, result)
 }
 
 module.exports = genericTransform

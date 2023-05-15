@@ -1,7 +1,6 @@
 const isPromise = require('./_internal/isPromise')
 const __ = require('./_internal/placeholder')
 const curry3 = require('./_internal/curry3')
-const curryArgs3 = require('./_internal/curryArgs3')
 const genericReduce = require('./_internal/genericReduce')
 
 /**
@@ -178,23 +177,26 @@ const reduce = function (...args) {
     const reducer = args[1]
     const initialValue = args[2]
     if (typeof initialValue == 'function') {
-      return genericReduce([args[0]], reducer, initialValue(args[0]))
+      return genericReduce(args[0], reducer, initialValue(args[0]))
     }
-    return genericReduce([args[0]], reducer, initialValue)
+    if (isPromise(initialValue)) {
+      return initialValue.then(curry3(genericReduce, args[0], reducer, __))
+    }
+    return genericReduce(args[0], reducer, initialValue)
   }
 
   const reducer = args[0]
   const initialValue = args[1]
 
   if (typeof initialValue == 'function') {
-    return function reducing(...args) {
-      const result = initialValue(...args)
+    return function reducing(collection) {
+      const result = initialValue(collection)
       return isPromise(result)
-        ? result.then(curry3(genericReduce, args, reducer, __))
-        : genericReduce(args, reducer, result)
+        ? result.then(curry3(genericReduce, collection, reducer, __))
+        : genericReduce(collection, reducer, result)
     }
   }
-  return curryArgs3(genericReduce, __, reducer, initialValue)
+  return curry3(genericReduce, __, reducer, initialValue)
 }
 
 module.exports = reduce

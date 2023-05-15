@@ -2042,11 +2042,6 @@ transform(
             [1, 4, 9, 16, 25],
           )
           assert.deepEqual(
-            transform(Transducer.map(square), (array, ...rest) => array.concat(rest))(
-              [1, 2, 3, 4, 5], 0, 0),
-            [1, 2, 3, 4, 5, 0, 0, 1, 4, 9, 16, 25]
-          )
-          assert.deepEqual(
             transform(Transducer.map(square), [])([1, 2, 3, 4, 5][Symbol.iterator]()),
             [1, 4, 9, 16, 25],
           )

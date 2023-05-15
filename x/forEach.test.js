@@ -167,7 +167,7 @@ describe('forEach', () => {
       const add = (a, b) => a + b
       const numbers = [1, 2, 3, 4, 5]
       assert.strictEqual(
-        await genericReduce([numbers], forEach(async number => (total += number))(add), 0),
+        await genericReduce(numbers, forEach(async number => (total += number))(add), 0),
         15)
       assert.strictEqual(total, 15)
     })
