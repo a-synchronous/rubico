@@ -2042,6 +2042,28 @@ transform(
     `, () => {
       describe('collection x init', () => {
         const square = number => number ** 2
+        it('API coverage', async () => {
+          assert.deepEqual(
+            transform([1, 2, 3, 4, 5], Transducer.map(square), []),
+            [1, 4, 9, 16, 25],
+          )
+          assert.deepEqual(
+            transform([1, 2, 3, 4, 5], Transducer.map(square), () => []),
+            [1, 4, 9, 16, 25],
+          )
+          assert.deepEqual(
+            await transform([1, 2, 3, 4, 5], Transducer.map(square), async () => []),
+            [1, 4, 9, 16, 25],
+          )
+          assert.deepEqual(
+            await transform([1, 2, 3, 4, 5], Transducer.map(square), Promise.resolve([])),
+            [1, 4, 9, 16, 25],
+          )
+          assert.deepEqual(
+            await transform(Promise.resolve([1, 2, 3, 4, 5]), Transducer.map(square), []),
+            [1, 4, 9, 16, 25],
+          )
+        })
         it('init []|() => []', async () => {
           assert.deepEqual(
             transform(Transducer.map(square), [])([1, 2, 3, 4, 5]),
