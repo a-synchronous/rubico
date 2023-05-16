@@ -2,6 +2,7 @@ const funcConcat = require('./_internal/funcConcat')
 const reducerMap = require('./_internal/reducerMap')
 const reducerFilter = require('./_internal/reducerFilter')
 const reducerFlatMap = require('./_internal/reducerFlatMap')
+const reducerForEach = require('./_internal/reducerForEach')
 const curry2 = require('./_internal/curry2')
 const __ = require('./_internal/placeholder')
 
@@ -137,6 +138,21 @@ Transducer.filter = function transducerFilter(predicate) {
  */
 Transducer.flatMap = function transducerFlatMap(flatMapper) {
   return curry2(reducerFlatMap, __, flatMapper)
+}
+
+/**
+ * @name Transducer.forEach
+ *
+ * @synopsis
+ * ```coffeescript [specscript]
+ * type Reducer = (accumulator any, item any)=>(nextAccumulator Promise|any)
+ * type Transducer = Reducer=>Reducer
+ *
+ * Transducer.forEach(func function) -> forEachTransducer Transducer
+ * ```
+ */
+Transducer.forEach = function transducerForEach(func) {
+  return curry2(reducerForEach, __, func)
 }
 
 module.exports = Transducer

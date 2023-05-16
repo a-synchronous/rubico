@@ -63,15 +63,6 @@ const forEach = callback => function executingCallbackForEach(value) {
   if (isArray(value)) {
     return arrayForEach(value, callback)
   }
-  if (typeof value == 'function') {
-    if (isGeneratorFunction(value)) {
-      return generatorFunctionForEach(value, callback)
-    }
-    if (isAsyncGeneratorFunction(value)) {
-      return asyncGeneratorFunctionForEach(value, callback)
-    }
-    return reducerForEach(value, callback)
-  }
   if (value == null) {
     return value
   }
