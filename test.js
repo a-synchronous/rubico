@@ -2516,6 +2516,22 @@ flatMap(
   flatMapper (item any)=>Promise|Iterable,
 )(value FlatMappable) -> result Promise|FlatMappable
     `, () => {
+
+      it('API coverage', async () => {
+        assert.deepEqual(
+          flatMap([1, 2, 3, 4, 5], number => isOdd(number) ? [number] : []),
+          [1, 3, 5],
+        )
+        assert.deepEqual(
+          flatMap(number => isOdd(number) ? [number] : [])([1, 2, 3, 4, 5]),
+          [1, 3, 5],
+        )
+        assert.deepEqual(
+          await flatMap(Promise.resolve([1, 2, 3, 4, 5]), number => isOdd(number) ? [number] : []),
+          [1, 3, 5],
+        )
+      })
+
       const async = func => async function asyncFunc(...args) {
         return func(...args)
       }

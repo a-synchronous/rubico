@@ -1,3 +1,4 @@
+const isPromise = require('./_internal/isPromise')
 const FlatMappingIterator = require('./_internal/FlatMappingIterator')
 const FlatMappingAsyncIterator = require('./_internal/FlatMappingAsyncIterator')
 const isArray = require('./_internal/isArray')
@@ -67,13 +68,13 @@ const _flatMap = function (value, flatMapper) {
  * type Iterable = Iterable|AsyncIterable|Object<value any>
  *
  * flatMap(
- *   value FlatMappable,
+ *   collection FlatMappable,
  *   flatMapper (item any)=>Promise|Iterable,
  * ) -> result Promise|FlatMappable
  *
  * flatMap(
  *   flatMapper (item any)=>Promise|Iterable,
- * )(value FlatMappable) -> result Promise|FlatMappable
+ * )(collection FlatMappable) -> result Promise|FlatMappable
  * ```
  *
  * @description
@@ -169,7 +170,10 @@ const flatMap = (...args) => {
   if (args.length == 0) {
     return curry2(_flatMap, __, flatMapper)
   }
-  return _flatMap(args[0], flatMapper)
+  const collection = args[0]
+  return isPromise(collection)
+    ? collection.then(curry2(_flatMap, __, flatMapper))
+    : _flatMap(args[0], flatMapper)
 }
 
 module.exports = flatMap
