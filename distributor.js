@@ -1,20 +1,11 @@
+require('./global')
 const rubico = require('./rubico')
 const rubicoX = require('./x')
+const Transducer = require('./Transducer')
 const rubicoVersion = require('./package.json').version
 const fs = require('fs')
 const nodePath = require('path')
 const { minify } = require('terser')
-
-const {
-  pipe, tap,
-  switchCase, tryCatch,
-  fork, assign, get, pick, omit,
-  map, filter, reduce, transform, flatMap,
-  and, or, not, any, all,
-  eq, gt, lt, gte, lte,
-  thunkify, always,
-  curry, __,
-} = rubico
 
 const {
   identity,
@@ -65,7 +56,7 @@ const pathToCode = pipe.sync([
 
 // path string => codeBundle string
 const pathToCodeBundle = pipe([
-  fork({
+  all({
     path: identity,
     code: pathToCode,
   }),
@@ -95,7 +86,7 @@ const pathToCodeBundle = pipe([
                 always(''),
                 pipe([
                   tap(requiredPath => alreadyRequiredPaths.add(requiredPath)),
-                  fork({
+                  all({
                     requiredPath: identity,
                     code: pathToCode,
                   }),
@@ -135,19 +126,20 @@ pipe([
     noop)),
   tap(thunkify(fs.promises.mkdir, `${__dirname}/dist/x`, { recursive: true })),
   transform(
-    pipe([
-      filter(pipe([
+    compose([
+      Transducer.filter(pipe([
         get('name'),
         not(nameIsIgnored),
       ])),
-      map(assign({
+
+      Transducer.map(assign({
         baseCodeBundle: pipe([
           get('path'),
           pathToCodeBundle,
         ]),
       })),
 
-      map(switchCase([
+      Transducer.map(switchCase([
         or([
           ({ distPath }) => distPath.endsWith('rubico.mjs'),
           ({ distPath }) => distPath.endsWith('rubico.es.js'),
@@ -157,15 +149,15 @@ pipe([
 /**
  * rubico v${rubicoVersion}
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
+ * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 ${baseCodeBundle}export {
   pipe, tap,
   switchCase, tryCatch,
-  fork, assign, get, set, pick, omit,
+  all, assign, get, set, pick, omit,
   map, filter, reduce, transform, flatMap,
-  and, or, not, any, all,
+  and, or, not, some, every,
   eq, gt, lt, gte, lte,
   thunkify, always,
   curry, __,
@@ -184,15 +176,15 @@ export default ${name}
 /**
  * rubico v${rubicoVersion}
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
+ * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 ${(await minify(`${baseCodeBundle}export {
   pipe, tap,
   switchCase, tryCatch,
-  fork, assign, get, set, pick, omit,
+  all, assign, get, set, pick, omit,
   map, filter, reduce, transform, flatMap,
-  and, or, not, any, all,
+  and, or, not, some, every,
   eq, gt, lt, gte, lte,
   thunkify, always,
   curry, __,
@@ -208,7 +200,7 @@ export default ${name}`)).code}
 /**
  * rubico v${rubicoVersion}
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
+ * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 ${baseCodeBundle}export default ${name}
@@ -221,7 +213,7 @@ ${baseCodeBundle}export default ${name}
 /**
  * rubico v${rubicoVersion}
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
+ * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 ${(await minify(`${baseCodeBundle}export default ${name}`)).code}
@@ -234,7 +226,7 @@ ${(await minify(`${baseCodeBundle}export default ${name}`)).code}
 /**
  * rubico v${rubicoVersion}
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
+ * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 
@@ -254,7 +246,7 @@ ${baseCodeBundle}return ${name}
 /**
  * rubico v${rubicoVersion}
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
+ * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 
@@ -272,11 +264,11 @@ ${baseCodeBundle}return ${name}
         }
       ])),
 
-      forEach(pipe([
+      Transducer.map(tap(pipe([
         get('distPath'),
         replace(process.env.HOME, '~'),
         curry.arity(2, console.log, 'writing', __),
-      ])),
+      ]))),
     ]),
     {
       async concat({ distPath, codeBundle }) {
@@ -290,14 +282,14 @@ ${baseCodeBundle}return ${name}
 ])([
 
   Object.keys(rubico).map(pipe([
-    fork({
+    all({
       name: identity,
       path: pipe([
         name => `${name}.js`,
         curry.arity(2, pathResolve, __dirname, __),
       ]),
     }),
-  ])).flatMap(fork([
+  ])).flatMap(all([
 
     assign({
       type: always('esm'),
@@ -352,7 +344,7 @@ ${baseCodeBundle}return ${name}
   ])),
 
   Object.keys(rubicoX).map(pipe([
-    fork({
+    all({
       name: identity,
       path: pipe([
         name => `${name}.js`,
@@ -360,7 +352,7 @@ ${baseCodeBundle}return ${name}
       ]),
     }),
 
-  ])).flatMap(fork([
+  ])).flatMap(all([
     assign({
       type: always('esm'),
       distPath: pipe([
