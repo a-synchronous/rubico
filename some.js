@@ -8,13 +8,13 @@ const symbolIterator = require('./_internal/symbolIterator')
 const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
 
 /**
- * @name any
+ * @name some
  *
  * @synopsis
  * ```coffeescript [specscript]
  * type Foldable = Iterable|AsyncIterable|Object
  *
- * any(predicate function)(collection Foldable) -> result Promise|boolean
+ * some(predicate function)(collection Foldable) -> result Promise|boolean
  * ```
  *
  * @description
@@ -24,11 +24,11 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  * const isOdd = number => number % 2 == 1
  *
  * console.log(
- *   any(isOdd)([1, 2, 3, 4, 5]),
+ *   some(isOdd)([1, 2, 3, 4, 5]),
  * ) // true
  * ```
  *
- * The collection can be any iterable, async iterable, or object values iterable collection. Below is an example of `any` accepting an async generator as the collection.
+ * The collection can be any iterable, async iterable, or object values iterable collection. Below is an example of `some` accepting an async generator as the collection.
  *
  * ```javascript [playground]
  * const toTodosUrl = id => 'https://jsonplaceholder.typicode.com/todos/' + id
@@ -45,7 +45,7 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  *   yield 1; yield 2; yield 3; yield 4; yield 5
  * }
  *
- * any(pipe([
+ * some(pipe([
  *   fetchTodo,
  *   todo => todo.title.startsWith('fugiat'),
  * ]))(todoIDsGenerator()).then(console.log) // true
@@ -57,7 +57,7 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  *
  * @related or
  */
-const any = predicate => function anyTruthy(value) {
+const some = predicate => function anyTruthy(value) {
   if (isArray(value)) {
     return arrayAny(value, predicate)
   }
@@ -79,4 +79,4 @@ const any = predicate => function anyTruthy(value) {
   return predicate(value)
 }
 
-module.exports = any
+module.exports = some
