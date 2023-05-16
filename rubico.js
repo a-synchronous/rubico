@@ -1,5 +1,5 @@
 const pipe = require('./pipe')
-const fork = require('./fork')
+const all = require('./all')
 const assign = require('./assign')
 const tap = require('./tap')
 const tryCatch = require('./tryCatch')
@@ -9,8 +9,8 @@ const filter = require('./filter')
 const reduce = require('./reduce')
 const transform = require('./transform')
 const flatMap = require('./flatMap')
-const any = require('./any')
-const all = require('./all')
+const some = require('./some')
+const every = require('./every')
 const and = require('./and')
 const or = require('./or')
 const not = require('./not')
@@ -44,9 +44,9 @@ const __ = require('./__')
 const rubico = {
   pipe, tap,
   switchCase, tryCatch,
-  fork, assign, get, set, pick, omit,
-  map, filter, reduce, transform, flatMap,
-  and, or, not, any, all,
+  all, assign, get, set, pick, omit,
+  map, filter, flatMap, reduce, transform,
+  and, or, not, some, every,
   eq, gt, lt, gte, lte,
   thunkify, always,
   curry, __,
