@@ -1,3 +1,4 @@
+const isPromise = require('./_internal/isPromise')
 const MappingIterator = require('./_internal/MappingIterator')
 const MappingAsyncIterator = require('./_internal/MappingAsyncIterator')
 const __ = require('./_internal/placeholder')
@@ -274,7 +275,12 @@ const map = (...args) => {
   if (args.length == 0) {
     return curry2(_map, __, mapper)
   }
-  return _map(args[0], mapper)
+
+  const collection = args[0]
+  if (isPromise(collection)) {
+    return collection.then(curry2(_map, __, mapper))
+  }
+  return _map(collection, mapper)
 }
 
 /**
