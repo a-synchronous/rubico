@@ -1,7 +1,8 @@
 const pipe = require('./pipe')
+const compose = require('./compose')
+const tap = require('./tap')
 const all = require('./all')
 const assign = require('./assign')
-const tap = require('./tap')
 const tryCatch = require('./tryCatch')
 const switchCase = require('./switchCase')
 const map = require('./map')
@@ -42,7 +43,7 @@ const __ = require('./__')
  */
 
 const rubico = {
-  pipe, tap,
+  pipe, compose, tap,
   switchCase, tryCatch,
   all, assign, get, set, pick, omit,
   map, filter, flatMap, reduce, transform,
