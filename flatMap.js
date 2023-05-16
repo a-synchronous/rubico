@@ -72,9 +72,8 @@ const _flatMap = function (value, flatMapper) {
  *   flatMapper (item any)=>Promise|Iterable,
  * ) -> result Promise|FlatMappable
  *
- * flatMap(
- *   flatMapper (item any)=>Promise|Iterable,
- * )(collection FlatMappable) -> result Promise|FlatMappable
+ * flatMap(flatMapper (item any)=>Promise|Iterable)(collection FlatMappable)
+ *   -> result Promise|FlatMappable
  * ```
  *
  * @description
