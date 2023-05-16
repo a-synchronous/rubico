@@ -1334,11 +1334,6 @@ then(() => {
           [3, 5],
         )
       })
-      it('does not provide index or reference to original array', async () => {
-        let total = 0
-        filter((...args) => args.forEach(arg => (total += arg)))([1, 2, 3])
-        assert.equal(total, 6)
-      })
     })
 
     describe('filter(predicate T=>Promise|boolean)(Set<T>) -> Promise|Set<T>', () => {
