@@ -384,6 +384,37 @@ describe('rubico', () => {
     })
   })
 
+  describe('compose', () => {
+    it('chains functions in reverse', async () => {
+      ade(
+        compose([1, 2, 3, 4, 5], [
+          map(number => number ** 2),
+          map(number => number + 2),
+          filter(number => number % 2 == 1)
+        ]),
+        [9, 25, 49],
+      )
+
+      ade(
+        compose([
+          map(number => number ** 2),
+          map(number => number + 2),
+          filter(number => number % 2 == 1)
+        ])([1, 2, 3, 4, 5]),
+        [9, 25, 49],
+      )
+
+      ade(
+        await compose([
+          map(async number => number ** 2),
+          map(number => number + 2),
+          filter(async number => number % 2 == 1)
+        ])([1, 2, 3, 4, 5]),
+        [9, 25, 49],
+      )
+    })
+  })
+
   describe('all', () => {
     it('maps input to array of sync functions', async () => {
       ade(all([hi, hi, hi])('yo'), ['yohi', 'yohi', 'yohi'])
@@ -3998,7 +4029,7 @@ eq(
     })
   })
 
-  it('exports 29 functions', async () => {
-    ase(Object.keys(rubico).length, 29)
+  it('exports 30 functions', async () => {
+    ase(Object.keys(rubico).length, 30)
   })
 })
