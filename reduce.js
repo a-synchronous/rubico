@@ -21,23 +21,24 @@ const _reduce = function (collection, reducer, initialValue) {
  *
  * @synopsis
  * ```coffeescript [specscript]
+ * type Foldable = Array|Object|Map|Iterator|AsyncIterator
  * type Reducer = (
  *   accumulator any,
  *   value any,
  *   indexOrKey? number|string,
- *   collection? Array
+ *   collection? Foldable,
  * )=>(nextAccumulator Promise|any)
  *
  * reduce(
- *   collection Array|Object|Map|Iterator|AsyncIterator,
+ *   collection Foldable,
  *   reducer Reducer,
- *   initialValue? function|any,
+ *   initialValue? function|any
  * ) -> result Promise|any
  *
  * reduce(
  *   reducer Reducer,
- *   initialValue? function|any,
- * )(collection Array|Object|Map|Iterator|AsyncIterator) -> result Promise|any
+ *   initialValue? function|any
+ * )(collection Foldable) -> result Promise|any
  * ```
  *
  * @description
