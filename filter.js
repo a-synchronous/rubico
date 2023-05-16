@@ -90,39 +90,20 @@ const _filter = function (value, predicate) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * arrayPredicate (value any, index number, array Array)=>Promise|boolean
+ * type Filterable = Array|Object|Set|Map|Iterator|AsyncIterator
+ * type Predicate = (
+ *   value any,
+ *   indexOrKey? number|string,
+ *   collection? Filterable,
+ * )=>boolean
  *
- * filter(arrayPredicate)(array Array) -> filteredArray Promise|Array
- * filter(array Array, arrayPredicate) -> filteredArray Promise|Array
+ * filter(
+ *   collection Filterable,
+ *   predicate Predicate
+ * ) -> result Promise|Filterable
  *
- * objectPredicate (value any, key string, object Object)=>Promise|boolean
- *
- * filter(objectPredicate)(object Object) -> filteredObject Promise|Object
- * filter(object Object, objectPredicate) -> filteredObject Promise|Object
- *
- * setPredicate (value any, value, set Set)=>Promise|boolean
- *
- * filter(setPredicate)(set Set) -> filteredSet Promise|Set
- * filter(set Set, setPredicate) -> filteredSet Promise|Set
- *
- * mapPredicate (value any, key any, map Map)=>Promise|boolean
- *
- * filter(mapPredicate)(map Map) -> filteredMap Promise|Map
- * filter(map Map, mapPredicate) -> filteredMap Promise|Map
- *
- * iteratorPredicate (value any)=>any
- *
- * filter(iteratorPredicate)(iterator Iterator|Generator)
- *   -> filteredIterator Iterator|Generator
- * filter(iterator Iterator|Generator, iteratorPredicate)
- *   -> filteredIterator Iterator|Generator
- *
- * asyncIteratorPredicate (value any)=>Promise|any
- *
- * filter(asyncIteratorPredicate)(asyncIterator AsyncIterator|AsyncGenerator)
- *   -> filteredAsyncIterator AsyncIterator|AsyncGenerator
- * filter(asyncIterator AsyncIterator|AsyncGenerator, asyncIteratorPredicate)
- *   -> filteredAsyncIterator AsyncIterator|AsyncGenerator
+ * filter(predicate Predicate)(collection Filterable)
+ *   -> result Promise|Filterable
  * ```
  *
  * @description
@@ -135,7 +116,7 @@ const _filter = function (value, predicate) {
  *  * `Iterator`/`Generator`
  *  * `AsyncIterator`/`AsyncGenerator`
  *
- * With arrays (type `Array`), `filter` applies the predicate function to each item of the array, returning a new array containing only the items that tested truthy by the predicate. The order of the items is preserved.
+ * For arrays (type `Array`), `filter` applies the predicate function to each item of the array, returning a new array containing only the items that tested truthy by the predicate. The order of the items is preserved. On each iteration, the predicate is passed the item, the index of the item, and a reference to the array.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -146,7 +127,7 @@ const _filter = function (value, predicate) {
  * console.log(filter(array, isOdd)) // [1, 3, 5]
  * ```
  *
- * With objects (type `Object`), `filter` applies the predicate function to each value of the object, returning a new object containing only the values that tested truthy by the predicate.
+ * For objects (type `Object`), `filter` applies the predicate function to each value of the object, returning a new object containing only the values that tested truthy by the predicate. On each iteration, the predicate is passed the object value, the key of the object value, and a reference to the object.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -157,7 +138,7 @@ const _filter = function (value, predicate) {
  * console.log(filter(obj, isOdd)) // { a: 1, c: 3, e: 5 }
  * ```
  *
- * With sets (type `Set`), `filter` applies the predicate function to each item in the set, returning a new set containing only the items that tested truthy by the predicate.
+ * For sets (type `Set`), `filter` applies the predicate function to each item in the set, returning a new set containing only the items that tested truthy by the predicate. On each iteration, the predicate is passed the item, the same item as the key argument, and a reference to the set.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -168,7 +149,7 @@ const _filter = function (value, predicate) {
  * console.log(filter(set, isOdd)) // Set { 1, 3, 5 }
  * ```
  *
- * With maps (type `Map`), `filter` applies the predicate function to the value of each entry of the map, returning a new map containing only the entries where the values tested truthy by the predicate. The order of the entries are preserved.
+ * For maps (type `Map`), `filter` applies the predicate function to the value of each entry of the map, returning a new map containing only the entries where the values tested truthy by the predicate. The order of the entries are preserved. On each iteration, the predicate is passed the map value, the key of the value, and a reference to the map.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -180,7 +161,7 @@ const _filter = function (value, predicate) {
  * console.log(filter(m, isOdd)) // Map(3) { 'a' => 1, 'c' => 3, 'e' => 5 }
  * ```
  *
- * With iterators (type `Iterator`) or generators (type `Generator`), `filter` returns a lazily filtered iterator/generator; all values that are normally yielded by the iterator/generator that test falsy by the predicate function are skipped by the lazily filtered iterator/generator.
+ * For iterators (type `Iterator`) or generators (type `Generator`), `filter` returns a lazily filtered iterator/generator; all values that are normally yielded by the iterator/generator that test falsy by the predicate function are skipped by the lazily filtered iterator/generator. On each iteration, the predicate is passed the iteration value only.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -214,7 +195,7 @@ const _filter = function (value, predicate) {
  * }
  * ```
  *
- * With asyncIterators (type `AsyncIterator`) or asyncGenerators (type `AsyncGenerator`), `filter` returns a lazily filtered asyncIterator/asyncGenerator; all values that are normally yielded by the asyncIterator/asyncGenerator that test falsy by the predicate function are skipped by the lazily filtered asyncIterator/asyncGenerator.
+ * With asyncIterators (type `AsyncIterator`) or asyncGenerators (type `AsyncGenerator`), `filter` returns a lazily filtered asyncIterator/asyncGenerator; all values that are normally yielded by the asyncIterator/asyncGenerator that test falsy by the predicate function are skipped by the lazily filtered asyncIterator/asyncGenerator. On each iteration, the predicate is passed the iteration value only.
  *
  * ```javascript [playground]
  * const asyncIsOdd = async number => number % 2 == 1
