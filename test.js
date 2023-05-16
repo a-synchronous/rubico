@@ -14,9 +14,9 @@ const sha256 = require('./_internal/sha256')
 const {
   pipe, tap,
   tryCatch, switchCase,
-  fork, assign, get, set, pick, omit,
-  map, filter, reduce, transform, flatMap,
-  any, all, and, or, not,
+  all, assign, get, set, pick, omit,
+  map, filter, flatMap, reduce, transform,
+  some, every, and, or, not,
   eq, gt, lt, gte, lte,
   thunkify, always,
   curry, __,
@@ -384,76 +384,76 @@ describe('rubico', () => {
     })
   })
 
-  describe('fork', () => {
+  describe('all', () => {
     it('maps input to array of sync functions', async () => {
-      ade(fork([hi, hi, hi])('yo'), ['yohi', 'yohi', 'yohi'])
+      ade(all([hi, hi, hi])('yo'), ['yohi', 'yohi', 'yohi'])
     })
     it('maps input to object of sync functions', async () => {
       ade(
-        fork({ a: hi, b: hi, c: hi })('yo'),
+        all({ a: hi, b: hi, c: hi })('yo'),
         { a: 'yohi', b: 'yohi', c: 'yohi' },
       )
     })
     it('maps input to array of async functions', async () => {
-      aok(fork([asyncHey, asyncHey, asyncHey])('yo') instanceof Promise)
+      aok(all([asyncHey, asyncHey, asyncHey])('yo') instanceof Promise)
       ade(
-        await fork([asyncHey, asyncHey, asyncHey])('yo'),
+        await all([asyncHey, asyncHey, asyncHey])('yo'),
         ['yohey', 'yohey', 'yohey'],
       )
     })
     it('maps input to object of async functions', async () => {
-      aok(fork({ a: asyncHey, b: asyncHey, c: asyncHey })('yo') instanceof Promise)
+      aok(all({ a: asyncHey, b: asyncHey, c: asyncHey })('yo') instanceof Promise)
       ade(
-        await fork({ a: asyncHey, b: asyncHey, c: asyncHey })('yo'),
+        await all({ a: asyncHey, b: asyncHey, c: asyncHey })('yo'),
         { a: 'yohey', b: 'yohey', c: 'yohey' },
       )
     })
     it('any functions async => Promise', async () => {
-      aok(fork([asyncHey, asyncHey, hi])('yo') instanceof Promise)
+      aok(all([asyncHey, asyncHey, hi])('yo') instanceof Promise)
       ade(
-        await fork([asyncHey, asyncHey, hi])('yo'),
+        await all([asyncHey, asyncHey, hi])('yo'),
         ['yohey', 'yohey', 'yohi'],
       )
     })
-    it('fork([])() -> []', async () => {
-      ade(fork([])(), [])
-      ade(fork([])('hey'), [])
+    it('all([])() -> []', async () => {
+      ade(all([])(), [])
+      ade(all([])('hey'), [])
     })
-    it('fork({})() -> {}', async () => {
-      ade(fork({})(), {})
-      ade(fork({})('hey'), {})
+    it('all({})() -> {}', async () => {
+      ade(all({})(), {})
+      ade(all({})('hey'), {})
     })
-    it('TypeError for fork([\'hey\'])()', async () => {
+    it('TypeError for all([\'hey\'])()', async () => {
       assert.throws(
-        () => fork(['hey'])(),
+        () => all(['hey'])(),
         new TypeError('funcs[funcsIndex] is not a function'),
       )
     })
-    it('throws TypeError for fork({ a: nonFunction })', async () => {
+    it('throws TypeError for all({ a: nonFunction })', async () => {
       assert.throws(
-        () => fork({ a: 'hey' })(),
+        () => all({ a: 'hey' })(),
         new TypeError('funcs[key] is not a function'),
       )
     })
     it('throws TypeError for String', async () => {
       assert.throws(
-        () => fork('ayelmao')(),
+        () => all('ayelmao')(),
         new TypeError('funcs[key] is not a function'),
       )
     })
     it('{} for Set<[func]>; no functions exposed via in', async () => {
-      assert.deepEqual(fork(new Set([() => 'yo']))('hey'), {})
+      assert.deepEqual(all(new Set([() => 'yo']))('hey'), {})
     })
     it('{} for Map<[[1, func]]>', async () => {
-      assert.deepEqual(fork(new Map([[1, () => 'yo']]))('hey'), {})
+      assert.deepEqual(all(new Map([[1, () => 'yo']]))('hey'), {})
     })
   })
 
-  describe('fork.series', () => {
-    it('syncly forks into array of functions', async () => {
+  describe('all.series', () => {
+    it('evaluates input against array of functions in series (sync)', async () => {
       const arr = []
       ade(
-        fork.series([
+        all.series([
           () => { arr.push(1); return 'a' },
           () => { arr.push(2); return 'b' },
           () => { arr.push(3); return 'c' },
@@ -462,9 +462,9 @@ describe('rubico', () => {
       )
       ade(arr, [1, 2, 3])
     })
-    it('asyncly forks into array of functions, running each function in series', async () => {
+    it('evaluates input against array of functions in series (async)', async () => {
       const arr = []
-      const staggeredPush = fork.series([
+      const staggeredPush = all.series([
         () => sleep(10).then(() => { arr.push(1); return 'a' }),
         () => sleep(5).then(() => { arr.push(2); return 'b' }),
         () => { arr.push(3); return 'c' },
@@ -473,7 +473,7 @@ describe('rubico', () => {
       ade(await staggeredPush, ['a', 'b', 'c'])
       ade(arr, [1, 2, 3])
       const arr2 = []
-      const parallelPush = fork([
+      const parallelPush = all([
         () => sleep(10).then(() => { arr2.push(1); return 'a' }),
         () => sleep(5).then(() => { arr2.push(2); return 'b' }),
         () => { arr2.push(3); return 'c' },
@@ -482,12 +482,12 @@ describe('rubico', () => {
       ade(await parallelPush, ['a', 'b', 'c'])
       ade(arr2, [3, 2, 1])
     })
-    it('throws TypeError for fork([])', async () => {
-      assert.deepEqual(fork.series([])(), [])
+    it('throws TypeError for all([])', async () => {
+      assert.deepEqual(all.series([])(), [])
     })
-    it('throws TypeError for fork([nonFunction])', async () => {
+    it('throws TypeError for all([nonFunction])', async () => {
       assert.throws(
-        () => fork.series(['hey'])(),
+        () => all.series(['hey'])(),
         new TypeError('funcs[funcsIndex] is not a function')
       )
     })
@@ -3253,11 +3253,11 @@ flatMap(
   })
 
   describe(`
-any(predicate function)(value any) -> result Promise|boolean
+some(predicate function)(value any) -> result Promise|boolean
 
 Foldable = Iterable|AsyncIterable|{ reduce: function }
 
-any(predicate any=>Promise|boolean)(value Foldable) -> Promise|boolean
+some(predicate any=>Promise|boolean)(value Foldable) -> Promise|boolean
   `, () => {
     const numbersArray = [1, 2, 3, 4, 5]
     const evenNumbersArray = [2, 4, 6, 8, 10]
@@ -3315,7 +3315,7 @@ any(predicate any=>Promise|boolean)(value Foldable) -> Promise|boolean
 
     cases.forEach(([func, value, result, asserter = assert.strictEqual]) => {
       it(`${func.name}(${JSON.stringify(value)}) -> ${result}`, async () => {
-        asserter(await any(func)(value), result)
+        asserter(await some(func)(value), result)
       })
     })
 
@@ -3327,7 +3327,7 @@ any(predicate any=>Promise|boolean)(value Foldable) -> Promise|boolean
       }
       let concurrencyCount = 0,
         maxConcurrencyCount = 0
-      assert.strictEqual(await any(async number => {
+      assert.strictEqual(await some(async number => {
         concurrencyCount += 1
         maxConcurrencyCount = Math.max(maxConcurrencyCount, concurrencyCount)
         await sleep(10)
@@ -3336,7 +3336,7 @@ any(predicate any=>Promise|boolean)(value Foldable) -> Promise|boolean
       })(asyncRange(40)), false)
       assert.strictEqual(concurrencyCount, 0)
       assert.strictEqual(maxConcurrencyCount, 20)
-      assert.strictEqual(await any(async number => {
+      assert.strictEqual(await some(async number => {
         maxConcurrencyCount = Math.max(maxConcurrencyCount, concurrencyCount)
         await sleep(10)
         if (number == 19) {
@@ -3347,51 +3347,51 @@ any(predicate any=>Promise|boolean)(value Foldable) -> Promise|boolean
     })
 
     it('1', async () => {
-      assert.strictEqual(any(() => true)(1), true)
+      assert.strictEqual(some(() => true)(1), true)
     })
     it('null', async () => {
-      assert.strictEqual(any(() => true)(null), true)
+      assert.strictEqual(some(() => true)(null), true)
     })
     it('undefined', async () => {
-      assert.strictEqual(any(() => true)(undefined), true)
-      assert.strictEqual(any(() => true)(), true)
+      assert.strictEqual(some(() => true)(undefined), true)
+      assert.strictEqual(some(() => true)(), true)
     })
   })
 
-  describe('any - v1.5.15 regression', () => {
+  describe('some - v1.5.15 regression', () => {
     const numbers = [1, 2, 3, 4, 5]
     const numbersObject = { a: 1, b: 2, c: 3, d: 4, e: 5 }
     it('[sync] tests fn against all items of iterable, true if any evaluation is truthy', async () => {
-      ase(any(x => x > 5)(numbers), false)
-      ase(any(x => x > 0)(numbers), true)
-      ase(any(x => x > 5)(new Set(numbers)), false)
-      ase(any(x => x > 0)(new Set(numbers)), true)
-      ase(any(x => x > 5)(numbersObject), false)
-      ase(any(x => x > 0)(numbersObject), true)
+      ase(some(x => x > 5)(numbers), false)
+      ase(some(x => x > 0)(numbers), true)
+      ase(some(x => x > 5)(new Set(numbers)), false)
+      ase(some(x => x > 0)(new Set(numbers)), true)
+      ase(some(x => x > 5)(numbersObject), false)
+      ase(some(x => x > 0)(numbersObject), true)
     })
     it('[async] tests fn against all items of iterable, true if any evaluation is truthy', async () => {
-      aok(any(async x => x > 5)(numbers) instanceof Promise)
-      ase(await any(async x => x > 5)(numbers), false)
-      ase(await any(async x => x > 0)(numbers), true)
-      ase(await any(async x => x > 5)(new Set(numbers)), false)
-      ase(await any(async x => x > 0)(new Set(numbers)), true)
-      ase(await any(async x => x > 5)(numbersObject), false)
-      ase(await any(async x => x > 0)(numbersObject), true)
+      aok(some(async x => x > 5)(numbers) instanceof Promise)
+      ase(await some(async x => x > 5)(numbers), false)
+      ase(await some(async x => x > 0)(numbers), true)
+      ase(await some(async x => x > 5)(new Set(numbers)), false)
+      ase(await some(async x => x > 0)(new Set(numbers)), true)
+      ase(await some(async x => x > 5)(numbersObject), false)
+      ase(await some(async x => x > 0)(numbersObject), true)
     })
     it('tests a variadic async function', async () => {
       ase(
-        await any(x => x < 2 ? Promise.resolve(false) : true)([1, 2, 3, 4, 5]),
+        await some(x => x < 2 ? Promise.resolve(false) : true)([1, 2, 3, 4, 5]),
         true,
       )
     })
   })
 
   describe(`
-all(predicate function)(value all) -> result Promise|boolean
+every(predicate function)(value all) -> result Promise|boolean
 
 Foldable = Iterable|AsyncIterable|{ reduce: function }
 
-all(predicate all=>Promise|boolean)(value Foldable) -> Promise|boolean
+every(predicate all=>Promise|boolean)(value Foldable) -> Promise|boolean
   `, () => {
     const numbersArray = [1, 2, 3, 4, 5]
     const evenNumbersArray = [2, 4, 6, 8, 10]
@@ -3443,7 +3443,7 @@ all(predicate all=>Promise|boolean)(value Foldable) -> Promise|boolean
 
     cases.forEach(([func, value, result, asserter = assert.strictEqual]) => {
       it(`${func.name}(${JSON.stringify(value)}) -> ${result}`, async () => {
-        asserter(await all(func)(value), result)
+        asserter(await every(func)(value), result)
       })
     })
 
@@ -3455,7 +3455,7 @@ all(predicate all=>Promise|boolean)(value Foldable) -> Promise|boolean
       }
       let concurrencyCount = 0,
         maxConcurrencyCount = 0
-      assert.strictEqual(await all(async number => {
+      assert.strictEqual(await every(async number => {
         concurrencyCount += 1
         maxConcurrencyCount = Math.max(maxConcurrencyCount, concurrencyCount)
         await sleep(10)
@@ -3464,7 +3464,7 @@ all(predicate all=>Promise|boolean)(value Foldable) -> Promise|boolean
       })(asyncRange(40)), true)
       assert.strictEqual(concurrencyCount, 0)
       assert.strictEqual(maxConcurrencyCount, 20)
-      assert.strictEqual(await all(async number => {
+      assert.strictEqual(await every(async number => {
         maxConcurrencyCount = Math.max(maxConcurrencyCount, concurrencyCount)
         await sleep(10)
         if (number == 19) {
@@ -3475,40 +3475,40 @@ all(predicate all=>Promise|boolean)(value Foldable) -> Promise|boolean
     })
 
     it('1', async () => {
-      assert.strictEqual(all(() => true)(1), true)
+      assert.strictEqual(every(() => true)(1), true)
     })
     it('null', async () => {
-      assert.strictEqual(all(() => true)(null), true)
+      assert.strictEqual(every(() => true)(null), true)
     })
     it('undefined', async () => {
-      assert.strictEqual(all(() => true)(undefined), true)
-      assert.strictEqual(all(() => true)(), true)
+      assert.strictEqual(every(() => true)(undefined), true)
+      assert.strictEqual(every(() => true)(), true)
     })
   })
 
-  describe('all - v1.5.15 regression', () => {
+  describe('every - v1.5.15 regression', () => {
     const numbers = [1, 2, 3, 4, 5]
     const numbersObject = { a: 1, b: 2, c: 3, d: 4, e: 5 }
     it('syncly evaluates fn against all items in iterable, true if all evaluations are truthy', async () => {
-      ase(all(x => x > 5)(numbers), false)
-      ase(all(x => x > 0)(numbers), true)
-      ase(all(x => x > 5)(new Set(numbers)), false)
-      ase(all(x => x > 0)(new Set(numbers)), true)
-      ase(all(x => x > 5)(numbersObject), false)
-      ase(all(x => x > 0)(numbersObject), true)
+      ase(every(x => x > 5)(numbers), false)
+      ase(every(x => x > 0)(numbers), true)
+      ase(every(x => x > 5)(new Set(numbers)), false)
+      ase(every(x => x > 0)(new Set(numbers)), true)
+      ase(every(x => x > 5)(numbersObject), false)
+      ase(every(x => x > 0)(numbersObject), true)
     })
     it('asyncly evaluates fn against all items in iterable, true if all evaluations are truthy', async () => {
-      aok(all(async x => x > 5)(numbers) instanceof Promise)
-      ase(await all(async x => x > 5)(numbers), false)
-      ase(await all(async x => x > 0)(numbers), true)
-      ase(await all(async x => x > 5)(new Set(numbers)), false)
-      ase(await all(async x => x > 0)(new Set(numbers)), true)
-      ase(await all(async x => x > 5)(numbersObject), false)
-      ase(await all(async x => x > 0)(numbersObject), true)
+      aok(every(async x => x > 5)(numbers) instanceof Promise)
+      ase(await every(async x => x > 5)(numbers), false)
+      ase(await every(async x => x > 0)(numbers), true)
+      ase(await every(async x => x > 5)(new Set(numbers)), false)
+      ase(await every(async x => x > 0)(new Set(numbers)), true)
+      ase(await every(async x => x > 5)(numbersObject), false)
+      ase(await every(async x => x > 0)(numbersObject), true)
     })
     it('tests a variadic async function', async () => {
       ase(
-        await all(x => x < 2 ? Promise.resolve(true) : false)([1, 2, 3, 4, 5]),
+        await every(x => x < 2 ? Promise.resolve(true) : false)([1, 2, 3, 4, 5]),
         false,
       )
     })
