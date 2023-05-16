@@ -828,10 +828,16 @@ describe('rubico', () => {
   })
 
   describe('map', () => {
-    it('eager', async () => {
+    it('API coverage', async () => {
       const myArray = [1, 2, 3]
-      const mappedArray = map(myArray, number => number ** 2)
-      assert.deepEqual(mappedArray, [1, 4, 9])
+      assert.deepEqual(
+        map(myArray, number => number ** 2),
+        [1, 4, 9]
+      )
+      assert.deepEqual(
+        await map(Promise.resolve(myArray), number => number ** 2),
+        [1, 4, 9]
+      )
     })
 
     it('Test', Test('map', map(number => number ** 2))
