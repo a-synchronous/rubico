@@ -4,18 +4,18 @@ const stream = require('stream')
 const path = require('path')
 const fs = require('fs')
 const { Readable, Writable } = require('stream')
+const util = require('util')
 const Transducer = require('./Transducer')
 const rubico = require('./rubico')
-const compose = require('./compose')
 const isDeepEqual = require('./x/isDeepEqual')
 const mapFrom = require('./_internal/mapFrom')
 const sha256 = require('./_internal/sha256')
 
 const {
-  pipe, tap,
+  pipe, compose, tap,
   tryCatch, switchCase,
   all, assign, get, set, pick, omit,
-  map, filter, flatMap, reduce, transform,
+  map, filter, flatMap, forEach, reduce, transform,
   some, every, and, or, not,
   eq, gt, lt, gte, lte,
   thunkify, always,
@@ -3106,6 +3106,162 @@ flatMap(
     })
   })
 
+  describe('forEach', () => {
+    describe(`
+     Reducer<T> = (any, T)=>Promise|any
+
+     var T any,
+       callback T=>(),
+       collection Iterable<T>|AsyncIterable<T>{ forEach: callback=>() }|Object<T>
+       
+     forEach(callback)(collection) -> ()
+    `,
+    () => {
+      it('API coverage', async () => {
+        let sum1 = 0
+        forEach([1, 2, 3, 4, 5], number => {
+          sum1 += number
+        })
+        assert.equal(sum1, 15)
+
+        let sum2 = 0
+        await forEach(Promise.resolve([1, 2, 3, 4, 5]), number => {
+          sum2 += number
+        })
+        assert.equal(sum2, 15)
+      })
+      it('collection Array testing promises', async () => {
+        let total = 0
+        const addTotal = number => (total += number),
+          variadicAsyncAddTotal = number => number % 2 == 1 ? (total += number) : Promise.resolve(total += number)
+        forEach(addTotal)([1, 2, 3, 4, 5])
+        assert.strictEqual(total, 15)
+        total = 0
+        const operation = forEach(async(addTotal))([1, 2, 3, 4, 5])
+        assert(typeof operation.then == 'function')
+        await operation
+        assert.strictEqual(total, 15)
+      })
+
+      let total = 0
+      const addTotal = number => (total += number),
+        variadicAsyncAddTotal = number => number % 2 == 1 ? (total += number) : Promise.resolve(total += number)
+
+      const ThunkAssertion = (
+        func, value, asserter,
+      ) => function thunkAssertion() {
+        it(`${func.name}(${util.inspect(value)}) - ${asserter}`, async () => {
+          await asserter(await func(value))
+        })
+      }
+
+      const numbersGenerator = function* () {
+        yield 1; yield 2; yield 3; yield 4; yield 5
+      }
+      const numbersAsyncGenerator = async function* () {
+        yield 1; yield 2; yield 3; yield 4; yield 5
+      }
+
+      const thunkAssertions = [
+        ThunkAssertion(forEach(addTotal), [1, 2, 3, 4, 5], result => {
+          assert.deepEqual(result, [1, 2, 3, 4, 5])
+          assert.strictEqual(total, 15)
+          total = 0
+        }),
+        ThunkAssertion(forEach(async(addTotal)), [1, 2, 3, 4, 5], result => {
+          assert.deepEqual(result, [1, 2, 3, 4, 5])
+          assert.strictEqual(total, 15)
+          total = 0
+        }),
+        ThunkAssertion(forEach(variadicAsyncAddTotal), [1, 2, 3, 4, 5], result => {
+          assert.deepEqual(result, [1, 2, 3, 4, 5])
+          assert.strictEqual(total, 15)
+          total = 0
+        }),
+        ThunkAssertion(forEach(addTotal), numbersGenerator(), result => {
+          assert.deepEqual([...result], [])
+          assert.strictEqual(total, 15)
+          total = 0
+        }),
+        ThunkAssertion(forEach(async(addTotal)), numbersGenerator(), result => {
+          assert.deepEqual([...result], [])
+          assert.strictEqual(total, 15)
+          total = 0
+        }),
+        ThunkAssertion(forEach(variadicAsyncAddTotal), numbersGenerator(), result => {
+          assert.deepEqual([...result], [])
+          assert.strictEqual(total, 15)
+          total = 0
+        }),
+        ThunkAssertion(forEach(addTotal), numbersAsyncGenerator(), async result => {
+          assert.deepEqual(await asyncIteratorToArray(result), [])
+          assert.strictEqual(total, 15)
+          total = 0
+        }),
+        ThunkAssertion(forEach(async(addTotal)), numbersAsyncGenerator(), async result => {
+          assert.deepEqual(await asyncIteratorToArray(result), [])
+          assert.strictEqual(total, 15)
+          total = 0
+        }),
+        ThunkAssertion(forEach(variadicAsyncAddTotal), numbersAsyncGenerator(), async result => {
+          assert.deepEqual(await asyncIteratorToArray(result), [])
+          assert.strictEqual(total, 15)
+          total = 0
+        }),
+        ThunkAssertion(forEach(addTotal), { a: 1, b: 2, c: 3, d: 4, e: 5 }, result => {
+          assert.deepEqual(result, { a: 1, b: 2, c: 3, d: 4, e: 5 })
+          assert.strictEqual(total, 15)
+          total = 0
+        }),
+        ThunkAssertion(forEach(async(addTotal)), { a: 1, b: 2, c: 3, d: 4, e: 5 }, result => {
+          assert.deepEqual(result, { a: 1, b: 2, c: 3, d: 4, e: 5 })
+          assert.strictEqual(total, 15)
+          total = 0
+        }),
+        ThunkAssertion(forEach(variadicAsyncAddTotal), { a: 1, b: 2, c: 3, d: 4, e: 5 }, result => {
+          assert.deepEqual(result, { a: 1, b: 2, c: 3, d: 4, e: 5 })
+          assert.strictEqual(total, 15)
+          total = 0
+        }),
+      ]
+
+      thunkAssertions.forEach(thunk => thunk())
+
+      it('forEach(noop)({ forEach: function })', async () => {
+        const forEachable = {
+          forEach() {
+            return 1
+          },
+        }
+        assert.strictEqual(forEach(noop)(forEachable), 1)
+      })
+
+
+      const noop = function () {}
+      it('forEach(noop)(1)', async () => {
+        assert.strictEqual(forEach(noop)(1), 1)
+      })
+      it('forEach(noop)(null)', async () => {
+        assert.strictEqual(forEach(noop)(null), null)
+      })
+      it('forEach(noop)(undefined)', async () => {
+        assert.strictEqual(forEach(noop)(undefined), undefined)
+      })
+      it('forEach(noop)()', async () => {
+        assert.strictEqual(forEach(noop)(), undefined)
+      })
+
+      it('execute a function for each item of a collection, returning the collection', async () => {
+        let total = 0
+        assert.deepEqual(
+          forEach(number => total += number)([1, 2, 3]),
+          [1, 2, 3],
+        )
+        assert.strictEqual(total, 6)
+      })
+    })
+  })
+
   describe('get', () => {
     const aaaaa = { a: { a: { a: { a: { a: 1 } } } } }
     const nested = [[[[[1]]]]]
@@ -4029,7 +4185,7 @@ eq(
     })
   })
 
-  it('exports 30 functions', async () => {
-    ase(Object.keys(rubico).length, 30)
+  it('exports 31 functions', async () => {
+    ase(Object.keys(rubico).length, 31)
   })
 })
