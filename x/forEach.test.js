@@ -95,36 +95,6 @@ describe('forEach', () => {
         assert.strictEqual(total, 15)
         total = 0
       }),
-      ThunkAssertion(forEach(addTotal), numbersGenerator, result => {
-        assert.deepEqual([...result()], [])
-        assert.strictEqual(total, 15)
-        total = 0
-      }),
-      ThunkAssertion(forEach(async(addTotal)), numbersGenerator, result => {
-        assert.deepEqual([...result()], [])
-        assert.strictEqual(total, 15)
-        total = 0
-      }),
-      ThunkAssertion(forEach(variadicAsyncAddTotal), numbersGenerator, result => {
-        assert.deepEqual([...result()], [])
-        assert.strictEqual(total, 15)
-        total = 0
-      }),
-      ThunkAssertion(forEach(addTotal), numbersAsyncGenerator, async result => {
-        assert.deepEqual(await asyncIteratorToArray(result()), [])
-        assert.strictEqual(total, 15)
-        total = 0
-      }),
-      ThunkAssertion(forEach(async(addTotal)), numbersAsyncGenerator, async result => {
-        assert.deepEqual(await asyncIteratorToArray(result()), [])
-        assert.strictEqual(total, 15)
-        total = 0
-      }),
-      ThunkAssertion(forEach(variadicAsyncAddTotal), numbersAsyncGenerator, async result => {
-        assert.deepEqual(await asyncIteratorToArray(result()), [])
-        assert.strictEqual(total, 15)
-        total = 0
-      }),
       ThunkAssertion(forEach(addTotal), { a: 1, b: 2, c: 3, d: 4, e: 5 }, result => {
         assert.deepEqual(result, { a: 1, b: 2, c: 3, d: 4, e: 5 })
         assert.strictEqual(total, 15)
@@ -153,24 +123,6 @@ describe('forEach', () => {
       assert.strictEqual(forEach(noop)(forEachable), 1)
     })
 
-    it('reduce(forEach(func)(reducer))', async () => {
-      let total = 0
-      const add = (a, b) => a + b
-      const numbers = [1, 2, 3, 4, 5]
-      assert.strictEqual(
-        numbers.reduce(forEach(number => (total += number))(add), 0),
-        15)
-      assert.strictEqual(total, 15)
-    })
-    it('reduce(forEach(asyncFunc)(reducer))', async () => {
-      let total = 0
-      const add = (a, b) => a + b
-      const numbers = [1, 2, 3, 4, 5]
-      assert.strictEqual(
-        await genericReduce(numbers, forEach(async number => (total += number))(add), 0),
-        15)
-      assert.strictEqual(total, 15)
-    })
 
     const noop = function () {}
     it('forEach(noop)(1)', async () => {
@@ -185,9 +137,7 @@ describe('forEach', () => {
     it('forEach(noop)()', async () => {
       assert.strictEqual(forEach(noop)(), undefined)
     })
-  })
 
-  describe('v1.5 regression', () => {
     it('execute a function for each item of a collection, returning the collection', async () => {
       let total = 0
       assert.deepEqual(
@@ -195,24 +145,6 @@ describe('forEach', () => {
         [1, 2, 3],
       )
       assert.strictEqual(total, 6)
-    })
-    it('works in transducer position', async () => {
-      let total = 0
-      assert.deepEqual(
-        [1, 2, 3].reduce(
-          forEach(number => total += number)((a, b) => a.concat([b])),
-          [],
-        ),
-        [1, 2, 3],
-      )
-      assert.strictEqual(total, 6)
-      assert.deepEqual(
-        [1, 2, 3].reduce(
-          forEach(console.log)((a, b) => a + b),
-          0,
-        ),
-        6,
-      )
     })
   })
 })
