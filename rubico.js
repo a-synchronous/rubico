@@ -10,6 +10,7 @@ const filter = require('./filter')
 const reduce = require('./reduce')
 const transform = require('./transform')
 const flatMap = require('./flatMap')
+const forEach = require('./forEach')
 const some = require('./some')
 const every = require('./every')
 const and = require('./and')
@@ -46,7 +47,7 @@ const rubico = {
   pipe, compose, tap,
   switchCase, tryCatch,
   all, assign, get, set, pick, omit,
-  map, filter, flatMap, reduce, transform,
+  map, filter, flatMap, forEach, reduce, transform,
   and, or, not, some, every,
   eq, gt, lt, gte, lte,
   thunkify, always,
