@@ -1,6 +1,10 @@
+const promiseAll = require('./_internal/promiseAll')
 const isPromise = require('./_internal/isPromise')
-const curry3 = require('./_internal/curry3')
+const areAnyValuesPromises = require('./_internal/areAnyValuesPromises')
 const __ = require('./_internal/placeholder')
+const curry2 = require('./_internal/curry2')
+const curry3 = require('./_internal/curry3')
+const curryArgs2 = require('./_internal/curryArgs2')
 const thunkConditional = require('./_internal/thunkConditional')
 const areAllValuesNonfunctions = require('./_internal/areAllValuesNonfunctions')
 const thunkify2 = require('./_internal/thunkify2')
@@ -8,14 +12,14 @@ const thunkify3 = require('./_internal/thunkify3')
 const always = require('./_internal/always')
 
 /**
- * @name areAllNonfunctionsTruthy
+ * @name areAllValuesTruthy
  *
  * @synopsis
  * ```coffeescript [specscript]
- * areAllNonfunctionsTruthy(predicates Array<value>) -> Promise|boolean
+ * areAllValuesTruthy(predicates Array<value>) -> Promise|boolean
  * ```
  */
-const areAllNonfunctionsTruthy = function (predicates, index) {
+const areAllValuesTruthy = function (predicates, index) {
   const length = predicates.length
   while (++index < length) {
     let predicate = predicates[index]
@@ -23,7 +27,7 @@ const areAllNonfunctionsTruthy = function (predicates, index) {
       return predicate.then(curry3(
         thunkConditional,
         __,
-        thunkify2(areAllNonfunctionsTruthy, predicates, index),
+        thunkify2(areAllValuesTruthy, predicates, index),
         always(false),
       ))
     }
@@ -41,20 +45,45 @@ const areAllNonfunctionsTruthy = function (predicates, index) {
  * ```coffeescript [specscript]
  * asyncArePredicatesAllTruthy(
  *   predicates Array<value=>Promise|boolean>
- *   point any,
+ *   args Array,
  *   index number,
  * ) -> allTruthy boolean
  * ```
  */
-const asyncArePredicatesAllTruthy = async function (predicates, point, index) {
+const asyncArePredicatesAllTruthy = async function (predicates, args, index) {
   const length = predicates.length
   while (++index < length) {
     let predicate = predicates[index]
     if (typeof predicate == 'function') {
-      predicate = predicate(point)
+      predicate = predicate(...args)
     }
     if (isPromise(predicate)) {
       predicate = await predicate
+    }
+    if (!predicate) {
+      return false
+    }
+  }
+  return true
+}
+
+// areAllPredicatesTruthy(args Array, predicates Array<function>)
+const areAllPredicatesTruthy = function (args, predicates) {
+  const length = predicates.length
+  let index = -1
+
+  while (++index < length) {
+    let predicate = predicates[index]
+    if (typeof predicate == 'function') {
+      predicate = predicate(...args)
+    }
+    if (isPromise(predicate)) {
+      return predicate.then(curry3(
+        thunkConditional,
+        __,
+        thunkify3(asyncArePredicatesAllTruthy, predicates, args, index),
+        always(false),
+      ))
     }
     if (!predicate) {
       return false
@@ -106,33 +135,21 @@ const asyncArePredicatesAllTruthy = async function (predicates, point, index) {
  *
  * @note ...args slows down here by an order of magnitude
  */
-const and = predicates => {
-  if (areAllValuesNonfunctions(predicates)) {
-    return areAllNonfunctionsTruthy(predicates, -1)
+const and = function (...args) {
+  const predicatesOrValues = args.pop()
+  if (areAllValuesNonfunctions(predicatesOrValues)) {
+    return areAllValuesTruthy(predicatesOrValues, -1)
   }
-  return function arePredicatesAllTruthy(point) {
-    const length = predicates.length
-    let index = -1
 
-    while (++index < length) {
-      let predicate = predicates[index]
-      if (typeof predicate == 'function') {
-        predicate = predicate(point)
-      }
-      if (isPromise(predicate)) {
-        return predicate.then(curry3(
-          thunkConditional,
-          __,
-          thunkify3(asyncArePredicatesAllTruthy, predicates, point, index),
-          always(false),
-        ))
-      }
-      if (!predicate) {
-        return false
-      }
-    }
-    return true
+  if (args.length == 0) {
+    return curryArgs2(areAllPredicatesTruthy, __, predicatesOrValues)
   }
+
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args).then(curry2(areAllPredicatesTruthy, __, predicatesOrValues))
+  }
+
+  return areAllPredicatesTruthy(args, predicatesOrValues)
 }
 
 module.exports = and
