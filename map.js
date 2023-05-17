@@ -433,45 +433,4 @@ map.withIndex = mapper => function mappingWithIndex(value) {
   throw new TypeError(`${value} is not an Array`)
 }
 
-/**
- * @name map.own
- *
- * @synopsis
- * ```coffeescript [specscript]
- * map.own(
- *   mapperFunc (item any)=>Promise|any,
- * )(object Object) -> result Promise|Object
- * ```
- *
- * @description
- * Applies a mapper function concurrently to an object's own values, returning an object of results. Mapper may be asynchronous.
- * Guards mapping by validating that each property is the object's own and not inherited from the prototype chain.
- *
- * ```javascript [playground]
- * const Person = function (name) {
- *   this.name = name
- * }
- *
- * Person.prototype.greet = function () {}
- *
- * const david = new Person('david')
- * david.a = 1
- * david.b = 2
- * david.c = 3
- *
- * const square = number => number ** 2
- * console.log(
- *   map.own(square)(david)
- * ) // { name: NaN, a: 1, b: 4, c: 9 }
- * ```
- *
- * @DEPRECATED
- */
-map.own = mapper => function mappingOwnProperties(value) {
-  if (isObject(value) && !isArray(value)) {
-    return objectMapOwn(value, mapper)
-  }
-  throw new TypeError(`${value} is not an Object`)
-}
-
 module.exports = map
