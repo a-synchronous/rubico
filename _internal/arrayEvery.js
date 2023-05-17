@@ -5,14 +5,14 @@ const promiseAll = require('./promiseAll')
 const callPropUnary = require('./callPropUnary')
 
 /**
- * @name arrayAll
+ * @name arrayEvery
  *
  * @synopsis
  * ```coffeescript [specscript]
- * arrayAll(array Array, predicate ...any=>boolean) -> boolean
+ * arrayEvery(array Array, predicate ...any=>boolean) -> boolean
  * ```
  */
-const arrayAll = function (array, predicate) {
+const arrayEvery = function (array, predicate) {
   const arrayLength = array.length,
     promises = []
   let index = -1
@@ -29,4 +29,4 @@ const arrayAll = function (array, predicate) {
     : promiseAll(promises).then(curry3(callPropUnary, __, 'every', Boolean))
 }
 
-module.exports = arrayAll
+module.exports = arrayEvery
