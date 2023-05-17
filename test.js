@@ -3795,11 +3795,25 @@ every(predicate all=>Promise|boolean)(value Foldable) -> Promise|boolean
     })
   })
 
-  describe(`
-or(
-  predicates Array<predicate function|nonfunction>,
-)(point any) -> Promise|boolean
-  `, () => {
+  describe('or', () => {
+    it('API coverage', async () => {
+      aok(
+        or(1, 2, 3, [
+          (...numbers) => numbers.every(num => typeof num == 'number'),
+          false,
+          false,
+        ])
+      )
+
+      aok(
+        await or(Promise.resolve(1), 2, Promise.resolve(3), [
+          (...numbers) => numbers.every(num => typeof num == 'number'),
+          false,
+          false,
+        ])
+      )
+    })
+
     it('all nonfunctions', async () => {
       assert.strictEqual(or([true, true, true]), true)
       assert.strictEqual(or([false, false, false]), false)
