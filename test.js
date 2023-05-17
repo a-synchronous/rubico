@@ -3710,6 +3710,21 @@ every(predicate all=>Promise|boolean)(value Foldable) -> Promise|boolean
   })
 
   describe('not', () => {
+    it('API coverage', async () => {
+      ase(
+        not(1, 2, 3, (...numbers) => (
+          numbers.every(num => typeof num == 'number')
+        )),
+        false,
+      )
+
+      ase(
+        await not(Promise.resolve(1), 2, Promise.resolve(3), (...numbers) => (
+          numbers.every(num => typeof num == 'number')
+        )),
+        false,
+      )
+    })
     it('not(someValue) -> !someValue', async () => {
       assert.strictEqual(not(false), true)
       assert.strictEqual(not(null), true)
