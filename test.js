@@ -412,6 +412,15 @@ describe('rubico', () => {
         ])([1, 2, 3, 4, 5]),
         [9, 25, 49],
       )
+
+      ade(
+        await compose(Promise.resolve([1, 2, 3, 4, 5]), [
+          map(number => number ** 2),
+          map(number => number + 2),
+          filter(number => number % 2 == 1)
+        ]),
+        [9, 25, 49],
+      )
     })
   })
 
