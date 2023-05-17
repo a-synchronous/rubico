@@ -50,7 +50,7 @@ const areAllValuesTruthy = function (predicates, index) {
  * ) -> allTruthy boolean
  * ```
  */
-const asyncArePredicatesAllTruthy = async function (predicates, args, index) {
+const asyncArePredicatesAllTruthy = async function (args, predicates, index) {
   const length = predicates.length
   while (++index < length) {
     let predicate = predicates[index]
@@ -67,7 +67,7 @@ const asyncArePredicatesAllTruthy = async function (predicates, args, index) {
   return true
 }
 
-// areAllPredicatesTruthy(args Array, predicates Array<function>)
+// areAllPredicatesTruthy(args Array, predicates Array<function>) -> Promise|boolean
 const areAllPredicatesTruthy = function (args, predicates) {
   const length = predicates.length
   let index = -1
@@ -81,7 +81,7 @@ const areAllPredicatesTruthy = function (args, predicates) {
       return predicate.then(curry3(
         thunkConditional,
         __,
-        thunkify3(asyncArePredicatesAllTruthy, predicates, args, index),
+        thunkify3(asyncArePredicatesAllTruthy, args, predicates, index),
         always(false),
       ))
     }
