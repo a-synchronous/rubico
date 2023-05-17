@@ -1,6 +1,11 @@
+const promiseAll = require('./_internal/promiseAll')
+const areAnyValuesPromises = require('./_internal/areAnyValuesPromises')
 const arrayConditional = require('./_internal/arrayConditional')
 const areAllValuesNonfunctions = require('./_internal/areAllValuesNonfunctions')
 const nonfunctionsConditional = require('./_internal/nonfunctionsConditional')
+const __ = require('./_internal/placeholder')
+const curry3 = require('./_internal/curry3')
+const curryArgs3 = require('./_internal/curryArgs3')
 
 /**
  * @name switchCase
@@ -57,13 +62,18 @@ const nonfunctionsConditional = require('./_internal/nonfunctionsConditional')
  *
  * @execution series
  */
-const switchCase = values => {
+const switchCase = (...args) => {
+  const values = args.pop()
   if (areAllValuesNonfunctions(values)) {
     return nonfunctionsConditional(values, -2)
   }
-  return function switchingCases(...args) {
-    return arrayConditional(values, args, -2)
+  if (args.length == 0) {
+    return curryArgs3(arrayConditional, values, __, -2)
   }
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args).then(curry3(arrayConditional, values, __, -2))
+  }
+  return arrayConditional(values, args, -2)
 }
 
 module.exports = switchCase
