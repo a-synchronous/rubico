@@ -90,6 +90,20 @@ describe('Transducer', () => {
         ade(result, [2, 3, 6, 9])
       })
     })
+
+    it('forEach transducer', async () => {
+      let sum1 = 0
+      reduce([1, 2, 3, 4, 5], Transducer.forEach(number => {
+        sum1 += number
+      })(() => {}), null)
+      assert.equal(sum1, 15)
+
+      let sum2 = 0
+      await reduce([1, 2, 3, 4, 5], Transducer.forEach(async number => {
+        sum2 += number
+      })(() => {}), null)
+      assert.equal(sum2, 15)
+    })
   })
 
 })
