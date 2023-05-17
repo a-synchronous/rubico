@@ -6,7 +6,7 @@ const thunkify5 = require('../_internal/thunkify5')
 const thunkConditional = require('../_internal/thunkConditional')
 const isPromise = require('../_internal/isPromise')
 const isArray = require('../_internal/isArray')
-const arrayAny = require('../_internal/arrayAny')
+const arraySome = require('../_internal/arraySome')
 const arrayPush = require('../_internal/arrayPush')
 const funcConcatSync = require('../_internal/funcConcatSync')
 const noop = require('../_internal/noop')
@@ -33,7 +33,7 @@ const differenceWithArrayAsync = async function (
   const allValuesLength = allValues.length
   while (++index < allValuesLength) {
     const item = allValues[index]
-    let doesItemExistByComparator = arrayAny(array, curry2(comparator, item, __))
+    let doesItemExistByComparator = arraySome(array, curry2(comparator, item, __))
     if (isPromise(doesItemExistByComparator)) {
       doesItemExistByComparator = await doesItemExistByComparator
     }
@@ -62,7 +62,7 @@ const differenceWithArray = function (comparator, allValues, array) {
   let index = -1
   while (++index < allValuesLength) {
     const item = allValues[index],
-      doesItemExistByComparator = arrayAny(array, curry2(comparator, item, __))
+      doesItemExistByComparator = arraySome(array, curry2(comparator, item, __))
     if (isPromise(doesItemExistByComparator)) {
       return doesItemExistByComparator.then(funcConcatSync(
         curry3(thunkConditional, __, noop, thunkify2(arrayPush, result, item)),

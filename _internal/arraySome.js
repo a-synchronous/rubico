@@ -3,11 +3,11 @@ const isPromise = require('./isPromise')
 const promiseRace = require('./promiseRace')
 
 /**
- * @name asyncArrayAny
+ * @name asyncArraySome
  *
  * @synopsis
  * ```coffeescript [specscript]
- * asyncArrayAny(
+ * asyncArraySome(
  *   array Array,
  *   predicate any=>Promise|boolean,
  *   index number,
@@ -15,7 +15,7 @@ const promiseRace = require('./promiseRace')
  * ) -> boolean
  * ```
  */
-const asyncArrayAny = async function (
+const asyncArraySome = async function (
   array, predicate, index, promisesInFlight,
 ) {
   const length = array.length
@@ -39,23 +39,23 @@ const asyncArrayAny = async function (
 }
 
 /**
- * @name arrayAny
+ * @name arraySome
  *
  * @synopsis
  * ```coffeescript [specscript]
- * arrayAny(
+ * arraySome(
  *   array Array,
  *   predicate any=>Promise|boolean,
  * ) -> boolean
  * ```
  */
-const arrayAny = function (array, predicate) {
+const arraySome = function (array, predicate) {
   const length = array.length
   let index = -1
   while (++index < length) {
     const predication = predicate(array[index])
     if (isPromise(predication)) {
-      return asyncArrayAny(
+      return asyncArraySome(
         array, predicate, index, new Set([SelfReferencingPromise(predication)]))
     }
     if (predication) {
@@ -65,4 +65,4 @@ const arrayAny = function (array, predicate) {
   return false
 }
 
-module.exports = arrayAny
+module.exports = arraySome

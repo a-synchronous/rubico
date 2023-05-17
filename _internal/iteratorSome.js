@@ -1,23 +1,23 @@
 const SelfReferencingPromise = require('./SelfReferencingPromise')
-const asyncIteratorAny = require('./asyncIteratorAny')
+const asyncIteratorSome = require('./asyncIteratorSome')
 const isPromise = require('./isPromise')
 
 /**
- * @name iteratorAny
+ * @name iteratorSome
  *
  * @synopsis
  * ```coffeescript [specscript]
- * iteratorAny(
+ * iteratorSome(
  *   iterator Iterator,
  *   predicate any=>Promise|boolean,
  * ) -> boolean
  * ```
  */
-const iteratorAny = function (iterator, predicate) {
+const iteratorSome = function (iterator, predicate) {
   for (const item of iterator) {
     const predication = predicate(item)
     if (isPromise(predication)) {
-      return asyncIteratorAny(
+      return asyncIteratorSome(
         iterator, predicate, new Set([SelfReferencingPromise(predication)]))
     }
     if (predication) {
@@ -27,4 +27,4 @@ const iteratorAny = function (iterator, predicate) {
   return false
 }
 
-module.exports = iteratorAny
+module.exports = iteratorSome
