@@ -1,7 +1,6 @@
 const areAnyValuesPromises = require('./_internal/areAnyValuesPromises')
 const promiseAll = require('./_internal/promiseAll')
 const funcConcat = require('./_internal/funcConcat')
-const funcConcatSync = require('./_internal/funcConcatSync')
 const funcApply = require('./_internal/funcApply')
 const curry2 = require('./_internal/curry2')
 const __ = require('./_internal/placeholder')
@@ -67,28 +66,5 @@ const pipe = function (...args) {
 
   return pipeline(...args)
 }
-
-// funcs Array<function> -> pipeline function
-const pipeSync = funcs => funcs.reduce(funcConcatSync)
-
-/**
- * @name pipe.sync
- *
- * @synopsis
- * ```coffeescript [specscript]
- * pipe.sync(funcs Array<function>)(...args) -> result Promise|any
- * ```
- *
- * @description
- * A synchronous version of `pipe` that does not resolve promises by default.
- *
- * ```javascript [playground]
- * pipe.sync([
- *   value => Promise.resolve(value),
- *   promise => promise.then(console.log)
- * ])('hey') // hey
- * ```
- */
-pipe.sync = pipeSync
 
 module.exports = pipe
