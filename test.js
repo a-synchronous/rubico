@@ -648,6 +648,25 @@ describe('rubico', () => {
   })
 
   describe('assign', () => {
+    it('API coverage', async () => {
+      ade(assign({}, {
+        a: () => 1,
+        b: () => 2,
+        c: () => 3,
+      }), { a: 1, b: 2, c: 3 })
+
+      ade(assign({
+        a: () => 1,
+        b: () => 2,
+        c: () => 3,
+      })({}), { a: 1, b: 2, c: 3 })
+
+      ade(await assign(Promise.resolve({}), {
+        a: () => 1,
+        b: () => 2,
+        c: () => 3,
+      }), { a: 1, b: 2, c: 3 })
+    })
     it('maps input to object of sync functions then merges', async () => {
       ade(
         assign({
