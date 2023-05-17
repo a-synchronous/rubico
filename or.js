@@ -1,6 +1,10 @@
+const promiseAll = require('./_internal/promiseAll')
 const isPromise = require('./_internal/isPromise')
-const curry3 = require('./_internal/curry3')
+const areAnyValuesPromises = require('./_internal/areAnyValuesPromises')
 const __ = require('./_internal/placeholder')
+const curry2 = require('./_internal/curry2')
+const curry3 = require('./_internal/curry3')
+const curryArgs2 = require('./_internal/curryArgs2')
 const thunkConditional = require('./_internal/thunkConditional')
 const areAllValuesNonfunctions = require('./_internal/areAllValuesNonfunctions')
 const thunkify2 = require('./_internal/thunkify2')
@@ -40,22 +44,46 @@ const areAnyNonfunctionsTruthy = function (predicates, index) {
  * @synopsis
  * ```coffeescript [specscript]
  * asyncAreAnyPredicatesTruthy(
+ *   args Array,
  *   predicates Array<predicate function|nonfunction>,
- *   point any,
  *   index number,
  * ) -> allTruthy boolean
  * ```
  */
-const asyncAreAnyPredicatesTruthy = async function (predicates, point, index) {
+const asyncAreAnyPredicatesTruthy = async function (args, predicates, index) {
   const length = predicates.length
   while (++index < length) {
     let predicate = predicates[index]
     if (typeof predicate == 'function') {
-      predicate = predicate(point)
+      predicate = predicate(...args)
     }
-    console.log('hey - or', predicate)
     if (isPromise(predicate)) {
       predicate = await predicate
+    }
+    if (predicate) {
+      return true
+    }
+  }
+  return false
+}
+
+// areAnyPredicatesTruthy(args Array, predicates Array<function>) -> Promise|boolean
+const areAnyPredicatesTruthy = function (args, predicates) {
+  const length = predicates.length
+  let index = -1
+
+  while (++index < length) {
+    let predicate = predicates[index]
+    if (typeof predicate == 'function') {
+      predicate = predicate(...args)
+    }
+    if (isPromise(predicate)) {
+      return predicate.then(curry3(
+        thunkConditional,
+        __,
+        always(true),
+        thunkify3(asyncAreAnyPredicatesTruthy, args, predicates, index),
+      ))
     }
     if (predicate) {
       return true
@@ -71,9 +99,9 @@ const asyncAreAnyPredicatesTruthy = async function (predicates, point, index) {
  * ```coffeescript [specscript]
  * or(values Array<boolean>) -> result boolean
  *
- * or(
- *   predicatesOrValues Array<function|boolean>
- * )(value any) -> result Promise|boolean
+ * or(...args, predicatesOrValues Array<function|boolean>) -> Promise|boolean
+ *
+ * or(predicatesOrValues Array<function|boolean>)(...args) -> Promise|boolean
  * ```
  *
  * @description
@@ -105,33 +133,22 @@ const asyncAreAnyPredicatesTruthy = async function (predicates, point, index) {
  *
  * @note ...args slows down here by an order of magnitude
  */
-const or = predicates => {
-  if (areAllValuesNonfunctions(predicates)) {
-    return areAnyNonfunctionsTruthy(predicates, -1)
+const or = function (...args) {
+  const predicatesOrValues = args.pop()
+  if (areAllValuesNonfunctions(predicatesOrValues)) {
+    return areAnyNonfunctionsTruthy(predicatesOrValues, -1)
   }
-  return function areAnyPredicatesTruthy(point) {
-    const length = predicates.length
-    let index = -1
 
-    while (++index < length) {
-      let predicate = predicates[index]
-      if (typeof predicate == 'function') {
-        predicate = predicate(point)
-      }
-      if (isPromise(predicate)) {
-        return predicate.then(curry3(
-          thunkConditional,
-          __,
-          always(true),
-          thunkify3(asyncAreAnyPredicatesTruthy, predicates, point, index),
-        ))
-      }
-      if (predicate) {
-        return true
-      }
-    }
-    return false
+  if (args.length == 0) {
+    return curryArgs2(areAnyPredicatesTruthy, __, predicatesOrValues)
   }
+
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args)
+      .then(curry2(areAnyPredicatesTruthy, __, predicatesOrValues))
+  }
+
+  return areAnyPredicatesTruthy(args, predicatesOrValues)
 }
 
 module.exports = or
