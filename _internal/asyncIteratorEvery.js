@@ -3,7 +3,7 @@ const isPromise = require('./isPromise')
 const promiseRace = require('./promiseRace')
 
 /**
- * @name asyncIteratorAll
+ * @name asyncIteratorEvery
  *
  * @synopsis
  * var T any,
@@ -12,11 +12,11 @@ const promiseRace = require('./promiseRace')
  *   promisesInFlight Set<Promise<[T, Promise]>>,
  *   maxConcurrency number
  *
- * asyncIteratorAll(
+ * asyncIteratorEvery(
  *   asyncIterator, predicate, promisesInFlight, maxConcurrency,
  * ) -> Promise<boolean>
  */
-const asyncIteratorAll = async function (
+const asyncIteratorEvery = async function (
   asyncIterator, predicate, promisesInFlight, maxConcurrency = 20,
 ) {
   let iteration = await asyncIterator.next()
@@ -47,4 +47,4 @@ const asyncIteratorAll = async function (
   return true
 }
 
-module.exports = asyncIteratorAll
+module.exports = asyncIteratorEvery

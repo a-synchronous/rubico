@@ -4,20 +4,20 @@ const curry3 = require('./curry3')
 const reducerAllSync = require('./reducerAllSync')
 
 /**
- * @name reducerAll
+ * @name reducerEvery
  *
  * @synopsis
  * ```coffeescript [specscript]
- * reducerAll(
+ * reducerEvery(
  *   predicate any=>boolean,
  * ) -> reducer(result boolean, item any)=>boolean
  * ```
  */
-const reducerAll = predicate => function allReducer(result, item) {
+const reducerEvery = predicate => function allReducer(result, item) {
   return result === false ? false
     : isPromise(result) ? result.then(
       curry3(reducerAllSync, predicate, __, item))
     : result ? predicate(item) : false
 }
 
-module.exports = reducerAll
+module.exports = reducerEvery
