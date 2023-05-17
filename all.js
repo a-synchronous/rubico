@@ -13,7 +13,11 @@ const functionObjectAll = require('./_internal/functionObjectAll')
  *
  * @synopsis
  * ```coffeescript [specscript]
+ * all(...args, funcsArray Array<function>) -> result Promise|Array
+ *
  * all(funcsArray Array<function>)(...args) -> result Promise|Array
+ *
+ * all(...args, funcsObject Object<function>) -> result Promise|Object
  *
  * all(funcsObject Object<function>)(...args) -> result Promise|Object
  * ```
@@ -95,6 +99,8 @@ const all = function (...args) {
  *
  * @synopsis
  * ```coffeescript [specscript]
+ * all.series(...args, funcsArray Array<function>) -> result Promise|Array
+ *
  * all.series(funcsArray Array<function>)(...args) -> result Promise|Array
  * ```
  *
