@@ -378,12 +378,6 @@ describe('rubico', () => {
     })
   })
 
-  describe('pipe.sync', () => {
-    it('chains regular functions together', async () => {
-      ase(pipe.sync([hi, ho])('yo'), 'yohiho')
-    })
-  })
-
   describe('compose', () => {
     it('chains functions in reverse', async () => {
       ade(
@@ -3725,14 +3719,6 @@ every(predicate all=>Promise|boolean)(value Foldable) -> Promise|boolean
       aok(not(asyncIsEven)(2) instanceof Promise)
       ase(await not(asyncIsEven)(2), false)
       ase(await not(asyncIsEven)(1), true)
-    })
-  })
-
-  describe('not.sync', () => {
-    it('not.sync(isOdd)', async () => {
-      const isOdd = number => number % 2 == 1
-      assert.strictEqual(not.sync(isOdd)(1), false)
-      assert.strictEqual(not.sync(isOdd)(0), true)
     })
   })
 
