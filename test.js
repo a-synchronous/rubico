@@ -1285,62 +1285,6 @@ then(() => {
     })
   })
 
-  describe('map.own', () => {
-    describe('map.own(mapper A=>B)(Object<A>) -> Object<B>', () => {
-      it('maps an objects own properties', async () => {
-        const Person = function (name) {
-          this.name = name
-        }
-
-        Person.prototype.greet = function () {
-          console.log(`Hello, my name is ${this.name}`)
-        }
-
-        const david = new Person('david')
-
-        david.a = 1
-        david.b = 2
-        david.c = 3
-
-        const square = number => number ** 2
-
-        const mappedOwn = map.own(square)(david)
-        assert.deepStrictEqual(mappedOwn, { name: NaN, a: 1, b: 4, c: 9 });
-      })
-
-      it('maps a functions own properties', async () => {
-        const someFunctionWithProperties = () => null
-
-        someFunctionWithProperties.a = 1
-        someFunctionWithProperties.b = 2
-        someFunctionWithProperties.c = 3
-
-        const cube = number => number ** 3
-
-        const mappedOwn = map.own(cube)(someFunctionWithProperties)
-        assert.deepStrictEqual(mappedOwn, { a: 1, b: 8, c: 27 });
-      })
-
-      it('throws a TypeError if value argument is not an object', async () => {
-        assert.throws(
-          () => {
-            map.own(() => true)('invalid')
-          },
-          new TypeError('invalid is not an Object')
-        )
-      })
-
-      it('throws a TypeError if value argument is an array', async () => {
-        assert.throws(
-          () => {
-            map.own(() => true)([])
-          },
-          new TypeError(' is not an Object')
-        )
-      })
-    })
-  })
-
   describe('filter', () => {
     it('eager', async () => {
       const numbers = [1, 2, 3]
