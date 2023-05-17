@@ -5,16 +5,16 @@ const curry3 = require('./curry3')
 const callPropUnary = require('./callPropUnary')
 
 /**
- * @name iteratorAll
+ * @name iteratorEvery
  *
  * @synopsis
  * ```coffeescript [specscript]
- * iteratorAll(iterator Iterator, predicate ...any=>boolean) -> boolean
+ * iteratorEvery(iterator Iterator, predicate ...any=>boolean) -> boolean
  * ```
  *
  * @TODO use .next() calls
  */
-const iteratorAll = function (iterator, predicate) {
+const iteratorEvery = function (iterator, predicate) {
   const promises = []
   for (const item of iterator) {
     const predication = predicate(item)
@@ -29,4 +29,4 @@ const iteratorAll = function (iterator, predicate) {
     : promiseAll(promises).then(curry3(callPropUnary, __, 'every', Boolean))
 }
 
-module.exports = iteratorAll
+module.exports = iteratorEvery
