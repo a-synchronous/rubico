@@ -66,15 +66,14 @@ const _get = function (object, path, defaultValue) {
  * ```
  */
 
-const get = function (...args) {
-  const arg0 = args[0]
+const get = function (arg0, arg1, arg2) {
   if (isPromise(arg0)) {
-    return arg0.then(curry3(_get, __, args[1], args[2]))
+    return arg0.then(curry3(_get, __, arg1, arg2))
   }
   if (isObject(arg0) && !isArray(arg0)) {
-    return _get(arg0, args[1], args[2])
+    return _get(arg0, arg1, arg2)
   }
-  return curry3(_get, __, arg0, args[1])
+  return curry3(_get, __, arg0, arg1)
 }
 
 module.exports = get
