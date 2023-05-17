@@ -419,6 +419,85 @@ describe('rubico', () => {
   })
 
   describe('all', () => {
+    it('API coverage', async () => {
+      ade(
+        all(1, 2, 3, [
+          Array.of,
+          Array.of,
+          Array.of,
+        ]),
+        [
+          [1, 2, 3],
+          [1, 2, 3],
+          [1, 2, 3],
+        ],
+      )
+
+      ade(
+        all([
+          Array.of,
+          Array.of,
+          Array.of,
+        ])(1, 2, 3),
+        [
+          [1, 2, 3],
+          [1, 2, 3],
+          [1, 2, 3],
+        ],
+      )
+
+      ade(
+        await all(Promise.resolve(1), 2, Promise.resolve(3), [
+          Array.of,
+          Array.of,
+          Array.of,
+        ]),
+        [
+          [1, 2, 3],
+          [1, 2, 3],
+          [1, 2, 3],
+        ],
+      )
+
+      ade(
+        all(1, 2, 3, {
+          a: Array.of,
+          b: Array.of,
+          c: Array.of,
+        }),
+        {
+          a: [1, 2, 3],
+          b: [1, 2, 3],
+          c: [1, 2, 3],
+        },
+      )
+
+      ade(
+        all({
+          a: Array.of,
+          b: Array.of,
+          c: Array.of,
+        })(1, 2, 3),
+        {
+          a: [1, 2, 3],
+          b: [1, 2, 3],
+          c: [1, 2, 3],
+        },
+      )
+
+      ade(
+        await all(Promise.resolve(1), 2, Promise.resolve(3), {
+          a: Array.of,
+          b: Array.of,
+          c: Array.of,
+        }),
+        {
+          a: [1, 2, 3],
+          b: [1, 2, 3],
+          c: [1, 2, 3],
+        },
+      )
+    })
     it('maps input to array of sync functions', async () => {
       ade(all([hi, hi, hi])('yo'), ['yohi', 'yohi', 'yohi'])
     })
@@ -484,6 +563,47 @@ describe('rubico', () => {
   })
 
   describe('all.series', () => {
+    it('API coverage', async () => {
+      ade(
+        all.series(1, 2, 3, [
+          Array.of,
+          Array.of,
+          Array.of,
+        ]),
+        [
+          [1, 2, 3],
+          [1, 2, 3],
+          [1, 2, 3],
+        ],
+      )
+
+      ade(
+        all.series([
+          Array.of,
+          Array.of,
+          Array.of,
+        ])(1, 2, 3),
+        [
+          [1, 2, 3],
+          [1, 2, 3],
+          [1, 2, 3],
+        ],
+      )
+
+      ade(
+        await all.series(Promise.resolve(1), 2, Promise.resolve(3), [
+          Array.of,
+          Array.of,
+          Array.of,
+        ]),
+        [
+          [1, 2, 3],
+          [1, 2, 3],
+          [1, 2, 3],
+        ],
+      )
+    })
+
     it('evaluates input against array of functions in series (sync)', async () => {
       const arr = []
       ade(

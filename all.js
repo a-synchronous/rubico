@@ -1,7 +1,12 @@
+const areAnyValuesPromises = require('./_internal/areAnyValuesPromises')
+const promiseAll = require('./_internal/promiseAll')
 const isArray = require('./_internal/isArray')
-const funcAll = require('./_internal/funcAll')
-const funcObjectAll = require('./_internal/funcObjectAll')
-const funcAllSeries = require('./_internal/funcAllSeries')
+const __ = require('./_internal/placeholder')
+const curry2 = require('./_internal/curry2')
+const curryArgs2 = require('./_internal/curryArgs2')
+const functionArrayAll = require('./_internal/functionArrayAll')
+const functionArrayAllSeries = require('./_internal/functionArrayAllSeries')
+const functionObjectAll = require('./_internal/functionObjectAll')
 
 /**
  * @name all
@@ -65,7 +70,25 @@ const funcAllSeries = require('./_internal/funcAllSeries')
  *
  * @execution concurrent
  */
-const all = funcs => isArray(funcs) ? funcAll(funcs) : funcObjectAll(funcs)
+
+const all = function (...args) {
+  const funcs = args.pop()
+  if (args.length == 0) {
+    return isArray(funcs)
+      ? curryArgs2(functionArrayAll, funcs, __)
+      : curryArgs2(functionObjectAll, funcs, __)
+  }
+
+  if (areAnyValuesPromises(args)) {
+    return isArray(funcs)
+      ? promiseAll(args).then(curry2(functionArrayAll, funcs, __))
+      : promiseAll(args).then(curry2(functionObjectAll, funcs, __))
+  }
+
+  return isArray(funcs)
+    ? functionArrayAll(funcs, args)
+    : functionObjectAll(funcs, args)
+}
 
 /**
  * @name all.series
@@ -73,12 +96,10 @@ const all = funcs => isArray(funcs) ? funcAll(funcs) : funcObjectAll(funcs)
  * @synopsis
  * ```coffeescript [specscript]
  * all.series(funcsArray Array<function>)(...args) -> result Promise|Array
- *
- * all.series(funcsObject Object<function>)(...args) -> result Promise|Object
  * ```
  *
  * @description
- * Same as `all` but with serial instead of parallel execution.
+ * `all` with serial execution.
  *
  * ```javascript [playground]
  * const sleep = ms => () => new Promise(resolve => setTimeout(resolve, ms))
@@ -96,6 +117,16 @@ const all = funcs => isArray(funcs) ? funcAll(funcs) : funcObjectAll(funcs)
  *
  * @execution series
  */
-all.series = funcs => isArray(funcs) ? funcAllSeries(funcs) : funcObjectAll(funcs)
+
+all.series = function allSeries(...args) {
+  const funcs = args.pop()
+  if (args.length == 0) {
+    return curryArgs2(functionArrayAllSeries, funcs, __)
+  }
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args).then(curry2(functionArrayAllSeries, funcs, __))
+  }
+  return functionArrayAllSeries(funcs, args)
+}
 
 module.exports = all
