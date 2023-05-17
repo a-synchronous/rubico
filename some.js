@@ -1,3 +1,6 @@
+const isPromise = require('./_internal/isPromise')
+const __ = require('./_internal/placeholder')
+const curry2 = require('./_internal/curry2')
 const isArray = require('./_internal/isArray')
 const objectValues = require('./_internal/objectValues')
 const arrayAny = require('./_internal/arrayAny')
@@ -7,14 +10,41 @@ const reducerAny = require('./_internal/reducerAny')
 const symbolIterator = require('./_internal/symbolIterator')
 const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
 
+// _some(collection Array|Iterable|AsyncIterable|{ reduce: function }|Object, predicate function) -> Promise|boolean
+const _some = function (collection, predicate) {
+  if (isArray(collection)) {
+    return arrayAny(collection, predicate)
+  }
+  if (collection == null) {
+    return predicate(collection)
+  }
+  if (typeof collection[symbolIterator] == 'function') {
+    return iteratorAny(collection[symbolIterator](), predicate)
+  }
+  if (typeof collection[symbolAsyncIterator] == 'function') {
+    return asyncIteratorAny(
+      collection[symbolAsyncIterator](), predicate, new Set()
+    )
+  }
+  if (typeof collection.reduce == 'function') {
+    return collection.reduce(reducerAny(predicate), false)
+  }
+  if (collection.constructor == Object) {
+    return arrayAny(objectValues(collection), predicate)
+  }
+  return predicate(collection)
+}
+
 /**
  * @name some
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Foldable = Iterable|AsyncIterable|Object
+ * type Foldable = Array|Iterable|AsyncIterable|{ reduce: function }|Object
  *
- * some(predicate function)(collection Foldable) -> result Promise|boolean
+ * some(collection Foldable, predicate function) -> Promise|boolean
+ *
+ * some(predicate function)(collection Foldable) -> Promise|boolean
  * ```
  *
  * @description
@@ -24,7 +54,7 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  * const isOdd = number => number % 2 == 1
  *
  * console.log(
- *   some(isOdd)([1, 2, 3, 4, 5]),
+ *   some([1, 2, 3, 4, 5], isOdd),
  * ) // true
  * ```
  *
@@ -57,26 +87,19 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  *
  * @related or
  */
-const some = predicate => function anyTruthy(value) {
-  if (isArray(value)) {
-    return arrayAny(value, predicate)
+
+const some = function (...args) {
+  const predicate = args.pop()
+  if (args.length == 0) {
+    return curry2(_some, __, predicate)
   }
-  if (value == null) {
-    return predicate(value)
+
+  const collection = args[0]
+  if (isPromise(collection)) {
+    return collection.then(curry2(_some, __, predicate))
   }
-  if (typeof value[symbolIterator] == 'function') {
-    return iteratorAny(value[symbolIterator](), predicate)
-  }
-  if (typeof value[symbolAsyncIterator] == 'function') {
-    return asyncIteratorAny(value[symbolAsyncIterator](), predicate, new Set())
-  }
-  if (typeof value.reduce == 'function') {
-    return value.reduce(reducerAny(predicate), false)
-  }
-  if (value.constructor == Object) {
-    return arrayAny(objectValues(value), predicate)
-  }
-  return predicate(value)
+
+  return _some(collection, predicate)
 }
 
 module.exports = some

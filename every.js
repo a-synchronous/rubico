@@ -1,3 +1,6 @@
+const isPromise = require('./_internal/isPromise')
+const __ = require('./_internal/placeholder')
+const curry2 = require('./_internal/curry2')
 const isArray = require('./_internal/isArray')
 const arrayAll = require('./_internal/arrayAll')
 const iteratorAll = require('./_internal/iteratorAll')
@@ -7,12 +10,40 @@ const reducerAll = require('./_internal/reducerAll')
 const symbolIterator = require('./_internal/symbolIterator')
 const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
 
+// _every(collection Array|Iterable|AsyncIterable|{ reduce: function }|Object, predicate function) -> Promise|boolean
+const _every = function (collection, predicate) {
+  if (isArray(collection)) {
+    return arrayAll(collection, predicate)
+  }
+  if (collection == null) {
+    return predicate(collection)
+  }
+
+  if (typeof collection[symbolIterator] == 'function') {
+    return iteratorAll(collection[symbolIterator](), predicate)
+  }
+  if (typeof collection[symbolAsyncIterator] == 'function') {
+    return asyncIteratorAll(
+      collection[symbolAsyncIterator](), predicate, new Set()
+    )
+  }
+  if (typeof collection.reduce == 'function') {
+    return collection.reduce(reducerAll(predicate), true)
+  }
+  if (collection.constructor == Object) {
+    return arrayAll(objectValues(collection), predicate)
+  }
+  return predicate(collection)
+}
+
 /**
  * @name every
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Foldable = Iterable|AsyncIterable|Object
+ * type Foldable = Array|Iterable|AsyncIterable|{ reduce: function }|Object
+ *
+ * every(collection Foldable, predicate function) -> result Promise|boolean
  *
  * every(predicate function)(collection Foldable) -> result Promise|boolean
  * ```
@@ -46,27 +77,18 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  *
  * @muxing
  */
-const every = predicate => function allTruthy(value) {
-  if (isArray(value)) {
-    return arrayAll(value, predicate)
-  }
-  if (value == null) {
-    return predicate(value)
+const every = function (...args) {
+  const predicate = args.pop()
+  if (args.length == 0) {
+    return curry2(_every, __, predicate)
   }
 
-  if (typeof value[symbolIterator] == 'function') {
-    return iteratorAll(value[symbolIterator](), predicate)
+  const collection = args[0]
+  if (isPromise(collection)) {
+    return collection.then(curry2(_every, __, predicate))
   }
-  if (typeof value[symbolAsyncIterator] == 'function') {
-    return asyncIteratorAll(value[symbolAsyncIterator](), predicate, new Set())
-  }
-  if (typeof value.reduce == 'function') {
-    return value.reduce(reducerAll(predicate), true)
-  }
-  if (value.constructor == Object) {
-    return arrayAll(objectValues(value), predicate)
-  }
-  return predicate(value)
+
+  return _every(collection, predicate)
 }
 
 module.exports = every
