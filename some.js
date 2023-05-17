@@ -3,34 +3,34 @@ const __ = require('./_internal/placeholder')
 const curry2 = require('./_internal/curry2')
 const isArray = require('./_internal/isArray')
 const objectValues = require('./_internal/objectValues')
-const arrayAny = require('./_internal/arrayAny')
-const iteratorAny = require('./_internal/iteratorAny')
-const asyncIteratorAny = require('./_internal/asyncIteratorAny')
-const reducerAny = require('./_internal/reducerAny')
+const arraySome = require('./_internal/arraySome')
+const iteratorSome = require('./_internal/iteratorSome')
+const asyncIteratorSome = require('./_internal/asyncIteratorSome')
+const reducerSome = require('./_internal/reducerSome')
 const symbolIterator = require('./_internal/symbolIterator')
 const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
 
 // _some(collection Array|Iterable|AsyncIterable|{ reduce: function }|Object, predicate function) -> Promise|boolean
 const _some = function (collection, predicate) {
   if (isArray(collection)) {
-    return arrayAny(collection, predicate)
+    return arraySome(collection, predicate)
   }
   if (collection == null) {
     return predicate(collection)
   }
   if (typeof collection[symbolIterator] == 'function') {
-    return iteratorAny(collection[symbolIterator](), predicate)
+    return iteratorSome(collection[symbolIterator](), predicate)
   }
   if (typeof collection[symbolAsyncIterator] == 'function') {
-    return asyncIteratorAny(
+    return asyncIteratorSome(
       collection[symbolAsyncIterator](), predicate, new Set()
     )
   }
   if (typeof collection.reduce == 'function') {
-    return collection.reduce(reducerAny(predicate), false)
+    return collection.reduce(reducerSome(predicate), false)
   }
   if (collection.constructor == Object) {
-    return arrayAny(objectValues(collection), predicate)
+    return arraySome(objectValues(collection), predicate)
   }
   return predicate(collection)
 }
