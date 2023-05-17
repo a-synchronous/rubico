@@ -872,6 +872,25 @@ describe('rubico', () => {
   })
 
   describe('switchCase', () => {
+    it('API coverage', async () => {
+      ase(
+        switchCase(1, [
+          x => x === 1, () => 'hi',
+          x => x === 2, () => 'ho',
+          () => 'hey',
+        ]),
+        'hi',
+      )
+
+      ase(
+        await switchCase(Promise.resolve(1), [
+          x => x === 1, () => 'hi',
+          x => x === 2, () => 'ho',
+          () => 'hey',
+        ]),
+        'hi',
+      )
+    })
     it('switches on values (including Promises), evaluating eagerly', async () => {
       ase(switchCase([true, 'hey', 'ho']), 'hey')
       ase(await switchCase([
