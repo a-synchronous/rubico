@@ -399,38 +399,4 @@ map.pool = (concurrencyLimit, mapper) => function concurrentPoolMapping(value) {
   throw new TypeError(`${value} is not an Array`)
 }
 
-/**
- * @name map.withIndex
- *
- * @synopsis
- * ```coffeescript [specscript]
- * map.withIndex(
- *   indexedMapperFunc (item any, index numberl, array Array)=>Promise|any,
- * )(array Array) -> result Promise|Array
- * ```
- *
- * @description
- * `map` with an indexed mapper.
- *
- * ```javascript [playground]
- * const range = length =>
- *   map.withIndex((_, index) => index + 1)(Array(length))
- *
- * console.log(range(5)) // [1, 2, 3, 4, 5]
- * ```
- *
- * @execution concurrent
- *
- * @related
- * map, filter.withIndex
- *
- * @DEPRECATED
- */
-map.withIndex = mapper => function mappingWithIndex(value) {
-  if (isArray(value)) {
-    return arrayMapWithIndex(value, mapper)
-  }
-  throw new TypeError(`${value} is not an Array`)
-}
-
 module.exports = map
