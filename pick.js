@@ -1,3 +1,4 @@
+const isPromise = require('./_internal/isPromise')
 const getByPath = require('./_internal/getByPath')
 const setByPath = require('./_internal/setByPath')
 const curry2 = require('./_internal/curry2')
@@ -62,9 +63,12 @@ const _pick = function (source, keys) {
  * ])
  * ```
  */
-const pick = (arg0, arg1) => {
+const pick = function (arg0, arg1) {
   if (arg1 == null) {
     return curry2(_pick, __, arg0)
+  }
+  if (isPromise(arg0)) {
+    return arg0.then(curry2(_pick, __, arg1))
   }
   return _pick(arg0, arg1)
 }
