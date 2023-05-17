@@ -1,3 +1,4 @@
+const isPromise = require('./_internal/isPromise')
 const deleteByPath = require('./_internal/deleteByPath')
 const copyDeep = require('./_internal/copyDeep')
 const curry2 = require('./_internal/curry2')
@@ -65,6 +66,9 @@ const _omit = function (source, paths) {
 const omit = function (arg0, arg1) {
   if (arg1 == null) {
     return curry2(_omit, __, arg0)
+  }
+  if (isPromise(arg0)) {
+    return arg0.then(curry2(_omit, __, arg1))
   }
   return _omit(arg0, arg1)
 }
