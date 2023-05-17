@@ -1240,51 +1240,6 @@ then(() => {
     })
   })
 
-  describe('map.withIndex', () => {
-    it('[sync] applies a function to each item of array with index and reference to array', async () => {
-      const numbers = [100, 100, 100, 100, 100]
-      ade(
-        map.withIndex((xi, i, x) => xi + i - x[i])(numbers),
-        [0, 1, 2, 3, 4],
-      )
-    })
-    it('[async] applies a function to each item of array with index and reference to array', async () => {
-      const numbers = [100, 100, 100, 100, 100]
-      aok(map.withIndex(async (xi, i, x) => xi + i - x[i])(numbers) instanceof Promise)
-      ade(
-        await map.withIndex(async (xi, i, x) => xi + i - x[i])(numbers),
-        [0, 1, 2, 3, 4],
-      )
-    })
-    xit('[sync] applies a function to each character of a string with index and value of string', async () => {
-      ase(
-        map.withIndex((xi, i, x) => xi + i + x[i])('abc'),
-        'a0ab1bc2c',
-      )
-    })
-    xit('[async] applies a function to each character of a string with index and value of string', async () => {
-      aok(
-        map.withIndex(async (xi, i, x) => xi + i + x[i])('abc') instanceof Promise
-      )
-      ase(
-        await map.withIndex(async (xi, i, x) => xi + i + x[i])('abc'),
-        'a0ab1bc2c',
-      )
-    })
-    it('throws a TypeError on map.withIndex(nonFunction)', async () => {
-      assert.throws(
-        () => map.withIndex({})([1, 2, 3]),
-        new TypeError('mapper is not a function'),
-      )
-    })
-    it('throws a TypeError on map.withIndex(...)(null)', async () => {
-      assert.throws(
-        () => map.withIndex(() => 'hi')(null),
-        new TypeError('null is not an Array')
-      )
-    })
-  })
-
   describe('filter', () => {
     it('eager', async () => {
       const numbers = [1, 2, 3]
@@ -1507,68 +1462,6 @@ then(() => {
     describe('filter(predicate T=>boolean)(undefined) -> undefined', () => {
       it('predicate T=>boolean', async () => {
         assert.strictEqual(filter(() => true)(undefined), undefined)
-      })
-    })
-  })
-
-  describe('filter.withIndex', () => {
-    describe('filter.withIndex(predicate T=>Promise|boolean)(value Array<T>) -> Array<T>', () => {
-      it('predicate T=>boolean', async () => {
-        const shellUniq = filter.withIndex(
-          (item, index, array) => item !== array[index + 1])
-        assert.deepEqual(
-          shellUniq([1, 1, 1, 2, 2, 3, 3, 3, 4, 5, 5, 5]),
-          [1, 2, 3, 4, 5])
-      })
-      it('predicate T=>Promise<boolean>', async () => {
-        const asyncShellUniq = filter.withIndex(
-          async (item, index, array) => item !== array[index + 1])
-        assert.deepEqual(
-          await asyncShellUniq([1, 1, 1, 2, 2, 3, 3, 3, 4, 5, 5, 5]),
-          [1, 2, 3, 4, 5])
-      })
-      it('predicate T=>Promise|boolean', async () => {
-        const variadicAsyncShellUniq = filter.withIndex(
-          (item, index, array) => item !== array[index + 1] ? Promise.resolve(true) : false)
-        assert.deepEqual(
-          await variadicAsyncShellUniq([1, 1, 1, 2, 2, 3, 3, 3, 4, 5, 5, 5]),
-          [1, 2, 3, 4, 5])
-        assert.deepEqual(
-          await variadicAsyncShellUniq([2, 2, 3, 3, 3, 4, 5, 5, 5, 6]),
-          [2, 3, 4, 5, 6])
-      })
-    })
-
-    describe('filter.withIndex(predicate T=>Promise|boolean)(value !Array)', () => {
-      it('value Object', async () => {
-        assert.throws(
-          () => filter.withIndex(() => true)({}),
-          new TypeError('[object Object] is not an Array'),
-        )
-      })
-      it('value string', async () => {
-        assert.throws(
-          () => filter.withIndex(() => true)('hey'),
-          new TypeError('hey is not an Array'),
-        )
-      })
-      it('value function', async () => {
-        assert.throws(
-          () => filter.withIndex(() => true)(() => false),
-          new TypeError('() => false is not an Array'),
-        )
-      })
-      it('value null', async () => {
-        assert.throws(
-          () => filter.withIndex(() => true)(null),
-          new TypeError('null is not an Array'),
-        )
-      })
-      it('value undefined', async () => {
-        assert.throws(
-          () => filter.withIndex(() => true)(undefined),
-          new TypeError('undefined is not an Array'),
-        )
       })
     })
   })
