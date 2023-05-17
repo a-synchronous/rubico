@@ -99,9 +99,9 @@ const areAllPredicatesTruthy = function (args, predicates) {
  * ```coffeescript [specscript]
  * and(values Array<boolean>) -> result boolean
  *
- * and(
- *   predicatesOrValues Array<function|boolean>
- * )(value any) -> result Promise|boolean
+ * and(...args, predicatesOrValues Array<function|boolean>) -> Promise|boolean
+ *
+ * and(predicatesOrValues Array<function|boolean>)(...args) -> Promise|boolean
  * ```
  *
  * @description
@@ -146,7 +146,8 @@ const and = function (...args) {
   }
 
   if (areAnyValuesPromises(args)) {
-    return promiseAll(args).then(curry2(areAllPredicatesTruthy, __, predicatesOrValues))
+    return promiseAll(args)
+      .then(curry2(areAllPredicatesTruthy, __, predicatesOrValues))
   }
 
   return areAllPredicatesTruthy(args, predicatesOrValues)
