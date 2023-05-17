@@ -3727,11 +3727,25 @@ every(predicate all=>Promise|boolean)(value Foldable) -> Promise|boolean
     })
   })
 
-  describe(`
-and(
-  predicates Array<predicate function|nonfunction>
-)(point any) -> Promise|boolean
-  `, () => {
+  describe('and', () => {
+    it('API coverage', async () => {
+      aok(
+        and(1, 2, 3, [
+          (...numbers) => numbers.every(num => typeof num == 'number'),
+          (...numbers) => numbers.every(num => num < 5),
+          (...numbers) => numbers.every(num => num > 0),
+        ])
+      )
+
+      aok(
+        await and(Promise.resolve(1), 2, Promise.resolve(3), [
+          (...numbers) => numbers.every(num => typeof num == 'number'),
+          (...numbers) => numbers.every(num => num < 5),
+          (...numbers) => numbers.every(num => num > 0),
+        ])
+      )
+    })
+
     it('all nonfunctions', async () => {
       assert.strictEqual(and([true, true, true]), true)
       assert.strictEqual(and([true, true, false]), false)
@@ -3767,14 +3781,13 @@ and(
       assert.strictEqual(and([isOdd, isOdd, isOdd])(undefined), false)
       assert.strictEqual(and([isOdd, isOdd, isOdd])(), false)
     })
-  })
 
-  describe('and - v1.5.15 regression', () => {
     const isGreaterThan1 = x => x > 1
     it('sync tests input against provided array of functions, true if all evaluations are truthy', async () => {
       ase(and([isOdd, isGreaterThan1])(3), true)
       ase(and([isOdd, isGreaterThan1])(1), false)
     })
+
     it('async tests input against provided array of functions, true if all evaluations are truthy', async () => {
       aok(and([asyncIsEven, isGreaterThan1])(2) instanceof Promise)
       ase(await and([asyncIsEven, isGreaterThan1])(2), true)
