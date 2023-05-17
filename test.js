@@ -3388,6 +3388,16 @@ flatMap(
   describe('omit', () => {
     const abc = { a: 1, b: 2, c: 3 }
     const nested = { a: { b: { c: { d: 1, e: [2, 3] } } } }
+
+    it('API coverage', async () => {
+      ade(omit(nested, []), nested)
+      ade(await omit(Promise.resolve(nested), []), nested)
+      ade(omit([1, 2, 3], []), [1, 2, 3])
+      ade(await omit(Promise.resolve([1, 2, 3]), []), [1, 2, 3])
+      ade(omit(abc, ['a']), { b: 2, c: 3 })
+      ade(omit(abc, ['a', 'd']), { b: 2, c: 3 })
+      ade(omit(abc, ['d']), { a: 1, b: 2, c: 3 })
+    })
     it('omits properties from an object defined by array', async () => {
       assert(omit([])(nested) !== nested)
       ade(omit([])(nested), nested)
@@ -3435,14 +3445,6 @@ flatMap(
     .case(null, null)
     .case({}, {})
     .case([], []))
-
-    it('eager api', async () => {
-      ade(omit(nested, []), nested)
-      ade(omit([1, 2, 3], []), [1, 2, 3])
-      ade(omit(abc, ['a']), { b: 2, c: 3 })
-      ade(omit(abc, ['a', 'd']), { b: 2, c: 3 })
-      ade(omit(abc, ['d']), { a: 1, b: 2, c: 3 })
-    })
   })
 
   describe(`
