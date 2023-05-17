@@ -57,15 +57,13 @@ const _assign = function (object, funcs) {
  *
  * @execution concurrent
  */
-const assign = function (...args) {
-  const funcs = args.pop()
-  if (args.length == 0) {
-    return curry2(_assign, __, funcs)
+const assign = function (arg0, arg1) {
+  if (arg1 == null) {
+    return curry2(_assign, __, arg0)
   }
-  const object = args[0]
-  return isPromise(object)
-    ? object.then(curry2(_assign, __, funcs))
-    : _assign(object, funcs)
+  return isPromise(arg0)
+    ? arg0.then(curry2(_assign, __, arg1))
+    : _assign(arg0, arg1)
 }
 
 module.exports = assign
