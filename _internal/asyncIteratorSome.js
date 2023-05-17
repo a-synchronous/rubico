@@ -3,11 +3,11 @@ const isPromise = require('./isPromise')
 const promiseRace = require('./promiseRace')
 
 /**
- * @name asyncIteratorAny
+ * @name asyncIteratorSome
  *
  * @synopsis
  * ```coffeescript [specscript]
- * asyncIteratorAny(
+ * asyncIteratorSome(
  *   iterator Iterator|AsyncIterator,
  *   predicate any=>Promise|boolean,
  *   index number,
@@ -16,7 +16,7 @@ const promiseRace = require('./promiseRace')
  * ) -> boolean
  * ```
  */
-const asyncIteratorAny = async function (
+const asyncIteratorSome = async function (
   iterator, predicate, promisesInFlight, maxConcurrency = 20,
 ) {
   let iteration = iterator.next()
@@ -53,4 +53,4 @@ const asyncIteratorAny = async function (
   return false
 }
 
-module.exports = asyncIteratorAny
+module.exports = asyncIteratorSome
