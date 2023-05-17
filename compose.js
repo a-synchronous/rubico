@@ -1,3 +1,8 @@
+const curry2 = require('./_internal/curry2')
+const __ = require('./_internal/placeholder')
+const promiseAll = require('./_internal/promiseAll')
+const funcApply = require('./_internal/funcApply')
+const areAnyValuesPromises = require('./_internal/areAnyValuesPromises')
 const funcConcat = require('./_internal/funcConcat')
 
 /**
@@ -30,6 +35,11 @@ const compose = function (...args) {
   if (args.length == 0) {
     return composition
   }
+
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args).then(curry2(funcApply, composition, __))
+  }
+
   return composition(...args)
 }
 
