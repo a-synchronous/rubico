@@ -3360,6 +3360,14 @@ flatMap(
     const abc = { a: 1, b: 2, c: 3 }
     const nested = { a: { b: { c: { d: 1, e: [2, 3] } } } }
 
+    it('API coverage', async () => {
+      ade(pick(abc, ['a']), { a: 1 })
+      ade(pick(abc, ['a', 'd']), { a: 1 })
+      ade(pick(abc, ['d']), {})
+      ade(await pick(Promise.resolve(abc), ['a']), { a: 1 })
+      ade(await pick(Promise.resolve(abc), ['a', 'd']), { a: 1 })
+      ade(await pick(Promise.resolve(abc), ['d']), {})
+    })
     it('picks properties off an object defined by array', async () => {
       ade(pick(['a'])(abc), { a: 1 })
       ade(pick(['a', 'd'])(abc), { a: 1 })
@@ -3374,11 +3382,6 @@ flatMap(
       // assert.deepEqual(pick(['a.b.c.d', 'a.b.c.e[0]'])(nested), { a: { b: { c: { e: [, 3] } } } })
       // assert.deepEqual(pick(['a[0][0].d'])({ a: [[{ b: 1, c: 2, d: 3 }]] }), { a: [[{ b: 1, c: 2 }]] })
       // assert.deepEqual(pick(['a[0][0].d'])({ a: [[{ b: 1, c: 2, d: null }]] }), { a: [[{ b: 1, c: 2 }]] })
-    })
-    it('eager api', async () => {
-      ade(pick(abc, ['a']), { a: 1 })
-      ade(pick(abc, ['a', 'd']), { a: 1 })
-      ade(pick(abc, ['d']), {})
     })
   })
 
