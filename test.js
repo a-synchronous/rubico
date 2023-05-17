@@ -3447,13 +3447,19 @@ flatMap(
     .case([], []))
   })
 
-  describe(`
-some(predicate function)(value any) -> result Promise|boolean
+  describe('some', () => {
+    it('API coverage', async () => {
+      ase(
+        some([1, 2, 3, 4, 5], number => number > 3),
+        true,
+      )
 
-Foldable = Iterable|AsyncIterable|{ reduce: function }
+      ase(
+        await some(Promise.resolve([1, 2, 3, 4, 5]), number => number > 3),
+        true,
+      )
+    })
 
-some(predicate any=>Promise|boolean)(value Foldable) -> Promise|boolean
-  `, () => {
     const numbersArray = [1, 2, 3, 4, 5]
     const evenNumbersArray = [2, 4, 6, 8, 10]
     const numbersGenerator = function* () {
@@ -3581,13 +3587,19 @@ some(predicate any=>Promise|boolean)(value Foldable) -> Promise|boolean
     })
   })
 
-  describe(`
-every(predicate function)(value all) -> result Promise|boolean
+  describe('every', () => {
+    it('API coverage', async () => {
+      ase(
+        every([1, 2, 3, 4, 5], number => number > 0),
+        true,
+      )
 
-Foldable = Iterable|AsyncIterable|{ reduce: function }
+      ase(
+        await every(Promise.resolve([1, 2, 3, 4, 5]), number => number > 0),
+        true,
+      )
+    })
 
-every(predicate all=>Promise|boolean)(value Foldable) -> Promise|boolean
-  `, () => {
     const numbersArray = [1, 2, 3, 4, 5]
     const evenNumbersArray = [2, 4, 6, 8, 10]
     const numbersGenerator = function* () {
