@@ -1,14 +1,25 @@
 const isPromise = require('./_internal/isPromise')
 const objectAssign = require('./_internal/objectAssign')
 const __ = require('./_internal/placeholder')
+const curry2 = require('./_internal/curry2')
 const curry3 = require('./_internal/curry3')
-const funcObjectAll = require('./_internal/funcObjectAll')
+const functionObjectAll = require('./_internal/functionObjectAll')
+
+// _assign(object Object, funcs Object<function>) -> Promise|Object
+const _assign = function (object, funcs) {
+  const result = functionObjectAll(funcs, [object])
+  return isPromise(result)
+    ? result.then(curry3(objectAssign, {}, object, __))
+    : ({ ...object, ...result })
+}
 
 /**
  * @name assign
  *
  * @synopsis
  * ```coffeescript [specscript]
+ * assign(object Object, resolvers Object<function>) -> result Promise|Object
+ *
  * assign(resolvers Object<function>)(object Object) -> result Promise|Object
  * ```
  *
@@ -46,14 +57,15 @@ const funcObjectAll = require('./_internal/funcObjectAll')
  *
  * @execution concurrent
  */
-const assign = function (funcs) {
-  const allFuncs = funcObjectAll(funcs)
-  return function assignment(value) {
-    const result = allFuncs(value)
-    return isPromise(result)
-      ? result.then(curry3(objectAssign, {}, value, __))
-      : ({ ...value, ...result })
+const assign = function (...args) {
+  const funcs = args.pop()
+  if (args.length == 0) {
+    return curry2(_assign, __, funcs)
   }
+  const object = args[0]
+  return isPromise(object)
+    ? object.then(curry2(_assign, __, funcs))
+    : _assign(object, funcs)
 }
 
 module.exports = assign
