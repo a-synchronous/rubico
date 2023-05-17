@@ -244,38 +244,4 @@ const filter = function (...args) {
   return _filter(args[0], predicate)
 }
 
-/**
- * @name filter.withIndex
- *
- * @synopsis
- * ```coffeescript [specscript]
- * filter.withIndex(
- *   indexedPredicate (item any, index number, array Array)=>Promise|boolean
- * )(array Array) -> result Array
- * ```
- *
- * @description
- * `filter` with each predicate call supplemented by index and reference to original collection.
- *
- * ```javascript [playground]
- * const uniq = filter.withIndex(
- *   (item, index, array) => item !== array[index + 1]
- * )
- *
- * console.log(
- *   uniq([1, 1, 1, 2, 2, 2, 3, 3, 3]),
- * ) // [1, 2, 3]
- * ```
- *
- * @DEPRECATED
- *
- * @execution concurrent
- */
-filter.withIndex = predicate => function filteringWithIndex(value) {
-  if (isArray(value)) {
-    return arrayFilterWithIndex(value, predicate)
-  }
-  throw new TypeError(`${value} is not an Array`)
-}
-
 module.exports = filter
