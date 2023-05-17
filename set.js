@@ -84,15 +84,14 @@ const _set = function (obj, path, value) {
  * @since 1.7.0
  */
 
-const set = function (...args) {
-  if (args.length == 3) {
-    const [obj, path, value] = args
-    if (isPromise(obj)) {
-      return obj.then(curry3(_set, __, path, value))
-    }
-    return _set(obj, path, value)
+const set = function (arg0, arg1, arg2) {
+  if (arg2 == null) {
+    return curry3(_set, __, arg0, arg1)
   }
-  return curry3(_set, __, args[0], args[1])
+  if (isPromise(arg0)) {
+    return arg0.then(curry3(_set, __, arg1, arg2))
+  }
+  return _set(arg0, arg1, arg2)
 }
 
 module.exports = set
