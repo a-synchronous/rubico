@@ -1,4 +1,17 @@
+const isPromise = require('./_internal/isPromise')
+const __ = require('./_internal/placeholder')
+const curry3 = require('./_internal/curry3')
+const isArray = require('./_internal/isArray')
+const isObject = require('./_internal/isObject')
 const getByPath = require('./_internal/getByPath')
+
+// _get(object Object, path string, defaultValue function|any)
+const _get = function (object, path, defaultValue) {
+  const result = object == null ? undefined : getByPath(object, path)
+  return result === undefined
+    ? typeof defaultValue == 'function' ? defaultValue(object) : defaultValue
+    : result
+}
 
 /**
  * @name get
@@ -7,7 +20,7 @@ const getByPath = require('./_internal/getByPath')
  * ```coffeescript [specscript]
  * get(
  *   path string|number|Array<string|number>,
- *   defaultValue function|any
+ *   defaultValue? function|any
  * )(object Object) -> result Promise|Object
  * ```
  *
@@ -52,11 +65,16 @@ const getByPath = require('./_internal/getByPath')
  * console.log(get00000ArrayNotation([[[[['foo']]]]])) // foo
  * ```
  */
-const get = (path, defaultValue) => function getter(value) {
-  const result = value == null ? undefined : getByPath(value, path)
-  return result === undefined
-    ? typeof defaultValue == 'function' ? defaultValue(value) : defaultValue
-    : result
+
+const get = function (...args) {
+  const arg0 = args[0]
+  if (isPromise(arg0)) {
+    return arg0.then(curry3(_get, __, args[1], args[2]))
+  }
+  if (isObject(arg0) && !isArray(arg0)) {
+    return _get(arg0, args[1], args[2])
+  }
+  return curry3(_get, __, arg0, args[1])
 }
 
 module.exports = get

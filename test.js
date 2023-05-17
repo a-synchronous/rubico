@@ -3244,6 +3244,11 @@ flatMap(
   describe('get', () => {
     const aaaaa = { a: { a: { a: { a: { a: 1 } } } } }
     const nested = [[[[[1]]]]]
+    it('API coverage', async () => {
+      ase(get({ a: 1 }, 'a'), 1)
+      ase(await get(Promise.resolve({ a: 1 }), 'a'), 1)
+      ase(get('a')({ a: 1 }), 1)
+    })
     it('accesses a property of an object by name', async () => {
       ase(get('a')({ a: 1 }), 1)
       ase(get('b')({ a: 1 }), undefined)
