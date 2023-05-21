@@ -1,3 +1,5 @@
+const areAnyValuesPromises = require('./_internal/areAnyValuesPromises')
+const curryArgs3 = require('./_internal/curryArgs3')
 const spread2 = require('./_internal/spread2')
 const isPromise = require('./_internal/isPromise')
 const promiseAll = require('./_internal/promiseAll')
@@ -6,21 +8,52 @@ const curry2 = require('./_internal/curry2')
 const always = require('./_internal/always')
 const __ = require('./_internal/placeholder')
 
+// leftResolverRightResolverGt(args Array, left function, right function) -> Promise|boolean
+const leftResolverRightResolverGt = function (args, left, right) {
+  const leftResult = left(...args),
+    rightResult = right(...args)
+  if (isPromise(leftResult) || isPromise(rightResult)) {
+    return promiseAll([leftResult, rightResult]).then(spread2(greaterThan))
+  }
+  return greaterThan(leftResult, rightResult)
+}
+
+// leftResolverRightValueGt(args Array, left function, right any) -> Promise|boolean
+const leftResolverRightValueGt = function (args, left, right) {
+  const leftResult = left(...args)
+  if (isPromise(leftResult) || isPromise(right)) {
+    return promiseAll([leftResult, right]).then(spread2(greaterThan))
+  }
+  return greaterThan(leftResult, right)
+}
+
+// leftValueRightResolverGt(args Array, left any, right any) -> Promise|boolean
+const leftValueRightResolverGt = function (args, left, right) {
+  const rightResult = right(...args)
+  if (isPromise(left) || isPromise(rightResult)) {
+    return promiseAll([left, rightResult]).then(spread2(greaterThan))
+  }
+  return greaterThan(left, rightResult)
+}
+
 /**
  * @name gt
  *
  * @synopsis
  * ```coffeescript [specscript]
  * gt(leftValue any, rightValue any) -> boolean
- * gt(leftValue any, right function)(value any) -> Promise|boolean
- * gt(left function, rightValue any)(value any) -> Promise|boolean
- * gt(left function, right function)(value any) -> Promise|boolean
+ *
+ * gt(leftValue any, right function)(...args) -> Promise|boolean
+ *
+ * gt(left function, rightValue any)(...args) -> Promise|boolean
+ *
+ * gt(left function, right function)(...args) -> Promise|boolean
+ *
+ * gt(...args, left function, right function) -> Promise|boolean
  * ```
  *
  * @description
- * Test if a left value is greater than (`>`) a right value. Either parameter may be an actual value.
- *
- * If both arguments are values, `gt` eagerly computes and returns a boolean value.
+ * Test if a value is greater than (`>`) another value.
  *
  * ```javascript [playground]
  * const age = 40
@@ -30,58 +63,42 @@ const __ = require('./_internal/placeholder')
  * console.log(isAgeGreaterThan21) // true
  * ```
  *
- * If both arguments are functions, `gt` treats those functions as argument resolvers and returns a function that first resolves its arguments by the argument resolvers before making the comparison.
- *
- * If only one argument is a function, `gt` still returns a function that resolves its arguments by the argument resolver, treating the value (non function) argument as an already resolved value for comparison.
+ * If either of the two values are resolver functions, `gt` returns a function that resolves the values to compare from its arguments.
  *
  * ```javascript [playground]
- * const isOfLegalAge = gt(21, person => person.age)
+ * const isOfLegalAge = gt(21, get('age'))
  *
  * const juvenile = { age: 16 }
  *
  * console.log(isOfLegalAge(juvenile)) // false
  * ```
  */
-const gt = function (left, right) {
+const gt = function (...args) {
+  const right = args.pop()
+  const left = args.pop()
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
 
   if (isLeftResolver && isRightResolver) {
-    return function greaterThanBy(value) {
-      const leftResolve = left(value),
-        rightResolve = right(value)
-      const isLeftPromise = isPromise(leftResolve),
-        isRightPromise = isPromise(rightResolve)
-      if (isLeftPromise && isRightPromise) {
-        return promiseAll(
-          [leftResolve, rightResolve]).then(spread2(greaterThan))
-      } else if (isLeftPromise) {
-        return leftResolve.then(curry2(greaterThan, __, rightResolve))
-      } else if (isRightPromise) {
-        return rightResolve.then(curry2(greaterThan, leftResolve, __))
-      }
-      return leftResolve > rightResolve
+    if (args.length == 0) {
+      return curryArgs3(leftResolverRightResolverGt, __, left, right)
     }
+    if (areAnyValuesPromises(args)) {
+      return promiseAll(args)
+        .then(curryArgs3(leftResolverRightResolverGt, __, left, right))
+    }
+    return leftResolverRightResolverGt(args, left, right)
   }
 
   if (isLeftResolver) {
-    return function greaterThanBy(value) {
-      const leftResolve = left(value)
-      return isPromise(leftResolve)
-        ? leftResolve.then(curry2(greaterThan, __, right))
-        : leftResolve > right
-    }
-  }
-  if (isRightResolver) {
-    return function strictEqualBy(value) {
-      const rightResolve = right(value)
-      return isPromise(rightResolve)
-        ? rightResolve.then(curry2(greaterThan, left, __))
-        : left > rightResolve
-    }
+    return curryArgs3(leftResolverRightValueGt, __, left, right)
   }
 
-  return left > right
+  if (isRightResolver) {
+    return curryArgs3(leftValueRightResolverGt, __, left, right)
+  }
+
+  return greaterThan(left, right)
 }
 
 module.exports = gt
