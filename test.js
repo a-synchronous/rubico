@@ -3933,6 +3933,14 @@ flatMap(
   })
 
   describe('gt', () => {
+    it('API coverage', async () => {
+      aok(
+        gt(1, number => number, number => number * 0)
+      )
+      aok(
+        await gt(Promise.resolve(1), number => number, number => number * 0)
+      )
+    })
     it('[sync] gt(f, g)(x) === (f(x) > g(x))', async () => {
       ase(gt(x => x + 1, x => x)(1), true)
       ase(gt(x => x, x => x)(1), false)
