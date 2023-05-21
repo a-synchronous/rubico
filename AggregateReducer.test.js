@@ -74,4 +74,9 @@ describe('AggregateReducer', () => {
     const stateABC = await reduce([{ type: 'A' }, { type: 'B' }, { type: 'C' }], combinedReducer, {})
     assert.deepEqual(stateABC, { A: true, B: true, C: true })
   })
+
+  it('Identity', async () => {
+    const identity = AggregateReducer([])
+    assert.equal(1, identity(1))
+  })
 })
