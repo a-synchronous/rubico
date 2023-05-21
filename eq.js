@@ -1,40 +1,5 @@
-const areAnyValuesPromises = require('./_internal/areAnyValuesPromises')
-const isPromise = require('./_internal/isPromise')
-const promiseAll = require('./_internal/promiseAll')
-const __ = require('./_internal/placeholder')
-const curry2 = require('./_internal/curry2')
-const curryArgs3 = require('./_internal/curryArgs3')
-const spread2 = require('./_internal/spread2')
+const ComparisonOperator = require('./_internal/ComparisonOperator')
 const equals = require('./_internal/equals')
-const always = require('./_internal/always')
-
-// leftResolverRightResolverEq(args Array, left function, right function) -> Promise|boolean
-const leftResolverRightResolverEq = function (args, left, right) {
-  const leftResult = left(...args),
-    rightResult = right(...args)
-  if (isPromise(leftResult) || isPromise(rightResult)) {
-    return promiseAll([leftResult, rightResult]).then(spread2(equals))
-  }
-  return equals(leftResult, rightResult)
-}
-
-// leftResolverRightValueEq(args Array, left function, right any) -> Promise|boolean
-const leftResolverRightValueEq = function (args, left, right) {
-  const leftResult = left(...args)
-  if (isPromise(leftResult) || isPromise(right)) {
-    return promiseAll([leftResult, right]).then(spread2(equals))
-  }
-  return equals(leftResult, right)
-}
-
-// leftValueRightResolverEq(args Array, left any, right any) -> Promise|boolean
-const leftValueRightResolverEq = function (args, left, right) {
-  const rightResult = right(...args)
-  if (isPromise(left) || isPromise(rightResult)) {
-    return promiseAll([left, rightResult]).then(spread2(equals))
-  }
-  return equals(left, rightResult)
-}
 
 /**
  * @name eq
@@ -76,32 +41,6 @@ const leftValueRightResolverEq = function (args, left, right) {
  * @execution concurrent
  */
 
-const eq = function (...args) {
-  const right = args.pop()
-  const left = args.pop()
-  const isLeftResolver = typeof left == 'function',
-    isRightResolver = typeof right == 'function'
-
-  if (isLeftResolver && isRightResolver) {
-    if (args.length == 0) {
-      return curryArgs3(leftResolverRightResolverEq, __, left, right)
-    }
-    if (areAnyValuesPromises(args)) {
-      return promiseAll(args)
-        .then(curryArgs3(leftResolverRightResolverEq, __, left, right))
-    }
-    return leftResolverRightResolverEq(args, left, right)
-  }
-
-  if (isLeftResolver) {
-    return curryArgs3(leftResolverRightValueEq, __, left, right)
-  }
-
-  if (isRightResolver) {
-    return curryArgs3(leftValueRightResolverEq, __, left, right)
-  }
-
-  return equals(left, right)
-}
+const eq = ComparisonOperator(equals)
 
 module.exports = eq

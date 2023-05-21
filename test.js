@@ -4037,6 +4037,14 @@ flatMap(
   })
 
   describe('gte', () => {
+    it('API coverage', async () => {
+      aok(
+        gte(5, number => number + 3, number => number + 3)
+      )
+      aok(
+        await gte(Promise.resolve(5), number => number + 3, number => number + 3)
+      )
+    })
     it('[sync] gte(f, g)(x) === (f(x) >= g(x))', async () => {
       ase(gte(x => x + 1, x => x)(1), true)
       ase(gte(x => x, x => x)(1), true)
@@ -4081,6 +4089,14 @@ flatMap(
   })
 
   describe('lte', () => {
+    it('API coverage', async () => {
+      aok(
+        lte(5, number => number + 3, number => number + 3)
+      )
+      aok(
+        await lte(Promise.resolve(5), number => number + 3, number => number + 3)
+      )
+    })
     it('[sync] lte(f, g)(x) === (f(x) <= g(x))', async () => {
       ase(lte(x => x + 1, x => x)(1), false)
       ase(lte(x => x, x => x)(1), true)
