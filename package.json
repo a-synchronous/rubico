@@ -46,7 +46,7 @@
     "thunk-test": "latest"
   },
   "scripts": {
-    "test": "mocha test.js x/*.test.js monad/*.test.js",
+    "test": "mocha test.js *.test.js x/*.test.js monad/*.test.js",
     "test-coverage": "nyc mocha test.js x/*.test.js monad/*.test.js",
     "lint": "eslint _internal rubico.js x monad",
     "lint-fix": "eslint --fix _internal rubico.js x monad",
