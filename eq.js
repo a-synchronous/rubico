@@ -1,10 +1,40 @@
-const spread2 = require('./_internal/spread2')
+const areAnyValuesPromises = require('./_internal/areAnyValuesPromises')
 const isPromise = require('./_internal/isPromise')
 const promiseAll = require('./_internal/promiseAll')
-const sameValueZero = require('./_internal/sameValueZero')
-const curry2 = require('./_internal/curry2')
-const always = require('./_internal/always')
 const __ = require('./_internal/placeholder')
+const curry2 = require('./_internal/curry2')
+const curryArgs3 = require('./_internal/curryArgs3')
+const spread2 = require('./_internal/spread2')
+const equals = require('./_internal/equals')
+const always = require('./_internal/always')
+
+// leftResolverRightResolverEq(args Array, left function, right function) -> Promise|boolean
+const leftResolverRightResolverEq = function (args, left, right) {
+  const leftResult = left(...args),
+    rightResult = right(...args)
+  if (isPromise(leftResult) || isPromise(rightResult)) {
+    return promiseAll([leftResult, rightResult]).then(spread2(equals))
+  }
+  return equals(leftResult, rightResult)
+}
+
+// leftResolverRightValueEq(args Array, left function, right any) -> Promise|boolean
+const leftResolverRightValueEq = function (args, left, right) {
+  const leftResult = left(...args)
+  if (isPromise(leftResult) || isPromise(right)) {
+    return promiseAll([leftResult, right]).then(spread2(equals))
+  }
+  return equals(leftResult, right)
+}
+
+// leftValueRightResolverEq(args Array, left any, right any) -> Promise|boolean
+const leftValueRightResolverEq = function (args, left, right) {
+  const rightResult = right(...args)
+  if (isPromise(left) || isPromise(rightResult)) {
+    return promiseAll([left, rightResult]).then(spread2(equals))
+  }
+  return equals(left, rightResult)
+}
 
 /**
  * @name eq
@@ -12,15 +42,18 @@ const __ = require('./_internal/placeholder')
  * @synopsis
  * ```coffeescript [specscript]
  * eq(leftValue any, rightValue any) -> boolean
- * eq(leftValue any, right function)(value any) -> Promise|boolean
- * eq(left function, rightValue any)(value any) -> Promise|boolean
- * eq(left function, right function)(value any) -> Promise|boolean
+ *
+ * eq(leftValue any, right function)(...args) -> Promise|boolean
+ *
+ * eq(left function, rightValue any)(...args) -> Promise|boolean
+ *
+ * eq(left function, right function)(...args) -> Promise|boolean
+ *
+ * eq(...args, left function, right function) -> Promise|boolean
  * ```
  *
  * @description
- * Test for [SameValueZero](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero) between the returns of two functions. Either parameter may be an actual value for comparison.
- *
- * If both arguments are values, `eq` eagerly computes and returns a boolean value.
+ * Test for [equality (`==`)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Equality) between two values.
  *
  * ```javascript [playground]
  * const areNamesEqual = eq('Ted', 'George')
@@ -28,62 +61,47 @@ const __ = require('./_internal/placeholder')
  * console.log(areNamesEqual) // false
  * ```
  *
- * If both arguments are functions, `eq` treats those functions as argument resolvers and returns a function that first resolves its arguments by the argument resolvers before making the comparison.
- *
- * If only one argument is a function, `eq` still returns a function that resolves its arguments by the argument resolver, treating the value (non function) argument as an already resolved value for comparison.
+ * If either of the two values are resolver functions, `eq` returns a function that resolves the values to compare from its arguments.
  *
  * ```javascript [playground]
- * const personIsGeorge = eq(person => person.name, 'George')
+ * const personIsGeorge = eq(get('name'), 'George')
  *
- * console.log(
- *   personIsGeorge({ name: 'George', likes: 'bananas' }),
- * ) // true
+ * const person = { name: 'George', likes: 'bananas' }
+ *
+ * if (personIsGeorge(person)) {
+ *   console.log('The person is george')
+ * }
  * ```
- *
- * More on SameValueZero: [Equality comparisons and sameness](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Equality_comparisons_and_sameness)
  *
  * @execution concurrent
  */
-const eq = function (left, right) {
+
+const eq = function (...args) {
+  const right = args.pop()
+  const left = args.pop()
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
 
   if (isLeftResolver && isRightResolver) {
-    return function equalBy(value) {
-      const leftResolve = left(value),
-        rightResolve = right(value)
-      const isLeftPromise = isPromise(leftResolve),
-        isRightPromise = isPromise(rightResolve)
-      if (isLeftPromise && isRightPromise) {
-        return promiseAll(
-          [leftResolve, rightResolve]).then(spread2(sameValueZero))
-      } else if (isLeftPromise) {
-        return leftResolve.then(curry2(sameValueZero, __, rightResolve))
-      } else if (isRightPromise) {
-        return rightResolve.then(curry2(sameValueZero, leftResolve, __))
-      }
-      return sameValueZero(leftResolve, rightResolve)
+    if (args.length == 0) {
+      return curryArgs3(leftResolverRightResolverEq, __, left, right)
     }
+    if (areAnyValuesPromises(args)) {
+      return promiseAll(args)
+        .then(curryArgs3(leftResolverRightResolverEq, __, left, right))
+    }
+    return leftResolverRightResolverEq(args, left, right)
   }
 
   if (isLeftResolver) {
-    return function equalBy(value) {
-      const leftResolve = left(value)
-      return isPromise(leftResolve)
-        ? leftResolve.then(curry2(sameValueZero, __, right))
-        : sameValueZero(leftResolve, right)
-    }
-  }
-  if (isRightResolver) {
-    return function equalBy(value) {
-      const rightResolve = right(value)
-      return isPromise(rightResolve)
-        ? rightResolve.then(curry2(sameValueZero, left, __))
-        : sameValueZero(left, rightResolve)
-    }
+    return curryArgs3(leftResolverRightValueEq, __, left, right)
   }
 
-  return sameValueZero(left, right)
+  if (isRightResolver) {
+    return curryArgs3(leftValueRightResolverEq, __, left, right)
+  }
+
+  return equals(left, right)
 }
 
 module.exports = eq

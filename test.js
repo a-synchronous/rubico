@@ -3883,73 +3883,36 @@ flatMap(
     })
   })
 
-  describe(`
-eq(
-  left (any=>Promise|boolean)|any,
-  right (any=>Promise|boolean)|any,
-) -> strictEqualsBy (value any)=>Promise|boolean
-  `, () => {
-
-    const cases = [
-      [() => eq(NaN, NaN), undefined, true], // SameValueZero
-      [() => eq(+0, -0), undefined, true], // SameValueZero
-      [() => eq(0, 0), undefined, true],
-      [eq(0, () => 0), undefined, true],
-      [eq(0, async () => 0), undefined, true],
-      [eq(() => 0, 0), undefined, true],
-      [eq(async () => 0, 0), undefined, true],
-      [eq(() => 0, () => 0), undefined, true],
-      [eq(async () => 0, () => 0), undefined, true],
-      [eq(() => 0, async () => 0), undefined, true],
-      [eq(async () => 0, async () => 0), undefined, true],
-      [() => eq(1, 0), undefined, false],
-      [eq(1, () => 0), undefined, false],
-      [eq(1, async () => 0), undefined, false],
-      [eq(() => 1, 0), undefined, false],
-      [eq(async () => 1, 0), undefined, false],
-      [eq(() => 1, () => 0), undefined, false],
-      [eq(async () => 1, () => 0), undefined, false],
-      [eq(async () => 1, async () => 0), undefined, false],
-      [eq(async () => 1, async () => 0), undefined, false],
-      [() => eq(0, '0'), undefined, false],
-      [eq(0, () => '0'), undefined, false],
-      [eq(0, async () => '0'), undefined, false],
-      [eq(() => 0, '0'), undefined, false],
-      [eq(async () => 0, '0'), undefined, false],
-      [eq(() => 0, () => '0'), undefined, false],
-      [eq(async () => 0, () => '0'), undefined, false],
-      [eq(() => 0, async () => '0'), undefined, false],
-      [eq(async () => 0, async () => '0'), undefined, false],
-    ]
-
-    cases.forEach(([func, value, result, asserter = assert.strictEqual]) => {
-      it(`${func.name}(${JSON.stringify(value)}) -> ${result}`, async () => {
-        asserter(await func(value), result)
-      })
+  describe('eq', () => {
+    it('API coverage', async () => {
+      aok(
+        eq(2, number => number * 2, number => number ** 2)
+      )
+      aok(
+        await eq(Promise.resolve(2), number => number * 2, number => number ** 2)
+      )
     })
-  })
 
-  describe('eq - v1.5.15 regression', () => {
     it('[sync] eq(f, g)(x) == (f(x) == g(x))', async () => {
       ase(eq(x => `${x}`, x => x)('hey'), true)
-      ase(eq(x => `${x}`, x => x)(1), false)
+      ase(eq(x => `${x}`, x => x)(1), true)
     })
     it('[async] eq(f, g)(x) == (f(x) == g(x))', async () => {
       aok(eq(x => `${x}`, async x => x)('hey') instanceof Promise)
       ase(await eq(async x => `${x}`, async x => x)('hey'), true)
-      ase(await eq(async x => `${x}`, async x => x)(1), false)
+      ase(await eq(async x => `${x}`, async x => x)(1), true)
     })
     it('[sync] eq(f, value)(x) == (valueA == valueB)', async () => {
-      ase(eq(() => 'hey', 'hey')('ayylmao'), true)
-      ase(eq(() => 'hey', 'ho')('ayylmao'), false)
+      ase(eq(() => 'hey', 'hey')('abc'), true)
+      ase(eq(() => 'hey', 'ho')('abc'), false)
     })
     it('[async] eq(f, value)(x) == (valueA == valueB)', async () => {
-      ase(await eq(async () => 'hey', 'hey')('ayylmao'), true)
-      ase(await eq('hey', async () => 'ho')('ayylmao'), false)
+      ase(await eq(async () => 'hey', 'hey')('abc'), true)
+      ase(await eq('hey', async () => 'ho')('abc'), false)
     })
     it('[sync] eq(value, g)(x) == (valueA == valueB)', async () => {
-      ase(eq('hey', () => 'hey')('ayylmao'), true)
-      ase(eq('hey', () => 'ho')('ayylmao'), false)
+      ase(eq('hey', () => 'hey')('abc'), true)
+      ase(eq('hey', () => 'ho')('abc'), false)
     })
     it('[async] eq(value, g)(x) == (value == g(x))', async () => {
       aok(eq('hey', async x => x)('hey') instanceof Promise)
@@ -3982,14 +3945,14 @@ eq(
       ase(await gt(async x => x, async x => x + 1)(1), false)
     })
     it('[sync] gt(f, value)(x) === (valueA > valueB)', async () => {
-      ase(gt(() => 1, 0)('ayylmao'), true)
-      ase(gt(() => 1, 1)('ayylmao'), false)
-      ase(gt(() => 0, 1)('ayylmao'), false)
+      ase(gt(() => 1, 0)('abc'), true)
+      ase(gt(() => 1, 1)('abc'), false)
+      ase(gt(() => 0, 1)('abc'), false)
     })
     it('[sync] gt(value, g)(x) === (valueA > valueB)', async () => {
-      ase(gt(1, () => 0)('ayylmao'), true)
-      ase(gt(1, () => 1)('ayylmao'), false)
-      ase(gt(0, () => 1)('ayylmao'), false)
+      ase(gt(1, () => 0)('abc'), true)
+      ase(gt(1, () => 1)('abc'), false)
+      ase(gt(0, () => 1)('abc'), false)
     })
     it('[async] gt(value, g)(x) === (value > g(x))', async () => {
       aok(gt(1, async x => x)(2) instanceof Promise)
@@ -4026,14 +3989,14 @@ eq(
       ase(await lt(async x => x, async x => x + 1)(1), true)
     })
     it('[sync] lt(f, value)(x) === (valueA < valueB)', async () => {
-      ase(lt(() => 1, 0)('ayylmao'), false)
-      ase(lt(() => 1, 1)('ayylmao'), false)
-      ase(lt(() => 0, 1)('ayylmao'), true)
+      ase(lt(() => 1, 0)('abc'), false)
+      ase(lt(() => 1, 1)('abc'), false)
+      ase(lt(() => 0, 1)('abc'), true)
     })
     it('[sync] lt(value, g)(x) === (valueA < valueB)', async () => {
-      ase(lt(1, () => 0)('ayylmao'), false)
-      ase(lt(1, () => 1)('ayylmao'), false)
-      ase(lt(0, () => 1)('ayylmao'), true)
+      ase(lt(1, () => 0)('abc'), false)
+      ase(lt(1, () => 1)('abc'), false)
+      ase(lt(0, () => 1)('abc'), true)
     })
     it('[async] lt(value, g)(x) === (value < g(x))', async () => {
       aok(lt(1, async x => x)(2) instanceof Promise)
@@ -4070,14 +4033,14 @@ eq(
       ase(await gte(async x => x, async x => x + 1)(1), false)
     })
     it('[sync] gte(f, value)(x) === (valueA >= valueB)', async () => {
-      ase(gte(() => 1, 0)('ayylmao'), true)
-      ase(gte(() => 1, 1)('ayylmao'), true)
-      ase(gte(() => 0, 1)('ayylmao'), false)
+      ase(gte(() => 1, 0)('abc'), true)
+      ase(gte(() => 1, 1)('abc'), true)
+      ase(gte(() => 0, 1)('abc'), false)
     })
     it('[sync] gte(value, g)(x) === (valueA >= valueB)', async () => {
-      ase(gte(1, () => 0)('ayylmao'), true)
-      ase(gte(1, () => 1)('ayylmao'), true)
-      ase(gte(0, () => 1)('ayylmao'), false)
+      ase(gte(1, () => 0)('abc'), true)
+      ase(gte(1, () => 1)('abc'), true)
+      ase(gte(0, () => 1)('abc'), false)
     })
     it('[async] gte(value, g)(x) === (value >= g(x))', async () => {
       aok(gte(1, async x => x)(2) instanceof Promise)
@@ -4114,14 +4077,14 @@ eq(
       ase(await lte(async x => x, async x => x + 1)(1), true)
     })
     it('[sync] lte(f, value)(x) === (valueA <= valueB)', async () => {
-      ase(lte(() => 1, 0)('ayylmao'), false)
-      ase(lte(() => 1, 1)('ayylmao'), true)
-      ase(lte(() => 0, 1)('ayylmao'), true)
+      ase(lte(() => 1, 0)('abc'), false)
+      ase(lte(() => 1, 1)('abc'), true)
+      ase(lte(() => 0, 1)('abc'), true)
     })
     it('[sync] lte(value, g)(x) === (valueA <= valueB)', async () => {
-      ase(lte(1, () => 0)('ayylmao'), false)
-      ase(lte(1, () => 1)('ayylmao'), true)
-      ase(lte(0, () => 1)('ayylmao'), true)
+      ase(lte(1, () => 0)('abc'), false)
+      ase(lte(1, () => 1)('abc'), true)
+      ase(lte(0, () => 1)('abc'), true)
     })
     it('[async] lte(value, g)(x) === (value <= g(x))', async () => {
       aok(lte(1, async x => x)(2) instanceof Promise)
