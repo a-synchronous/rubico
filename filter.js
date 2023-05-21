@@ -8,7 +8,6 @@ const stringFilter = require('./_internal/stringFilter')
 const setFilter = require('./_internal/setFilter')
 const mapFilter = require('./_internal/mapFilter')
 const objectFilter = require('./_internal/objectFilter')
-const arrayFilterWithIndex = require('./_internal/arrayFilterWithIndex')
 const symbolIterator = require('./_internal/symbolIterator')
 const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
 

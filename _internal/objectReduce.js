@@ -2,7 +2,6 @@ const isPromise = require('./isPromise')
 const __ = require('./placeholder')
 const curry5 = require('./curry5')
 const objectKeys = require('./objectKeys')
-const objectGetFirstKey = require('./objectGetFirstKey')
 
 /**
  * @name objectReduceAsync
