@@ -1,7 +1,7 @@
 /**
  * rubico v1.9.7
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
+ * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 
@@ -11,9 +11,21 @@
   else (root.rubico = rubico) // Browser
 }(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
 
-const noop = function () {}
-
 const isPromise = value => value != null && typeof value.then == 'function'
+
+const areAnyValuesPromises = function (values) {
+  const length = values.length
+  let index = -1
+  while (++index < length) {
+    const value = values[index]
+    if (isPromise(value)) {
+      return true
+    }
+  }
+  return false
+}
+
+const promiseAll = Promise.all.bind(Promise)
 
 const funcConcat = (
   funcA, funcB,
@@ -24,82 +36,69 @@ const funcConcat = (
     : funcB(intermediate)
 }
 
-const funcConcatSync = (
-  funcA, funcB,
-) => function pipedFunction(...args) {
-  return funcB(funcA(...args))
+const funcApply = (func, args) => func(...args)
+
+const __ = Symbol.for('placeholder')
+
+// argument resolver for curry2
+const curry2ResolveArg0 = (
+  baseFunc, arg1,
+) => function arg0Resolver(arg0) {
+  return baseFunc(arg0, arg1)
 }
 
-const objectProto = Object.prototype
+// argument resolver for curry2
+const curry2ResolveArg1 = (
+  baseFunc, arg0,
+) => function arg1Resolver(arg1) {
+  return baseFunc(arg0, arg1)
+}
 
-const nativeObjectToString = objectProto.toString
-
-const objectToString = value => nativeObjectToString.call(value)
-
-const generatorFunctionTag = '[object GeneratorFunction]'
-
-const isGeneratorFunction = value => objectToString(value) == generatorFunctionTag
-
-const asyncGeneratorFunctionTag = '[object AsyncGeneratorFunction]'
-
-const isAsyncGeneratorFunction = value => objectToString(value) == asyncGeneratorFunctionTag
+const curry2 = function (baseFunc, arg0, arg1) {
+  return arg0 == __
+    ? curry2ResolveArg0(baseFunc, arg1)
+    : curry2ResolveArg1(baseFunc, arg0)
+}
 
 const pipe = function (...args) {
   const funcs = args.pop()
+  const pipeline = funcs.reduce(funcConcat)
 
-  if (args.length > 0) {
-    return funcs.reduce(funcConcat)(...args)
+  if (args.length == 0) {
+    return pipeline
   }
 
-  let functionPipeline = noop,
-    functionComposition = noop
-  return function pipeline(...args) {
-    const firstArg = args[0]
-
-    if (
-      typeof firstArg == 'function'
-        && !isGeneratorFunction(firstArg)
-        && !isAsyncGeneratorFunction(firstArg)
-    ) {
-      if (functionComposition == noop) {
-        functionComposition = funcs.reduceRight(funcConcat)
-      }
-      return functionComposition(firstArg)
-    }
-
-    if (functionPipeline == noop) {
-      functionPipeline = funcs.reduce(funcConcat)
-    }
-    return functionPipeline(...args)
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args).then(curry2(funcApply, pipeline, __))
   }
+
+  return pipeline(...args)
 }
 
-// funcs Array<function> -> pipeline function
-const pipeSync = funcs => funcs.reduce(funcConcatSync)
+const compose = function (...args) {
+  const funcs = args.pop()
+  const composition = funcs.reduceRight(funcConcat)
 
-pipe.sync = pipeSync
-
-const isArray = Array.isArray
-
-const promiseAll = Promise.all.bind(Promise)
-
-const funcAll = funcs => function allFuncs(...args) {
-  const funcsLength = funcs.length,
-    result = Array(funcsLength)
-  let funcsIndex = -1, isAsync = false
-  while (++funcsIndex < funcsLength) {
-    const resultItem = funcs[funcsIndex](...args)
-    if (isPromise(resultItem)) {
-      isAsync = true
-    }
-    result[funcsIndex] = resultItem
+  if (args.length == 0) {
+    return composition
   }
-  return isAsync ? promiseAll(result) : result
+
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args).then(curry2(funcApply, composition, __))
+  }
+
+  return composition(...args)
 }
 
 const always = value => function getter() { return value }
 
-const __ = Symbol.for('placeholder')
+const thunkifyArgs = (func, args) => function thunk() {
+  return func(...args)
+}
+
+const thunkConditional = (
+  conditionalExpression, thunkOnTruthy, thunkOnFalsy,
+) => conditionalExpression ? thunkOnTruthy() : thunkOnFalsy()
 
 // argument resolver for curry3
 const curry3ResolveArg0 = (
@@ -132,22 +131,62 @@ const curry3 = function (baseFunc, arg0, arg1, arg2) {
   return curry3ResolveArg2(baseFunc, arg0, arg1)
 }
 
-const objectSet = function (object, property, value) {
-  object[property] = value
-  return object
+const tap = func => function tapping(...args) {
+  const result = args[0],
+    call = func(...args)
+  return isPromise(call) ? call.then(always(result)) : result
 }
 
-const funcObjectAll = funcs => function objectAllFuncs(...args) {
-  const result = {}, promises = []
-  for (const key in funcs) {
-    const resultItem = funcs[key](...args)
-    if (isPromise(resultItem)) {
-      promises.push(resultItem.then(curry3(objectSet, result, key, __)))
-    } else {
-      result[key] = resultItem
+tap.if = (predicate, func) => function tappingIf(...args) {
+  const predication = predicate(...args)
+  if (isPromise(predication)) {
+    return predication.then(curry3(
+      thunkConditional, __, thunkifyArgs(tap(func), args), always(args[0])))
+  }
+  if (predication) {
+    const execution = func(...args)
+    if (isPromise(execution)) {
+      return execution.then(always(args[0]))
     }
   }
-  return promises.length == 0 ? result : promiseAll(promises).then(always(result))
+  return args[0]
+}
+
+const isArray = Array.isArray
+
+// argument resolver for curryArgs2
+const curryArgs2ResolveArgs0 = (
+  baseFunc, arg1, arg2,
+) => function args0Resolver(...args) {
+  return baseFunc(args, arg1)
+}
+
+// argument resolver for curryArgs2
+const curryArgs2ResolveArgs1 = (
+  baseFunc, arg0, arg2,
+) => function arg1Resolver(...args) {
+  return baseFunc(arg0, args)
+}
+
+const curryArgs2 = function (baseFunc, arg0, arg1) {
+  if (arg0 == __) {
+    return curryArgs2ResolveArgs0(baseFunc, arg1)
+  }
+  return curryArgs2ResolveArgs1(baseFunc, arg0)
+}
+
+const functionArrayAll = function (funcs, args) {
+  const funcsLength = funcs.length,
+    result = Array(funcsLength)
+  let funcsIndex = -1, isAsync = false
+  while (++funcsIndex < funcsLength) {
+    const resultItem = funcs[funcsIndex](...args)
+    if (isPromise(resultItem)) {
+      isAsync = true
+    }
+    result[funcsIndex] = resultItem
+  }
+  return isAsync ? promiseAll(result) : result
 }
 
 // argument resolver for curry4
@@ -191,7 +230,12 @@ const curry4 = function (baseFunc, arg0, arg1, arg2, arg3) {
   return curry4ResolveArg3(baseFunc, arg0, arg1, arg2)
 }
 
-const asyncFuncAllSeries = async function (funcs, args, result, funcsIndex) {
+const objectSet = function (object, property, value) {
+  object[property] = value
+  return object
+}
+
+const asyncFunctionArrayAllSeries = async function (funcs, args, result, funcsIndex) {
   const funcsLength = funcs.length
   while (++funcsIndex < funcsLength) {
     const resultItem = funcs[funcsIndex](...args)
@@ -200,7 +244,7 @@ const asyncFuncAllSeries = async function (funcs, args, result, funcsIndex) {
   return result
 }
 
-const funcAllSeries = funcs => function allFuncsSeries(...args) {
+const functionArrayAllSeries = function (funcs, args) {
   const funcsLength = funcs.length, result = []
   let funcsIndex = -1
   while (++funcsIndex < funcsLength) {
@@ -208,94 +252,106 @@ const funcAllSeries = funcs => function allFuncsSeries(...args) {
     if (isPromise(resultItem)) {
       return resultItem.then(funcConcat(
         curry3(objectSet, result, funcsIndex, __),
-        curry4(asyncFuncAllSeries, funcs, args, __, funcsIndex)))
+        curry4(asyncFunctionArrayAllSeries, funcs, args, __, funcsIndex)))
     }
     result[funcsIndex] = resultItem
   }
   return result
 }
 
-const fork = funcs => isArray(funcs) ? funcAll(funcs) : funcObjectAll(funcs)
+const functionObjectAll = function (funcs, args) {
+  const result = {}, promises = []
+  for (const key in funcs) {
+    const resultItem = funcs[key](...args)
+    if (isPromise(resultItem)) {
+      promises.push(resultItem.then(curry3(objectSet, result, key, __)))
+    } else {
+      result[key] = resultItem
+    }
+  }
+  return promises.length == 0 ? result : promiseAll(promises).then(always(result))
+}
 
-fork.series = funcs => isArray(funcs) ? funcAllSeries(funcs) : funcObjectAll(funcs)
+const all = function (...args) {
+  const funcs = args.pop()
+  if (args.length == 0) {
+    return isArray(funcs)
+      ? curryArgs2(functionArrayAll, funcs, __)
+      : curryArgs2(functionObjectAll, funcs, __)
+  }
+
+  if (areAnyValuesPromises(args)) {
+    return isArray(funcs)
+      ? promiseAll(args).then(curry2(functionArrayAll, funcs, __))
+      : promiseAll(args).then(curry2(functionObjectAll, funcs, __))
+  }
+
+  return isArray(funcs)
+    ? functionArrayAll(funcs, args)
+    : functionObjectAll(funcs, args)
+}
+
+all.series = function allSeries(...args) {
+  const funcs = args.pop()
+  if (args.length == 0) {
+    return curryArgs2(functionArrayAllSeries, funcs, __)
+  }
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args).then(curry2(functionArrayAllSeries, funcs, __))
+  }
+  return functionArrayAllSeries(funcs, args)
+}
 
 const objectAssign = Object.assign
 
-const assign = function (funcs) {
-  const allFuncs = funcObjectAll(funcs)
-  return function assignment(value) {
-    const result = allFuncs(value)
-    return isPromise(result)
-      ? result.then(curry3(objectAssign, {}, value, __))
-      : ({ ...value, ...result })
+// _assign(object Object, funcs Object<function>) -> Promise|Object
+const _assign = function (object, funcs) {
+  const result = functionObjectAll(funcs, [object])
+  return isPromise(result)
+    ? result.then(curry3(objectAssign, {}, object, __))
+    : ({ ...object, ...result })
+}
+
+const assign = function (arg0, arg1) {
+  if (arg1 == null) {
+    return curry2(_assign, __, arg0)
   }
-}
-
-const tapSync = func => function tapping(...args) {
-  func(...args)
-  return args[0]
-}
-
-const thunkifyArgs = (func, args) => function thunk() {
-  return func(...args)
-}
-
-const thunkConditional = (
-  conditionalExpression, thunkOnTruthy, thunkOnFalsy,
-) => conditionalExpression ? thunkOnTruthy() : thunkOnFalsy()
-
-const tap = func => function tapping(...args) {
-  const result = args[0],
-    call = func(...args)
-  return isPromise(call) ? call.then(always(result)) : result
-}
-
-tap.sync = tapSync
-
-tap.if = (predicate, func) => function tappingIf(...args) {
-  const predication = predicate(...args)
-  if (isPromise(predication)) {
-    return predication.then(curry3(
-      thunkConditional, __, thunkifyArgs(tap(func), args), always(args[0])))
-  }
-  if (predication) {
-    const execution = func(...args)
-    if (isPromise(execution)) {
-      return execution.then(always(args[0]))
-    }
-  }
-  return args[0]
+  return isPromise(arg0)
+    ? arg0.then(curry2(_assign, __, arg1))
+    : _assign(arg0, arg1)
 }
 
 const catcherApply = function (catcher, err, args) {
   return catcher(err, ...args)
 }
 
+// _tryCatch(tryer function, catcher function, args Array) -> Promise
+const _tryCatch = function (tryer, catcher, args) {
+  try {
+    const result = tryer(...args)
+    return isPromise(result)
+      ? result.catch(curry3(catcherApply, catcher, __, args))
+      : result
+  } catch (error) {
+    return catcher(error, ...args)
+  }
+}
+
 const tryCatch = function (...args) {
   if (args.length > 2) {
     const catcher = args.pop(),
       tryer = args.pop()
-    try {
-      const result = tryer(...args)
-      return isPromise(result)
-        ? result.catch(curry3(catcherApply, catcher, __, args))
-        : result
-    } catch (error) {
-      return catcher(error, ...args)
+    if (areAnyValuesPromises(args)) {
+      return promiseAll(args)
+        .then(curry3(_tryCatch, tryer, catcher, __))
     }
+    return _tryCatch(tryer, catcher, args)
   }
 
   const tryer = args[0],
     catcher = args[1]
   return function tryCatcher(...args) {
-    try {
-      const result = tryer(...args)
-      return isPromise(result)
-        ? result.catch(curry3(catcherApply, catcher, __, args))
-        : result
-    } catch (error) {
-      return catcher(error, ...args)
-    }
+    return _tryCatch(tryer, catcher, args)
   }
 }
 
@@ -383,13 +439,49 @@ const nonfunctionsConditional = function (array, index) {
   return array[index]
 }
 
-const switchCase = values => {
+// argument resolver for curryArgs3
+const curryArgs3ResolveArgs0 = (
+  baseFunc, arg1, arg2,
+) => function args0Resolver(...args) {
+  return baseFunc(args, arg1, arg2)
+}
+
+// argument resolver for curryArgs3
+const curryArgs3ResolveArgs1 = (
+  baseFunc, arg0, arg2,
+) => function arg1Resolver(...args) {
+  return baseFunc(arg0, args, arg2)
+}
+
+// argument resolver for curryArgs3
+const curryArgs3ResolveArgs2 = (
+  baseFunc, arg0, arg1,
+) => function arg2Resolver(...args) {
+  return baseFunc(arg0, arg1, args)
+}
+
+const curryArgs3 = function (baseFunc, arg0, arg1, arg2) {
+  if (arg0 == __) {
+    return curryArgs3ResolveArgs0(baseFunc, arg1, arg2)
+  }
+  if (arg1 == __) {
+    return curryArgs3ResolveArgs1(baseFunc, arg0, arg2)
+  }
+  return curryArgs3ResolveArgs2(baseFunc, arg0, arg1)
+}
+
+const switchCase = (...args) => {
+  const values = args.pop()
   if (areAllValuesNonfunctions(values)) {
     return nonfunctionsConditional(values, -2)
   }
-  return function switchingCases(...args) {
-    return arrayConditional(values, args, -2)
+  if (args.length == 0) {
+    return curryArgs3(arrayConditional, values, __, -2)
   }
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args).then(curry3(arrayConditional, values, __, -2))
+  }
+  return arrayConditional(values, args, -2)
 }
 
 const symbolIterator = Symbol.iterator
@@ -428,26 +520,6 @@ const MappingAsyncIterator = (asyncIterator, mapper) => ({
   }
 })
 
-// argument resolver for curry2
-const curry2ResolveArg0 = (
-  baseFunc, arg1,
-) => function arg0Resolver(arg0) {
-  return baseFunc(arg0, arg1)
-}
-
-// argument resolver for curry2
-const curry2ResolveArg1 = (
-  baseFunc, arg0,
-) => function arg1Resolver(arg1) {
-  return baseFunc(arg0, arg1)
-}
-
-const curry2 = function (baseFunc, arg0, arg1) {
-  return arg0 == __
-    ? curry2ResolveArg0(baseFunc, arg1)
-    : curry2ResolveArg1(baseFunc, arg0)
-}
-
 const isObject = value => {
   if (value == null) {
     return false
@@ -471,31 +543,6 @@ const arrayMap = function (array, mapper) {
     result[index] = resultItem
   }
   return isAsync ? promiseAll(result) : result
-}
-
-const generatorFunctionMap = (
-  generatorFunc, mapper,
-) => function* mappingGeneratorFunc(...args) {
-  for (const item of generatorFunc(...args)) {
-    yield mapper(item)
-  }
-}
-
-const asyncGeneratorFunctionMap = function (asyncGeneratorFunc, mapper) {
-  return async function* mappingAsyncGeneratorFunc(...args) {
-    for await (const item of asyncGeneratorFunc(...args)) {
-      yield mapper(item)
-    }
-  }
-}
-
-const reducerMap = (
-  reducer, mapper,
-) => function mappingReducer(result, reducerItem) {
-  const mappingReducerItem = mapper(reducerItem)
-  return isPromise(mappingReducerItem)
-    ? mappingReducerItem.then(curry2(reducer, result, __))
-    : reducer(result, mappingReducerItem)
 }
 
 const callPropUnary = (value, property, arg0) => value[property](arg0)
@@ -608,6 +655,11 @@ const arrayMapSeries = function (array, mapper) {
   return result
 }
 
+const tapSync = func => function tapping(...args) {
+  func(...args)
+  return args[0]
+}
+
 const promiseRace = Promise.race.bind(Promise)
 
 const arrayMapPoolAsync = async function (
@@ -651,38 +703,6 @@ const arrayMapPool = function (array, mapper, concurrentLimit) {
     result[index] = resultItem
   }
   return result
-}
-
-const arrayMapWithIndex = function (array, mapper) {
-  const arrayLength = array.length,
-    result = Array(arrayLength)
-  let index = -1, isAsync = false
-  while (++index < arrayLength) {
-    const resultItem = mapper(array[index], index, array)
-    if (isPromise(resultItem)) {
-      isAsync = true
-    }
-    result[index] = resultItem
-  }
-  return isAsync ? promiseAll(result) : result
-}
-
-const hasOwnProperty = Object.prototype.hasOwnProperty
-const hasOwn = (obj, key) => hasOwnProperty.call(obj, key)
-
-const objectMapOwn = function (object, mapper) {
-  const result = {}
-  let isAsync = false
-  for (const key in object) {
-    if (hasOwn(object, key)) {
-      const resultItem = mapper(object[key])
-      if (isPromise(resultItem)) {
-        isAsync = true
-      }
-      result[key] = resultItem
-    }
-  }
-  return isAsync ? promiseObjectAll(result) : result
 }
 
 const _curryArity = (arity, func, args) => function curried(...curriedArgs) {
@@ -792,15 +812,6 @@ const _map = function (value, mapper) {
   if (isArray(value)) {
     return arrayMap(value, mapper)
   }
-  if (typeof value == 'function') {
-    if (isGeneratorFunction(value)) {
-      return generatorFunctionMap(value, mapper)
-    }
-    if (isAsyncGeneratorFunction(value)) {
-      return asyncGeneratorFunctionMap(value, mapper)
-    }
-    return reducerMap(value, mapper)
-  }
   if (value == null) {
     return value
   }
@@ -834,10 +845,15 @@ const _map = function (value, mapper) {
 
 const map = (...args) => {
   const mapper = args.pop()
-  if (args.length > 0) {
-    return _map(args[0], mapper)
+  if (args.length == 0) {
+    return curry2(_map, __, mapper)
   }
-  return curry2(_map, __, mapper)
+
+  const collection = args[0]
+  if (isPromise(collection)) {
+    return collection.then(curry2(_map, __, mapper))
+  }
+  return _map(collection, mapper)
 }
 
 map.entries = function mapEntries(mapper) {
@@ -867,20 +883,6 @@ map.pool = (concurrencyLimit, mapper) => function concurrentPoolMapping(value) {
     return arrayMapPool(value, mapper, concurrencyLimit)
   }
   throw new TypeError(`${value} is not an Array`)
-}
-
-map.withIndex = mapper => function mappingWithIndex(value) {
-  if (isArray(value)) {
-    return arrayMapWithIndex(value, mapper)
-  }
-  throw new TypeError(`${value} is not an Array`)
-}
-
-map.own = mapper => function mappingOwnProperties(value) {
-  if (isObject(value) && !isArray(value)) {
-    return objectMapOwn(value, mapper)
-  }
-  throw new TypeError(`${value} is not an Object`)
 }
 
 const FilteringIterator = (iterator, predicate) => ({
@@ -952,43 +954,17 @@ const arrayFilter = function (array, predicate) {
     resultIndex = -1
   while (++index < arrayLength) {
     const item = array[index],
-      shouldIncludeItem = predicate(item)
+      shouldIncludeItem = predicate(item, index, array)
     if (isPromise(shouldIncludeItem)) {
       return promiseAll(
-        arrayExtendMap(
-          [shouldIncludeItem], array, predicate, index)).then(
-            curry4(arrayFilterByConditions, array, result, index - 1, __))
+        arrayExtendMap([shouldIncludeItem], array, predicate, index)
+      ).then(curry4(arrayFilterByConditions, array, result, index - 1, __))
     }
     if (shouldIncludeItem) {
       result[++resultIndex] = item
     }
   }
   return result
-}
-
-const generatorFunctionFilter = (
-  generatorFunction, predicate,
-) => function* filteringGeneratorFunction(...args) {
-  yield* FilteringIterator(generatorFunction(...args), predicate)
-}
-
-const asyncGeneratorFunctionFilter = (
-  asyncGeneratorFunction, predicate,
-) => async function* filteringAsyncGeneratorFunction(...args) {
-  yield* FilteringAsyncIterator(asyncGeneratorFunction(...args), predicate)
-}
-
-const reducerFilter = (
-  reducer, predicate,
-) => function filteringReducer(result, item) {
-  const shouldInclude = predicate(item)
-  return isPromise(shouldInclude)
-    ? shouldInclude.then(curry3(
-      thunkConditional,
-      __,
-      thunkify2(reducer, result, item),
-      always(result)))
-    : shouldInclude ? reducer(result, item) : result
 }
 
 const stringFilter = function (string, predicate) {
@@ -1001,6 +977,8 @@ const stringFilter = function (string, predicate) {
 const thunkify1 = (func, arg0) => function thunk() {
   return func(arg0)
 }
+
+const noop = function () {}
 
 const setFilter = function (value, predicate) {
   const result = new Set(),
@@ -1068,52 +1046,9 @@ const objectFilter = function (object, predicate) {
     : promiseAll(promises).then(always(result))
 }
 
-const arrayExtendMapWithIndex = function (
-  array, values, valuesMapper, valuesIndex,
-) {
-  const valuesLength = values.length
-  let arrayIndex = array.length - 1
-
-  while (++valuesIndex < valuesLength) {
-    array[++arrayIndex] = valuesMapper(
-      values[valuesIndex], valuesIndex, values)
-  }
-  return array
-}
-
-const arrayFilterWithIndex = function (array, predicate) {
-  const arrayLength = array.length,
-    result = []
-  let index = -1,
-    resultIndex = -1
-  while (++index < arrayLength) {
-    const item = array[index],
-      shouldIncludeItem = predicate(item, index, array)
-    if (isPromise(shouldIncludeItem)) {
-      return promiseAll(
-        arrayExtendMapWithIndex(
-          [shouldIncludeItem], array, predicate, index)).then(
-            curry4(arrayFilterByConditions, array, result, index - 1, __))
-    }
-    if (shouldIncludeItem) {
-      result[++resultIndex] = item
-    }
-  }
-  return result
-}
-
 const _filter = function (value, predicate) {
   if (isArray(value)) {
     return arrayFilter(value, predicate)
-  }
-  if (typeof value == 'function') {
-    if (isGeneratorFunction(value)) {
-      return generatorFunctionFilter(value, predicate)
-    }
-    if (isAsyncGeneratorFunction(value)) {
-      return asyncGeneratorFunctionFilter(value, predicate)
-    }
-    return reducerFilter(value, predicate)
   }
   if (value == null) {
     return value
@@ -1145,51 +1080,27 @@ const _filter = function (value, predicate) {
 
 const filter = function (...args) {
   const predicate = args.pop()
-  if (args.length > 0) {
-    return _filter(args[0], predicate)
+  if (args.length == 0) {
+    return curry2(_filter, __, predicate)
   }
-  return curry2(_filter, __, predicate)
-}
-
-filter.withIndex = predicate => function filteringWithIndex(value) {
-  if (isArray(value)) {
-    return arrayFilterWithIndex(value, predicate)
-  }
-  throw new TypeError(`${value} is not an Array`)
-}
-
-// argument resolver for curryArgs3
-const curryArgs3ResolveArgs0 = (
-  baseFunc, arg1, arg2,
-) => function args0Resolver(...args) {
-  return baseFunc(args, arg1, arg2)
-}
-
-// argument resolver for curryArgs3
-const curryArgs3ResolveArgs1 = (
-  baseFunc, arg0, arg2,
-) => function arg1Resolver(...args) {
-  return baseFunc(arg0, args, arg2)
-}
-
-// argument resolver for curryArgs3
-const curryArgs3ResolveArgs2 = (
-  baseFunc, arg0, arg1,
-) => function arg2Resolver(...args) {
-  return baseFunc(arg0, arg1, args)
-}
-
-const curryArgs3 = function (baseFunc, arg0, arg1, arg2) {
-  if (arg0 == __) {
-    return curryArgs3ResolveArgs0(baseFunc, arg1, arg2)
-  }
-  if (arg1 == __) {
-    return curryArgs3ResolveArgs1(baseFunc, arg0, arg2)
-  }
-  return curryArgs3ResolveArgs2(baseFunc, arg0, arg1)
+  return _filter(args[0], predicate)
 }
 
 const objectValues = Object.values
+
+const objectProto = Object.prototype
+
+const nativeObjectToString = objectProto.toString
+
+const objectToString = value => nativeObjectToString.call(value)
+
+const generatorFunctionTag = '[object GeneratorFunction]'
+
+const isGeneratorFunction = value => objectToString(value) == generatorFunctionTag
+
+const asyncGeneratorFunctionTag = '[object AsyncGeneratorFunction]'
+
+const isAsyncGeneratorFunction = value => objectToString(value) == asyncGeneratorFunctionTag
 
 const iteratorReduceAsync = async function (
   iterator, reducer, result,
@@ -1326,13 +1237,6 @@ const curry5 = function (baseFunc, arg0, arg1, arg2, arg3, arg4) {
 
 const objectKeys = Object.keys
 
-const objectGetFirstKey = function (object) {
-  for (const key in object) {
-    return key
-  }
-  return undefined
-}
-
 const objectReduceAsync = async function (object, reducer, result, keys, index) {
   const keysLength = keys.length
   while (++index < keysLength) {
@@ -1393,18 +1297,6 @@ const mapReduce = function (map, reducer, result) {
   return result
 }
 
-const generatorFunctionReduce = (
-  generatorFunction, reducer, result,
-) => funcConcatSync(
-  generatorFunction,
-  curry3(iteratorReduce, __, reducer, result))
-
-const asyncGeneratorFunctionReduce = (
-  asyncGeneratorFunction, reducer, result,
-) => funcConcatSync(
-  asyncGeneratorFunction,
-  curry3(asyncIteratorReduce, __, reducer, result))
-
 const reducerConcat = (
   reducerA, reducerB,
 ) => function pipedReducer(result, item) {
@@ -1414,25 +1306,9 @@ const reducerConcat = (
     : reducerB(intermediate, item)
 }
 
-const genericReduce = function (args, reducer, result) {
-  const collection = args[0]
+const genericReduce = function (collection, reducer, result) {
   if (isArray(collection)) {
     return arrayReduce(collection, reducer, result)
-  }
-  if (typeof collection == 'function') {
-    if (isGeneratorFunction(collection)) {
-      return generatorFunctionReduce(collection, reducer, result)
-    }
-    if (isAsyncGeneratorFunction(collection)) {
-      return asyncGeneratorFunctionReduce(collection, reducer, result)
-    }
-    return curryArgs3(
-      genericReduce,
-      __,
-      args.length == 1
-        ? reducerConcat(reducer, collection)
-        : args.reduce(reducerConcat, reducer),
-      result)
   }
   if (collection == null) {
     return result === undefined
@@ -1468,28 +1344,27 @@ const genericReduce = function (args, reducer, result) {
     : reducer(result, collection)
 }
 
-const reduce = function (...args) {
-  if (typeof args[0] != 'function') {
-    const reducer = args[1]
-    const initialValue = args[2]
-    if (typeof initialValue == 'function') {
-      return genericReduce([args[0]], reducer, initialValue(args[0]))
-    }
-    return genericReduce([args[0]], reducer, initialValue)
-  }
-
-  const reducer = args[0]
-  const initialValue = args[1]
-
+// _reduce(collection any, reducer function, initialValue function|any) -> Promise
+const _reduce = function (collection, reducer, initialValue) {
   if (typeof initialValue == 'function') {
-    return function reducing(...args) {
-      const result = initialValue(...args)
-      return isPromise(result)
-        ? result.then(curry3(genericReduce, args, reducer, __))
-        : genericReduce(args, reducer, result)
-    }
+    const actualInitialValue = initialValue(collection)
+    return isPromise(actualInitialValue)
+      ? actualInitialValue.then(curry3(genericReduce, collection, reducer, __))
+      : genericReduce(collection, reducer, actualInitialValue)
   }
-  return curryArgs3(genericReduce, __, reducer, initialValue)
+  return isPromise(initialValue)
+    ? initialValue.then(curry3(genericReduce, collection, reducer, __))
+    : genericReduce(collection, reducer, initialValue)
+}
+
+const reduce = function (...args) {
+  if (typeof args[0] == 'function') {
+    return curry3(_reduce, __, args[0], args[1])
+  }
+  if (isPromise(args[0])) {
+    return args[0].then(curry3(_reduce, __, args[1], args[2]))
+  }
+  return _reduce(args[0], args[1], args[2])
 }
 
 const isBinary = ArrayBuffer.isView
@@ -1582,57 +1457,66 @@ const callConcat = function (object, values) {
   return object.concat(values)
 }
 
-const identityTransform = function (args, transducer, result) {
-  const nil = genericReduce(args, transducer(noop), null)
+const identityTransform = function (collection, transducer, result) {
+  const nil = genericReduce(collection, transducer(noop), null)
   return isPromise(nil) ? nil.then(always(result)) : result
 }
 
-const genericTransform = function (args, transducer, result) {
+const genericTransform = function (collection, transducer, result) {
   if (isArray(result)) {
-    return genericReduce(args, transducer(arrayExtend), result)
+    return genericReduce(collection, transducer(arrayExtend), result)
   }
   if (isBinary(result)) {
-    const intermediateArray = genericReduce(args, transducer(arrayExtend), [])
+    const intermediateArray = genericReduce(collection, transducer(arrayExtend), [])
     return isPromise(intermediateArray)
       ? intermediateArray.then(curry2(binaryExtend, result, __))
       : binaryExtend(result, intermediateArray)
   }
   if (result == null) {
-    return identityTransform(args, transducer, result)
+    return identityTransform(collection, transducer, result)
   }
 
   const resultConstructor = result.constructor
   if (typeof result == 'string' || resultConstructor == String) {
     // TODO: use array + join over adding
-    return genericReduce(args, transducer(add), result)
+    return genericReduce(collection, transducer(add), result)
   }
   if (typeof result.concat == 'function') {
-    return genericReduce(args, transducer(callConcat), result)
+    return genericReduce(collection, transducer(callConcat), result)
   }
   if (typeof result.write == 'function') {
-    return genericReduce(args, transducer(streamExtend), result)
+    return genericReduce(collection, transducer(streamExtend), result)
   }
   if (resultConstructor == Set) {
-    return genericReduce(args, transducer(setExtend), result)
+    return genericReduce(collection, transducer(setExtend), result)
   }
   if (resultConstructor == Object) {
-    return genericReduce(args, transducer(objectAssign), result)
+    return genericReduce(collection, transducer(objectAssign), result)
   }
-  return identityTransform(args, transducer, result)
+  return identityTransform(collection, transducer, result)
 }
 
-const transform = function (transducer, init) {
-  if (typeof init == 'function') {
-    return function transforming(...args) {
-      const result = init(...args)
-      return isPromise(result)
-        ? result.then(curry3(genericTransform, args, transducer, __))
-        : genericTransform(args, transducer, result)
-    }
+// _transform(collection any, transducer function, initialValue function|any) -> Promise
+const _transform = function (collection, transducer, initialValue) {
+  if (typeof initialValue == 'function') {
+    const actualInitialValue = initialValue(collection)
+    return isPromise(actualInitialValue)
+      ? actualInitialValue.then(curry3(genericTransform, collection, transducer, __))
+      : genericTransform(collection, transducer, actualInitialValue)
   }
-  return function transforming(...args) {
-    return genericTransform(args, transducer, init)
+  return isPromise(initialValue)
+    ? initialValue.then(curry3(genericTransform, collection, transducer, __))
+    : genericTransform(collection, transducer, initialValue)
+}
+
+const transform = function (...args) {
+  if (typeof args[0] == 'function') {
+    return curry3(_transform, __, args[0], args[1])
   }
+  if (isPromise(args[0])) {
+    return args[0].then(curry3(_transform, __, args[1], args[2]))
+  }
+  return _transform(args[0], args[1], args[2])
 }
 
 const arrayPush = function (array, value) {
@@ -1659,7 +1543,7 @@ const FlatMappingIterator = function (iterator, flatMapper) {
         return iteration
       }
       const monadAsArray = genericReduce(
-        [flatMapper(iteration.value)],
+        flatMapper(iteration.value),
         arrayPush,
         []) // this will always have at least one item
       if (monadAsArray.length > 1) {
@@ -1703,12 +1587,12 @@ const FlatMappingAsyncIterator = function (asyncIterator, flatMapper) {
           } else {
             const monad = flatMapper(value)
             if (isPromise(monad)) {
-              const bufferLoading = monad.then(
-              curryArgs3(genericReduce, __, arrayPush, buffer))
+              const bufferLoading =
+                monad.then(curry3(genericReduce, __, arrayPush, buffer))
               const promise = bufferLoading.then(() => promises.delete(promise))
               promises.add(promise)
             } else {
-              const bufferLoading = genericReduce([monad], arrayPush, buffer)
+              const bufferLoading = genericReduce(monad, arrayPush, buffer)
               if (isPromise(bufferLoading)) {
                 const promise = bufferLoading.then(() => promises.delete(promise))
                 promises.add(promise)
@@ -1731,6 +1615,12 @@ const FlatMappingAsyncIterator = function (asyncIterator, flatMapper) {
 const getArg1 = (arg0, arg1) => arg1
 
 const identity = value => value
+
+const funcConcatSync = (
+  funcA, funcB,
+) => function pipedFunction(...args) {
+  return funcB(funcA(...args))
+}
 
 const asyncIteratorForEach = async function (asyncIterator, callback) {
   const promises = []
@@ -1918,141 +1808,9 @@ const stringFlatMap = function (string, flatMapper) {
     : arrayFlattenToString(monadArray)
 }
 
-const streamWrite = function (stream, chunk, encoding, callback) {
-  stream.write(chunk, encoding, callback)
-  return stream
-}
-
-const streamFlatExtend = async function (stream, item) {
-  const resultStreamWrite = curry2(streamWrite, stream, __),
-    // resultStreamWriteReducer = (_, subItem) => stream.write(subItem),
-    resultStreamWriteReducer = funcConcatSync(getArg1, resultStreamWrite),
-    promises = []
-  if (isArray(item)) {
-    const itemLength = item.length
-    let itemIndex = -1
-    while (++itemIndex < itemLength) {
-      stream.write(item[itemIndex])
-    }
-  } else if (item == null) {
-    stream.write(item)
-  } else if (typeof item[symbolIterator] == 'function') {
-    for (const subItem of item) {
-      stream.write(subItem)
-    }
-  } else if (typeof item[symbolAsyncIterator] == 'function') {
-    promises.push(
-      asyncIteratorForEach(item[symbolAsyncIterator](), resultStreamWrite))
-  } else if (typeof item.chain == 'function') {
-    const monadValue = item.chain(identity)
-    isPromise(monadValue)
-      ? promises.push(monadValue.then(resultStreamWrite))
-      : stream.write(monadValue)
-  } else if (typeof item.flatMap == 'function') {
-    const monadValue = item.flatMap(identity)
-    isPromise(monadValue)
-      ? promises.push(monadValue.then(resultStreamWrite))
-      : stream.write(monadValue)
-  } else if (typeof item.reduce == 'function') {
-    const folded = item.reduce(resultStreamWriteReducer, null)
-    isPromise(folded) && promises.push(folded)
-  } else if (item.constructor == Object) {
-    for (const key in item) {
-      stream.write(item[key])
-    }
-  } else {
-    stream.write(item)
-  }
-  return promises.length == 0
-    ? stream
-    : promiseAll(promises).then(always(stream))
-}
-
-const streamFlatMap = async function (stream, flatMapper) {
-  const promises = new Set()
-  for await (const item of stream) {
-    const monad = flatMapper(item)
-    if (isPromise(monad)) {
-      const selfDeletingPromise = monad.then(
-        curry2(streamFlatExtend, stream, __)).then(
-          () => promises.delete(selfDeletingPromise))
-      promises.add(selfDeletingPromise)
-    } else {
-      const streamFlatteningOperation = streamFlatExtend(stream, monad)
-      if (isPromise(streamFlatteningOperation)) {
-        const selfDeletingPromise = streamFlatteningOperation.then(
-          () => promises.delete(selfDeletingPromise))
-        promises.add(selfDeletingPromise)
-      }
-    }
-  }
-  await promiseAll(promises)
-  return stream
-}
-
-const arrayJoinToBinary = function (array, init) {
-  const length = array.length
-  let index = -1,
-    result = init
-  while (++index < length) {
-    result = binaryExtend(result, array[index])
-  }
-  return result
-}
-
-const arrayFlattenToBinary = function (array, result) {
-  const flattened = arrayFlatten(array)
-  return isPromise(flattened)
-    ? flattened.then(curry2(arrayJoinToBinary, __, result))
-    : arrayJoinToBinary(flattened, result)
-}
-
-const binaryFlatMap = function (binary, flatMapper) {
-  const monadArray = arrayMap(binary, flatMapper),
-    result = globalThisHasBuffer && binary.constructor == Buffer
-      ? bufferAlloc(0)
-      : new binary.constructor(0)
-  return isPromise(monadArray)
-    ? monadArray.then(curry2(arrayFlattenToBinary, __, result))
-    : arrayFlattenToBinary(monadArray, result)
-}
-
-const reducerFlatMap = (
-  reducer, flatMapper,
-) => function flatMappingReducer(result, value) {
-  const monad = flatMapper(value)
-  return isPromise(monad)
-    ? monad.then(curryArgs3(genericReduce, __, reducer, result))
-    : genericReduce([monad], reducer, result)
-}
-
-const generatorFunctionFlatMap = (
-  generatorFunction, flatMapper,
-) => function* flatMappingGeneratorFunction(...args) {
-  yield* FlatMappingIterator(generatorFunction(...args), flatMapper)
-}
-
-const asyncGeneratorFunctionFlatMap = (
-  asyncGeneratorFunction, flatMapper,
-) => async function* flatMappingAsyncGeneratorFunction(...args) {
-  yield* FlatMappingAsyncIterator(asyncGeneratorFunction(...args), flatMapper)
-}
-
-const flatMap = flatMapper => function flatMapping(value) {
+const _flatMap = function (value, flatMapper) {
   if (isArray(value)) {
     return arrayFlatMap(value, flatMapper)
-  }
-  if (typeof value == 'function') {
-    if (isGeneratorFunction(value)) {
-      return generatorFunctionFlatMap(value, flatMapper)
-    }
-    if (isAsyncGeneratorFunction(value)) {
-      return asyncGeneratorFunctionFlatMap(value, flatMapper)
-    }
-    return reducerFlatMap(value, flatMapper)
-  }
-  if (isBinary(value)) {
-    return binaryFlatMap(value, flatMapper)
   }
   if (value == null) {
     return flatMapper(value)
@@ -2072,12 +1830,6 @@ const flatMap = flatMapper => function flatMapping(value) {
   if (typeof value.flatMap == 'function') {
     return value.flatMap(flatMapper)
   }
-  if (
-    typeof value[symbolAsyncIterator] == 'function'
-      && typeof value.write == 'function'
-  ) {
-    return streamFlatMap(value, flatMapper)
-  }
   const valueConstructor = value.constructor
   if (valueConstructor == Object) {
     return objectFlatMap(value, flatMapper)
@@ -2091,12 +1843,93 @@ const flatMap = flatMapper => function flatMapping(value) {
   return flatMapper(value)
 }
 
+const flatMap = (...args) => {
+  const flatMapper = args.pop()
+  if (args.length == 0) {
+    return curry2(_flatMap, __, flatMapper)
+  }
+  const collection = args[0]
+  return isPromise(collection)
+    ? collection.then(curry2(_flatMap, __, flatMapper))
+    : _flatMap(args[0], flatMapper)
+}
+
+const arrayForEach = function (array, callback) {
+  const length = array.length,
+    promises = []
+  let index = -1
+  while (++index < length) {
+    const operation = callback(array[index])
+    if (isPromise(operation)) {
+      promises.push(operation)
+    }
+  }
+  return promises.length == 0 ? array : promiseAll(promises).then(always(array))
+}
+
+const objectForEach = function (object, callback) {
+  const promises = []
+  for (const key in object) {
+    const operation = callback(object[key])
+    if (isPromise(operation)) {
+      promises.push(operation)
+    }
+  }
+  return promises.length == 0 ? object : promiseAll(promises).then(always(object))
+}
+
+const iteratorForEach = function (iterator, callback) {
+  const promises = []
+  for (const item of iterator) {
+    const operation = callback(item)
+    if (isPromise(operation)) {
+      promises.push(operation)
+    }
+  }
+  return promises.length == 0 ? iterator : promiseAll(promises).then(always(iterator))
+}
+
+// type Collection = Array|Iterable|AsyncIterable|{ forEach: function }|Object
+// _forEach(collection Collection, callback function) -> collection Collection
+const _forEach = function (collection, callback) {
+  if (isArray(collection)) {
+    return arrayForEach(collection, callback)
+  }
+  if (collection == null) {
+    return collection
+  }
+  if (typeof collection.forEach == 'function') {
+    return collection.forEach(callback)
+  }
+  if (typeof collection[symbolIterator] == 'function') {
+    return iteratorForEach(collection[symbolIterator](), callback)
+  }
+  if (typeof collection[symbolAsyncIterator] == 'function') {
+    return asyncIteratorForEach(collection[symbolAsyncIterator](), callback)
+  }
+  if (collection.constructor == Object) {
+    return objectForEach(collection, callback)
+  }
+  return collection
+}
+
+const forEach = function (...args) {
+  const callback = args.pop()
+  if (args.length == 0) {
+    return curry2(_forEach, __, callback)
+  }
+  const collection = args[0]
+  return isPromise(collection)
+    ? collection.then(curry2(_forEach, __, callback))
+    : _forEach(collection, callback)
+}
+
 const SelfReferencingPromise = function (basePromise) {
   const promise = basePromise.then(res => [res, promise])
   return promise
 }
 
-const asyncArrayAny = async function (
+const asyncArraySome = async function (
   array, predicate, index, promisesInFlight,
 ) {
   const length = array.length
@@ -2119,13 +1952,13 @@ const asyncArrayAny = async function (
   return false
 }
 
-const arrayAny = function (array, predicate) {
+const arraySome = function (array, predicate) {
   const length = array.length
   let index = -1
   while (++index < length) {
     const predication = predicate(array[index])
     if (isPromise(predication)) {
-      return asyncArrayAny(
+      return asyncArraySome(
         array, predicate, index, new Set([SelfReferencingPromise(predication)]))
     }
     if (predication) {
@@ -2135,7 +1968,7 @@ const arrayAny = function (array, predicate) {
   return false
 }
 
-const asyncIteratorAny = async function (
+const asyncIteratorSome = async function (
   iterator, predicate, promisesInFlight, maxConcurrency = 20,
 ) {
   let iteration = iterator.next()
@@ -2172,11 +2005,11 @@ const asyncIteratorAny = async function (
   return false
 }
 
-const iteratorAny = function (iterator, predicate) {
+const iteratorSome = function (iterator, predicate) {
   for (const item of iterator) {
     const predication = predicate(item)
     if (isPromise(predication)) {
-      return asyncIteratorAny(
+      return asyncIteratorSome(
         iterator, predicate, new Set([SelfReferencingPromise(predication)]))
     }
     if (predication) {
@@ -2190,35 +2023,52 @@ const reducerAnySync = predicate => function anyReducer(result, item) {
   return result ? true : predicate(item)
 }
 
-const reducerAny = predicate => function anyReducer(result, item) {
+const reducerSome = predicate => function anyReducer(result, item) {
   return result === true ? result
     : isPromise(result) ? result.then(curry2(reducerAnySync(predicate), __, item))
     : result ? true : predicate(item)
 }
 
-const any = predicate => function anyTruthy(value) {
-  if (isArray(value)) {
-    return arrayAny(value, predicate)
+// _some(collection Array|Iterable|AsyncIterable|{ reduce: function }|Object, predicate function) -> Promise|boolean
+const _some = function (collection, predicate) {
+  if (isArray(collection)) {
+    return arraySome(collection, predicate)
   }
-  if (value == null) {
-    return predicate(value)
+  if (collection == null) {
+    return predicate(collection)
   }
-  if (typeof value[symbolIterator] == 'function') {
-    return iteratorAny(value[symbolIterator](), predicate)
+  if (typeof collection[symbolIterator] == 'function') {
+    return iteratorSome(collection[symbolIterator](), predicate)
   }
-  if (typeof value[symbolAsyncIterator] == 'function') {
-    return asyncIteratorAny(value[symbolAsyncIterator](), predicate, new Set())
+  if (typeof collection[symbolAsyncIterator] == 'function') {
+    return asyncIteratorSome(
+      collection[symbolAsyncIterator](), predicate, new Set()
+    )
   }
-  if (typeof value.reduce == 'function') {
-    return value.reduce(reducerAny(predicate), false)
+  if (typeof collection.reduce == 'function') {
+    return collection.reduce(reducerSome(predicate), false)
   }
-  if (value.constructor == Object) {
-    return arrayAny(objectValues(value), predicate)
+  if (collection.constructor == Object) {
+    return arraySome(objectValues(collection), predicate)
   }
-  return predicate(value)
+  return predicate(collection)
 }
 
-const arrayAll = function (array, predicate) {
+const some = function (...args) {
+  const predicate = args.pop()
+  if (args.length == 0) {
+    return curry2(_some, __, predicate)
+  }
+
+  const collection = args[0]
+  if (isPromise(collection)) {
+    return collection.then(curry2(_some, __, predicate))
+  }
+
+  return _some(collection, predicate)
+}
+
+const arrayEvery = function (array, predicate) {
   const arrayLength = array.length,
     promises = []
   let index = -1
@@ -2235,7 +2085,7 @@ const arrayAll = function (array, predicate) {
     : promiseAll(promises).then(curry3(callPropUnary, __, 'every', Boolean))
 }
 
-const iteratorAll = function (iterator, predicate) {
+const iteratorEvery = function (iterator, predicate) {
   const promises = []
   for (const item of iterator) {
     const predication = predicate(item)
@@ -2250,7 +2100,7 @@ const iteratorAll = function (iterator, predicate) {
     : promiseAll(promises).then(curry3(callPropUnary, __, 'every', Boolean))
 }
 
-const asyncIteratorAll = async function (
+const asyncIteratorEvery = async function (
   asyncIterator, predicate, promisesInFlight, maxConcurrency = 20,
 ) {
   let iteration = await asyncIterator.next()
@@ -2283,37 +2133,54 @@ const asyncIteratorAll = async function (
 
 const reducerAllSync = (predicate, result, item) => result ? predicate(item) : false
 
-const reducerAll = predicate => function allReducer(result, item) {
+const reducerEvery = predicate => function allReducer(result, item) {
   return result === false ? false
     : isPromise(result) ? result.then(
       curry3(reducerAllSync, predicate, __, item))
     : result ? predicate(item) : false
 }
 
-const all = predicate => function allTruthy(value) {
-  if (isArray(value)) {
-    return arrayAll(value, predicate)
+// _every(collection Array|Iterable|AsyncIterable|{ reduce: function }|Object, predicate function) -> Promise|boolean
+const _every = function (collection, predicate) {
+  if (isArray(collection)) {
+    return arrayEvery(collection, predicate)
   }
-  if (value == null) {
-    return predicate(value)
+  if (collection == null) {
+    return predicate(collection)
   }
 
-  if (typeof value[symbolIterator] == 'function') {
-    return iteratorAll(value[symbolIterator](), predicate)
+  if (typeof collection[symbolIterator] == 'function') {
+    return iteratorEvery(collection[symbolIterator](), predicate)
   }
-  if (typeof value[symbolAsyncIterator] == 'function') {
-    return asyncIteratorAll(value[symbolAsyncIterator](), predicate, new Set())
+  if (typeof collection[symbolAsyncIterator] == 'function') {
+    return asyncIteratorEvery(
+      collection[symbolAsyncIterator](), predicate, new Set()
+    )
   }
-  if (typeof value.reduce == 'function') {
-    return value.reduce(reducerAll(predicate), true)
+  if (typeof collection.reduce == 'function') {
+    return collection.reduce(reducerEvery(predicate), true)
   }
-  if (value.constructor == Object) {
-    return arrayAll(objectValues(value), predicate)
+  if (collection.constructor == Object) {
+    return arrayEvery(objectValues(collection), predicate)
   }
-  return predicate(value)
+  return predicate(collection)
 }
 
-const areAllNonfunctionsTruthy = function (predicates, index) {
+const every = function (...args) {
+  const predicate = args.pop()
+  if (args.length == 0) {
+    return curry2(_every, __, predicate)
+  }
+
+  const collection = args[0]
+  if (isPromise(collection)) {
+    return collection.then(curry2(_every, __, predicate))
+  }
+
+  return _every(collection, predicate)
+}
+
+const areAllValuesTruthy = function (predicates, index) {
   const length = predicates.length
   while (++index < length) {
     let predicate = predicates[index]
@@ -2321,7 +2188,7 @@ const areAllNonfunctionsTruthy = function (predicates, index) {
       return predicate.then(curry3(
         thunkConditional,
         __,
-        thunkify2(areAllNonfunctionsTruthy, predicates, index),
+        thunkify2(areAllValuesTruthy, predicates, index),
         always(false),
       ))
     }
@@ -2332,12 +2199,12 @@ const areAllNonfunctionsTruthy = function (predicates, index) {
   return true
 }
 
-const asyncArePredicatesAllTruthy = async function (predicates, point, index) {
+const asyncArePredicatesAllTruthy = async function (args, predicates, index) {
   const length = predicates.length
   while (++index < length) {
     let predicate = predicates[index]
     if (typeof predicate == 'function') {
-      predicate = predicate(point)
+      predicate = predicate(...args)
     }
     if (isPromise(predicate)) {
       predicate = await predicate
@@ -2349,39 +2216,53 @@ const asyncArePredicatesAllTruthy = async function (predicates, point, index) {
   return true
 }
 
-const and = predicates => {
-  if (areAllValuesNonfunctions(predicates)) {
-    return areAllNonfunctionsTruthy(predicates, -1)
-  }
-  return function arePredicatesAllTruthy(point) {
-    const length = predicates.length
-    let index = -1
+// areAllPredicatesTruthy(args Array, predicates Array<function>) -> Promise|boolean
+const areAllPredicatesTruthy = function (args, predicates) {
+  const length = predicates.length
+  let index = -1
 
-    while (++index < length) {
-      let predicate = predicates[index]
-      if (typeof predicate == 'function') {
-        predicate = predicate(point)
-      }
-      if (isPromise(predicate)) {
-        return predicate.then(curry3(
-          thunkConditional,
-          __,
-          thunkify3(asyncArePredicatesAllTruthy, predicates, point, index),
-          always(false),
-        ))
-      }
-      if (!predicate) {
-        return false
-      }
+  while (++index < length) {
+    let predicate = predicates[index]
+    if (typeof predicate == 'function') {
+      predicate = predicate(...args)
     }
-    return true
+    if (isPromise(predicate)) {
+      return predicate.then(curry3(
+        thunkConditional,
+        __,
+        thunkify3(asyncArePredicatesAllTruthy, args, predicates, index),
+        always(false),
+      ))
+    }
+    if (!predicate) {
+      return false
+    }
   }
+  return true
+}
+
+const and = function (...args) {
+  const predicatesOrValues = args.pop()
+  if (areAllValuesNonfunctions(predicatesOrValues)) {
+    return areAllValuesTruthy(predicatesOrValues, -1)
+  }
+
+  if (args.length == 0) {
+    return curryArgs2(areAllPredicatesTruthy, __, predicatesOrValues)
+  }
+
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args)
+      .then(curry2(areAllPredicatesTruthy, __, predicatesOrValues))
+  }
+
+  return areAllPredicatesTruthy(args, predicatesOrValues)
 }
 
 const areAnyNonfunctionsTruthy = function (predicates, index) {
   const length = predicates.length
   while (++index < length) {
-    let predicate = predicates[index]
+    const predicate = predicates[index]
     if (isPromise(predicate)) {
       return predicate.then(curry3(
         thunkConditional,
@@ -2397,14 +2278,13 @@ const areAnyNonfunctionsTruthy = function (predicates, index) {
   return false
 }
 
-const asyncAreAnyPredicatesTruthy = async function (predicates, point, index) {
+const asyncAreAnyPredicatesTruthy = async function (args, predicates, index) {
   const length = predicates.length
   while (++index < length) {
     let predicate = predicates[index]
     if (typeof predicate == 'function') {
-      predicate = predicate(point)
+      predicate = predicate(...args)
     }
-    console.log('hey - or', predicate)
     if (isPromise(predicate)) {
       predicate = await predicate
     }
@@ -2415,275 +2295,206 @@ const asyncAreAnyPredicatesTruthy = async function (predicates, point, index) {
   return false
 }
 
-const or = predicates => {
-  if (areAllValuesNonfunctions(predicates)) {
-    return areAnyNonfunctionsTruthy(predicates, -1)
-  }
-  return function areAnyPredicatesTruthy(point) {
-    const length = predicates.length
-    let index = -1
+// areAnyPredicatesTruthy(args Array, predicates Array<function>) -> Promise|boolean
+const areAnyPredicatesTruthy = function (args, predicates) {
+  const length = predicates.length
+  let index = -1
 
-    while (++index < length) {
-      let predicate = predicates[index]
-      if (typeof predicate == 'function') {
-        predicate = predicate(point)
-      }
-      if (isPromise(predicate)) {
-        return predicate.then(curry3(
-          thunkConditional,
-          __,
-          always(true),
-          thunkify3(asyncAreAnyPredicatesTruthy, predicates, point, index),
-        ))
-      }
-      if (predicate) {
-        return true
-      }
+  while (++index < length) {
+    let predicate = predicates[index]
+    if (typeof predicate == 'function') {
+      predicate = predicate(...args)
     }
-    return false
-  }
-}
-
-// true -> false
-const _not = value => !value
-
-const not = function (funcOrValue) {
-  if (typeof funcOrValue == 'function') {
-    return function logicalInverter(value) {
-      const boolean = funcOrValue(value)
-      return isPromise(boolean) ? boolean.then(_not) : !boolean
+    if (isPromise(predicate)) {
+      return predicate.then(curry3(
+        thunkConditional,
+        __,
+        always(true),
+        thunkify3(asyncAreAnyPredicatesTruthy, args, predicates, index),
+      ))
+    }
+    if (predicate) {
+      return true
     }
   }
-  return !funcOrValue
+  return false
 }
 
-const notSync = func => function notSync(...args) {
-  return !func(...args)
+const or = function (...args) {
+  const predicatesOrValues = args.pop()
+  if (areAllValuesNonfunctions(predicatesOrValues)) {
+    return areAnyNonfunctionsTruthy(predicatesOrValues, -1)
+  }
+
+  if (args.length == 0) {
+    return curryArgs2(areAnyPredicatesTruthy, __, predicatesOrValues)
+  }
+
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args)
+      .then(curry2(areAnyPredicatesTruthy, __, predicatesOrValues))
+  }
+
+  return areAnyPredicatesTruthy(args, predicatesOrValues)
 }
 
-not.sync = notSync
+// negate(value boolean) -> inverse boolean
+const negate = value => !value
 
-const sameValueZero = function (left, right) {
-  return left === right || (left !== left && right !== right)
+// _not(args Array, predicate function)
+const _not = function (args, predicate) {
+  const boolean = predicate(...args)
+  return isPromise(boolean) ? boolean.then(negate) : !boolean
 }
 
-const eq = function (left, right) {
+const not = function (...args) {
+  const predicateOrValue = args.pop()
+  if (typeof predicateOrValue == 'function') {
+    if (args.length == 0) {
+      return curryArgs2(_not, __, predicateOrValue)
+    }
+    if (areAnyValuesPromises(args)) {
+      return promiseAll(args).then(curry2(_not, __, predicateOrValue))
+    }
+    return _not(args, predicateOrValue)
+  }
+  return !predicateOrValue
+}
+
+// argument resolver for curryArgs4
+const curryArgs4ResolveArgs0 = (
+  baseFunc, arg1, arg2, arg3,
+) => function args0Resolver(...args) {
+  return baseFunc(args, arg1, arg2, arg3)
+}
+
+// argument resolver for curryArgs4
+const curryArgs4ResolveArgs1 = (
+  baseFunc, arg0, arg2, arg3,
+) => function args1Resolver(...args) {
+  return baseFunc(arg0, args, arg2, arg3)
+}
+
+// argument resolver for curryArgs4
+const curryArgs4ResolveArgs2 = (
+  baseFunc, arg0, arg1, arg3,
+) => function args2Resolver(...args) {
+  return baseFunc(arg0, arg1, args, arg3)
+}
+
+// argument resolver for curryArgs4
+const curryArgs4ResolveArgs3 = (
+  baseFunc, arg0, arg1, arg2,
+) => function args3Resolver(...args) {
+  return baseFunc(arg0, arg1, arg2, args)
+}
+
+const curryArgs4 = function (baseFunc, arg0, arg1, arg2, arg3) {
+  if (arg0 == __) {
+    return curryArgs4ResolveArgs0(baseFunc, arg1, arg2, arg3)
+  }
+  if (arg1 == __) {
+    return curryArgs4ResolveArgs1(baseFunc, arg0, arg2, arg3)
+  }
+  if (arg2 == __) {
+    return curryArgs4ResolveArgs2(baseFunc, arg0, arg1, arg3)
+  }
+  return curryArgs4ResolveArgs3(baseFunc, arg0, arg1, arg2)
+}
+
+// leftResolverRightResolverCompare(
+//   args Array, comparator function, left function, right function,
+// ) -> Promise|boolean
+const leftResolverRightResolverCompare = function (
+  args, comparator, left, right,
+) {
+  const leftResult = left(...args),
+    rightResult = right(...args)
+  if (isPromise(leftResult) || isPromise(rightResult)) {
+    return promiseAll([leftResult, rightResult]).then(spread2(comparator))
+  }
+  return comparator(leftResult, rightResult)
+}
+
+// leftResolverRightValueCompare(
+//   args Array, comparator function, left function, right any
+// ) -> Promise|boolean
+const leftResolverRightValueCompare = function (args, comparator, left, right) {
+  const leftResult = left(...args)
+  if (isPromise(leftResult) || isPromise(right)) {
+    return promiseAll([leftResult, right]).then(spread2(comparator))
+  }
+  return comparator(leftResult, right)
+}
+
+// leftValueRightResolverCompare(
+//   args Array, comparator function, left any, right any,
+// ) -> Promise|boolean
+const leftValueRightResolverCompare = function (args, comparator, left, right) {
+  const rightResult = right(...args)
+  if (isPromise(left) || isPromise(rightResult)) {
+    return promiseAll([left, rightResult]).then(spread2(comparator))
+  }
+  return comparator(left, rightResult)
+}
+
+// ComparisonOperator(comparator function) -> operator function
+const ComparisonOperator = comparator => function operator(...args) {
+  const right = args.pop()
+  const left = args.pop()
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
 
   if (isLeftResolver && isRightResolver) {
-    return function equalBy(value) {
-      const leftResolve = left(value),
-        rightResolve = right(value)
-      const isLeftPromise = isPromise(leftResolve),
-        isRightPromise = isPromise(rightResolve)
-      if (isLeftPromise && isRightPromise) {
-        return promiseAll(
-          [leftResolve, rightResolve]).then(spread2(sameValueZero))
-      } else if (isLeftPromise) {
-        return leftResolve.then(curry2(sameValueZero, __, rightResolve))
-      } else if (isRightPromise) {
-        return rightResolve.then(curry2(sameValueZero, leftResolve, __))
-      }
-      return sameValueZero(leftResolve, rightResolve)
+    if (args.length == 0) {
+      return curryArgs4(
+        leftResolverRightResolverCompare, __, comparator, left, right,
+      )
     }
+    if (areAnyValuesPromises(args)) {
+      return promiseAll(args).then(curryArgs4(
+        leftResolverRightResolverCompare, __, comparator, left, right,
+      ))
+    }
+    return leftResolverRightResolverCompare(args, comparator, left, right)
   }
 
   if (isLeftResolver) {
-    return function equalBy(value) {
-      const leftResolve = left(value)
-      return isPromise(leftResolve)
-        ? leftResolve.then(curry2(sameValueZero, __, right))
-        : sameValueZero(leftResolve, right)
-    }
-  }
-  if (isRightResolver) {
-    return function equalBy(value) {
-      const rightResolve = right(value)
-      return isPromise(rightResolve)
-        ? rightResolve.then(curry2(sameValueZero, left, __))
-        : sameValueZero(left, rightResolve)
-    }
+    return curryArgs4(
+      leftResolverRightValueCompare, __, comparator, left, right,
+    )
   }
 
-  return sameValueZero(left, right)
+  if (isRightResolver) {
+    return curryArgs4(
+      leftValueRightResolverCompare, __, comparator, left, right,
+    )
+  }
+
+  return comparator(left, right)
 }
+
+const equals = function (left, right) {
+  return left == right
+}
+
+const eq = ComparisonOperator(equals)
 
 const greaterThan = (left, right) => left > right
 
-const gt = function (left, right) {
-  const isLeftResolver = typeof left == 'function',
-    isRightResolver = typeof right == 'function'
-
-  if (isLeftResolver && isRightResolver) {
-    return function greaterThanBy(value) {
-      const leftResolve = left(value),
-        rightResolve = right(value)
-      const isLeftPromise = isPromise(leftResolve),
-        isRightPromise = isPromise(rightResolve)
-      if (isLeftPromise && isRightPromise) {
-        return promiseAll(
-          [leftResolve, rightResolve]).then(spread2(greaterThan))
-      } else if (isLeftPromise) {
-        return leftResolve.then(curry2(greaterThan, __, rightResolve))
-      } else if (isRightPromise) {
-        return rightResolve.then(curry2(greaterThan, leftResolve, __))
-      }
-      return leftResolve > rightResolve
-    }
-  }
-
-  if (isLeftResolver) {
-    return function greaterThanBy(value) {
-      const leftResolve = left(value)
-      return isPromise(leftResolve)
-        ? leftResolve.then(curry2(greaterThan, __, right))
-        : leftResolve > right
-    }
-  }
-  if (isRightResolver) {
-    return function strictEqualBy(value) {
-      const rightResolve = right(value)
-      return isPromise(rightResolve)
-        ? rightResolve.then(curry2(greaterThan, left, __))
-        : left > rightResolve
-    }
-  }
-
-  return left > right
-}
+const gt = ComparisonOperator(greaterThan)
 
 const lessThan = (left, right) => left < right
 
-const lt = function (left, right) {
-  const isLeftResolver = typeof left == 'function',
-    isRightResolver = typeof right == 'function'
-
-  if (isLeftResolver && isRightResolver) {
-    return function lessThanBy(value) {
-      const leftResolve = left(value),
-        rightResolve = right(value)
-      const isLeftPromise = isPromise(leftResolve),
-        isRightPromise = isPromise(rightResolve)
-      if (isLeftPromise && isRightPromise) {
-        return promiseAll(
-          [leftResolve, rightResolve]).then(spread2(lessThan))
-      } else if (isLeftPromise) {
-        return leftResolve.then(curry2(lessThan, __, rightResolve))
-      } else if (isRightPromise) {
-        return rightResolve.then(curry2(lessThan, leftResolve, __))
-      }
-      return leftResolve < rightResolve
-    }
-  }
-
-  if (isLeftResolver) {
-    return function lessThanBy(value) {
-      const leftResolve = left(value)
-      return isPromise(leftResolve)
-        ? leftResolve.then(curry2(lessThan, __, right))
-        : leftResolve < right
-    }
-  }
-  if (isRightResolver) {
-    return function lessThanBy(value) {
-      const rightResolve = right(value)
-      return isPromise(rightResolve)
-        ? rightResolve.then(curry2(lessThan, left, __))
-        : left < rightResolve
-    }
-  }
-
-  return left < right
-}
+const lt = ComparisonOperator(lessThan)
 
 const greaterThanOrEqual = (left, right) => left >= right
 
-const gte = function (left, right) {
-  const isLeftResolver = typeof left == 'function',
-    isRightResolver = typeof right == 'function'
-
-  if (isLeftResolver && isRightResolver) {
-    return function greaterThanOrEqualBy(value) {
-      const leftResolve = left(value),
-        rightResolve = right(value)
-      const isLeftPromise = isPromise(leftResolve),
-        isRightPromise = isPromise(rightResolve)
-      if (isLeftPromise && isRightPromise) {
-        return promiseAll(
-          [leftResolve, rightResolve]).then(spread2(greaterThanOrEqual))
-      } else if (isLeftPromise) {
-        return leftResolve.then(curry2(greaterThanOrEqual, __, rightResolve))
-      } else if (isRightPromise) {
-        return rightResolve.then(curry2(greaterThanOrEqual, leftResolve, __))
-      }
-      return leftResolve >= rightResolve
-    }
-  }
-
-  if (isLeftResolver) {
-    return function greaterThanOrEqualBy(value) {
-      const leftResolve = left(value)
-      return isPromise(leftResolve)
-        ? leftResolve.then(curry2(greaterThanOrEqual, __, right))
-        : leftResolve >= right
-    }
-  }
-  if (isRightResolver) {
-    return function greaterThanOrEqualBy(value) {
-      const rightResolve = right(value)
-      return isPromise(rightResolve)
-        ? rightResolve.then(curry2(greaterThanOrEqual, left, __))
-        : left >= rightResolve
-    }
-  }
-
-  return left >= right
-}
+const gte = ComparisonOperator(greaterThanOrEqual)
 
 const lessThanOrEqual = (left, right) => left <= right
 
-const lte = function (left, right) {
-  const isLeftResolver = typeof left == 'function',
-    isRightResolver = typeof right == 'function'
-
-  if (isLeftResolver && isRightResolver) {
-    return function lessThanOrEqualBy(value) {
-      const leftResolve = left(value),
-        rightResolve = right(value)
-      const isLeftPromise = isPromise(leftResolve),
-        isRightPromise = isPromise(rightResolve)
-      if (isLeftPromise && isRightPromise) {
-        return promiseAll(
-          [leftResolve, rightResolve]).then(spread2(lessThanOrEqual))
-      } else if (isLeftPromise) {
-        return leftResolve.then(curry2(lessThanOrEqual, __, rightResolve))
-      } else if (isRightPromise) {
-        return rightResolve.then(curry2(lessThanOrEqual, leftResolve, __))
-      }
-      return leftResolve <= rightResolve
-    }
-  }
-
-  if (isLeftResolver) {
-    return function lessThanOrEqualBy(value) {
-      const leftResolve = left(value)
-      return isPromise(leftResolve)
-        ? leftResolve.then(curry2(lessThanOrEqual, __, right))
-        : leftResolve <= right
-    }
-  }
-  if (isRightResolver) {
-    return function lessThanOrEqualBy(value) {
-      const rightResolve = right(value)
-      return isPromise(rightResolve)
-        ? rightResolve.then(curry2(lessThanOrEqual, left, __))
-        : left <= rightResolve
-    }
-  }
-
-  return left <= right
-}
+const lte = ComparisonOperator(lessThanOrEqual)
 
 const memoizeCappedUnary = function (func, cap) {
   const cache = new Map(),
@@ -2743,11 +2554,22 @@ const getByPath = function (value, path) {
   return result
 }
 
-const get = (path, defaultValue) => function getter(value) {
-  const result = value == null ? undefined : getByPath(value, path)
+// _get(object Object, path string, defaultValue function|any)
+const _get = function (object, path, defaultValue) {
+  const result = object == null ? undefined : getByPath(object, path)
   return result === undefined
-    ? typeof defaultValue == 'function' ? defaultValue(value) : defaultValue
+    ? typeof defaultValue == 'function' ? defaultValue(object) : defaultValue
     : result
+}
+
+const get = function (arg0, arg1, arg2) {
+  if (isPromise(arg0)) {
+    return arg0.then(curry3(_get, __, arg1, arg2))
+  }
+  if (isObject(arg0) && !isArray(arg0)) {
+    return _get(arg0, arg1, arg2)
+  }
+  return curry3(_get, __, arg0, arg1)
 }
 
 const setByPath = function (obj, value, path) {
@@ -2775,7 +2597,7 @@ const setByPath = function (obj, value, path) {
   return result
 }
 
-const set = (path, value) => function setter(obj) {
+const _set = function (obj, path, value) {
   if (typeof value == 'function') {
     const actualValue = value(obj)
     if (isPromise(actualValue)) {
@@ -2785,7 +2607,22 @@ const set = (path, value) => function setter(obj) {
     }
     return setByPath(obj, actualValue, path)
   }
+  if (isPromise(value)) {
+    return value.then(
+      curry3(setByPath, obj, __, path)
+    )
+  }
   return setByPath(obj, value, path)
+}
+
+const set = function (arg0, arg1, arg2) {
+  if (arg2 == null) {
+    return curry3(_set, __, arg0, arg1)
+  }
+  if (isPromise(arg0)) {
+    return arg0.then(curry3(_set, __, arg1, arg2))
+  }
+  return _set(arg0, arg1, arg2)
 }
 
 // _pick(source Object, keys Array<string>) -> result Object
@@ -2806,9 +2643,12 @@ const _pick = function (source, keys) {
   return result
 }
 
-const pick = (arg0, arg1) => {
+const pick = function (arg0, arg1) {
   if (arg1 == null) {
     return curry2(_pick, __, arg0)
+  }
+  if (isPromise(arg0)) {
+    return arg0.then(curry2(_pick, __, arg1))
   }
   return _pick(arg0, arg1)
 }
@@ -2896,10 +2736,16 @@ const omit = function (arg0, arg1) {
   if (arg1 == null) {
     return curry2(_omit, __, arg0)
   }
+  if (isPromise(arg0)) {
+    return arg0.then(curry2(_omit, __, arg1))
+  }
   return _omit(arg0, arg1)
 }
 
 const thunkify = (func, ...args) => function thunk() {
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args).then(curry2(funcApply, func, __))
+  }
   return func(...args)
 }
 
@@ -2910,11 +2756,11 @@ curry.arity = function curryArity_(arity, func, ...args) {
 }
 
 const rubico = {
-  pipe, tap,
+  pipe, compose, tap,
   switchCase, tryCatch,
-  fork, assign, get, set, pick, omit,
-  map, filter, reduce, transform, flatMap,
-  and, or, not, any, all,
+  all, assign, get, set, pick, omit,
+  map, filter, flatMap, forEach, reduce, transform,
+  and, or, not, some, every,
   eq, gt, lt, gte, lte,
   thunkify, always,
   curry, __,

@@ -47,7 +47,7 @@ const pathResolve = nodePath.resolve
 const pathDirname = nodePath.dirname
 
 // path string => cjs string
-const pathToCode = pipe.sync([
+const pathToCode = pipe([
   fs.readFileSync,
   toString,
   replace(/\/\*\*[\s\S]+?\*\//g, ''),
@@ -63,11 +63,12 @@ const pathToCodeBundle = pipe([
 
   ({ path, code }) => {
     const alreadyRequiredPaths = new Set()
-    let cwd = pathDirname(path),
-      result = code
+    const cwd = pathDirname(path)
+    let result = code
     while (result.includes('require(')) {
-      result = result.replace(/const \w+ = require\('(.+)'\)/g, (match, $1) => {
-        const requiredPath = pathResolve(cwd, `${$1}.js`)
+      result = result.replace(/const \w+ = require\('(?<path>.+)'\)/g, (match, p1, offset, source, groups) => {
+        const { path } = groups
+        const requiredPath = pathResolve(cwd, `${path}.js`)
         if (alreadyRequiredPaths.has(requiredPath)) {
           return ''
         }
@@ -76,10 +77,10 @@ const pathToCodeBundle = pipe([
 
         while (requiredCode.includes('require(')) {
           requiredCode = requiredCode.replace(
-            /const \w+ = require\('(.+)'\)/,
+            /const \w+ = require\('(?<path>.+)'\)/,
             pipe([
-              (match, $1) => $1,
-              filename => `${filename}.js`,
+              (match, p1, offset, source, groups) => groups.path,
+              path => `${path}.js`,
               curry.arity(2, pathResolve, pathDirname(requiredPath), __),
               switchCase([
                 requiredPath => alreadyRequiredPaths.has(requiredPath),
@@ -91,11 +92,15 @@ const pathToCodeBundle = pipe([
                     code: pathToCode,
                   }),
                   ({ requiredPath, code }) => {
-                    code = code.replace(/const (\w+) = require\('(.+)'\)/g, (match, $1, $2) => {
-                      const newPath = pathResolve(pathDirname(requiredPath), $2)
-                      const newStatement = `const ${$1} = require('${newPath}')`
-                      return newStatement
-                    })
+                    code = code.replace(
+                      /const (?<moduleName>\w+) = require\('(?<path>.+)'\)/g,
+                      (match, p1, p2, offset, source, groups) => {
+                        const { moduleName, path } = groups
+                        const newPath = pathResolve(pathDirname(requiredPath), path)
+                        const newStatement = `const ${moduleName} = require('${newPath}')`
+                        return newStatement
+                      }
+                    )
                     return code
                   },
                 ]),
@@ -120,7 +125,7 @@ const ignoredNames = new Set([
 // name string => boolean
 const nameIsIgnored = name => ignoredNames.has(name)
 
-pipe([
+const distributor = pipe([
   tap(tryCatch(
     thunkify(fs.promises.rm, `${__dirname}/dist`, { recursive: true }),
     noop)),
@@ -279,8 +284,9 @@ ${baseCodeBundle}return ${name}
     // Stdout,
     null,
   ),
-])([
+])
 
+distributor([
   Object.keys(rubico).map(pipe([
     all({
       name: identity,
@@ -289,8 +295,8 @@ ${baseCodeBundle}return ${name}
         curry.arity(2, pathResolve, __dirname, __),
       ]),
     }),
-  ])).flatMap(all([
-
+  ]))
+  .flatMap(all([
     assign({
       type: always('esm'),
       distPath: pipe([
@@ -351,8 +357,8 @@ ${baseCodeBundle}return ${name}
         curry.arity(3, pathResolve, __dirname, 'x', __),
       ]),
     }),
-
-  ])).flatMap(all([
+  ]))
+  .flatMap(all([
     assign({
       type: always('esm'),
       distPath: pipe([
