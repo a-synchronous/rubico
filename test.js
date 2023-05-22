@@ -72,20 +72,6 @@ const asyncMult = (y, xi) => new Promise(resolve => {
   setImmediate(() => resolve(y * xi))
 })
 
-const asyncArrayReduce = (fn, x0) => async x => {
-  if (x.length < 2) throw new Error('array must have length >= 2')
-  let y, i
-  if (x0 === undefined || x0 === null) {
-    y = await fn(x[0], x[1])
-    i = 2
-  } else {
-    y = await fn(x0, x[0])
-    i = 1
-  }
-  while (i < x.length) { y = await fn(y, x[i]); i += 1 }
-  return y
-}
-
 const constructReadStream = iterable => {
   const y = new stream.Readable({ objectMode: true })
   y._read = () => {}
@@ -111,8 +97,11 @@ const consumeReadStreamPush = s => new Promise((resolve, reject) => {
 const consumeReadStreamPull = s => new Promise((resolve, reject) => {
   let y = ''
   s.on('readable', () => {
-    let chunk
-    while (chunk = s.read()) y += `${chunk}`
+    let chunk = s.read()
+    while (chunk != null) {
+      y += `${chunk}`
+      chunk = s.read()
+    }
   })
   s.on('end', () => resolve(y))
   s.on('error', err => reject(err))
@@ -1326,7 +1315,6 @@ describe('rubico', () => {
       assert.deepEqual(map.pool(1, asyncSquare)([]), [])
     })
     it('works for arrays of undefined values', async () => {
-      ade(await map.pool(1, x => x)([,,,,, ]), Array(5).fill(undefined))
       ade(await map.pool(1, x => x)(Array(5)), Array(5).fill(undefined))
       ade(await map.pool(1, x => x)(Array(5).fill(null)), Array(5).fill(null))
     })
@@ -1354,7 +1342,9 @@ describe('rubico', () => {
     })
     it('abides by asynchronous limit for arrays and sets', async () => {
       const numbers = [1, 2, 3, 4, 5, 6]
-      let i = 0, maxi = 0, period = 10
+      const period = 10
+      let i = 0
+      let maxi = 0
       const plusSleepMinus = n => (async () => {
         i += 1
         maxi = Math.max(maxi, i)
@@ -3320,11 +3310,11 @@ flatMap(
       ade(set('a', 1)('yo'), 'yo')
       ade(set('a', 1)({ b: 2 }), { a: 1, b: 2 })
       ade(await set('a', Promise.resolve(1))({ b: 2 }), { a: 1, b: 2 })
-      ade(set('a.b', 1)({ a: { c: 2 }}), { a: { b: 1, c: 2 }})
+      ade(set('a.b', 1)({ a: { c: 2 } }), { a: { b: 1, c: 2 } })
       ade(set('a.b', 1)({ a: 1 }), { a: { b: 1 } })
-      ade(set(['a', 'b'], 1)({ a: { c: 2 }}), { a: { b: 1, c: 2 }})
+      ade(set(['a', 'b'], 1)({ a: { c: 2 } }), { a: { b: 1, c: 2 } })
       ade(set('a[0].b.c', 4)({ 'a': [{ 'b': { 'c': 3 } }] }), { 'a': [{ 'b': { 'c': 4 } }] })
-      ade(set('a.b.c.d', 1)({}), { a: { b: { c: { d: 1 } }}})
+      ade(set('a.b.c.d', 1)({}), { a: { b: { c: { d: 1 } } } })
     })
 
     it('eagerly set a property of an object', async () => {
@@ -3332,13 +3322,13 @@ flatMap(
       ade(set(undefined, 'a', 1), undefined)
       ade(set('yo', 'a', 1), 'yo')
       ade(set({ b: 2 }, 'a', 1), { a: 1, b: 2 })
-      ade(set({ a: { c: 2 }}, 'a.b', 1), { a: { b: 1, c: 2 }})
+      ade(set({ a: { c: 2 } }, 'a.b', 1), { a: { b: 1, c: 2 } })
       ade(set({ a: 1 }, 'a.b', 1), { a: { b: 1 } })
-      ade(set({ a: { c: 2 }}, ['a', 'b'], 1), { a: { b: 1, c: 2 }})
+      ade(set({ a: { c: 2 } }, ['a', 'b'], 1), { a: { b: 1, c: 2 } })
       ade(await set(Promise.resolve({ 'a': [{ 'b': { 'c': 3 } }] }), 'a[0].b.c', 4), { 'a': [{ 'b': { 'c': 4 } }] })
       ade(await set({ 'a': [{ 'b': { 'c': 3 } }] }, 'a[0].b.c', Promise.resolve(4)), { 'a': [{ 'b': { 'c': 4 } }] })
-      ade(await set(Promise.resolve({}), 'a.b.c.d', 1), { a: { b: { c: { d: 1 } }}})
-      ade(await set({}, 'a.b.c.d', Promise.resolve(1)), { a: { b: { c: { d: 1 } }}})
+      ade(await set(Promise.resolve({}), 'a.b.c.d', 1), { a: { b: { c: { d: 1 } } } })
+      ade(await set({}, 'a.b.c.d', Promise.resolve(1)), { a: { b: { c: { d: 1 } } } })
     })
 
     it('the property value may be a resolver', async () => {

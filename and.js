@@ -22,7 +22,7 @@ const always = require('./_internal/always')
 const areAllValuesTruthy = function (predicates, index) {
   const length = predicates.length
   while (++index < length) {
-    let predicate = predicates[index]
+    const predicate = predicates[index]
     if (isPromise(predicate)) {
       return predicate.then(curry3(
         thunkConditional,

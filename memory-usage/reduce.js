@@ -15,7 +15,7 @@ const asyncGenerator = async function*(i) {
   yield 3
 }
 
-void (async () => {
+setImmediate(async () => {
   let i = 0, maxHeapUsed = 0
   while (i < iterations) {
     const p = reduce((a, b) => a + b, 0)(asyncGenerator(i))
@@ -35,6 +35,6 @@ void (async () => {
   }
 
   console.log('maxHeapUsed (MiB)', maxHeapUsed / 1024 / 1024)
-})()
+})
 
 // https://stackoverflow.com/questions/62336381/is-this-promise-cancellation-implementation-for-reducing-an-async-iterable-on-th
