@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 require('./global')
 const rubico = require('./rubico')
 const rubicoX = require('./x')
