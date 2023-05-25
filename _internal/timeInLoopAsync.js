@@ -3,7 +3,9 @@
  *
  * @synopsis
  * ```coffeescript [specscript]
- * timeInLoop.async(desc string, loopCount number, fn function) -> undefined
+ * timeInLoop.async(description string, loopCount number, fn function, options? {
+ *   silent?: boolean,
+ * }) -> undefined
  * ```
  *
  * @description
@@ -13,13 +15,21 @@
  * timeInLoop.async('async hello', 1e6, async () => 'hello') // async hello: 1e+6: 116.006ms
  * ```
  */
-const timeInLoopAsync = async (desc, loopCount, fn) => {
-  const d = `${desc}: ${loopCount.toExponential()}`
-  console.time(d)
+const timeInLoopAsync = async (description, loopCount, fn, options = {}) => {
+  const d = `${description}: ${loopCount.toExponential()}`
+  const start = performance.now()
   for (let i = 0; i < loopCount; i++) {
     await fn()
   }
-  console.timeEnd(d)
+  const end = performance.now()
+  const duration = end - start
+
+  if (options.silent) {
+    return { description, loopCount, duration }
+  }
+
+  console.log(`${d}: ${duration}`)
+  return { description, loopCount, duration }
 }
 
 module.exports = timeInLoopAsync
