@@ -1,23 +1,22 @@
+const _timeInLoop = require('../_internal/timeInLoop')
+const timeInLoopAsync = require('../_internal/timeInLoopAsync')
+
 /**
  * @name timeInLoop
  *
  * @synopsis
  * timeInLoop(desc string, loopCount number, fn function) -> undefined
  *
- * @catchphrase
- * How long does a function take to run this many loops
+ * @description
+ * Logs the amount of time required for a function to run a certain number of times
  *
- * @example
- * timeInLoop('yo', 1e6, () => 'yo') // yo: 1e+6: 3.474ms
+ * ```coffeescript [specscript]
+ * timeInLoop('hello', 1e6, () => 'hello') // hello: 1e+6: 3.474ms
+ * ```
+ *
+ * Reference: https://gist.github.com/funfunction/91b5876a5f562e1e352aed0fcabc3858
  */
-const timeInLoop = (desc, loopCount, fn) => {
-  const d = `${desc}: ${loopCount.toExponential()}`
-  console.time(d)
-  for (let i = 0; i < loopCount; i++) {
-    fn()
-  }
-  console.timeEnd(d)
-}
+const timeInLoop = _timeInLoop
 
 /**
  * @name timeInLoop.async
@@ -25,21 +24,13 @@ const timeInLoop = (desc, loopCount, fn) => {
  * @synopsis
  * timeInLoop.async(desc string, loopCount number, fn function) -> undefined
  *
- * @catchphrase
+ * @description
  * Like timeInLoop, but every call is awaited
  *
- * @example
- * timeInLoop.async('asyncYo', 1e6, async () => 'yo') // asyncYo: 1e+6: 116.006ms
+ * ```coffeescript [specscript]
+ * timeInLoop.async('async hello', 1e6, async () => 'hello') // async hello: 1e+6: 116.006ms
+ * ```
  */
-timeInLoop.async = async (desc, loopCount, fn) => {
-  const d = `${desc}: ${loopCount.toExponential()}`
-  console.time(d)
-  for (let i = 0; i < loopCount; i++) {
-    await fn()
-  }
-  console.timeEnd(d)
-}
+timeInLoop.async = timeInLoopAsync
 
 module.exports = timeInLoop
-
-// thanks: https://gist.github.com/funfunction/91b5876a5f562e1e352aed0fcabc3858
