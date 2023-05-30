@@ -37,11 +37,11 @@
     "codecov": "^3.7.1",
     "eslint": "^8.4.1",
     "fantasy-land": "^4.1.0",
-    "lodash": "^4.17.19",
+    "lodash": "^4.17.21",
     "mocha": "^7.2.0",
     "node-fetch": "^2.6.1",
     "nyc": "^15.1.0",
-    "ramda": "^0.27.1",
+    "ramda": "^0.29.0",
     "terser": "^5.10.0",
     "thunk-test": "latest"
   },
