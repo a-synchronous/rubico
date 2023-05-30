@@ -1,0 +1,38 @@
+#!/usr/bin/env node
+
+require('./global')
+const fs = require('fs')
+const { fork, spawn } = require('child_process')
+const File = require('./_internal/File')
+const findAllFilePaths = require('./_internal/findAllFilePaths')
+const package = require('./package.json')
+
+const file = new File(`${__dirname}/benchmark-output-${package.version}`)
+
+// benchmark(options?: { bestOf?: number }) -> Promise<>
+const benchmark = async function (options = {}) {
+  const { bestOf = 5 } = options
+  const paths = await findAllFilePaths(`${__dirname}/benchmarks`)
+
+  const outputMap = new Map()
+
+  for (const path of paths) {
+    const lines = []
+    const proc = spawn('node', [path])
+    proc.stdout.on('data', data => {
+      lines.push(data.toString())
+    })
+    proc.on('close', () => {
+      lines.push('\n')
+      lines.forEach(line => {
+        process.stdout.write(line)
+        file.write(line)
+      })
+    })
+  }
+}
+
+setImmediate(async function () {
+  console.log(`Benchmarking v${package.version}`)
+  benchmark()
+})
