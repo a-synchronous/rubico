@@ -2,7 +2,7 @@ const Bluebird = require('bluebird')
 const TimeInLoopSuite = require('../../_internal/TimeInLoopSuite')
 const promiseAll = require('../../_internal/promiseAll')
 
-const suite = new TimeInLoopSuite()
+const suite = new TimeInLoopSuite({ loopCount: 1e5 })
 
 suite.add('rubico promiseAll', async () => {
   await promiseAll([
