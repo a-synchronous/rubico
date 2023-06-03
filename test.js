@@ -3876,11 +3876,18 @@ flatMap(
   describe('eq', () => {
     it('API coverage', async () => {
       aok(
-        eq(2, number => number * 2, number => number ** 2)
+        eq(2, number => number * 2, number => number + 2)
       )
       aok(
-        await eq(Promise.resolve(2), number => number * 2, number => number ** 2)
+        eq(number => number * 2, number => number + 2)(2)
       )
+      aok(
+        await eq(Promise.resolve(2), number => number * 2, number => number + 2)
+      )
+      aok(eq(2, number => number * 2, 4))
+      aok(await eq(Promise.resolve(2), number => number * 2, 4))
+      aok(eq(2, 4, number => number ** 2))
+      aok(await eq(Promise.resolve(2), 4, number => number ** 2))
     })
 
     it('[sync] eq(f, g)(x) == (f(x) == g(x))', async () => {
@@ -3917,9 +3924,6 @@ flatMap(
     it('false for eq(string,)', () => {
       assert.strictEqual(eq('hey',), false)
     })
-    it('false for too many arguments', async () => {
-      assert.strictEqual(eq('hey', () => {}, 'ho')(), false)
-    })
   })
 
   describe('gt', () => {
@@ -3930,6 +3934,10 @@ flatMap(
       aok(
         await gt(Promise.resolve(1), number => number, number => number * 0)
       )
+      aok(gt(1, number => number, 0))
+      aok(await gt(Promise.resolve(1), number => number, 0))
+      aok(gt(1, 3, number => number * 0))
+      aok(await gt(Promise.resolve(1), 3, number => number * 0))
     })
     it('[sync] gt(f, g)(x) === (f(x) > g(x))', async () => {
       ase(gt(x => x + 1, x => x)(1), true)
@@ -3969,9 +3977,6 @@ flatMap(
     it('throws RangeError on not enough arguments', async () => {
       assert.strictEqual(gt('hey'), false)
     })
-    it('throws RangeError on too many arguments', async () => {
-      assert.strictEqual(gt('hey', () => {}, 'ho')(), false)
-    })
   })
 
   describe('lt', () => {
@@ -3982,6 +3987,10 @@ flatMap(
       aok(
         await lt(Promise.resolve(5), number => number - 3, number => number + 3)
       )
+      aok(lt(5, 2, number => number + 3))
+      aok(await lt(Promise.resolve(5), 2, number => number + 3))
+      aok(lt(5, number => number - 3, 5))
+      aok(await lt(Promise.resolve(5), number => number - 3, 5))
     })
     it('[sync] lt(f, g)(x) === (f(x) < g(x))', async () => {
       ase(lt(x => x + 1, x => x)(1), false)
@@ -4021,9 +4030,6 @@ flatMap(
     it('throws RangeError on not enough arguments', () => {
       assert.strictEqual(lt('hey'), false)
     })
-    it('throws RangeError on too many arguments', async () => {
-      assert.strictEqual(lt('hey', () => {}, 'ho')(), false)
-    })
   })
 
   describe('gte', () => {
@@ -4034,6 +4040,10 @@ flatMap(
       aok(
         await gte(Promise.resolve(5), number => number + 3, number => number + 3)
       )
+      aok(gte(5, 10, number => number + 3))
+      aok(await gte(Promise.resolve(5), 10, number => number + 3))
+      aok(gte(5, number => number + 3, 5))
+      aok(await gte(Promise.resolve(5), number => number + 3, 5))
     })
     it('[sync] gte(f, g)(x) === (f(x) >= g(x))', async () => {
       ase(gte(x => x + 1, x => x)(1), true)
@@ -4073,9 +4083,6 @@ flatMap(
     it('throws RangeError on not enough arguments', () => {
       assert.strictEqual(gte('hey'), false)
     })
-    it('throws RangeError on too many arguments', async () => {
-      assert.strictEqual(gte('hey', () => {}, 'ho')(), false)
-    })
   })
 
   describe('lte', () => {
@@ -4086,6 +4093,10 @@ flatMap(
       aok(
         await lte(Promise.resolve(5), number => number + 3, number => number + 3)
       )
+      aok(lte(5, 0, number => number + 3))
+      aok(await lte(Promise.resolve(5), 0, number => number + 3))
+      aok(lte(5, number => number + 3, 10))
+      aok(await lte(Promise.resolve(5), number => number + 3, 10))
     })
     it('[sync] lte(f, g)(x) === (f(x) <= g(x))', async () => {
       ase(lte(x => x + 1, x => x)(1), false)
@@ -4124,9 +4135,6 @@ flatMap(
     })
     it('throws RangeError on not enough arguments', () => {
       assert.strictEqual(lte('hey'), false)
-    })
-    it('throws RangeError on too many arguments', async () => {
-      assert.strictEqual(lte('hey', () => {}, 'ho')(), false)
     })
   })
 

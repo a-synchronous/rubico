@@ -1,7 +1,8 @@
 const areAnyValuesPromises = require('./areAnyValuesPromises')
+const __ = require('./placeholder')
+const curry4 = require('./curry4')
 const curryArgs4 = require('./curryArgs4')
 const promiseAll = require('./promiseAll')
-const __ = require('./placeholder')
 const leftResolverRightResolverCompare = require('./leftResolverRightResolverCompare')
 const leftResolverRightValueCompare = require('./leftResolverRightValueCompare')
 const leftValueRightResolverCompare = require('./leftValueRightResolverCompare')
@@ -20,7 +21,7 @@ const ComparisonOperator = comparator => function operator(...args) {
       )
     }
     if (areAnyValuesPromises(args)) {
-      return promiseAll(args).then(curryArgs4(
+      return promiseAll(args).then(curry4(
         leftResolverRightResolverCompare, __, comparator, left, right,
       ))
     }
@@ -28,15 +29,31 @@ const ComparisonOperator = comparator => function operator(...args) {
   }
 
   if (isLeftResolver) {
-    return curryArgs4(
-      leftResolverRightValueCompare, __, comparator, left, right,
-    )
+    if (args.length == 0) {
+      return curryArgs4(
+        leftResolverRightValueCompare, __, comparator, left, right,
+      )
+    }
+    if (areAnyValuesPromises(args)) {
+      return promiseAll(args).then(curry4(
+        leftResolverRightValueCompare, __, comparator, left, right,
+      ))
+    }
+    return leftResolverRightValueCompare(args, comparator, left, right)
   }
 
   if (isRightResolver) {
-    return curryArgs4(
-      leftValueRightResolverCompare, __, comparator, left, right,
-    )
+    if (args.length == 0) {
+      return curryArgs4(
+        leftValueRightResolverCompare, __, comparator, left, right,
+      )
+    }
+    if (areAnyValuesPromises(args)) {
+      return promiseAll(args).then(curry4(
+        leftValueRightResolverCompare, __, comparator, left, right,
+      ))
+    }
+    return leftValueRightResolverCompare(args, comparator, left, right)
   }
 
   return comparator(left, right)

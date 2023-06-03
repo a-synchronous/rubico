@@ -9,11 +9,12 @@ const lessThan = require('./_internal/lessThan')
  * lt(leftValue any, rightValue any) -> boolean
  *
  * lt(leftValue any, right function)(...args) -> Promise|boolean
+ * lt(...args, leftValue any, right function) -> Promise|boolean
  *
  * lt(left function, rightValue any)(...args) -> Promise|boolean
+ * lt(...args, left function, rightValue any) -> Promise|boolean
  *
  * lt(left function, right function)(...args) -> Promise|boolean
- *
  * lt(...args, left function, right function) -> Promise|boolean
  * ```
  *
