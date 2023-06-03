@@ -10,7 +10,7 @@ const lodashMap = _.map
 const lodashFpMap = _fp.map
 const ramdaMap = R.map
 
-const suite = new TimeInLoopSuite()
+const suite = new TimeInLoopSuite({ loopCount: 1e5 })
 
 suite.add('isPromise .then', () => {
   const p = Promise.resolve()
