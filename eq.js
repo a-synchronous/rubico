@@ -9,11 +9,12 @@ const equals = require('./_internal/equals')
  * eq(leftValue any, rightValue any) -> boolean
  *
  * eq(leftValue any, right function)(...args) -> Promise|boolean
+ * eq(...args, leftValue any, right function) -> Promise|boolean
  *
  * eq(left function, rightValue any)(...args) -> Promise|boolean
+ * eq(...args, left function, rightValue any) -> Promise|boolean
  *
  * eq(left function, right function)(...args) -> Promise|boolean
- *
  * eq(...args, left function, right function) -> Promise|boolean
  * ```
  *
