@@ -9,11 +9,12 @@ const lessThanOrEqual = require('./_internal/lessThanOrEqual')
  * lte(leftValue any, rightValue any) -> boolean
  *
  * lte(leftValue any, right function)(...args) -> Promise|boolean
+ * lte(...args, leftValue any, right function) -> Promise|boolean
  *
  * lte(left function, rightValue any)(...args) -> Promise|boolean
+ * lte(...args, left function, rightValue any) -> Promise|boolean
  *
  * lte(left function, right function)(...args) -> Promise|boolean
- *
  * lte(...args, left function, right function) -> Promise|boolean
  * ```
  *

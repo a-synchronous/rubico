@@ -9,11 +9,12 @@ const greaterThan = require('./_internal/greaterThan')
  * gt(leftValue any, rightValue any) -> boolean
  *
  * gt(leftValue any, right function)(...args) -> Promise|boolean
+ * gt(...args, leftValue any, right function) -> Promise|boolean
  *
  * gt(left function, rightValue any)(...args) -> Promise|boolean
+ * gt(...args, left function, rightValue any) -> Promise|boolean
  *
  * gt(left function, right function)(...args) -> Promise|boolean
- *
  * gt(...args, left function, right function) -> Promise|boolean
  * ```
  *
