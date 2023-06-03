@@ -18,14 +18,17 @@ const sortBenchmarkFilePaths = function (paths) {
 
 const outputFile = new File(`${__dirname}/benchmark-output/v${package.version}`)
 
+const write = function (str) {
+  process.stdout.write(str)
+  outputFile.write(str)
+}
+
 // bench(options?: { bestOf?: number }) -> Promise<>
 const bench = async function (options = {}) {
   const systemInfo = `
 rubico v${package.version} / NodeJS ${process.version} / OS ${os.release()}
   `.trim()
-  console.log(systemInfo)
-  outputFile.write(systemInfo)
-  outputFile.write('\n\n')
+  write(systemInfo + '\n\n')
 
   const { bestOf = 5 } = options
   const paths = await
@@ -36,9 +39,7 @@ rubico v${package.version} / NodeJS ${process.version} / OS ${os.release()}
 
   for (const path of paths) {
     const fileName = path.replace(`${__dirname}/`, '')
-    console.log('Running', fileName)
-    outputFile.write(fileName)
-    outputFile.write('\n')
+    write(fileName + '\n')
 
     const lines = []
     const proc = spawn('node', [path])
@@ -48,10 +49,9 @@ rubico v${package.version} / NodeJS ${process.version} / OS ${os.release()}
     await new Promise(resolve => {
       proc.on('close', () => {
         for (const line of lines) {
-          process.stdout.write(line)
-          outputFile.write(line)
+          write(line)
         }
-        outputFile.write('\n')
+        write('\n')
         resolve()
       })
     })
