@@ -1,7 +1,9 @@
+const isPromise = require('./isPromise')
 const areAnyValuesPromises = require('./areAnyValuesPromises')
 const __ = require('./placeholder')
 const curry4 = require('./curry4')
 const curryArgs4 = require('./curryArgs4')
+const spread2 = require('./spread2')
 const promiseAll = require('./promiseAll')
 const leftResolverRightResolverCompare = require('./leftResolverRightResolverCompare')
 const leftResolverRightValueCompare = require('./leftResolverRightValueCompare')
@@ -56,6 +58,9 @@ const ComparisonOperator = comparator => function operator(...args) {
     return leftValueRightResolverCompare(args, comparator, left, right)
   }
 
+  if (isPromise(left) || isPromise(right)) {
+    return promiseAll([left, right]).then(spread2(comparator))
+  }
   return comparator(left, right)
 }
 

@@ -3875,6 +3875,10 @@ flatMap(
 
   describe('eq', () => {
     it('API coverage', async () => {
+      aok(eq(2, 2))
+      aok(await eq(Promise.resolve(2), 2))
+      aok(await eq(2, Promise.resolve(2)))
+      aok(await eq(Promise.resolve(2), Promise.resolve(2)))
       aok(
         eq(2, number => number * 2, number => number + 2)
       )
