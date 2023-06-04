@@ -6,13 +6,13 @@ const lessThan = require('./_internal/lessThan')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * lt(leftValue any, rightValue any) -> boolean
+ * lt(leftValue Promise|any, rightValue Promise|any) -> boolean
  *
- * lt(leftValue any, right function)(...args) -> Promise|boolean
- * lt(...args, leftValue any, right function) -> Promise|boolean
+ * lt(leftValue Promise|any, right function)(...args) -> Promise|boolean
+ * lt(...args, leftValue Promise|any, right function) -> Promise|boolean
  *
- * lt(left function, rightValue any)(...args) -> Promise|boolean
- * lt(...args, left function, rightValue any) -> Promise|boolean
+ * lt(left function, rightValue Promise|any)(...args) -> Promise|boolean
+ * lt(...args, left function, rightValue Promise|any) -> Promise|boolean
  *
  * lt(left function, right function)(...args) -> Promise|boolean
  * lt(...args, left function, right function) -> Promise|boolean
