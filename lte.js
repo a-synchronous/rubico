@@ -6,13 +6,13 @@ const lessThanOrEqual = require('./_internal/lessThanOrEqual')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * lte(leftValue any, rightValue any) -> boolean
+ * lte(leftValue Promise|any, rightValue Promise|any) -> boolean
  *
- * lte(leftValue any, right function)(...args) -> Promise|boolean
- * lte(...args, leftValue any, right function) -> Promise|boolean
+ * lte(leftValue Promise|any, right function)(...args) -> Promise|boolean
+ * lte(...args, leftValue Promise|any, right function) -> Promise|boolean
  *
- * lte(left function, rightValue any)(...args) -> Promise|boolean
- * lte(...args, left function, rightValue any) -> Promise|boolean
+ * lte(left function, rightValue Promise|any)(...args) -> Promise|boolean
+ * lte(...args, left function, rightValue Promise|any) -> Promise|boolean
  *
  * lte(left function, right function)(...args) -> Promise|boolean
  * lte(...args, left function, right function) -> Promise|boolean

@@ -6,13 +6,13 @@ const equals = require('./_internal/equals')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * eq(leftValue any, rightValue any) -> boolean
+ * eq(leftValue Promise|any, rightValue Promise|any) -> boolean
  *
- * eq(leftValue any, right function)(...args) -> Promise|boolean
- * eq(...args, leftValue any, right function) -> Promise|boolean
+ * eq(leftValue Promise|any, right function)(...args) -> Promise|boolean
+ * eq(...args, leftValue Promise|any, right function) -> Promise|boolean
  *
- * eq(left function, rightValue any)(...args) -> Promise|boolean
- * eq(...args, left function, rightValue any) -> Promise|boolean
+ * eq(left function, rightValue Promise|any)(...args) -> Promise|boolean
+ * eq(...args, left function, rightValue Promise|any) -> Promise|boolean
  *
  * eq(left function, right function)(...args) -> Promise|boolean
  * eq(...args, left function, right function) -> Promise|boolean

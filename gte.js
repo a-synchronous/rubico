@@ -6,13 +6,13 @@ const greaterThanOrEqual = require('./_internal/greaterThanOrEqual')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * gte(leftValue any, rightValue any) -> boolean
+ * gte(leftValue Promise|any, rightValue Promise|any) -> boolean
  *
- * gte(leftValue any, right function)(...args) -> Promise|boolean
- * gte(...args, leftValue any, right function) -> Promise|boolean
+ * gte(leftValue Promise|any, right function)(...args) -> Promise|boolean
+ * gte(...args, leftValue Promise|any, right function) -> Promise|boolean
  *
- * gte(left function, rightValue any)(...args) -> Promise|boolean
- * gte(...args, left function, rightValue any) -> Promise|boolean
+ * gte(left function, rightValue Promise|any)(...args) -> Promise|boolean
+ * gte(...args, left function, rightValue Promise|any) -> Promise|boolean
  *
  * gte(left function, right function)(...args) -> Promise|boolean
  * gte(...args, left function, right function) -> Promise|boolean
