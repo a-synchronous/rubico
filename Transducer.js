@@ -155,4 +155,8 @@ Transducer.forEach = function transducerForEach(func) {
   return curry2(reducerForEach, __, func)
 }
 
+Transducer.passthrough = function transducerPassthrough(reducer) {
+  return reducer
+}
+
 module.exports = Transducer
