@@ -2,6 +2,7 @@ const assert = require('assert')
 const Transducer = require('./Transducer')
 const compose = require('./compose')
 const reduce = require('./reduce')
+const transform = require('./transform')
 
 describe('Transducer', () => {
   const ade = assert.deepEqual
@@ -103,6 +104,13 @@ describe('Transducer', () => {
         sum2 += number
       })(() => {}), null)
       assert.equal(sum2, 15)
+    })
+
+    it('passthrough transducer', async () => {
+      assert.deepEqual(
+        transform({ a: 1, b: 2, c: 3 }, Transducer.passthrough, []),
+        [1, 2, 3],
+      )
     })
   })
 

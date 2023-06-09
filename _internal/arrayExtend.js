@@ -1,4 +1,5 @@
-const isArrayLike = require('./isArrayLike')
+const isArray = require('./isArray')
+const isBinary = require('./isBinary')
 
 /**
  * @name _arrayExtend
@@ -30,7 +31,7 @@ const _arrayExtend = function (array, values) {
  * Extend an array with values.
  */
 const arrayExtend = function (array, values) {
-  if (isArrayLike(values)) {
+  if (isArray(values) || isBinary(values)) {
     return _arrayExtend(array, values)
   }
   array.push(values)
