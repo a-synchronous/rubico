@@ -1,4 +1,25 @@
-## v1.9.3 - latest
+## v2.0.0
+ * Refactor all transducer functionality into Transducer.js from `pipe`, `map`, `filter`, and `flatMap`
+ * Remove GeneratorFunction and AsyncGeneratorFunction functionality in `map`, `filter`, `flatMap`, and `reduce`
+ * Refactor reducer chaining functionality into AggregateReducer.js from `reduce`
+ * Remove Duplex stream handling from `flatMap`
+ * Remove binary handling from `flatMap`
+ * Promises as arguments for all core functions
+ * Eager API for all core functions
+ * Automate benchmarks
+ * Remove the .sync property functions
+ * Remove the .withIndex property functions
+ * Deprecate map.own
+ * `fork` renamed to `all`
+ * `all` renamed to `every`
+ * `any` renamed to `some`
+ * new `dist-test` only validates syntax with `require`
+ * migrate `forEach` into core API.
+ * refactor transducer functionality from `forEach` into `Transducer.forEach`
+ * async performance improvements
+ * `_internal/arrayExtend` stops treating strings like arrays so `transform` creates arrays of strings as expected
+
+## v1.9.3
  * property value passed to set may be a resolver - [#224](https://github.com/a-synchronous/rubico/pull/224)
  * rubico/x/isIn - counterpart to includes - [#228](https://github.com/a-synchronous/rubico/pull/228) - [lulldev](https://github.com/lulldev)
  * rubico/x/maxBy - finds the item that is the max by a property denoted by path - [#229](https://github.com/a-synchronous/rubico/pull/229)
