@@ -33,6 +33,7 @@
     "operator"
   ],
   "devDependencies": {
+    "async": "^3.2.4",
     "bluebird": "^3.7.2",
     "codecov": "^3.7.1",
     "eslint": "^8.4.1",
