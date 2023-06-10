@@ -1,7 +1,7 @@
 /**
  * rubico v1.9.7
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
+ * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
-const isPromise=n=>null!=n&&"function"==typeof n.then,_not=n=>!n,not=function(n){return"function"==typeof n?function(t){const o=n(t);return isPromise(o)?o.then(_not):!o}:!n},notSync=n=>function(...t){return!n(...t)};not.sync=notSync;export default not;
+const isPromise=r=>null!=r&&"function"==typeof r.then,areAnyValuesPromises=function(r){const e=r.length;let n=-1;for(;++n<e;){const e=r[n];if(isPromise(e))return!0}return!1},promiseAll=Promise.all.bind(Promise),__=Symbol.for("placeholder"),curry2ResolveArg0=(r,e)=>function(n){return r(n,e)},curry2ResolveArg1=(r,e)=>function(n){return r(e,n)},curry2=function(r,e,n){return e==__?curry2ResolveArg0(r,n):curry2ResolveArg1(r,e)},curryArgs2ResolveArgs0=(r,e,n)=>function(...n){return r(n,e)},curryArgs2ResolveArgs1=(r,e,n)=>function(...n){return r(e,n)},curryArgs2=function(r,e,n){return e==__?curryArgs2ResolveArgs0(r,n):curryArgs2ResolveArgs1(r,e)},negate=r=>!r,_not=function(r,e){const n=e(...r);return isPromise(n)?n.then(negate):!n},not=function(...r){const e=r.pop();return"function"==typeof e?0==r.length?(n=_not,s=e,(o=__)==__?curryArgs2ResolveArgs0(n,s):curryArgs2ResolveArgs1(n,o)):areAnyValuesPromises(r)?promiseAll(r).then(curry2(_not,__,e)):_not(r,e):!e;var n,o,s};export default not;

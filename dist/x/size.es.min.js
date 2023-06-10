@@ -1,7 +1,7 @@
 /**
  * rubico v1.9.7
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
+ * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 const objectKeysLength=e=>{let t=0;for(const n in e)t+=1;return t},size=e=>"string"==typeof e?e.length:null==e?0:"number"==typeof e.length?e.length:"number"==typeof e.size?e.size:e.constructor==Object?objectKeysLength(e):1;export default size;

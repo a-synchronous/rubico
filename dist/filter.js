@@ -1,7 +1,7 @@
 /**
  * rubico v1.9.7
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
+ * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 
@@ -78,20 +78,6 @@ const FilteringAsyncIterator = (asyncIterator, predicate) => ({
 
 const isArray = Array.isArray
 
-const objectProto = Object.prototype
-
-const nativeObjectToString = objectProto.toString
-
-const objectToString = value => nativeObjectToString.call(value)
-
-const generatorFunctionTag = '[object GeneratorFunction]'
-
-const isGeneratorFunction = value => objectToString(value) == generatorFunctionTag
-
-const asyncGeneratorFunctionTag = '[object AsyncGeneratorFunction]'
-
-const isAsyncGeneratorFunction = value => objectToString(value) == asyncGeneratorFunctionTag
-
 // argument resolver for curry4
 const curry4ResolveArg0 = (
   baseFunc, arg1, arg2, arg3,
@@ -166,30 +152,17 @@ const arrayFilter = function (array, predicate) {
     resultIndex = -1
   while (++index < arrayLength) {
     const item = array[index],
-      shouldIncludeItem = predicate(item)
+      shouldIncludeItem = predicate(item, index, array)
     if (isPromise(shouldIncludeItem)) {
       return promiseAll(
-        arrayExtendMap(
-          [shouldIncludeItem], array, predicate, index)).then(
-            curry4(arrayFilterByConditions, array, result, index - 1, __))
+        arrayExtendMap([shouldIncludeItem], array, predicate, index)
+      ).then(curry4(arrayFilterByConditions, array, result, index - 1, __))
     }
     if (shouldIncludeItem) {
       result[++resultIndex] = item
     }
   }
   return result
-}
-
-const generatorFunctionFilter = (
-  generatorFunction, predicate,
-) => function* filteringGeneratorFunction(...args) {
-  yield* FilteringIterator(generatorFunction(...args), predicate)
-}
-
-const asyncGeneratorFunctionFilter = (
-  asyncGeneratorFunction, predicate,
-) => async function* filteringAsyncGeneratorFunction(...args) {
-  yield* FilteringAsyncIterator(asyncGeneratorFunction(...args), predicate)
 }
 
 // argument resolver for curry3
@@ -223,29 +196,6 @@ const curry3 = function (baseFunc, arg0, arg1, arg2) {
   return curry3ResolveArg2(baseFunc, arg0, arg1)
 }
 
-const thunkify2 = (func, arg0, arg1) => function thunk() {
-  return func(arg0, arg1)
-}
-
-const thunkConditional = (
-  conditionalExpression, thunkOnTruthy, thunkOnFalsy,
-) => conditionalExpression ? thunkOnTruthy() : thunkOnFalsy()
-
-const always = value => function getter() { return value }
-
-const reducerFilter = (
-  reducer, predicate,
-) => function filteringReducer(result, item) {
-  const shouldInclude = predicate(item)
-  return isPromise(shouldInclude)
-    ? shouldInclude.then(curry3(
-      thunkConditional,
-      __,
-      thunkify2(reducer, result, item),
-      always(result)))
-    : shouldInclude ? reducer(result, item) : result
-}
-
 const callPropUnary = (value, property, arg0) => value[property](arg0)
 
 const stringFilter = function (string, predicate) {
@@ -254,6 +204,12 @@ const stringFilter = function (string, predicate) {
     ? filteredCharactersArray.then(curry3(callPropUnary, __, 'join', ''))
     : filteredCharactersArray.join('')
 }
+
+const always = value => function getter() { return value }
+
+const thunkConditional = (
+  conditionalExpression, thunkOnTruthy, thunkOnFalsy,
+) => conditionalExpression ? thunkOnTruthy() : thunkOnFalsy()
 
 const thunkify1 = (func, arg0) => function thunk() {
   return func(arg0)
@@ -329,52 +285,9 @@ const objectFilter = function (object, predicate) {
     : promiseAll(promises).then(always(result))
 }
 
-const arrayExtendMapWithIndex = function (
-  array, values, valuesMapper, valuesIndex,
-) {
-  const valuesLength = values.length
-  let arrayIndex = array.length - 1
-
-  while (++valuesIndex < valuesLength) {
-    array[++arrayIndex] = valuesMapper(
-      values[valuesIndex], valuesIndex, values)
-  }
-  return array
-}
-
-const arrayFilterWithIndex = function (array, predicate) {
-  const arrayLength = array.length,
-    result = []
-  let index = -1,
-    resultIndex = -1
-  while (++index < arrayLength) {
-    const item = array[index],
-      shouldIncludeItem = predicate(item, index, array)
-    if (isPromise(shouldIncludeItem)) {
-      return promiseAll(
-        arrayExtendMapWithIndex(
-          [shouldIncludeItem], array, predicate, index)).then(
-            curry4(arrayFilterByConditions, array, result, index - 1, __))
-    }
-    if (shouldIncludeItem) {
-      result[++resultIndex] = item
-    }
-  }
-  return result
-}
-
 const _filter = function (value, predicate) {
   if (isArray(value)) {
     return arrayFilter(value, predicate)
-  }
-  if (typeof value == 'function') {
-    if (isGeneratorFunction(value)) {
-      return generatorFunctionFilter(value, predicate)
-    }
-    if (isAsyncGeneratorFunction(value)) {
-      return asyncGeneratorFunctionFilter(value, predicate)
-    }
-    return reducerFilter(value, predicate)
   }
   if (value == null) {
     return value
@@ -406,17 +319,10 @@ const _filter = function (value, predicate) {
 
 const filter = function (...args) {
   const predicate = args.pop()
-  if (args.length > 0) {
-    return _filter(args[0], predicate)
+  if (args.length == 0) {
+    return curry2(_filter, __, predicate)
   }
-  return curry2(_filter, __, predicate)
-}
-
-filter.withIndex = predicate => function filteringWithIndex(value) {
-  if (isArray(value)) {
-    return arrayFilterWithIndex(value, predicate)
-  }
-  throw new TypeError(`${value} is not an Array`)
+  return _filter(args[0], predicate)
 }
 
 return filter

@@ -1,13 +1,25 @@
 /**
  * rubico v1.9.7
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
+ * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 
-const noop = function () {}
-
 const isPromise = value => value != null && typeof value.then == 'function'
+
+const areAnyValuesPromises = function (values) {
+  const length = values.length
+  let index = -1
+  while (++index < length) {
+    const value = values[index]
+    if (isPromise(value)) {
+      return true
+    }
+  }
+  return false
+}
+
+const promiseAll = Promise.all.bind(Promise)
 
 const funcConcat = (
   funcA, funcB,
@@ -18,59 +30,43 @@ const funcConcat = (
     : funcB(intermediate)
 }
 
-const funcConcatSync = (
-  funcA, funcB,
-) => function pipedFunction(...args) {
-  return funcB(funcA(...args))
+const funcApply = (func, args) => func(...args)
+
+const __ = Symbol.for('placeholder')
+
+// argument resolver for curry2
+const curry2ResolveArg0 = (
+  baseFunc, arg1,
+) => function arg0Resolver(arg0) {
+  return baseFunc(arg0, arg1)
 }
 
-const objectProto = Object.prototype
+// argument resolver for curry2
+const curry2ResolveArg1 = (
+  baseFunc, arg0,
+) => function arg1Resolver(arg1) {
+  return baseFunc(arg0, arg1)
+}
 
-const nativeObjectToString = objectProto.toString
-
-const objectToString = value => nativeObjectToString.call(value)
-
-const generatorFunctionTag = '[object GeneratorFunction]'
-
-const isGeneratorFunction = value => objectToString(value) == generatorFunctionTag
-
-const asyncGeneratorFunctionTag = '[object AsyncGeneratorFunction]'
-
-const isAsyncGeneratorFunction = value => objectToString(value) == asyncGeneratorFunctionTag
+const curry2 = function (baseFunc, arg0, arg1) {
+  return arg0 == __
+    ? curry2ResolveArg0(baseFunc, arg1)
+    : curry2ResolveArg1(baseFunc, arg0)
+}
 
 const pipe = function (...args) {
   const funcs = args.pop()
+  const pipeline = funcs.reduce(funcConcat)
 
-  if (args.length > 0) {
-    return funcs.reduce(funcConcat)(...args)
+  if (args.length == 0) {
+    return pipeline
   }
 
-  let functionPipeline = noop,
-    functionComposition = noop
-  return function pipeline(...args) {
-    const firstArg = args[0]
-
-    if (
-      typeof firstArg == 'function'
-        && !isGeneratorFunction(firstArg)
-        && !isAsyncGeneratorFunction(firstArg)
-    ) {
-      if (functionComposition == noop) {
-        functionComposition = funcs.reduceRight(funcConcat)
-      }
-      return functionComposition(firstArg)
-    }
-
-    if (functionPipeline == noop) {
-      functionPipeline = funcs.reduce(funcConcat)
-    }
-    return functionPipeline(...args)
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args).then(curry2(funcApply, pipeline, __))
   }
+
+  return pipeline(...args)
 }
-
-// funcs Array<function> -> pipeline function
-const pipeSync = funcs => funcs.reduce(funcConcatSync)
-
-pipe.sync = pipeSync
 
 export default pipe

@@ -1,9 +1,39 @@
 /**
  * rubico v1.9.7
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
+ * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
+
+(function (root, some) {
+  if (typeof module == 'object') (module.exports = some) // CommonJS
+  else if (typeof define == 'function') define(() => some) // AMD
+  else (root.some = some) // Browser
+}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+
+const isPromise = value => value != null && typeof value.then == 'function'
+
+const __ = Symbol.for('placeholder')
+
+// argument resolver for curry2
+const curry2ResolveArg0 = (
+  baseFunc, arg1,
+) => function arg0Resolver(arg0) {
+  return baseFunc(arg0, arg1)
+}
+
+// argument resolver for curry2
+const curry2ResolveArg1 = (
+  baseFunc, arg0,
+) => function arg1Resolver(arg1) {
+  return baseFunc(arg0, arg1)
+}
+
+const curry2 = function (baseFunc, arg0, arg1) {
+  return arg0 == __
+    ? curry2ResolveArg0(baseFunc, arg1)
+    : curry2ResolveArg1(baseFunc, arg0)
+}
 
 const isArray = Array.isArray
 
@@ -14,11 +44,9 @@ const SelfReferencingPromise = function (basePromise) {
   return promise
 }
 
-const isPromise = value => value != null && typeof value.then == 'function'
-
 const promiseRace = Promise.race.bind(Promise)
 
-const asyncArrayAny = async function (
+const asyncArraySome = async function (
   array, predicate, index, promisesInFlight,
 ) {
   const length = array.length
@@ -41,13 +69,13 @@ const asyncArrayAny = async function (
   return false
 }
 
-const arrayAny = function (array, predicate) {
+const arraySome = function (array, predicate) {
   const length = array.length
   let index = -1
   while (++index < length) {
     const predication = predicate(array[index])
     if (isPromise(predication)) {
-      return asyncArrayAny(
+      return asyncArraySome(
         array, predicate, index, new Set([SelfReferencingPromise(predication)]))
     }
     if (predication) {
@@ -57,7 +85,7 @@ const arrayAny = function (array, predicate) {
   return false
 }
 
-const asyncIteratorAny = async function (
+const asyncIteratorSome = async function (
   iterator, predicate, promisesInFlight, maxConcurrency = 20,
 ) {
   let iteration = iterator.next()
@@ -94,11 +122,11 @@ const asyncIteratorAny = async function (
   return false
 }
 
-const iteratorAny = function (iterator, predicate) {
+const iteratorSome = function (iterator, predicate) {
   for (const item of iterator) {
     const predication = predicate(item)
     if (isPromise(predication)) {
-      return asyncIteratorAny(
+      return asyncIteratorSome(
         iterator, predicate, new Set([SelfReferencingPromise(predication)]))
     }
     if (predication) {
@@ -112,29 +140,7 @@ const reducerAnySync = predicate => function anyReducer(result, item) {
   return result ? true : predicate(item)
 }
 
-const __ = Symbol.for('placeholder')
-
-// argument resolver for curry2
-const curry2ResolveArg0 = (
-  baseFunc, arg1,
-) => function arg0Resolver(arg0) {
-  return baseFunc(arg0, arg1)
-}
-
-// argument resolver for curry2
-const curry2ResolveArg1 = (
-  baseFunc, arg0,
-) => function arg1Resolver(arg1) {
-  return baseFunc(arg0, arg1)
-}
-
-const curry2 = function (baseFunc, arg0, arg1) {
-  return arg0 == __
-    ? curry2ResolveArg0(baseFunc, arg1)
-    : curry2ResolveArg1(baseFunc, arg0)
-}
-
-const reducerAny = predicate => function anyReducer(result, item) {
+const reducerSome = predicate => function anyReducer(result, item) {
   return result === true ? result
     : isPromise(result) ? result.then(curry2(reducerAnySync(predicate), __, item))
     : result ? true : predicate(item)
@@ -144,26 +150,44 @@ const symbolIterator = Symbol.iterator
 
 const symbolAsyncIterator = Symbol.asyncIterator
 
-const any = predicate => function anyTruthy(value) {
-  if (isArray(value)) {
-    return arrayAny(value, predicate)
+// _some(collection Array|Iterable|AsyncIterable|{ reduce: function }|Object, predicate function) -> Promise|boolean
+const _some = function (collection, predicate) {
+  if (isArray(collection)) {
+    return arraySome(collection, predicate)
   }
-  if (value == null) {
-    return predicate(value)
+  if (collection == null) {
+    return predicate(collection)
   }
-  if (typeof value[symbolIterator] == 'function') {
-    return iteratorAny(value[symbolIterator](), predicate)
+  if (typeof collection[symbolIterator] == 'function') {
+    return iteratorSome(collection[symbolIterator](), predicate)
   }
-  if (typeof value[symbolAsyncIterator] == 'function') {
-    return asyncIteratorAny(value[symbolAsyncIterator](), predicate, new Set())
+  if (typeof collection[symbolAsyncIterator] == 'function') {
+    return asyncIteratorSome(
+      collection[symbolAsyncIterator](), predicate, new Set()
+    )
   }
-  if (typeof value.reduce == 'function') {
-    return value.reduce(reducerAny(predicate), false)
+  if (typeof collection.reduce == 'function') {
+    return collection.reduce(reducerSome(predicate), false)
   }
-  if (value.constructor == Object) {
-    return arrayAny(objectValues(value), predicate)
+  if (collection.constructor == Object) {
+    return arraySome(objectValues(collection), predicate)
   }
-  return predicate(value)
+  return predicate(collection)
 }
 
-export default any
+const some = function (...args) {
+  const predicate = args.pop()
+  if (args.length == 0) {
+    return curry2(_some, __, predicate)
+  }
+
+  const collection = args[0]
+  if (isPromise(collection)) {
+    return collection.then(curry2(_some, __, predicate))
+  }
+
+  return _some(collection, predicate)
+}
+
+return some
+}())))

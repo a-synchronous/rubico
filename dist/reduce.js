@@ -1,7 +1,7 @@
 /**
  * rubico v1.9.7
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
+ * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 
@@ -44,37 +44,6 @@ const curry3 = function (baseFunc, arg0, arg1, arg2) {
     return curry3ResolveArg1(baseFunc, arg0, arg2)
   }
   return curry3ResolveArg2(baseFunc, arg0, arg1)
-}
-
-// argument resolver for curryArgs3
-const curryArgs3ResolveArgs0 = (
-  baseFunc, arg1, arg2,
-) => function args0Resolver(...args) {
-  return baseFunc(args, arg1, arg2)
-}
-
-// argument resolver for curryArgs3
-const curryArgs3ResolveArgs1 = (
-  baseFunc, arg0, arg2,
-) => function arg1Resolver(...args) {
-  return baseFunc(arg0, args, arg2)
-}
-
-// argument resolver for curryArgs3
-const curryArgs3ResolveArgs2 = (
-  baseFunc, arg0, arg1,
-) => function arg2Resolver(...args) {
-  return baseFunc(arg0, arg1, args)
-}
-
-const curryArgs3 = function (baseFunc, arg0, arg1, arg2) {
-  if (arg0 == __) {
-    return curryArgs3ResolveArgs0(baseFunc, arg1, arg2)
-  }
-  if (arg1 == __) {
-    return curryArgs3ResolveArgs1(baseFunc, arg0, arg2)
-  }
-  return curryArgs3ResolveArgs2(baseFunc, arg0, arg1)
 }
 
 const isArray = Array.isArray
@@ -171,6 +140,37 @@ const curry2 = function (baseFunc, arg0, arg1) {
   return arg0 == __
     ? curry2ResolveArg0(baseFunc, arg1)
     : curry2ResolveArg1(baseFunc, arg0)
+}
+
+// argument resolver for curryArgs3
+const curryArgs3ResolveArgs0 = (
+  baseFunc, arg1, arg2,
+) => function args0Resolver(...args) {
+  return baseFunc(args, arg1, arg2)
+}
+
+// argument resolver for curryArgs3
+const curryArgs3ResolveArgs1 = (
+  baseFunc, arg0, arg2,
+) => function arg1Resolver(...args) {
+  return baseFunc(arg0, args, arg2)
+}
+
+// argument resolver for curryArgs3
+const curryArgs3ResolveArgs2 = (
+  baseFunc, arg0, arg1,
+) => function arg2Resolver(...args) {
+  return baseFunc(arg0, arg1, args)
+}
+
+const curryArgs3 = function (baseFunc, arg0, arg1, arg2) {
+  if (arg0 == __) {
+    return curryArgs3ResolveArgs0(baseFunc, arg1, arg2)
+  }
+  if (arg1 == __) {
+    return curryArgs3ResolveArgs1(baseFunc, arg0, arg2)
+  }
+  return curryArgs3ResolveArgs2(baseFunc, arg0, arg1)
 }
 
 // argument resolver for curry4
@@ -295,13 +295,6 @@ const curry5 = function (baseFunc, arg0, arg1, arg2, arg3, arg4) {
 
 const objectKeys = Object.keys
 
-const objectGetFirstKey = function (object) {
-  for (const key in object) {
-    return key
-  }
-  return undefined
-}
-
 const objectReduceAsync = async function (object, reducer, result, keys, index) {
   const keysLength = keys.length
   while (++index < keysLength) {
@@ -362,24 +355,6 @@ const mapReduce = function (map, reducer, result) {
   return result
 }
 
-const funcConcatSync = (
-  funcA, funcB,
-) => function pipedFunction(...args) {
-  return funcB(funcA(...args))
-}
-
-const generatorFunctionReduce = (
-  generatorFunction, reducer, result,
-) => funcConcatSync(
-  generatorFunction,
-  curry3(iteratorReduce, __, reducer, result))
-
-const asyncGeneratorFunctionReduce = (
-  asyncGeneratorFunction, reducer, result,
-) => funcConcatSync(
-  asyncGeneratorFunction,
-  curry3(asyncIteratorReduce, __, reducer, result))
-
 const reducerConcat = (
   reducerA, reducerB,
 ) => function pipedReducer(result, item) {
@@ -389,25 +364,9 @@ const reducerConcat = (
     : reducerB(intermediate, item)
 }
 
-const genericReduce = function (args, reducer, result) {
-  const collection = args[0]
+const genericReduce = function (collection, reducer, result) {
   if (isArray(collection)) {
     return arrayReduce(collection, reducer, result)
-  }
-  if (typeof collection == 'function') {
-    if (isGeneratorFunction(collection)) {
-      return generatorFunctionReduce(collection, reducer, result)
-    }
-    if (isAsyncGeneratorFunction(collection)) {
-      return asyncGeneratorFunctionReduce(collection, reducer, result)
-    }
-    return curryArgs3(
-      genericReduce,
-      __,
-      args.length == 1
-        ? reducerConcat(reducer, collection)
-        : args.reduce(reducerConcat, reducer),
-      result)
   }
   if (collection == null) {
     return result === undefined
@@ -443,28 +402,27 @@ const genericReduce = function (args, reducer, result) {
     : reducer(result, collection)
 }
 
-const reduce = function (...args) {
-  if (typeof args[0] != 'function') {
-    const reducer = args[1]
-    const initialValue = args[2]
-    if (typeof initialValue == 'function') {
-      return genericReduce([args[0]], reducer, initialValue(args[0]))
-    }
-    return genericReduce([args[0]], reducer, initialValue)
-  }
-
-  const reducer = args[0]
-  const initialValue = args[1]
-
+// _reduce(collection any, reducer function, initialValue function|any) -> Promise
+const _reduce = function (collection, reducer, initialValue) {
   if (typeof initialValue == 'function') {
-    return function reducing(...args) {
-      const result = initialValue(...args)
-      return isPromise(result)
-        ? result.then(curry3(genericReduce, args, reducer, __))
-        : genericReduce(args, reducer, result)
-    }
+    const actualInitialValue = initialValue(collection)
+    return isPromise(actualInitialValue)
+      ? actualInitialValue.then(curry3(genericReduce, collection, reducer, __))
+      : genericReduce(collection, reducer, actualInitialValue)
   }
-  return curryArgs3(genericReduce, __, reducer, initialValue)
+  return isPromise(initialValue)
+    ? initialValue.then(curry3(genericReduce, collection, reducer, __))
+    : genericReduce(collection, reducer, initialValue)
+}
+
+const reduce = function (...args) {
+  if (typeof args[0] == 'function') {
+    return curry3(_reduce, __, args[0], args[1])
+  }
+  if (isPromise(args[0])) {
+    return args[0].then(curry3(_reduce, __, args[1], args[2]))
+  }
+  return _reduce(args[0], args[1], args[2])
 }
 
 return reduce

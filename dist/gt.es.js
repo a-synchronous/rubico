@@ -1,84 +1,207 @@
 /**
  * rubico v1.9.7
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
+ * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
+
+const isPromise = value => value != null && typeof value.then == 'function'
+
+const areAnyValuesPromises = function (values) {
+  const length = values.length
+  let index = -1
+  while (++index < length) {
+    const value = values[index]
+    if (isPromise(value)) {
+      return true
+    }
+  }
+  return false
+}
+
+const __ = Symbol.for('placeholder')
+
+// argument resolver for curry4
+const curry4ResolveArg0 = (
+  baseFunc, arg1, arg2, arg3,
+) => function arg0Resolver(arg0) {
+  return baseFunc(arg0, arg1, arg2, arg3)
+}
+
+// argument resolver for curry4
+const curry4ResolveArg1 = (
+  baseFunc, arg0, arg2, arg3,
+) => function arg1Resolver(arg1) {
+  return baseFunc(arg0, arg1, arg2, arg3)
+}
+
+// argument resolver for curry4
+const curry4ResolveArg2 = (
+  baseFunc, arg0, arg1, arg3,
+) => function arg2Resolver(arg2) {
+  return baseFunc(arg0, arg1, arg2, arg3)
+}
+
+// argument resolver for curry4
+const curry4ResolveArg3 = (
+  baseFunc, arg0, arg1, arg2,
+) => function arg3Resolver(arg3) {
+  return baseFunc(arg0, arg1, arg2, arg3)
+}
+
+const curry4 = function (baseFunc, arg0, arg1, arg2, arg3) {
+  if (arg0 == __) {
+    return curry4ResolveArg0(baseFunc, arg1, arg2, arg3)
+  }
+  if (arg1 == __) {
+    return curry4ResolveArg1(baseFunc, arg0, arg2, arg3)
+  }
+  if (arg2 == __) {
+    return curry4ResolveArg2(baseFunc, arg0, arg1, arg3)
+  }
+  return curry4ResolveArg3(baseFunc, arg0, arg1, arg2)
+}
+
+// argument resolver for curryArgs4
+const curryArgs4ResolveArgs0 = (
+  baseFunc, arg1, arg2, arg3,
+) => function args0Resolver(...args) {
+  return baseFunc(args, arg1, arg2, arg3)
+}
+
+// argument resolver for curryArgs4
+const curryArgs4ResolveArgs1 = (
+  baseFunc, arg0, arg2, arg3,
+) => function args1Resolver(...args) {
+  return baseFunc(arg0, args, arg2, arg3)
+}
+
+// argument resolver for curryArgs4
+const curryArgs4ResolveArgs2 = (
+  baseFunc, arg0, arg1, arg3,
+) => function args2Resolver(...args) {
+  return baseFunc(arg0, arg1, args, arg3)
+}
+
+// argument resolver for curryArgs4
+const curryArgs4ResolveArgs3 = (
+  baseFunc, arg0, arg1, arg2,
+) => function args3Resolver(...args) {
+  return baseFunc(arg0, arg1, arg2, args)
+}
+
+const curryArgs4 = function (baseFunc, arg0, arg1, arg2, arg3) {
+  if (arg0 == __) {
+    return curryArgs4ResolveArgs0(baseFunc, arg1, arg2, arg3)
+  }
+  if (arg1 == __) {
+    return curryArgs4ResolveArgs1(baseFunc, arg0, arg2, arg3)
+  }
+  if (arg2 == __) {
+    return curryArgs4ResolveArgs2(baseFunc, arg0, arg1, arg3)
+  }
+  return curryArgs4ResolveArgs3(baseFunc, arg0, arg1, arg2)
+}
 
 const spread2 = func => function spreading2([arg0, arg1]) {
   return func(arg0, arg1)
 }
 
-const isPromise = value => value != null && typeof value.then == 'function'
-
 const promiseAll = Promise.all.bind(Promise)
 
-const greaterThan = (left, right) => left > right
-
-const __ = Symbol.for('placeholder')
-
-// argument resolver for curry2
-const curry2ResolveArg0 = (
-  baseFunc, arg1,
-) => function arg0Resolver(arg0) {
-  return baseFunc(arg0, arg1)
+// leftResolverRightResolverCompare(
+//   args Array, comparator function, left function, right function,
+// ) -> Promise|boolean
+const leftResolverRightResolverCompare = function (
+  args, comparator, left, right,
+) {
+  const leftResult = left(...args),
+    rightResult = right(...args)
+  if (isPromise(leftResult) || isPromise(rightResult)) {
+    return promiseAll([leftResult, rightResult]).then(spread2(comparator))
+  }
+  return comparator(leftResult, rightResult)
 }
 
-// argument resolver for curry2
-const curry2ResolveArg1 = (
-  baseFunc, arg0,
-) => function arg1Resolver(arg1) {
-  return baseFunc(arg0, arg1)
+// leftResolverRightValueCompare(
+//   args Array, comparator function, left function, right any
+// ) -> Promise|boolean
+const leftResolverRightValueCompare = function (args, comparator, left, right) {
+  const leftResult = left(...args)
+  if (isPromise(leftResult) || isPromise(right)) {
+    return promiseAll([leftResult, right]).then(spread2(comparator))
+  }
+  return comparator(leftResult, right)
 }
 
-const curry2 = function (baseFunc, arg0, arg1) {
-  return arg0 == __
-    ? curry2ResolveArg0(baseFunc, arg1)
-    : curry2ResolveArg1(baseFunc, arg0)
+// leftValueRightResolverCompare(
+//   args Array, comparator function, left any, right any,
+// ) -> Promise|boolean
+const leftValueRightResolverCompare = function (args, comparator, left, right) {
+  const rightResult = right(...args)
+  if (isPromise(left) || isPromise(rightResult)) {
+    return promiseAll([left, rightResult]).then(spread2(comparator))
+  }
+  return comparator(left, rightResult)
 }
 
-const always = value => function getter() { return value }
-
-const gt = function (left, right) {
+// ComparisonOperator(comparator function) -> operator function
+const ComparisonOperator = comparator => function operator(...args) {
+  const right = args.pop()
+  const left = args.pop()
   const isLeftResolver = typeof left == 'function',
     isRightResolver = typeof right == 'function'
 
   if (isLeftResolver && isRightResolver) {
-    return function greaterThanBy(value) {
-      const leftResolve = left(value),
-        rightResolve = right(value)
-      const isLeftPromise = isPromise(leftResolve),
-        isRightPromise = isPromise(rightResolve)
-      if (isLeftPromise && isRightPromise) {
-        return promiseAll(
-          [leftResolve, rightResolve]).then(spread2(greaterThan))
-      } else if (isLeftPromise) {
-        return leftResolve.then(curry2(greaterThan, __, rightResolve))
-      } else if (isRightPromise) {
-        return rightResolve.then(curry2(greaterThan, leftResolve, __))
-      }
-      return leftResolve > rightResolve
+    if (args.length == 0) {
+      return curryArgs4(
+        leftResolverRightResolverCompare, __, comparator, left, right,
+      )
     }
+    if (areAnyValuesPromises(args)) {
+      return promiseAll(args).then(curry4(
+        leftResolverRightResolverCompare, __, comparator, left, right,
+      ))
+    }
+    return leftResolverRightResolverCompare(args, comparator, left, right)
   }
 
   if (isLeftResolver) {
-    return function greaterThanBy(value) {
-      const leftResolve = left(value)
-      return isPromise(leftResolve)
-        ? leftResolve.then(curry2(greaterThan, __, right))
-        : leftResolve > right
+    if (args.length == 0) {
+      return curryArgs4(
+        leftResolverRightValueCompare, __, comparator, left, right,
+      )
     }
-  }
-  if (isRightResolver) {
-    return function strictEqualBy(value) {
-      const rightResolve = right(value)
-      return isPromise(rightResolve)
-        ? rightResolve.then(curry2(greaterThan, left, __))
-        : left > rightResolve
+    if (areAnyValuesPromises(args)) {
+      return promiseAll(args).then(curry4(
+        leftResolverRightValueCompare, __, comparator, left, right,
+      ))
     }
+    return leftResolverRightValueCompare(args, comparator, left, right)
   }
 
-  return left > right
+  if (isRightResolver) {
+    if (args.length == 0) {
+      return curryArgs4(
+        leftValueRightResolverCompare, __, comparator, left, right,
+      )
+    }
+    if (areAnyValuesPromises(args)) {
+      return promiseAll(args).then(curry4(
+        leftValueRightResolverCompare, __, comparator, left, right,
+      ))
+    }
+    return leftValueRightResolverCompare(args, comparator, left, right)
+  }
+
+  if (isPromise(left) || isPromise(right)) {
+    return promiseAll([left, right]).then(spread2(comparator))
+  }
+  return comparator(left, right)
 }
+
+const greaterThan = (left, right) => left > right
+
+const gt = ComparisonOperator(greaterThan)
 
 export default gt

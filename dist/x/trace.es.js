@@ -1,7 +1,7 @@
 /**
  * rubico v1.9.7
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
+ * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 
@@ -17,11 +17,6 @@ const funcConcat = (
 }
 
 const always = value => function getter() { return value }
-
-const tapSync = func => function tapping(...args) {
-  func(...args)
-  return args[0]
-}
 
 const thunkifyArgs = (func, args) => function thunk() {
   return func(...args)
@@ -69,8 +64,6 @@ const tap = func => function tapping(...args) {
     call = func(...args)
   return isPromise(call) ? call.then(always(result)) : result
 }
-
-tap.sync = tapSync
 
 tap.if = (predicate, func) => function tappingIf(...args) {
   const predication = predicate(...args)

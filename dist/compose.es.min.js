@@ -1,0 +1,7 @@
+/**
+ * rubico v1.9.7
+ * https://github.com/a-synchronous/rubico
+ * (c) 2019-2023 Richard Tong
+ * rubico may be freely distributed under the MIT license.
+ */
+const __=Symbol.for("placeholder"),curry2ResolveArg0=(r,e)=>function(n){return r(n,e)},curry2ResolveArg1=(r,e)=>function(n){return r(e,n)},curry2=function(r,e,n){return e==__?curry2ResolveArg0(r,n):curry2ResolveArg1(r,e)},promiseAll=Promise.all.bind(Promise),funcApply=(r,e)=>r(...e),isPromise=r=>null!=r&&"function"==typeof r.then,areAnyValuesPromises=function(r){const e=r.length;let n=-1;for(;++n<e;){const e=r[n];if(isPromise(e))return!0}return!1},funcConcat=(r,e)=>function(...n){const o=r(...n);return isPromise(o)?o.then(e):e(o)},compose=function(...r){const e=r.pop().reduceRight(funcConcat);return 0==r.length?e:areAnyValuesPromises(r)?promiseAll(r).then((n=funcApply,t=__,(o=e)==__?curry2ResolveArg0(n,t):curry2ResolveArg1(n,o))):e(...r);var n,o,t};export default compose;

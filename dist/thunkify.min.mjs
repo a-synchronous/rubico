@@ -1,7 +1,7 @@
 /**
  * rubico v1.9.7
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
+ * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
-const thunkify=(t,...n)=>function(){return t(...n)};export default thunkify;
+const isPromise=r=>null!=r&&"function"==typeof r.then,areAnyValuesPromises=function(r){const e=r.length;let n=-1;for(;++n<e;){const e=r[n];if(isPromise(e))return!0}return!1},promiseAll=Promise.all.bind(Promise),__=Symbol.for("placeholder"),curry2ResolveArg0=(r,e)=>function(n){return r(n,e)},curry2ResolveArg1=(r,e)=>function(n){return r(e,n)},curry2=function(r,e,n){return e==__?curry2ResolveArg0(r,n):curry2ResolveArg1(r,e)},funcApply=(r,e)=>r(...e),thunkify=(r,...e)=>function(){return areAnyValuesPromises(e)?promiseAll(e).then((n=funcApply,u=__,(o=r)==__?curry2ResolveArg0(n,u):curry2ResolveArg1(n,o))):r(...e);var n,o,u};export default thunkify;

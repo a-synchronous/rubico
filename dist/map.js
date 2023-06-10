@@ -1,7 +1,7 @@
 /**
  * rubico v1.9.7
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
+ * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 
@@ -10,6 +10,8 @@
   else if (typeof define == 'function') define(() => map) // AMD
   else (root.map = map) // Browser
 }(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+
+const isPromise = value => value != null && typeof value.then == 'function'
 
 const symbolIterator = Symbol.iterator
 
@@ -28,8 +30,6 @@ const MappingIterator = (iterator, mapper) => ({
 })
 
 const NextIteration = value => ({ value, done: false })
-
-const isPromise = value => value != null && typeof value.then == 'function'
 
 const symbolAsyncIterator = Symbol.asyncIterator
 
@@ -82,20 +82,6 @@ const isObject = value => {
   return (typeofValue == 'object') || (typeofValue == 'function')
 }
 
-const objectProto = Object.prototype
-
-const nativeObjectToString = objectProto.toString
-
-const objectToString = value => nativeObjectToString.call(value)
-
-const generatorFunctionTag = '[object GeneratorFunction]'
-
-const isGeneratorFunction = value => objectToString(value) == generatorFunctionTag
-
-const asyncGeneratorFunctionTag = '[object AsyncGeneratorFunction]'
-
-const isAsyncGeneratorFunction = value => objectToString(value) == asyncGeneratorFunctionTag
-
 const promiseAll = Promise.all.bind(Promise)
 
 const arrayMap = function (array, mapper) {
@@ -112,31 +98,6 @@ const arrayMap = function (array, mapper) {
     result[index] = resultItem
   }
   return isAsync ? promiseAll(result) : result
-}
-
-const generatorFunctionMap = (
-  generatorFunc, mapper,
-) => function* mappingGeneratorFunc(...args) {
-  for (const item of generatorFunc(...args)) {
-    yield mapper(item)
-  }
-}
-
-const asyncGeneratorFunctionMap = function (asyncGeneratorFunc, mapper) {
-  return async function* mappingAsyncGeneratorFunc(...args) {
-    for await (const item of asyncGeneratorFunc(...args)) {
-      yield mapper(item)
-    }
-  }
-}
-
-const reducerMap = (
-  reducer, mapper,
-) => function mappingReducer(result, reducerItem) {
-  const mappingReducerItem = mapper(reducerItem)
-  return isPromise(mappingReducerItem)
-    ? mappingReducerItem.then(curry2(reducer, result, __))
-    : reducer(result, mappingReducerItem)
 }
 
 // argument resolver for curry3
@@ -387,38 +348,6 @@ const arrayMapPool = function (array, mapper, concurrentLimit) {
   return result
 }
 
-const arrayMapWithIndex = function (array, mapper) {
-  const arrayLength = array.length,
-    result = Array(arrayLength)
-  let index = -1, isAsync = false
-  while (++index < arrayLength) {
-    const resultItem = mapper(array[index], index, array)
-    if (isPromise(resultItem)) {
-      isAsync = true
-    }
-    result[index] = resultItem
-  }
-  return isAsync ? promiseAll(result) : result
-}
-
-const hasOwnProperty = Object.prototype.hasOwnProperty
-const hasOwn = (obj, key) => hasOwnProperty.call(obj, key)
-
-const objectMapOwn = function (object, mapper) {
-  const result = {}
-  let isAsync = false
-  for (const key in object) {
-    if (hasOwn(object, key)) {
-      const resultItem = mapper(object[key])
-      if (isPromise(resultItem)) {
-        isAsync = true
-      }
-      result[key] = resultItem
-    }
-  }
-  return isAsync ? promiseObjectAll(result) : result
-}
-
 const _curryArity = (arity, func, args) => function curried(...curriedArgs) {
   const argsLength = args.length,
     curriedArgsLength = curriedArgs.length,
@@ -526,15 +455,6 @@ const _map = function (value, mapper) {
   if (isArray(value)) {
     return arrayMap(value, mapper)
   }
-  if (typeof value == 'function') {
-    if (isGeneratorFunction(value)) {
-      return generatorFunctionMap(value, mapper)
-    }
-    if (isAsyncGeneratorFunction(value)) {
-      return asyncGeneratorFunctionMap(value, mapper)
-    }
-    return reducerMap(value, mapper)
-  }
   if (value == null) {
     return value
   }
@@ -568,10 +488,15 @@ const _map = function (value, mapper) {
 
 const map = (...args) => {
   const mapper = args.pop()
-  if (args.length > 0) {
-    return _map(args[0], mapper)
+  if (args.length == 0) {
+    return curry2(_map, __, mapper)
   }
-  return curry2(_map, __, mapper)
+
+  const collection = args[0]
+  if (isPromise(collection)) {
+    return collection.then(curry2(_map, __, mapper))
+  }
+  return _map(collection, mapper)
 }
 
 map.entries = function mapEntries(mapper) {
@@ -601,20 +526,6 @@ map.pool = (concurrencyLimit, mapper) => function concurrentPoolMapping(value) {
     return arrayMapPool(value, mapper, concurrencyLimit)
   }
   throw new TypeError(`${value} is not an Array`)
-}
-
-map.withIndex = mapper => function mappingWithIndex(value) {
-  if (isArray(value)) {
-    return arrayMapWithIndex(value, mapper)
-  }
-  throw new TypeError(`${value} is not an Array`)
-}
-
-map.own = mapper => function mappingOwnProperties(value) {
-  if (isObject(value) && !isArray(value)) {
-    return objectMapOwn(value, mapper)
-  }
-  throw new TypeError(`${value} is not an Object`)
 }
 
 return map

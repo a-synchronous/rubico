@@ -1,7 +1,7 @@
 /**
  * rubico v1.9.7
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
+ * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 
@@ -120,7 +120,7 @@ const curry3 = function (baseFunc, arg0, arg1, arg2) {
   return curry3ResolveArg2(baseFunc, arg0, arg1)
 }
 
-const set = (path, value) => function setter(obj) {
+const _set = function (obj, path, value) {
   if (typeof value == 'function') {
     const actualValue = value(obj)
     if (isPromise(actualValue)) {
@@ -130,7 +130,22 @@ const set = (path, value) => function setter(obj) {
     }
     return setByPath(obj, actualValue, path)
   }
+  if (isPromise(value)) {
+    return value.then(
+      curry3(setByPath, obj, __, path)
+    )
+  }
   return setByPath(obj, value, path)
+}
+
+const set = function (arg0, arg1, arg2) {
+  if (arg2 == null) {
+    return curry3(_set, __, arg0, arg1)
+  }
+  if (isPromise(arg0)) {
+    return arg0.then(curry3(_set, __, arg1, arg2))
+  }
+  return _set(arg0, arg1, arg2)
 }
 
 export default set

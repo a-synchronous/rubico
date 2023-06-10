@@ -1,7 +1,7 @@
 /**
  * rubico v1.9.7
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
+ * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 
@@ -10,6 +10,30 @@
   else if (typeof define == 'function') define(() => forEach) // AMD
   else (root.forEach = forEach) // Browser
 }(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+
+const isPromise = value => value != null && typeof value.then == 'function'
+
+const __ = Symbol.for('placeholder')
+
+// argument resolver for curry2
+const curry2ResolveArg0 = (
+  baseFunc, arg1,
+) => function arg0Resolver(arg0) {
+  return baseFunc(arg0, arg1)
+}
+
+// argument resolver for curry2
+const curry2ResolveArg1 = (
+  baseFunc, arg0,
+) => function arg1Resolver(arg1) {
+  return baseFunc(arg0, arg1)
+}
+
+const curry2 = function (baseFunc, arg0, arg1) {
+  return arg0 == __
+    ? curry2ResolveArg0(baseFunc, arg1)
+    : curry2ResolveArg1(baseFunc, arg0)
+}
 
 const isArray = Array.isArray
 
@@ -26,8 +50,6 @@ const isGeneratorFunction = value => objectToString(value) == generatorFunctionT
 const asyncGeneratorFunctionTag = '[object AsyncGeneratorFunction]'
 
 const isAsyncGeneratorFunction = value => objectToString(value) == asyncGeneratorFunctionTag
-
-const isPromise = value => value != null && typeof value.then == 'function'
 
 const promiseAll = Promise.all.bind(Promise)
 
@@ -80,83 +102,43 @@ const asyncIteratorForEach = async function (asyncIterator, callback) {
     : promiseAll(promises).then(always(asyncIterator))
 }
 
-const generatorFunctionForEach = (
-  generatorFunction, callback,
-) => function* executingCallbackForEach(...args) {
-  const promises = [],
-    generator = generatorFunction(...args)
-  for (const item of generator) {
-    const operation = callback(item)
-    if (isPromise(operation)) {
-      promises.push(operation)
-    }
-  }
-  return promises.length == 0 ? generator
-    : promiseAll(promises).then(always(generator))
-}
-
-const asyncGeneratorFunctionForEach = (
-  asyncGeneratorFunction, callback,
-) => async function* executingCallbackForEach(...args) {
-  const promises = [],
-    asyncIterator = asyncGeneratorFunction(...args)
-  for await (const item of asyncIterator) {
-    const operation = callback(item)
-    if (isPromise(operation)) {
-      promises.push(operation)
-    }
-  }
-  return promises.length == 0 ? asyncIterator
-    : promiseAll(promises).then(always(asyncIterator))
-}
-
-const thunkify2 = (func, arg0, arg1) => function thunk() {
-  return func(arg0, arg1)
-}
-
-const reducerForEach = (
-  reducer, callback,
-) => function executingForEach(result, item) {
-  const operation = callback(item)
-  if (isPromise(operation)) {
-    return operation.then(thunkify2(reducer, result, item))
-  }
-  return reducer(result, item)
-}
-
 const symbolIterator = Symbol.iterator
 
 const symbolAsyncIterator = Symbol.asyncIterator
 
-const forEach = callback => function executingCallbackForEach(value) {
-  if (isArray(value)) {
-    return arrayForEach(value, callback)
+// type Collection = Array|Iterable|AsyncIterable|{ forEach: function }|Object
+// _forEach(collection Collection, callback function) -> collection Collection
+const _forEach = function (collection, callback) {
+  if (isArray(collection)) {
+    return arrayForEach(collection, callback)
   }
-  if (typeof value == 'function') {
-    if (isGeneratorFunction(value)) {
-      return generatorFunctionForEach(value, callback)
-    }
-    if (isAsyncGeneratorFunction(value)) {
-      return asyncGeneratorFunctionForEach(value, callback)
-    }
-    return reducerForEach(value, callback)
+  if (collection == null) {
+    return collection
   }
-  if (value == null) {
-    return value
+  if (typeof collection.forEach == 'function') {
+    return collection.forEach(callback)
   }
-  if (typeof value.forEach == 'function') {
-    return value.forEach(callback)
+  if (typeof collection[symbolIterator] == 'function') {
+    return iteratorForEach(collection[symbolIterator](), callback)
   }
-  if (typeof value[symbolIterator] == 'function') {
-    return iteratorForEach(value[symbolIterator](), callback)
+  if (typeof collection[symbolAsyncIterator] == 'function') {
+    return asyncIteratorForEach(collection[symbolAsyncIterator](), callback)
   }
-  if (typeof value[symbolAsyncIterator] == 'function') {
-    return asyncIteratorForEach(value[symbolAsyncIterator](), callback)
+  if (collection.constructor == Object) {
+    return objectForEach(collection, callback)
   }
-  if (value.constructor == Object) {
-    return objectForEach(value, callback)
+  return collection
+}
+
+const forEach = function (...args) {
+  const callback = args.pop()
+  if (args.length == 0) {
+    return curry2(_forEach, __, callback)
   }
-  return value
+  const collection = args[0]
+  return isPromise(collection)
+    ? collection.then(curry2(_forEach, __, callback))
+    : _forEach(collection, callback)
 }
 
 return forEach

@@ -1,7 +1,7 @@
 /**
  * rubico v1.9.7
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
+ * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 const __ = Symbol.for('placeholder')
@@ -80,7 +80,7 @@ const SelfReferencingPromise = function (basePromise) {
 
 const promiseRace = Promise.race.bind(Promise)
 
-const asyncArrayAny = async function (
+const asyncArraySome = async function (
   array, predicate, index, promisesInFlight,
 ) {
   const length = array.length
@@ -103,13 +103,13 @@ const asyncArrayAny = async function (
   return false
 }
 
-const arrayAny = function (array, predicate) {
+const arraySome = function (array, predicate) {
   const length = array.length
   let index = -1
   while (++index < length) {
     const predication = predicate(array[index])
     if (isPromise(predication)) {
-      return asyncArrayAny(
+      return asyncArraySome(
         array, predicate, index, new Set([SelfReferencingPromise(predication)]))
     }
     if (predication) {
@@ -142,7 +142,7 @@ const differenceWithArrayAsync = async function (
   const allValuesLength = allValues.length
   while (++index < allValuesLength) {
     const item = allValues[index]
-    let doesItemExistByComparator = arrayAny(array, curry2(comparator, item, __))
+    let doesItemExistByComparator = arraySome(array, curry2(comparator, item, __))
     if (isPromise(doesItemExistByComparator)) {
       doesItemExistByComparator = await doesItemExistByComparator
     }
@@ -159,7 +159,7 @@ const differenceWithArray = function (comparator, allValues, array) {
   let index = -1
   while (++index < allValuesLength) {
     const item = allValues[index],
-      doesItemExistByComparator = arrayAny(array, curry2(comparator, item, __))
+      doesItemExistByComparator = arraySome(array, curry2(comparator, item, __))
     if (isPromise(doesItemExistByComparator)) {
       return doesItemExistByComparator.then(funcConcatSync(
         curry3(thunkConditional, __, noop, thunkify2(arrayPush, result, item)),

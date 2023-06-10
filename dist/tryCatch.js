@@ -1,7 +1,7 @@
 /**
  * rubico v1.9.7
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
+ * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 
@@ -12,6 +12,8 @@
 }(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
 
 const isPromise = value => value != null && typeof value.then == 'function'
+
+const promiseAll = Promise.all.bind(Promise)
 
 const __ = Symbol.for('placeholder')
 
@@ -50,31 +52,45 @@ const catcherApply = function (catcher, err, args) {
   return catcher(err, ...args)
 }
 
+const areAnyValuesPromises = function (values) {
+  const length = values.length
+  let index = -1
+  while (++index < length) {
+    const value = values[index]
+    if (isPromise(value)) {
+      return true
+    }
+  }
+  return false
+}
+
+// _tryCatch(tryer function, catcher function, args Array) -> Promise
+const _tryCatch = function (tryer, catcher, args) {
+  try {
+    const result = tryer(...args)
+    return isPromise(result)
+      ? result.catch(curry3(catcherApply, catcher, __, args))
+      : result
+  } catch (error) {
+    return catcher(error, ...args)
+  }
+}
+
 const tryCatch = function (...args) {
   if (args.length > 2) {
     const catcher = args.pop(),
       tryer = args.pop()
-    try {
-      const result = tryer(...args)
-      return isPromise(result)
-        ? result.catch(curry3(catcherApply, catcher, __, args))
-        : result
-    } catch (error) {
-      return catcher(error, ...args)
+    if (areAnyValuesPromises(args)) {
+      return promiseAll(args)
+        .then(curry3(_tryCatch, tryer, catcher, __))
     }
+    return _tryCatch(tryer, catcher, args)
   }
 
   const tryer = args[0],
     catcher = args[1]
   return function tryCatcher(...args) {
-    try {
-      const result = tryer(...args)
-      return isPromise(result)
-        ? result.catch(curry3(catcherApply, catcher, __, args))
-        : result
-    } catch (error) {
-      return catcher(error, ...args)
-    }
+    return _tryCatch(tryer, catcher, args)
   }
 }
 

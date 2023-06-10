@@ -1371,10 +1371,6 @@ const isBinary = ArrayBuffer.isView
 
 const add = (a, b) => a + b
 
-const isArrayLike = function (value) {
-  return value != null && value.length > 0
-}
-
 const _arrayExtend = function (array, values) {
   const arrayLength = array.length,
     valuesLength = values.length
@@ -1386,7 +1382,7 @@ const _arrayExtend = function (array, values) {
 }
 
 const arrayExtend = function (array, values) {
-  if (isArrayLike(values)) {
+  if (isArray(values) || isBinary(values)) {
     return _arrayExtend(array, values)
   }
   array.push(values)
@@ -2183,7 +2179,7 @@ const every = function (...args) {
 const areAllValuesTruthy = function (predicates, index) {
   const length = predicates.length
   while (++index < length) {
-    let predicate = predicates[index]
+    const predicate = predicates[index]
     if (isPromise(predicate)) {
       return predicate.then(curry3(
         thunkConditional,
@@ -2452,7 +2448,7 @@ const ComparisonOperator = comparator => function operator(...args) {
       )
     }
     if (areAnyValuesPromises(args)) {
-      return promiseAll(args).then(curryArgs4(
+      return promiseAll(args).then(curry4(
         leftResolverRightResolverCompare, __, comparator, left, right,
       ))
     }
@@ -2460,17 +2456,36 @@ const ComparisonOperator = comparator => function operator(...args) {
   }
 
   if (isLeftResolver) {
-    return curryArgs4(
-      leftResolverRightValueCompare, __, comparator, left, right,
-    )
+    if (args.length == 0) {
+      return curryArgs4(
+        leftResolverRightValueCompare, __, comparator, left, right,
+      )
+    }
+    if (areAnyValuesPromises(args)) {
+      return promiseAll(args).then(curry4(
+        leftResolverRightValueCompare, __, comparator, left, right,
+      ))
+    }
+    return leftResolverRightValueCompare(args, comparator, left, right)
   }
 
   if (isRightResolver) {
-    return curryArgs4(
-      leftValueRightResolverCompare, __, comparator, left, right,
-    )
+    if (args.length == 0) {
+      return curryArgs4(
+        leftValueRightResolverCompare, __, comparator, left, right,
+      )
+    }
+    if (areAnyValuesPromises(args)) {
+      return promiseAll(args).then(curry4(
+        leftValueRightResolverCompare, __, comparator, left, right,
+      ))
+    }
+    return leftValueRightResolverCompare(args, comparator, left, right)
   }
 
+  if (isPromise(left) || isPromise(right)) {
+    return promiseAll([left, right]).then(spread2(comparator))
+  }
   return comparator(left, right)
 }
 

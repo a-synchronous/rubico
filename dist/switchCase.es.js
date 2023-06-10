@@ -1,11 +1,25 @@
 /**
  * rubico v1.9.7
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
+ * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 
+const promiseAll = Promise.all.bind(Promise)
+
 const isPromise = value => value != null && typeof value.then == 'function'
+
+const areAnyValuesPromises = function (values) {
+  const length = values.length
+  let index = -1
+  while (++index < length) {
+    const value = values[index]
+    if (isPromise(value)) {
+      return true
+    }
+  }
+  return false
+}
 
 const thunkConditional = (
   conditionalExpression, thunkOnTruthy, thunkOnFalsy,
@@ -134,13 +148,49 @@ const nonfunctionsConditional = function (array, index) {
   return array[index]
 }
 
-const switchCase = values => {
+// argument resolver for curryArgs3
+const curryArgs3ResolveArgs0 = (
+  baseFunc, arg1, arg2,
+) => function args0Resolver(...args) {
+  return baseFunc(args, arg1, arg2)
+}
+
+// argument resolver for curryArgs3
+const curryArgs3ResolveArgs1 = (
+  baseFunc, arg0, arg2,
+) => function arg1Resolver(...args) {
+  return baseFunc(arg0, args, arg2)
+}
+
+// argument resolver for curryArgs3
+const curryArgs3ResolveArgs2 = (
+  baseFunc, arg0, arg1,
+) => function arg2Resolver(...args) {
+  return baseFunc(arg0, arg1, args)
+}
+
+const curryArgs3 = function (baseFunc, arg0, arg1, arg2) {
+  if (arg0 == __) {
+    return curryArgs3ResolveArgs0(baseFunc, arg1, arg2)
+  }
+  if (arg1 == __) {
+    return curryArgs3ResolveArgs1(baseFunc, arg0, arg2)
+  }
+  return curryArgs3ResolveArgs2(baseFunc, arg0, arg1)
+}
+
+const switchCase = (...args) => {
+  const values = args.pop()
   if (areAllValuesNonfunctions(values)) {
     return nonfunctionsConditional(values, -2)
   }
-  return function switchingCases(...args) {
-    return arrayConditional(values, args, -2)
+  if (args.length == 0) {
+    return curryArgs3(arrayConditional, values, __, -2)
   }
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args).then(curry3(arrayConditional, values, __, -2))
+  }
+  return arrayConditional(values, args, -2)
 }
 
 export default switchCase

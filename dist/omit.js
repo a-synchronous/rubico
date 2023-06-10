@@ -1,7 +1,7 @@
 /**
  * rubico v1.9.7
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
+ * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 
@@ -10,6 +10,8 @@
   else if (typeof define == 'function') define(() => omit) // AMD
   else (root.omit = omit) // Browser
 }(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+
+const isPromise = value => value != null && typeof value.then == 'function'
 
 const isArray = Array.isArray
 
@@ -175,6 +177,9 @@ const _omit = function (source, paths) {
 const omit = function (arg0, arg1) {
   if (arg1 == null) {
     return curry2(_omit, __, arg0)
+  }
+  if (isPromise(arg0)) {
+    return arg0.then(curry2(_omit, __, arg1))
   }
   return _omit(arg0, arg1)
 }
