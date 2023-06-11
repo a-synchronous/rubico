@@ -116,18 +116,36 @@ rubico is a module of twenty-nine operators for async-enabled functional program
 
 ```javascript
 const {
-  pipe, tap,
-  switchCase, tryCatch,
-  fork, assign, get, set, pick, omit,
+  // compose functions
+  pipe, compose,
+
+  // compose effects
+  tap, forEach,
+
+  // control flow
+  switchCase,
+
+  // handle errors
+  tryCatch,
+
+  // compose objects
+  all, assign, get, set, pick, omit,
+
+  // transform data
   map, filter, reduce, transform, flatMap,
-  and, or, not, any, all,
+
+  // compose predicates
+  and, or, not, some, every,
+
+  // comparison operators
   eq, gt, lt, gte, lte,
-  thunkify, always,
-  curry, __,
+
+  // partial application
+  thunkify, always, curry, __,
 } = rubico
 ```
 
-These operators act sensibly on a wide range of vanilla JavaScript types to create declarative, extensible, and async-enabled function compositions.
+These operators act on a wide range of vanilla JavaScript types to create declarative, extensible, and async-enabled function compositions.
 
 ```javascript [playground]
 const { pipe, map } = rubico
@@ -143,23 +161,21 @@ const logTodoByID = pipe([ // fetch a Todo and log it
 
 const todoIDs = [1, 2, 3, 4, 5]
 
-map(logTodoByID)(todoIDs) // fetch Todos per id of TodoIDs and log them
+// fetch Todos per id of TodoIDs and log them
+forEach(todoIDs, logTodoByID)
 // { userId: 1, id: 4, title: 'et porro tempora', completed: true }
 // { userId: 1, id: 1, title: 'delectus aut autem', completed: false }
 // { userId: 1, id: 3, title: 'fugiat veniam minus', completed: false }
 // { userId: 1, id: 2, title: 'quis ut nam facilis...', completed: false }
 // { userId: 1, id: 5, title: 'laboriosam mollitia...', completed: false }
-
-// same as above but with limited concurrency
-// map.pool(2, logTodoByID)(todoIDs)
 ```
 
-For advanced asynchronous use cases, check out some of rubico's property functions:
+For advanced asynchronous use cases, check out rubico's property functions, e.g.
  * `map` - apply a mapper function concurrently
  * `map.pool` - apply a mapper function concurrently with a concurrency limit
  * `map.series` - apply a mapper function serially
 
-For even more advanced functions, please visit `rubico/x`. You can find the full method documentation at [rubico.land/docs](https://rubico.land/docs).
+For more advanced functions, please visit `rubico/x`. You can find the full documentation at [rubico.land/docs](https://rubico.land/docs).
 
 # Contributing
 Your feedback and contributions are welcome. If you have a suggestion, please raise an issue. Prior to that, please search through the issues first in case your suggestion has been made already. If you decide to work on an issue, or feel like taking initiative and contributing anything at all, feel free to create a pull request and I will get back to you shortly.
