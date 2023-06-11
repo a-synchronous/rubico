@@ -145,27 +145,88 @@ const {
 } = rubico
 ```
 
-These operators act on a wide range of vanilla JavaScript types to create declarative, extensible, and async-enabled function compositions.
+With async-enabled, or [a]synchronous, functional programming, functions provided to the rubico operators may be asynchronous and return a Promise. Any promises provided to the operators in argument position are also resolved before continuing with the operation.
 
 ```javascript [playground]
-const { pipe, forEach } = rubico
+const helloPromise = Promise.resolve('hello')
+
+pipe(helloPromise, [ // helloPromise is resolved for 'hello'
+  async greeting => `${greeting} world`,
+  // the Promise returned from the async function is resolved
+  // and the resolved value is passed to console.log
+
+  console.log, // hello world
+])
+```
+
+Most operators support two kinds of API: one eager for convenience and one tacit for composability.
+
+```javascript [playground]
+const myObj = { a: 1, b: 2, c: 3 }
+
+// the first use of map is eager
+const myDuplicatedSquaredObject = map(myObj, pipe([
+  number => [number, number],
+
+  // the second use of map is tacit
+  map(number => number ** 2),
+]))
+
+console.log(myDuplicatedSquaredObject)
+// { a: [1, 1], b: [4, 4], c: [9, 9] }
+```
+
+The rubico operators act on a wide range of vanilla JavaScript types to create declarative, extensible, and async-enabled function compositions.
+
+```javascript [playground]
+const { pipe, tap, map, filter } = rubico
 
 const toTodosUrl = id => `https://jsonplaceholder.typicode.com/todos/${id}`
 
 const todoIDs = [1, 2, 3, 4, 5]
 
-// fetch Todos per id of TodoIDs and log them
-forEach(todoIDs, pipe([
-  toTodosUrl,
-  fetch,
-  response => response.json(),
-  console.log,
-]))
-// { userId: 1, id: 4, title: 'et porro tempora', completed: true }
-// { userId: 1, id: 1, title: 'delectus aut autem', completed: false }
-// { userId: 1, id: 3, title: 'fugiat veniam minus', completed: false }
-// { userId: 1, id: 2, title: 'quis ut nam facilis...', completed: false }
-// { userId: 1, id: 5, title: 'laboriosam mollitia...', completed: false }
+pipe(todoIDs, [
+
+  // fetch todos per id of todoIDs
+  map(pipe([
+    toTodosUrl,
+    fetch,
+    response => response.json(),
+
+    tap(console.log),
+    // { userId: 1, id: 4, title: 'et porro tempora', completed: true }
+    // { userId: 1, id: 1, title: 'delectus aut autem', completed: false }
+    // { userId: 1, id: 3, title: 'fugiat veniam minus', completed: false }
+    // { userId: 1, id: 2, title: 'quis ut nam facilis...', completed: false }
+    // { userId: 1, id: 5, title: 'laboriosam mollitia...', completed: false }
+  ])),
+
+  // group the todos by userId in a new Map
+  function createUserTodosMap(todos) {
+    const userTodosMap = new Map()
+    for (const todo of todos) {
+      const { userId } = todo
+      if (userTodosMap.has(userId)) {
+        userTodosMap.get(userId).push(todo)
+      } else {
+        userTodosMap.set(userId, [todo])
+      }
+    }
+    return userTodosMap
+  },
+
+  // filter for completed todos
+  // map iterates through each value (array of todos) of the userTodosMap
+  // filter iterates through each todo of the arrays of todos
+  map(filter(function didComplete(todo) {
+    return todo.completed
+  })),
+
+  tap(console.log),
+  // Map(1) {
+  //   1 => [ { userId: 1, id: 4, title: 'et porro tempora', completed: true } ]
+  // }
+])
 ```
 
 For advanced asynchronous use cases, check out rubico's property functions, e.g.
