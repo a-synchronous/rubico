@@ -36,66 +36,43 @@ with `npm`
 npm i rubico
 ```
 
-require `rubico` in Node.js
+require `rubico` in CommonJS.
 ```javascript
+// import rubico core globally
+require('rubico/global')
+
+// import rubico core as rubico
 const rubico = require('rubico')
+
+// import an operator from rubico core
 const pipe = require('rubico/pipe')
-const tap = require('rubico/tap')
+
+// import rubico/x as x
+const x = require('rubico/x')
+
+// import an operator from rubico/x
 const defaultsDeep = require('rubico/x/defaultsDeep')
+
+// import rubico's Transducer module
+const Transducer = require('rubico/Transducer')
 ```
 
-import `rubico` globally
+import `rubico` in the browser
 ```html [htmlmixed]
-<script src="https://unpkg.com/rubico"></script>
-<script src="https://unpkg.com/rubico/dist/pipe.js"></script>
-<script src="https://unpkg.com/rubico/dist/tap.js"></script>
-<script src="https://unpkg.com/rubico/dist/x/defaultsDeep.js"></script>
-<script>
-console.log(rubico) // { pipe, tap, ... }
-console.log(pipe) // [Function: pipe]
-console.log(tap) // [Function: tap]
-console.log(defaultsDeep) // [Function: defaultsDeep]
-</script>
+<!-- import rubico core globally -->
+<script src="https://unpkg.com/rubico/dist/global.min.js"></script>
 
-<!-- minified -->
+<!-- import rubico core as rubico -->
 <script src="https://unpkg.com/rubico/dist/rubico.min.js"></script>
+
+<!-- import an operator from rubico core -->
 <script src="https://unpkg.com/rubico/dist/pipe.min.js"></script>
-<script src="https://unpkg.com/rubico/dist/tap.min.js"></script>
-<script src="https://unpkg.com/rubico/dist/x/defaultsDeep.min.js"></script>
-<script>
-console.log(rubico) // { pipe, tap, ... }
-console.log(pipe) // [Function: pipe]
-console.log(tap) // [Function: tap]
-console.log(defaultsDeep) // [Function: defaultsDeep]
-</script>
-```
 
-import `rubico` in the browser via ES ([JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)) Modules
-```javascript
-import rubico from 'https://unpkg.com/rubico/dist/rubico.es.js'
-import pipe from 'https://unpkg.com/rubico/dist/pipe.es.js'
-import tap from 'https://unpkg.com/rubico/dist/tap.es.js'
-import defaultsDeep from 'https://unpkg.com/rubico/dist/x/defaultsDeep.es.js'
+<!-- import an operator from rubico/x -->
+<script src="https://unpkg.com/rubico/dist/x/defaultsDeep.js"></script>
 
-// minified
-import rubico from 'https://unpkg.com/rubico/dist/rubico.es.min.js'
-import pipe from 'https://unpkg.com/rubico/dist/pipe.es.min.js'
-import tap from 'https://unpkg.com/rubico/dist/tap.es.min.js'
-import defaultsDeep from 'https://unpkg.com/rubico/dist/x/defaultsDeep.es.min.js'
-```
-
-import `rubico` as ESM in Node 16 and up
-```javascript
-import rubico from 'rubico/dist/rubico.mjs'
-import pipe from 'rubico/dist/pipe.mjs'
-import tap from 'rubico/dist/tap.mjs'
-import defaultsDeep from 'rubico/dist/x/defaultsDeep.mjs'
-
-// minified
-import rubico from 'rubico/dist/rubico.min.mjs'
-import pipe from 'rubico/dist/pipe.min.mjs'
-import tap from 'rubico/dist/tap.min.mjs'
-import defaultsDeep from 'rubico/dist/x/defaultsDeep.min.mjs'
+<!-- import rubico's Transducer module -->
+<script src="https://unpkg.com/rubico/dist/Transducer.min.js"></script>
 ```
 
 # Motivation
