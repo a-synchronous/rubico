@@ -112,7 +112,7 @@ When you import this library, you obtain the freedom that comes from having thos
 
 # Introduction
 
-rubico is a library of versatile operators for async-enabled functional programming in JavaScript.
+rubico is a library for async-enabled functional programming in JavaScript that supports a simple and composable functional style in asynchronous environments. The core exports a small number of functions that can be grouped into categories for programming operations.
 
 ```javascript
 const {
@@ -159,7 +159,7 @@ pipe(helloPromise, [ // helloPromise is resolved for 'hello'
 ])
 ```
 
-Most operators support two kinds of API: one eager for convenience and one tacit for composability.
+Most operators support two kinds of API: one eager and one tacit. With the eager API, the operator consumes the data as the first argument followed by the common arguments, executing eagerly with one call. With the tacit API, the operator takes the common arguments without the data argument, returning a lazily evaluated operator that executes once called with the data argument. Operators having both an eager and tacit API supports a natural and composable code style.
 
 ```javascript [playground]
 const myObj = { a: 1, b: 2, c: 3 }
@@ -176,7 +176,7 @@ console.log(myDuplicatedSquaredObject)
 // { a: [1, 1], b: [4, 4], c: [9, 9] }
 ```
 
-The rubico operators act on a wide range of vanilla JavaScript types to create declarative, extensible, and async-enabled function compositions.
+The rubico operators are versatile and act on a wide range of vanilla JavaScript types to create declarative, extensible, and async-enabled function compositions. The same operator `map` can act on an array and also act on a `Map` data structure.
 
 ```javascript [playground]
 const { pipe, tap, map, filter } = rubico
@@ -229,7 +229,33 @@ pipe(todoIDs, [
 ])
 ```
 
-For advanced asynchronous use cases, check out rubico's property functions, e.g.
+rubico also offers transducers in its `Transducer` module. You can consume these transducers with the `transform` operator.
+
+```javascript [playground]
+const Transducer = require('rubico/Transducer')
+
+const isOdd = number => number % 2 == 1
+
+const asyncSquare = async number => number ** 2
+
+const generateNumbers = function* () {
+  yield 1
+  yield 2
+  yield 3
+  yield 4
+  yield 5
+}
+
+pipe(generateNumbers(), [
+  transform(compose([
+    Transducer.filter(isOdd),
+    Transducer.map(asyncSquare),
+  ]), []),
+  console.log, // [1, 9, 25]
+])
+```
+
+For advanced asynchronous use cases, check out the property functions on some of the operators like `map`, e.g.
  * `map` - apply a mapper function concurrently
  * `map.pool` - apply a mapper function concurrently with a concurrency limit
  * `map.series` - apply a mapper function serially
