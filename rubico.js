@@ -44,14 +44,23 @@ const __ = require('./__')
  */
 
 const rubico = {
-  pipe, compose, tap,
-  switchCase, tryCatch,
+  pipe, compose,
+
+  tap, forEach,
+
+  switchCase,
+
+  tryCatch,
+
   all, assign, get, set, pick, omit,
-  map, filter, flatMap, forEach, reduce, transform,
+
+  map, filter, flatMap, reduce, transform,
+
   and, or, not, some, every,
+
   eq, gt, lt, gte, lte,
-  thunkify, always,
-  curry, __,
+
+  thunkify, always, curry, __,
 }
 
 module.exports = rubico
