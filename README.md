@@ -148,21 +148,19 @@ const {
 These operators act on a wide range of vanilla JavaScript types to create declarative, extensible, and async-enabled function compositions.
 
 ```javascript [playground]
-const { pipe, map } = rubico
+const { pipe, forEach } = rubico
 
 const toTodosUrl = id => `https://jsonplaceholder.typicode.com/todos/${id}`
-
-const logTodoByID = pipe([ // fetch a Todo and log it
-  toTodosUrl,
-  fetch,
-  response => response.json(),
-  console.log,
-])
 
 const todoIDs = [1, 2, 3, 4, 5]
 
 // fetch Todos per id of TodoIDs and log them
-forEach(todoIDs, logTodoByID)
+forEach(todoIDs, pipe([
+  toTodosUrl,
+  fetch,
+  response => response.json(),
+  console.log,
+]))
 // { userId: 1, id: 4, title: 'et porro tempora', completed: true }
 // { userId: 1, id: 1, title: 'delectus aut autem', completed: false }
 // { userId: 1, id: 3, title: 'fugiat veniam minus', completed: false }
