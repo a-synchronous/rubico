@@ -57,7 +57,7 @@ const defaultsDeep = require('rubico/x/defaultsDeep')
 const Transducer = require('rubico/Transducer')
 ```
 
-import `rubico` in the browser
+import `rubico` in the browser.
 ```html [htmlmixed]
 <!-- import rubico core globally -->
 <script src="https://unpkg.com/rubico/dist/global.min.js"></script>
