@@ -19,12 +19,13 @@ const isOdd = number => number % 2 == 1
 
 const asyncSquare = async number => number ** 2
 
-const squaredOdds = pipe([
+const numbers = [1, 2, 3, 4, 5]
+
+pipe(numbers, [
   filter(isOdd),
   map(asyncSquare),
+  console.log, // [1, 9, 25]
 ])
-
-squaredOdds([1, 2, 3, 4, 5]).then(console.log) // [1, 9, 25]
 ```
 
 # Installation
