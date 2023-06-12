@@ -2765,25 +2765,43 @@ curry.arity = function curryArity_(arity, func, ...args) {
 }
 
 const rubico = {
-  pipe, compose, tap,
-  switchCase, tryCatch,
+  pipe, compose,
+
+  tap, forEach,
+
+  switchCase,
+
+  tryCatch,
+
   all, assign, get, set, pick, omit,
-  map, filter, flatMap, forEach, reduce, transform,
+
+  map, filter, flatMap, reduce, transform,
+
   and, or, not, some, every,
+
   eq, gt, lt, gte, lte,
-  thunkify, always,
-  curry, __,
+
+  thunkify, always, curry, __,
 }
 
 export {
-  pipe, tap,
-  switchCase, tryCatch,
+  pipe, compose,
+
+  tap, forEach,
+
+  switchCase,
+
+  tryCatch,
+
   all, assign, get, set, pick, omit,
+
   map, filter, reduce, transform, flatMap,
+
   and, or, not, some, every,
+
   eq, gt, lt, gte, lte,
-  thunkify, always,
-  curry, __,
+
+  thunkify, always, curry, __,
 }
 
 export default rubico

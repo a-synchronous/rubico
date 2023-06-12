@@ -5,6 +5,12 @@
  * rubico may be freely distributed under the MIT license.
  */
 
+(function (root, rubico) {
+  for (const functionName in rubico) {
+    root[functionName] = rubico[functionName]
+  }
+}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+
 const isPromise = value => value != null && typeof value.then == 'function'
 
 const areAnyValuesPromises = function (values) {
@@ -2784,4 +2790,5 @@ const rubico = {
   thunkify, always, curry, __,
 }
 
-export default rubico
+return rubico
+}())))

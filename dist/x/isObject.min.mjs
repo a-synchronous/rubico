@@ -1,7 +1,0 @@
-/**
- * rubico v2.0.0
- * https://github.com/a-synchronous/rubico
- * (c) 2019-2023 Richard Tong
- * rubico may be freely distributed under the MIT license.
- */
-const isObject=t=>{if(null==t)return!1;const e=typeof t;return"object"==e||"function"==e};export default isObject;

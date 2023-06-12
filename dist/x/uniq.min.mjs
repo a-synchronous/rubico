@@ -1,7 +1,0 @@
-/**
- * rubico v2.0.0
- * https://github.com/a-synchronous/rubico
- * (c) 2019-2023 Richard Tong
- * rubico may be freely distributed under the MIT license.
- */
-const isArray=Array.isArray,uniq=r=>{if(!isArray(r))throw Error("uniq(arr): arr is not an array");return[...new Set(r)]};export default uniq;

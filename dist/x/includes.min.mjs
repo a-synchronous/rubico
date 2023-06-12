@@ -1,7 +1,0 @@
-/**
- * rubico v2.0.0
- * https://github.com/a-synchronous/rubico
- * (c) 2019-2023 Richard Tong
- * rubico may be freely distributed under the MIT license.
- */
-const isArray=Array.isArray,sameValueZero=function(n,r){return n===r||n!=n&&r!=r},objectIncludes=function(n,r){for(const u in n)if(e=r,t=n[u],e===t||e!=e&&t!=t)return!0;var e,t;return!1},includes=n=>function(r){return null!=r&&("function"==typeof r.includes?r.includes(n):r.constructor==Object&&objectIncludes(r,n))};export default includes;

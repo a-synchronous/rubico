@@ -1,7 +1,0 @@
-/**
- * rubico v2.0.0
- * https://github.com/a-synchronous/rubico
- * (c) 2019-2023 Richard Tong
- * rubico may be freely distributed under the MIT license.
- */
-const isPromise=r=>null!=r&&"function"==typeof r.then,always=r=>function(){return r},thunkifyArgs=(r,n)=>function(){return r(...n)},thunkConditional=(r,n,e)=>r?n():e(),__=Symbol.for("placeholder"),curry3ResolveArg0=(r,n,e)=>function(t){return r(t,n,e)},curry3ResolveArg1=(r,n,e)=>function(t){return r(n,t,e)},curry3ResolveArg2=(r,n,e)=>function(t){return r(n,e,t)},curry3=function(r,n,e,t){return n==__?curry3ResolveArg0(r,e,t):e==__?curry3ResolveArg1(r,n,t):curry3ResolveArg2(r,n,e)},tap=r=>function(...n){const e=n[0],t=r(...n);return isPromise(t)?t.then(always(e)):e};tap.if=(r,n)=>function(...e){const t=r(...e);if(isPromise(t))return t.then((o=thunkConditional,u=__,i=thunkifyArgs(tap(n),e),s=always(e[0]),u==__?curry3ResolveArg0(o,i,s):i==__?curry3ResolveArg1(o,u,s):curry3ResolveArg2(o,u,i)));var o,u,i,s;if(t){const r=n(...e);if(isPromise(r))return r.then(always(e[0]))}return e[0]};export default tap;
