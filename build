@@ -160,14 +160,23 @@ const distributor = pipe([
  * rubico may be freely distributed under the MIT license.
  */
 ${baseCodeBundle}export {
-  pipe, tap,
-  switchCase, tryCatch,
+  pipe, compose,
+
+  tap, forEach,
+
+  switchCase,
+
+  tryCatch,
+
   all, assign, get, set, pick, omit,
+
   map, filter, reduce, transform, flatMap,
+
   and, or, not, some, every,
+
   eq, gt, lt, gte, lte,
-  thunkify, always,
-  curry, __,
+
+  thunkify, always, curry, __,
 }
 
 export default ${name}
@@ -187,14 +196,23 @@ export default ${name}
  * rubico may be freely distributed under the MIT license.
  */
 ${(await minify(`${baseCodeBundle}export {
-  pipe, tap,
-  switchCase, tryCatch,
+  pipe, compose,
+
+  tap, forEach,
+
+  switchCase,
+
+  tryCatch,
+
   all, assign, get, set, pick, omit,
+
   map, filter, reduce, transform, flatMap,
+
   and, or, not, some, every,
+
   eq, gt, lt, gte, lte,
-  thunkify, always,
-  curry, __,
+
+  thunkify, always, curry, __,
 }
 
 export default ${name}`)).code}
@@ -470,25 +488,25 @@ distributor([
       name: 'rubicoX',
       type: 'esm',
       path: pathResolve(__dirname, 'x', 'index.js'),
-      distPath: pathResolve(__dirname, 'dist', 'rubico-x.es.js'),
+      distPath: pathResolve(__dirname, 'dist', 'x.es.js'),
     },
     {
       name: 'rubicoX',
       type: 'cjs',
       path: pathResolve(__dirname, 'x', 'index.js'),
-      distPath: pathResolve(__dirname, 'dist', 'rubico-x.js'),
+      distPath: pathResolve(__dirname, 'dist', 'x.js'),
     },
     {
       name: 'rubicoX',
       type: 'esm-minified',
       path: pathResolve(__dirname, 'x', 'index.js'),
-      distPath: pathResolve(__dirname, 'dist', 'rubico-x.es.min.js'),
+      distPath: pathResolve(__dirname, 'dist', 'x.es.min.js'),
     },
     {
       name: 'rubicoX',
       type: 'cjs-minified',
       path: pathResolve(__dirname, 'x', 'index.js'),
-      distPath: pathResolve(__dirname, 'dist', 'rubico-x.min.js'),
+      distPath: pathResolve(__dirname, 'dist', 'x.min.js'),
     },
   ],
   */
