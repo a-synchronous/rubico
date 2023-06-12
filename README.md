@@ -69,7 +69,7 @@ import `rubico` in the browser.
 <script src="https://unpkg.com/rubico/dist/pipe.min.js"></script>
 
 <!-- import an operator from rubico/x -->
-<script src="https://unpkg.com/rubico/dist/x/defaultsDeep.js"></script>
+<script src="https://unpkg.com/rubico/dist/x/defaultsDeep.min.js"></script>
 
 <!-- import rubico's Transducer module -->
 <script src="https://unpkg.com/rubico/dist/Transducer.min.js"></script>
