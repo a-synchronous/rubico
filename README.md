@@ -89,7 +89,7 @@ When you import this library, you obtain the freedom that comes from having thos
 
 # Introduction
 
-rubico is a library for async-enabled functional programming in JavaScript that supports a simple and composable functional style in asynchronous environments. The core exports a small number of functions that can be grouped into categories for programming operations.
+rubico is a library for async-enabled functional programming in JavaScript. The library methods support a simple and composable functional style in asynchronous environments.
 
 ```javascript
 const {
@@ -122,7 +122,7 @@ const {
 } = rubico
 ```
 
-With async-enabled, or [a]synchronous, functional programming, functions provided to the rubico operators may be asynchronous and return a Promise. Any promises provided to the operators in argument position are also resolved before continuing with the operation.
+With async-enabled, or [a]synchronous, functional programming, functions provided to the rubico methods may be asynchronous and return a Promise. Any promises in argument position are also resolved before continuing with the operation.
 
 ```javascript [playground]
 const helloPromise = Promise.resolve('hello')
@@ -136,7 +136,7 @@ pipe(helloPromise, [ // helloPromise is resolved for 'hello'
 ])
 ```
 
-Most operators support two kinds of API: one eager and one tacit. With the eager API, the operator consumes the data as the first argument followed by the common arguments, executing eagerly with one call. With the tacit API, the operator takes the common arguments without the data argument, returning a lazily evaluated operator that executes once called with the data argument. Operators having both an eager and tacit API supports a natural and composable code style.
+Most methods support both an eager and a tacit API. The eager API takes all arguments and executes all at once, while its tacit API takes only the non-data arguments and executes lazily, returning a function that expects the data arguments. This dual API supports a natural and composable code style.
 
 ```javascript [playground]
 const myObj = { a: 1, b: 2, c: 3 }
@@ -153,7 +153,7 @@ console.log(myDuplicatedSquaredObject)
 // { a: [1, 1], b: [4, 4], c: [9, 9] }
 ```
 
-The rubico operators are versatile and act on a wide range of vanilla JavaScript types to create declarative, extensible, and async-enabled function compositions. The same operator `map` can act on an array and also act on a `Map` data structure.
+The rubico methods are versatile and act on a wide range of vanilla JavaScript types to create declarative, extensible, and async-enabled function compositions. The same operator `map` can act on an array and also a `Map` data structure.
 
 ```javascript [playground]
 const { pipe, tap, map, filter } = rubico
@@ -206,7 +206,7 @@ pipe(todoIDs, [
 ])
 ```
 
-rubico also offers transducers in its `Transducer` module. You can consume these transducers with the `transform` and `compose` operators. Due to the way transducers are implemented, you should use `compose` over `pipe` to chain a left-to-right composition of transducers.
+rubico also offers transducers in its `Transducer` module. You can consume these transducers with the `transform` and `compose` methods. Due to the way transducers are implemented, you should use `compose` over `pipe` to chain a left-to-right composition of transducers.
 
 ```javascript [playground]
 const isOdd = number => number % 2 == 1
@@ -230,12 +230,12 @@ pipe(generateNumbers(), [
 ])
 ```
 
-For advanced asynchronous use cases, check out the property functions on some of the operators like `map`, e.g.
+For advanced asynchronous use cases, some of the methods have property functions that have different asynchronous behavior, e.g.
  * `map` - apply a mapper function concurrently
  * `map.pool` - apply a mapper function concurrently with a concurrency limit
  * `map.series` - apply a mapper function serially
 
-For more advanced functions, please visit `rubico/x`. You can find the full documentation at [rubico.land/docs](https://rubico.land/docs).
+For more functions beyond the core methods, please visit `rubico/x`. You can find the full documentation at [rubico.land/docs](https://rubico.land/docs).
 
 # Contributing
 Your feedback and contributions are welcome. If you have a suggestion, please raise an issue. Prior to that, please search through the issues first in case your suggestion has been made already. If you decide to work on an issue, or feel like taking initiative and contributing anything at all, feel free to create a pull request and I will get back to you shortly.
