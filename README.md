@@ -206,7 +206,7 @@ pipe(todoIDs, [
 ])
 ```
 
-rubico also offers transducers in its `Transducer` module. You can consume these transducers with the `transform` and `compose` methods. Due to the way transducers are implemented, you should use `compose` over `pipe` to chain a left-to-right composition of transducers.
+rubico offers transducers in its `Transducer` module. You can consume these transducers with the `transform` and `compose` methods. Due to the way transducers are implemented, you should use `compose` over `pipe` to chain a left-to-right composition of transducers.
 
 ```javascript [playground]
 const isOdd = number => number % 2 == 1
