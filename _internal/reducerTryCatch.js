@@ -1,9 +1,7 @@
 const isPromise = require('./isPromise')
 const __ = require('./placeholder')
 const curry5 = require('./curry5')
-const curry4 = require('./curry4')
 const curry2 = require('./curry2')
-const always = require('./always')
 
 /**
  * @name _reducerTryCatchErrorHandler
