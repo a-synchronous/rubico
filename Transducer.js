@@ -3,7 +3,9 @@ const reducerMap = require('./_internal/reducerMap')
 const reducerFilter = require('./_internal/reducerFilter')
 const reducerFlatMap = require('./_internal/reducerFlatMap')
 const reducerForEach = require('./_internal/reducerForEach')
+const reducerTryCatch = require('./_internal/reducerTryCatch')
 const curry2 = require('./_internal/curry2')
+const curry3 = require('./_internal/curry3')
 const __ = require('./_internal/placeholder')
 
 /**
@@ -155,8 +157,34 @@ Transducer.forEach = function transducerForEach(func) {
   return curry2(reducerForEach, __, func)
 }
 
+/**
+ * @name Transducer.passthrough
+ *
+ * @synopsis
+ * ```coffeescript [specscript]
+ * type Reducer = (accumulator any, item any)=>(nextAccumulator Promise|any)
+ * type Transducer = Reducer=>Reducer
+ *
+ * Transducer.passthrough(func function) -> passthroughTransducer Transducer
+ * ```
+ */
 Transducer.passthrough = function transducerPassthrough(reducer) {
   return reducer
+}
+
+/**
+ * @name Transducer.tryCatch
+ *
+ * @synopsis
+ * ```coffeescript [specscript]
+ * type Reducer = (accumulator any, item any)=>(nextAccumulator Promise|any)
+ * type Transducer = Reducer=>Reducer
+ *
+ * Transducer.tryCatch(func function) -> tryCatchTransducer Transducer
+ * ```
+ */
+Transducer.tryCatch = function transducerTryCatch(transducerTryer, catcher) {
+  return curry3(reducerTryCatch, __, transducerTryer, catcher)
 }
 
 module.exports = Transducer
