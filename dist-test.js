@@ -28,7 +28,7 @@ const distTest = async function main() {
         path.includes('Transducer.js')
         || path.includes('Transducer.min.js')
       ) {
-        assert.equal(Object.keys(required).length, 5)
+        assert.equal(Object.keys(required).length, 6)
       }
     }
   }

@@ -1,5 +1,5 @@
 /**
- * rubico v2.0.1
+ * rubico v2.1.0
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -456,6 +456,29 @@ const reducerForEach = (
   return reducer(result, item)
 }
 
+const _reducerTryCatchErrorHandler = function (
+  catcher, reducer, error, accum, item,
+) {
+  const c = catcher(error, item)
+  return isPromise(c) ? c.then(curry2(reducer, accum, __)) : reducer(accum, c)
+}
+
+const reducerTryCatch = function (reducer, transducerTryer, catcher) {
+  const finalReducer = transducerTryer(reducer)
+  return function errorHandlingReducer(accum, item) {
+    try {
+      const ret = finalReducer(accum, item)
+      return isPromise(ret) ? ret.catch(curry5(
+        _reducerTryCatchErrorHandler, catcher, reducer, __, accum, item,
+      )) : ret
+    } catch (error) {
+      return _reducerTryCatchErrorHandler(
+        catcher, reducer, error, accum, item,
+      )
+    }
+  }
+}
+
 const Transducer = {}
 
 Transducer.map = function transducerMap(mapper) {
@@ -476,6 +499,10 @@ Transducer.forEach = function transducerForEach(func) {
 
 Transducer.passthrough = function transducerPassthrough(reducer) {
   return reducer
+}
+
+Transducer.tryCatch = function transducerTryCatch(transducerTryer, catcher) {
+  return curry3(reducerTryCatch, __, transducerTryer, catcher)
 }
 
 export default Transducer
