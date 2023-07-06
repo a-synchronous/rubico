@@ -1,5 +1,5 @@
 /**
- * rubico v2.1.0
+ * rubico v2.2.0
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -65,10 +65,40 @@ const curry3 = function (baseFunc, arg0, arg1, arg2) {
   return curry3ResolveArg2(baseFunc, arg0, arg1)
 }
 
-const tap = func => function tapping(...args) {
+// argument resolver for curryArgs2
+const curryArgs2ResolveArgs0 = (
+  baseFunc, arg1, arg2,
+) => function args0Resolver(...args) {
+  return baseFunc(args, arg1)
+}
+
+// argument resolver for curryArgs2
+const curryArgs2ResolveArgs1 = (
+  baseFunc, arg0, arg2,
+) => function arg1Resolver(...args) {
+  return baseFunc(arg0, args)
+}
+
+const curryArgs2 = function (baseFunc, arg0, arg1) {
+  if (arg0 == __) {
+    return curryArgs2ResolveArgs0(baseFunc, arg1)
+  }
+  return curryArgs2ResolveArgs1(baseFunc, arg0)
+}
+
+// _tap(args Array, func function) -> Promise|any
+const _tap = function (args, func) {
   const result = args[0],
     call = func(...args)
   return isPromise(call) ? call.then(always(result)) : result
+}
+
+const tap = function (...args) {
+  const func = args.pop()
+  if (args.length == 0) {
+    return curryArgs2(_tap, __, func)
+  }
+  return _tap(args, func)
 }
 
 tap.if = (predicate, func) => function tappingIf(...args) {
