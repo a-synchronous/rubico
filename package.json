@@ -14,6 +14,7 @@
     "_internal",
     "dist",
     "x",
+    "monad",
     "index.js",
     "es.js",
     "global.js",
