@@ -12,6 +12,9 @@ npm version patch|minor|major
 # test the distribution
 node dist-test.js
 
+# commit the changes
+git commit -m "distribute"
+
 # publish the new version
 npm publish
 ```
