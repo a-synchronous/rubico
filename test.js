@@ -709,6 +709,13 @@ describe('rubico', () => {
         new TypeError('func is not a function'),
       )
     })
+    it('eager API', async () => {
+      let val = null
+      tap('a', 'b', 'c', (...args) => {
+        val = args
+      })
+      assert.deepEqual(val, ['a', 'b', 'c'])
+    })
   })
 
   describe('tap.if', () => {
