@@ -26,16 +26,16 @@ const callConcat = require('./callConcat')
  * identityTransform<
  *   collection any,
  *   transducer Reducer=>Reducer,
- *   result undefined|null,
- * >(args, transducer, result) -> Promise|result
+ *   accum undefined|null,
+ * >(args, transducer, accum) -> Promise|accum
  * ```
  *
  * @description
- * Reduce a value, always returning the initial result
+ * Reduce a value, always returning the initial accum
  */
-const identityTransform = function (collection, transducer, result) {
+const identityTransform = function (collection, transducer, accum) {
   const nil = genericReduce(collection, transducer(noop), null)
-  return isPromise(nil) ? nil.then(always(result)) : result
+  return isPromise(nil) ? nil.then(always(accum)) : accum
 }
 
 /**
@@ -50,42 +50,44 @@ const identityTransform = function (collection, transducer, result) {
  * genericTransform<
  *   collection any,
  *   transducer Reducer=>Reducer,
- *   result Semigroup|any,
- * >(collection, transducer, result) -> result
+ *   accum Semigroup|any,
+ * >(collection, transducer, accum) -> accum
  * ```
  */
-const genericTransform = function (collection, transducer, result) {
-  if (isArray(result)) {
-    return genericReduce(collection, transducer(arrayExtend), result)
+const genericTransform = function (collection, transducer, accum) {
+  if (isArray(accum)) {
+    return genericReduce(collection, transducer(arrayExtend), accum)
   }
-  if (isBinary(result)) {
+  if (isBinary(accum)) {
     const intermediateArray = genericReduce(collection, transducer(arrayExtend), [])
     return isPromise(intermediateArray)
-      ? intermediateArray.then(curry2(binaryExtend, result, __))
-      : binaryExtend(result, intermediateArray)
+      ? intermediateArray.then(curry2(binaryExtend, accum, __))
+      : binaryExtend(accum, intermediateArray)
   }
-  if (result == null) {
-    return identityTransform(collection, transducer, result)
+  if (accum == null) {
+    return identityTransform(collection, transducer, accum)
   }
 
-  const resultConstructor = result.constructor
-  if (typeof result == 'string' || resultConstructor == String) {
-    // TODO: use array + join over adding
-    return genericReduce(collection, transducer(add), result)
+  const constructor = accum.constructor
+  if (typeof accum == 'string' || constructor == String) {
+    const result = genericReduce(collection, transducer(arrayExtend), [accum])
+    return isPromise(result)
+      ? result.then(curry3(callPropUnary, __, 'join', ''))
+      : result.join('')
   }
-  if (typeof result.concat == 'function') {
-    return genericReduce(collection, transducer(callConcat), result)
+  if (typeof accum.concat == 'function') {
+    return genericReduce(collection, transducer(callConcat), accum)
   }
-  if (typeof result.write == 'function') {
-    return genericReduce(collection, transducer(streamExtend), result)
+  if (typeof accum.write == 'function') {
+    return genericReduce(collection, transducer(streamExtend), accum)
   }
-  if (resultConstructor == Set) {
-    return genericReduce(collection, transducer(setExtend), result)
+  if (constructor == Set) {
+    return genericReduce(collection, transducer(setExtend), accum)
   }
-  if (resultConstructor == Object) {
-    return genericReduce(collection, transducer(objectAssign), result)
+  if (constructor == Object) {
+    return genericReduce(collection, transducer(objectAssign), accum)
   }
-  return identityTransform(collection, transducer, result)
+  return identityTransform(collection, transducer, accum)
 }
 
 module.exports = genericTransform
