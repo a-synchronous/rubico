@@ -1,3 +1,11 @@
+## v2.2.0
+ * improve transform string performance - [#260](https://github.com/a-synchronous/rubico/pull/260)
+ * eager API for tap - [#258](https://github.com/a-synchronous/rubico/pull/258)
+ * smaller package size with files in package.json - [#259](https://github.com/a-synchronous/rubico/pull/259)
+
+## v2.1.0
+ * Transducer.tryCatch
+
 ## v2.0.0
  * Refactor all transducer functionality into Transducer.js from `pipe`, `map`, `filter`, and `flatMap`
  * Remove GeneratorFunction and AsyncGeneratorFunction functionality in `map`, `filter`, `flatMap`, and `reduce`
