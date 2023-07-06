@@ -1,4 +1,4 @@
-import { eq } from "./eq";
+import eq from "./eq";
 
 // just for testing
 
@@ -11,11 +11,13 @@ interface Person {
   likes: string;
 }
 
-const personIsGeorge = eq((person: Person) => person.name, "George");
+const personIsGeorge = eq((person: Person) => person.name, "George") as (person: any) => boolean;
 
 console.log(personIsGeorge({ name: "George", likes: "bananas" })); // true
 
-eq(
+const compare = eq(
   async (a: number, b: number) => a,
   (person: Person) => person.name
-)({ name: "George", likes: "bananas" });
+) as (person: Person) => Promise<boolean>;
+
+console.log(await compare({ name: "George", likes: "bananas" }));
