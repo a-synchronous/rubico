@@ -103,7 +103,7 @@ const {
   // handle errors
   tryCatch,
 
-  // compose objects
+  // handle objects
   all, assign, get, set, pick, omit,
 
   // transform data
