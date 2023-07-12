@@ -75,10 +75,21 @@ const _some = function (collection, predicate) {
  *   yield 1; yield 2; yield 3; yield 4; yield 5
  * }
  *
- * some(pipe([
- *   fetchTodo,
- *   todo => todo.title.startsWith('fugiat'),
- * ]))(todoIDsGenerator()).then(console.log) // true
+ * const promise = some(todoIDsGenerator(), async id => {
+ *   const todo = await fetchTodo(id)
+ *   return todo.title.startsWith('fugiat')
+ * })
+ *
+ * promise.then(console.log) // true
+ * ```
+ *
+ * `some` supports a tacit API for composability.
+ *
+ * ```javascript [playground]
+ * pipe([1, 2, 3], [
+ *   some(number => number < 5),
+ *   console.log, // true
+ * ])
  * ```
  *
  * @execution concurrent

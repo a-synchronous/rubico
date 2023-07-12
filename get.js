@@ -19,6 +19,12 @@ const _get = function (object, path, defaultValue) {
  * @synopsis
  * ```coffeescript [specscript]
  * get(
+ *   object Promise|Object,
+ *   path string|number|Array<string|number>,
+ *   defaultValue? function|any
+ * ) -> result Promise|Object
+ *
+ * get(
  *   path string|number|Array<string|number>,
  *   defaultValue? function|any
  * )(object Object) -> result Promise|Object
@@ -28,6 +34,16 @@ const _get = function (object, path, defaultValue) {
  * Accesses a property of an object given a path denoted by a string, number, or an array of string or numbers.
  *
  * ```javascript [playground]
+ * const obj = { hello: 'world' }
+ *
+ * console.log(get(obj, 'hello')) // world
+ * ```
+ *
+ * `get` supports a tacit API for composability
+ *
+ * ```javascript [playground]
+ * const obj = { hello: 'world' }
+ *
  * const getHello = get('hello')
  *
  * console.log(getHello({ hello: 'world' })) // world

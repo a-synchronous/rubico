@@ -39,6 +39,15 @@ const equals = require('./_internal/equals')
  * }
  * ```
  *
+ * `eq` supports a tacit API for composability.
+ *
+ * ```javascript [playground]
+ * pipe({ name: 'George' }, [
+ *   eq('George', get('name')),
+ *   console.log, // true
+ * ])
+ * ```
+ *
  * @execution concurrent
  */
 

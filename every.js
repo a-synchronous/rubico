@@ -55,11 +55,11 @@ const _every = function (collection, predicate) {
  * const isOdd = number => number % 2 == 1
  *
  * console.log(
- *   every(isOdd)([1, 2, 3, 4, 5]),
+ *   every([1, 2, 3, 4, 5], isOdd),
  * ) // false
  *
  * console.log(
- *   every(isOdd)([1, 3, 5]),
+ *   every([1, 3, 5], isOdd),
  * ) // true
  * ```
  *
@@ -70,7 +70,16 @@ const _every = function (collection, predicate) {
  *   yield 1; yield 2; yield 3; yield 4; yield 5
  * }
  *
- * every(async number => number < 6)(asyncNumbers()).then(console.log) // true
+ * every(asyncNumbers(), async number => number < 6).then(console.log) // true
+ * ```
+ *
+ * `every` supports a tacit API for composability.
+ *
+ * ```javascript [playground]
+ * pipe([1, 2, 3], [
+ *   every(number => number < 5),
+ *   console.log, // true
+ * ])
  * ```
  *
  * @execution concurrent
