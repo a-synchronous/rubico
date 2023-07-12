@@ -38,6 +38,15 @@ const greaterThan = require('./_internal/greaterThan')
  *
  * console.log(isOfLegalAge(juvenile)) // false
  * ```
+ *
+ * `gt` supports a tacit API for composability.
+ *
+ * ```javascript [playground]
+ * pipe({ value: 1 }, [
+ *   gt(5, get('value')),
+ *   console.log, // true
+ * ])
+ * ```
  */
 const gt = ComparisonOperator(greaterThan)
 

@@ -22,6 +22,7 @@ const _reduce = function (collection, reducer, initialValue) {
  * @synopsis
  * ```coffeescript [specscript]
  * type Foldable = Array|Object|Map|Iterator|AsyncIterator
+ *
  * type Reducer = (
  *   accumulator any,
  *   value any,

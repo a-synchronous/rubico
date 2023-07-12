@@ -38,6 +38,15 @@ const lessThan = require('./_internal/lessThan')
  * console.log(isLessThan3(3)) // false
  * console.log(isLessThan3(5)) // false
  * ```
+ *
+ * `lt` supports a tacit API for composability.
+ *
+ * ```javascript [playground]
+ * pipe({ value: 1 }, [
+ *   lt(0, get('value')),
+ *   console.log, // true
+ * ])
+ * ```
  */
 const lt = ComparisonOperator(lessThan)
 

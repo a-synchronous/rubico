@@ -67,13 +67,14 @@ const _flatMap = function (value, flatMapper) {
  * type FlatMappable = Array|String|Set|Iterator|AsyncIterator
  * type Iterable = Iterable|AsyncIterable|Object<value any>
  *
- * flatMap(
- *   collection FlatMappable,
- *   flatMapper (item any)=>Promise|Iterable,
- * ) -> result Promise|FlatMappable
+ * type FlatMapper = (
+ *   item any,
+ *   indexOrKey string,
+ *   collection FlatMappable
+ * )=>Promise|FlatMappable
  *
- * flatMap(flatMapper (item any)=>Promise|Iterable)(collection FlatMappable)
- *   -> result Promise|FlatMappable
+ * flatMap(collection FlatMappable, flatMapper FlatMapper) -> result Promise|FlatMappable
+ * flatMap(flatMapper FlatMapper)(collection FlatMappable) -> result Promise|FlatMappable
  * ```
  *
  * @description

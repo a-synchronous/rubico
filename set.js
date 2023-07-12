@@ -39,7 +39,7 @@ const _set = function (obj, path, value) {
  * @synopsis
  * ```coffeescript [specscript]
  * set(
- *   object Object,
+ *   object Promise|Object,
  *   path string|Array<string|number>,
  *   value function|any,
  * ) -> result Promise|Object
@@ -60,15 +60,15 @@ const _set = function (obj, path, value) {
  *  * an array of keys or indices - `['a', 0, 'value']`
  *
  * ```javascript [playground]
- * console.log(set('a', 1)({ b: 2 })) // { a: 1, b: 2 }
+ * console.log(set({ b: 2 }, 'a', 1)) // { a: 1, b: 2 }
  *
  * const nestedAC2 = { a: { c: 2 } }
  *
- * console.log(set('a.b', 1)(nestedAC2)) // { a : { b: 1, c: 2 }}
+ * console.log(set(nestedAC2, 'a.b', 1)) // { a : { b: 1, c: 2 }}
  *
  * const nestedA0BC3 = { a: [{ b: { c: 3 } }] }
  *
- * console.log(set('a[0].b.c', 4)(nestedA0BC3)) // { a: [{ b: { c: 4 } }] }
+ * console.log(set(nestedA0BC3, 'a[0].b.c', 4)) // { a: [{ b: { c: 4 } }] }
  * ```
  *
  * The property value may be a function, in which case it is treated as a resolver and provided the argument object to resolve the value to set.
@@ -79,6 +79,15 @@ const _set = function (obj, path, value) {
  * const myNewObj = set('b', obj => obj.a + 2)(myObj)
  *
  * console.log(myNewObj) // { a: 1, b: 3 }
+ * ```
+ *
+ * `set` supports a tacit API for composability.
+ *
+ * ```javascript [playground]
+ * pipe({ a: 1 }, [
+ *   set('b', 2),
+ *   console.log, // { a: 1, b: 2 }
+ * ])
  * ```
  *
  * @since 1.7.0

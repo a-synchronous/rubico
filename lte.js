@@ -38,6 +38,15 @@ const lessThanOrEqual = require('./_internal/lessThanOrEqual')
  * console.log(isLessThanOrEqualTo3(3), true)
  * console.log(isLessThanOrEqualTo3(5), false)
  * ```
+ *
+ * `lte` supports a tacit API for composability.
+ *
+ * ```javascript [playground]
+ * pipe({ value: 1 }, [
+ *   lte(1, get('value')),
+ *   console.log, // true
+ * ])
+ * ```
  */
 const lte = ComparisonOperator(lessThanOrEqual)
 

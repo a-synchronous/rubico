@@ -90,19 +90,15 @@ const _filter = function (value, predicate) {
  * @synopsis
  * ```coffeescript [specscript]
  * type Filterable = Array|Object|Set|Map|Iterator|AsyncIterator
+ *
  * type Predicate = (
  *   value any,
  *   indexOrKey? number|string,
  *   collection? Filterable,
  * )=>boolean
  *
- * filter(
- *   collection Filterable,
- *   predicate Predicate
- * ) -> result Promise|Filterable
- *
- * filter(predicate Predicate)(collection Filterable)
- *   -> result Promise|Filterable
+ * filter(collection Filterable, predicate Predicate) -> result Promise|Filterable
+ * filter(predicate Predicate)(collection Filterable) -> result Promise|Filterable
  * ```
  *
  * @description

@@ -40,6 +40,15 @@ const greaterThanOrEqual = require('./_internal/greaterThanOrEqual')
  * console.log(isAtLeast100(100)) // true
  * console.log(isAtLeast100(101)) // true
  * ```
+ *
+ * `gte` supports a tacit API for composability.
+ *
+ * ```javascript [playground]
+ * pipe({ value: 1 }, [
+ *   gte(1, get('value')),
+ *   console.log, // true
+ * ])
+ * ```
  */
 const gte = ComparisonOperator(greaterThanOrEqual)
 

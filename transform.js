@@ -26,8 +26,6 @@ const _transform = function (collection, transducer, initialValue) {
  * type Transformable = Array|String|Set|TypedArray|{ concat: function }|{ write: function }|Object
  * type Foldable = Iterable|AsyncIterable|Object<value any>
  *
- * initialValue Transformable|((foldable Foldable)=>Promise|Transformable)
- *
  * transform(
  *   foldable Foldable,
  *   transducer Transducer,
@@ -58,9 +56,9 @@ const _transform = function (collection, transducer, initialValue) {
  *
  * const isOdd = number => number % 2 == 1
  *
- * const squaredOdds = pipe([
- *   filter(isOdd),
- *   map(square),
+ * const squaredOdds = compose([
+ *   Transducer.filter(isOdd),
+ *   Transducer.map(square),
  * ])
  *
  * // transform arrays into arrays
@@ -96,7 +94,7 @@ const _transform = function (collection, transducer, initialValue) {
  *   },
  * }
  *
- * transform(map(square), Stdout)([1, 2, 3, 4, 5])
+ * transform(Transducer.map(square), Stdout)([1, 2, 3, 4, 5])
  * // 1
  * // 4
  * // 9
@@ -124,8 +122,10 @@ const _transform = function (collection, transducer, initialValue) {
  * }
  *
  * transform(
- *   map(pipe([square, toString])), process.stdout,
- * )(streamRandomInts()) // 9216576529289484980147613249169774446246768649...
+ *   streamRandomInts(),
+ *   Transducer.map(pipe([square, toString])),
+ *   process.stdout,
+ * ) // 9216576529289484980147613249169774446246768649...
  * ```
  *
  * @execution series
