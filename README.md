@@ -94,7 +94,7 @@ const {
   // compose functions
   pipe, compose,
 
-  // compose effects
+  // handle effects
   tap, forEach,
 
   // control flow
