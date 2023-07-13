@@ -30,15 +30,17 @@ const _reduce = function (collection, reducer, initialValue) {
  *   collection? Foldable,
  * )=>(nextAccumulator Promise|any)
  *
+ * type Resolver = (collection Foldable)=>Promise|any
+ *
  * reduce(
  *   collection Foldable,
  *   reducer Reducer,
- *   initialValue? function|any
+ *   initialValue? Resolver|any
  * ) -> result Promise|any
  *
  * reduce(
  *   reducer Reducer,
- *   initialValue? function|any
+ *   initialValue? Resolver|any
  * )(collection Foldable) -> result Promise|any
  * ```
  *

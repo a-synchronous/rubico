@@ -65,6 +65,7 @@ const _flatMap = function (value, flatMapper) {
  * @synopsis
  * ```coffeescript [specscript]
  * type FlatMappable = Array|String|Set|Iterator|AsyncIterator
+ *
  * type Iterable = Iterable|AsyncIterable|Object<value any>
  *
  * type FlatMapper = (

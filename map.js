@@ -99,30 +99,16 @@ const _map = function (value, mapper) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * arrayMapperFunc (value any, index number, array Array)=>Promise|any
- * objectMapperFunc (value any, key string, object Object)=>Promise|any
- * setMapperFunc (value any, value, set Set)=>Promise|any
- * mapMapperFunc (value any, key any, originalMap Map)=>Promise|any
- * iteratorMapperFunc (value any)=>any
- * asyncIteratorMapperFunc (value any)=>Promise|any
+ * type Mappable = Array|Object|Set|Map|Iterator|AsyncIterator
  *
- * map(arrayMapperFunc)(value Array) -> result Promise|Array
- * map(value Array, arrayMapperFunc) -> result Promise|Array
+ * type Mapper = (
+ *   value any,
+ *   indexOrKey number|string,
+ *   collection Mappable
+ * )=>(mappedItem Promise|any)
  *
- * map(objectMapperFunc)(value Object) -> result Promise|Array
- * map(value Object, objectMapperFunc) -> result Promise|Array
- *
- * map(setMapperFunc)(value Set) -> result Promise|Set
- * map(value Set, setMapperFunc) -> result Promise|Set
- *
- * map(mapMapperFunc)(value Map) -> result Promise|Map
- * map(value Map, mapMapperFunc) -> result Promise|Map
- *
- * map(iteratorMapperFunc)(value Iterator|Generator) -> result Iterator
- * map(value Iterator|Generator, iteratorMapperFunc) -> result Iterator
- *
- * map(asyncIteratorMapperFunc)(value AsyncIterator) -> result AsyncIterator
- * map(value AsyncIterator, asyncIteratorMapperFunc) -> result AsyncIterator
+ * map(value Mappable, mapper Mapper) -> result Promise|Mappable
+ * map(mapper Mapper)(value Mappable) -> result Promise|Mappable
  * ```
  *
  * @description

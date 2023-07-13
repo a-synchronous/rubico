@@ -21,21 +21,32 @@ const _transform = function (collection, transducer, initialValue) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Reducer = (result any, item any)=>(result any)
- * type Transducer = Reducer=>Reducer
- * type Transformable = Array|String|Set|TypedArray|{ concat: function }|{ write: function }|Object
  * type Foldable = Iterable|AsyncIterable|Object<value any>
  *
+ * type Reducer = (
+ *   accumulator any,
+ *   value any,
+ *   indexOrKey? number|string,
+ *   collection? Foldable,
+ * )=>(nextAccumulator Promise|any)
+ *
+ * type Transducer = Reducer=>Reducer
+ *
+ * type Transformable =
+ *   Array|String|Set|TypedArray|{ concat: function }|{ write: function }|Object
+ *
+ * type TransformableResolver = (collection Foldable)=>Promise|Transformable
+ *
  * transform(
- *   foldable Foldable,
+ *   collection Foldable,
  *   transducer Transducer,
- *   initialValue? Transformable|(Foldable=>Promise|Transformable),
+ *   initialValue? Transformable|TransformableResolver,
  * ) -> result Promise|Transformable
  *
  * transform(
  *   transducer Transducer,
- *   initialValue? Transformable|(Foldable=>Promise|Transformable),
- * )(foldable Foldable) -> result Promise|Transformable
+ *   initialValue? Transformable|TransformableResolver,
+ * )(collection Foldable) -> result Promise|Transformable
  * ```
  *
  * @description
