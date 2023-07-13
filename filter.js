@@ -93,8 +93,8 @@ const _filter = function (value, predicate) {
  *
  * type Predicate = (
  *   value any,
- *   indexOrKey? number|string,
- *   collection? Filterable,
+ *   indexOrKey number|string,
+ *   collection Filterable,
  * )=>boolean
  *
  * filter(collection Filterable, predicate Predicate) -> result Promise|Filterable
