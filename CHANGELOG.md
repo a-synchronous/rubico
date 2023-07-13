@@ -1,3 +1,13 @@
+## v2.2.3
+ * more docs amendments for v2
+
+## v2.2.2
+ * prepare core docs for v2
+
+## v2.2.1
+ * add monad to dist
+ * include commit step in contributing
+
 ## v2.2.0
  * improve transform string performance - [#260](https://github.com/a-synchronous/rubico/pull/260)
  * eager API for tap - [#258](https://github.com/a-synchronous/rubico/pull/258)
