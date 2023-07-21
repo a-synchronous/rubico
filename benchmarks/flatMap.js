@@ -1,48 +1,38 @@
-const timeInLoop = require('../x/timeInLoop')
-const { flatMap } = require('..')
-const R = require('ramda')
 const _ = require('lodash')
 const _fp = require('lodash/fp')
+const R = require('ramda')
+const TimeInLoopSuite = require('../_internal/TimeInLoopSuite')
+const flatMap = require('../flatMap')
 
-/**
- * @name competitiveFlatMap
- *
- * @benchmark
- * flatMap(duplicate)(array): 1e+5: 69.215ms
- * R.chain(duplicate, array): 1e+5: 169.668ms
- * _fp.flatMap(duplicate, array): 1e+5: 85.848ms
- *
- * flatMap(identity)(array): 1e+5: 53.501ms
- * R.chain(identity, array): 1e+5: 160.813ms
- * _fp.flatMap(identity, array): 1e+5: 81.023ms
- */
+const lodashFlatMap = _.flatMap
+const lodashFpFlatMap = _fp.flatMap
+const ramdaFlatmap = R.chain
 
-{
-  const numbersArray = [1, 2, 3, 4, 5]
+const suite = new TimeInLoopSuite()
 
-  const duplicateArray = value => [value, value]
+suite.add('rubico flatMap', () => {
+  flatMap([1, 2, 3, 4, 5], n => [n, n])
+})
 
-  const identity = value => value
+suite.add('rubico flatMap tacit', () => {
+  flatMap(n => [n, n])([1, 2, 3, 4, 5])
+})
 
-  // console.log(flatMap(duplicateArray)(numbersArray))
-  // console.log(flatMap(identity)(numbersArray))
-  // console.log(R.chain(duplicateArray, numbersArray))
-  // console.log(R.chain(identity, numbersArray))
-  // console.log(_fp.flatMap(duplicateArray, numbersArray))
-  // console.log(_fp.flatMap(identity, numbersArray))
+suite.add('lodash flatMap', () => {
+  lodashFlatMap([1, 2, 3, 4, 5], n => [n, n])
+})
 
-  const flatMapDuplicateArray = flatMap(duplicateArray)
+suite.add('lodash/fp flatMap', () => {
+  lodashFpFlatMap(n => [n, n])([1, 2, 3, 4, 5])
+})
 
-  // timeInLoop('flatMap(duplicate)(array)', 1e5, () => flatMap(duplicateArray)(numbersArray))
+suite.add('ramda flatMap', () => {
+  ramdaFlatmap(n => [n, n])([1, 2, 3, 4, 5])
+})
 
-  // timeInLoop('R.chain(duplicate, array)', 1e5, () => R.chain(duplicateArray, numbersArray))
-
-  // timeInLoop('_fp.flatMap(duplicate, array)', 1e5, () => _fp.flatMap(duplicateArray, numbersArray))
-
-  // timeInLoop('flatMap(identity)(array)', 1e5, () => flatMap(identity)(numbersArray))
-
-  // timeInLoop('R.chain(identity, array)', 1e5, () => R.chain(identity, numbersArray))
-
-  // timeInLoop('_fp.flatMap(identity, array)', 1e5, () => _fp.flatMap(identity, numbersArray))
+if (process.argv[1] == __filename) {
+  suite.on('caseBestRun', run => console.log(run.output))
+  suite.run()
 }
 
+module.exports = suite

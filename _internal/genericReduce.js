@@ -12,8 +12,6 @@ const curryArgs3 = require('./curryArgs3')
 const arrayReduce = require('./arrayReduce')
 const objectReduce = require('./objectReduce')
 const mapReduce = require('./mapReduce')
-const generatorFunctionReduce = require('./generatorFunctionReduce')
-const asyncGeneratorFunctionReduce = require('./asyncGeneratorFunctionReduce')
 const reducerConcat = require('./reducerConcat')
 
 /**
@@ -25,7 +23,7 @@ const reducerConcat = require('./reducerConcat')
  *   |{ reduce: (any, T)=>any }|Object<T>
  *
  * genericReduce<T>(
- *   args [collection Foldable<T>, ...any],
+ *   collection Foldable<T>,
  *   reducer (any, T)=>any,
  *   result any?,
  * ) -> result
@@ -33,32 +31,16 @@ const reducerConcat = require('./reducerConcat')
  *
  * @related genericReduceConcurrent
  *
- * @TODO genericReduceSync(args, reducer, init) - performance optimization for some of these genericReduces that we know are synchronous
+ * @TODO genericReduceSync(collection, reducer, init) - performance optimization for some of these genericReduces that we know are synchronous
  *
- * @TODO genericReducePool(poolSize, args, reducer, init) - for some of these genericReduces that we want to race - result should not care about order of concatenations
+ * @TODO genericReducePool(poolSize, collection, reducer, init) - for some of these genericReduces that we want to race - result should not care about order of concatenations
  * reduce.pool
  * transform.pool
  * flatMap.pool
  */
-const genericReduce = function (args, reducer, result) {
-  const collection = args[0]
+const genericReduce = function (collection, reducer, result) {
   if (isArray(collection)) {
     return arrayReduce(collection, reducer, result)
-  }
-  if (typeof collection == 'function') {
-    if (isGeneratorFunction(collection)) {
-      return generatorFunctionReduce(collection, reducer, result)
-    }
-    if (isAsyncGeneratorFunction(collection)) {
-      return asyncGeneratorFunctionReduce(collection, reducer, result)
-    }
-    return curryArgs3(
-      genericReduce,
-      __,
-      args.length == 1
-        ? reducerConcat(reducer, collection)
-        : args.reduce(reducerConcat, reducer),
-      result)
   }
   if (collection == null) {
     return result === undefined

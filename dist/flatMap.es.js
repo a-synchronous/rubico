@@ -1,9 +1,11 @@
 /**
- * rubico v1.9.7
+ * rubico v2.2.3
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
+ * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
+
+const isPromise = value => value != null && typeof value.then == 'function'
 
 const isArray = Array.isArray
 
@@ -55,8 +57,6 @@ const curry3 = function (baseFunc, arg0, arg1, arg2) {
   }
   return curry3ResolveArg2(baseFunc, arg0, arg1)
 }
-
-const isPromise = value => value != null && typeof value.then == 'function'
 
 const iteratorReduceAsync = async function (
   iterator, reducer, result,
@@ -289,13 +289,6 @@ const curry5 = function (baseFunc, arg0, arg1, arg2, arg3, arg4) {
 
 const objectKeys = Object.keys
 
-const objectGetFirstKey = function (object) {
-  for (const key in object) {
-    return key
-  }
-  return undefined
-}
-
 const objectReduceAsync = async function (object, reducer, result, keys, index) {
   const keysLength = keys.length
   while (++index < keysLength) {
@@ -356,24 +349,6 @@ const mapReduce = function (map, reducer, result) {
   return result
 }
 
-const funcConcatSync = (
-  funcA, funcB,
-) => function pipedFunction(...args) {
-  return funcB(funcA(...args))
-}
-
-const generatorFunctionReduce = (
-  generatorFunction, reducer, result,
-) => funcConcatSync(
-  generatorFunction,
-  curry3(iteratorReduce, __, reducer, result))
-
-const asyncGeneratorFunctionReduce = (
-  asyncGeneratorFunction, reducer, result,
-) => funcConcatSync(
-  asyncGeneratorFunction,
-  curry3(asyncIteratorReduce, __, reducer, result))
-
 const reducerConcat = (
   reducerA, reducerB,
 ) => function pipedReducer(result, item) {
@@ -383,25 +358,9 @@ const reducerConcat = (
     : reducerB(intermediate, item)
 }
 
-const genericReduce = function (args, reducer, result) {
-  const collection = args[0]
+const genericReduce = function (collection, reducer, result) {
   if (isArray(collection)) {
     return arrayReduce(collection, reducer, result)
-  }
-  if (typeof collection == 'function') {
-    if (isGeneratorFunction(collection)) {
-      return generatorFunctionReduce(collection, reducer, result)
-    }
-    if (isAsyncGeneratorFunction(collection)) {
-      return asyncGeneratorFunctionReduce(collection, reducer, result)
-    }
-    return curryArgs3(
-      genericReduce,
-      __,
-      args.length == 1
-        ? reducerConcat(reducer, collection)
-        : args.reduce(reducerConcat, reducer),
-      result)
   }
   if (collection == null) {
     return result === undefined
@@ -461,7 +420,7 @@ const FlatMappingIterator = function (iterator, flatMapper) {
         return iteration
       }
       const monadAsArray = genericReduce(
-        [flatMapper(iteration.value)],
+        flatMapper(iteration.value),
         arrayPush,
         []) // this will always have at least one item
       if (monadAsArray.length > 1) {
@@ -507,12 +466,12 @@ const FlatMappingAsyncIterator = function (asyncIterator, flatMapper) {
           } else {
             const monad = flatMapper(value)
             if (isPromise(monad)) {
-              const bufferLoading = monad.then(
-              curryArgs3(genericReduce, __, arrayPush, buffer))
+              const bufferLoading =
+                monad.then(curry3(genericReduce, __, arrayPush, buffer))
               const promise = bufferLoading.then(() => promises.delete(promise))
               promises.add(promise)
             } else {
-              const bufferLoading = genericReduce([monad], arrayPush, buffer)
+              const bufferLoading = genericReduce(monad, arrayPush, buffer)
               if (isPromise(bufferLoading)) {
                 const promise = bufferLoading.then(() => promises.delete(promise))
                 promises.add(promise)
@@ -532,8 +491,6 @@ const FlatMappingAsyncIterator = function (asyncIterator, flatMapper) {
   }
 }
 
-const isBinary = ArrayBuffer.isView
-
 const always = value => function getter() { return value }
 
 const getArg1 = (arg0, arg1) => arg1
@@ -541,6 +498,12 @@ const getArg1 = (arg0, arg1) => arg1
 const identity = value => value
 
 const promiseAll = Promise.all.bind(Promise)
+
+const funcConcatSync = (
+  funcA, funcB,
+) => function pipedFunction(...args) {
+  return funcB(funcA(...args))
+}
 
 const asyncIteratorForEach = async function (asyncIterator, callback) {
   const promises = []
@@ -811,164 +774,9 @@ const stringFlatMap = function (string, flatMapper) {
     : arrayFlattenToString(monadArray)
 }
 
-const streamWrite = function (stream, chunk, encoding, callback) {
-  stream.write(chunk, encoding, callback)
-  return stream
-}
-
-const streamFlatExtend = async function (stream, item) {
-  const resultStreamWrite = curry2(streamWrite, stream, __),
-    // resultStreamWriteReducer = (_, subItem) => stream.write(subItem),
-    resultStreamWriteReducer = funcConcatSync(getArg1, resultStreamWrite),
-    promises = []
-  if (isArray(item)) {
-    const itemLength = item.length
-    let itemIndex = -1
-    while (++itemIndex < itemLength) {
-      stream.write(item[itemIndex])
-    }
-  } else if (item == null) {
-    stream.write(item)
-  } else if (typeof item[symbolIterator] == 'function') {
-    for (const subItem of item) {
-      stream.write(subItem)
-    }
-  } else if (typeof item[symbolAsyncIterator] == 'function') {
-    promises.push(
-      asyncIteratorForEach(item[symbolAsyncIterator](), resultStreamWrite))
-  } else if (typeof item.chain == 'function') {
-    const monadValue = item.chain(identity)
-    isPromise(monadValue)
-      ? promises.push(monadValue.then(resultStreamWrite))
-      : stream.write(monadValue)
-  } else if (typeof item.flatMap == 'function') {
-    const monadValue = item.flatMap(identity)
-    isPromise(monadValue)
-      ? promises.push(monadValue.then(resultStreamWrite))
-      : stream.write(monadValue)
-  } else if (typeof item.reduce == 'function') {
-    const folded = item.reduce(resultStreamWriteReducer, null)
-    isPromise(folded) && promises.push(folded)
-  } else if (item.constructor == Object) {
-    for (const key in item) {
-      stream.write(item[key])
-    }
-  } else {
-    stream.write(item)
-  }
-  return promises.length == 0
-    ? stream
-    : promiseAll(promises).then(always(stream))
-}
-
-const streamFlatMap = async function (stream, flatMapper) {
-  const promises = new Set()
-  for await (const item of stream) {
-    const monad = flatMapper(item)
-    if (isPromise(monad)) {
-      const selfDeletingPromise = monad.then(
-        curry2(streamFlatExtend, stream, __)).then(
-          () => promises.delete(selfDeletingPromise))
-      promises.add(selfDeletingPromise)
-    } else {
-      const streamFlatteningOperation = streamFlatExtend(stream, monad)
-      if (isPromise(streamFlatteningOperation)) {
-        const selfDeletingPromise = streamFlatteningOperation.then(
-          () => promises.delete(selfDeletingPromise))
-        promises.add(selfDeletingPromise)
-      }
-    }
-  }
-  await promiseAll(promises)
-  return stream
-}
-
-const globalThisHasBuffer = typeof Buffer == 'function'
-
-const noop = function () {}
-
-const bufferAlloc = globalThisHasBuffer ? Buffer.alloc : noop
-
-const _binaryExtend = function (typedArray, array) {
-  const offset = typedArray.length
-  const result = globalThisHasBuffer && typedArray.constructor == Buffer
-    ? bufferAlloc(offset + array.length)
-    : new typedArray.constructor(offset + array.length)
-  result.set(typedArray)
-  result.set(array, offset)
-  return result
-}
-
-const binaryExtend = function (typedArray, array) {
-  if (isArray(array) || isBinary(array)) {
-    return _binaryExtend(typedArray, array)
-  }
-  return _binaryExtend(typedArray, [array])
-}
-
-const arrayJoinToBinary = function (array, init) {
-  const length = array.length
-  let index = -1,
-    result = init
-  while (++index < length) {
-    result = binaryExtend(result, array[index])
-  }
-  return result
-}
-
-const arrayFlattenToBinary = function (array, result) {
-  const flattened = arrayFlatten(array)
-  return isPromise(flattened)
-    ? flattened.then(curry2(arrayJoinToBinary, __, result))
-    : arrayJoinToBinary(flattened, result)
-}
-
-const binaryFlatMap = function (binary, flatMapper) {
-  const monadArray = arrayMap(binary, flatMapper),
-    result = globalThisHasBuffer && binary.constructor == Buffer
-      ? bufferAlloc(0)
-      : new binary.constructor(0)
-  return isPromise(monadArray)
-    ? monadArray.then(curry2(arrayFlattenToBinary, __, result))
-    : arrayFlattenToBinary(monadArray, result)
-}
-
-const reducerFlatMap = (
-  reducer, flatMapper,
-) => function flatMappingReducer(result, value) {
-  const monad = flatMapper(value)
-  return isPromise(monad)
-    ? monad.then(curryArgs3(genericReduce, __, reducer, result))
-    : genericReduce([monad], reducer, result)
-}
-
-const generatorFunctionFlatMap = (
-  generatorFunction, flatMapper,
-) => function* flatMappingGeneratorFunction(...args) {
-  yield* FlatMappingIterator(generatorFunction(...args), flatMapper)
-}
-
-const asyncGeneratorFunctionFlatMap = (
-  asyncGeneratorFunction, flatMapper,
-) => async function* flatMappingAsyncGeneratorFunction(...args) {
-  yield* FlatMappingAsyncIterator(asyncGeneratorFunction(...args), flatMapper)
-}
-
-const flatMap = flatMapper => function flatMapping(value) {
+const _flatMap = function (value, flatMapper) {
   if (isArray(value)) {
     return arrayFlatMap(value, flatMapper)
-  }
-  if (typeof value == 'function') {
-    if (isGeneratorFunction(value)) {
-      return generatorFunctionFlatMap(value, flatMapper)
-    }
-    if (isAsyncGeneratorFunction(value)) {
-      return asyncGeneratorFunctionFlatMap(value, flatMapper)
-    }
-    return reducerFlatMap(value, flatMapper)
-  }
-  if (isBinary(value)) {
-    return binaryFlatMap(value, flatMapper)
   }
   if (value == null) {
     return flatMapper(value)
@@ -988,12 +796,6 @@ const flatMap = flatMapper => function flatMapping(value) {
   if (typeof value.flatMap == 'function') {
     return value.flatMap(flatMapper)
   }
-  if (
-    typeof value[symbolAsyncIterator] == 'function'
-      && typeof value.write == 'function'
-  ) {
-    return streamFlatMap(value, flatMapper)
-  }
   const valueConstructor = value.constructor
   if (valueConstructor == Object) {
     return objectFlatMap(value, flatMapper)
@@ -1005,6 +807,17 @@ const flatMap = flatMapper => function flatMapping(value) {
     return stringFlatMap(value, flatMapper)
   }
   return flatMapper(value)
+}
+
+const flatMap = (...args) => {
+  const flatMapper = args.pop()
+  if (args.length == 0) {
+    return curry2(_flatMap, __, flatMapper)
+  }
+  const collection = args[0]
+  return isPromise(collection)
+    ? collection.then(curry2(_flatMap, __, flatMapper))
+    : _flatMap(args[0], flatMapper)
 }
 
 export default flatMap

@@ -1,24 +1,25 @@
-const timeInLoop = require('../x/timeInLoop')
-const rubico = require('..')
+const TimeInLoopSuite = require('../_internal/TimeInLoopSuite')
+const and = require('../and')
 
-const { and } = rubico
+const suite = new TimeInLoopSuite()
 
-const isOdd = x => x % 2 == 1
+suite.add('rubico and', () => {
+  and({ a: 1 }, [
+    value => value.a == 1,
+    value => typeof value == 'object',
+  ])
+})
 
-const threeOddChecks = number => isOdd(number) && isOdd(number) && isOdd(number)
+suite.add('rubico and tacit', () => {
+  and([
+    value => value.a == 1,
+    value => typeof value == 'object',
+  ])({ a: 1 })
+})
 
-const threeIsOdd = and([isOdd, isOdd, isOdd])
-
-/**
- * @name or
- *
- * @benchmark
- * isOdd(value) && isOdd(value) && isOdd(value): 1e+6: 6.664ms
- * and([isOdd, isOdd, isOdd]): 1e+6: 16.842ms
- */
-
-{
-  // timeInLoop('isOdd(value) && isOdd(value) && isOdd(value)', 1e6, () => threeOddChecks(1))
-
-  // timeInLoop('and([isOdd, isOdd, isOdd])', 1e6, () => threeIsOdd(1))
+if (process.argv[1] == __filename) {
+  suite.on('caseBestRun', run => console.log(run.output))
+  suite.run()
 }
+
+module.exports = suite

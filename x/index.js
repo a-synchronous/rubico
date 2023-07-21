@@ -7,7 +7,6 @@ const find = require('./find')
 const findIndex = require('./findIndex')
 const first = require('./first')
 const flatten = require('./flatten')
-const forEach = require('./forEach')
 const groupBy = require('./groupBy')
 const has = require('./has')
 const identity = require('./identity')
@@ -43,7 +42,6 @@ const rubicoX = {
   findIndex,
   first,
   flatten,
-  forEach,
   groupBy,
   has,
   identity,

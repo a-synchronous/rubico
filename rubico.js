@@ -1,7 +1,8 @@
 const pipe = require('./pipe')
-const fork = require('./fork')
-const assign = require('./assign')
+const compose = require('./compose')
 const tap = require('./tap')
+const all = require('./all')
+const assign = require('./assign')
 const tryCatch = require('./tryCatch')
 const switchCase = require('./switchCase')
 const map = require('./map')
@@ -9,8 +10,9 @@ const filter = require('./filter')
 const reduce = require('./reduce')
 const transform = require('./transform')
 const flatMap = require('./flatMap')
-const any = require('./any')
-const all = require('./all')
+const forEach = require('./forEach')
+const some = require('./some')
+const every = require('./every')
 const and = require('./and')
 const or = require('./or')
 const not = require('./not')
@@ -42,14 +44,23 @@ const __ = require('./__')
  */
 
 const rubico = {
-  pipe, tap,
-  switchCase, tryCatch,
-  fork, assign, get, set, pick, omit,
-  map, filter, reduce, transform, flatMap,
-  and, or, not, any, all,
+  pipe, compose,
+
+  tap, forEach,
+
+  switchCase,
+
+  tryCatch,
+
+  all, assign, get, set, pick, omit,
+
+  map, filter, flatMap, reduce, transform,
+
+  and, or, not, some, every,
+
   eq, gt, lt, gte, lte,
-  thunkify, always,
-  curry, __,
+
+  thunkify, always, curry, __,
 }
 
 module.exports = rubico

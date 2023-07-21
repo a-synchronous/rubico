@@ -1,7 +1,7 @@
 /**
- * rubico v1.9.7
+ * rubico v2.2.3
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
+ * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 
@@ -11,7 +11,51 @@
   else (root.maxBy = maxBy) // Browser
 }(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
 
+const isPromise = value => value != null && typeof value.then == 'function'
+
+const __ = Symbol.for('placeholder')
+
+// argument resolver for curry3
+const curry3ResolveArg0 = (
+  baseFunc, arg1, arg2,
+) => function arg0Resolver(arg0) {
+  return baseFunc(arg0, arg1, arg2)
+}
+
+// argument resolver for curry3
+const curry3ResolveArg1 = (
+  baseFunc, arg0, arg2,
+) => function arg1Resolver(arg1) {
+  return baseFunc(arg0, arg1, arg2)
+}
+
+// argument resolver for curry3
+const curry3ResolveArg2 = (
+  baseFunc, arg0, arg1,
+) => function arg2Resolver(arg2) {
+  return baseFunc(arg0, arg1, arg2)
+}
+
+const curry3 = function (baseFunc, arg0, arg1, arg2) {
+  if (arg0 == __) {
+    return curry3ResolveArg0(baseFunc, arg1, arg2)
+  }
+  if (arg1 == __) {
+    return curry3ResolveArg1(baseFunc, arg0, arg2)
+  }
+  return curry3ResolveArg2(baseFunc, arg0, arg1)
+}
+
 const isArray = Array.isArray
+
+const isObject = value => {
+  if (value == null) {
+    return false
+  }
+
+  const typeofValue = typeof value
+  return (typeofValue == 'object') || (typeofValue == 'function')
+}
 
 const memoizeCappedUnary = function (func, cap) {
   const cache = new Map(),
@@ -71,14 +115,23 @@ const getByPath = function (value, path) {
   return result
 }
 
-const get = (path, defaultValue) => function getter(value) {
-  const result = value == null ? undefined : getByPath(value, path)
+// _get(object Object, path string, defaultValue function|any)
+const _get = function (object, path, defaultValue) {
+  const result = object == null ? undefined : getByPath(object, path)
   return result === undefined
-    ? typeof defaultValue == 'function' ? defaultValue(value) : defaultValue
+    ? typeof defaultValue == 'function' ? defaultValue(object) : defaultValue
     : result
 }
 
-const __ = Symbol.for('placeholder')
+const get = function (arg0, arg1, arg2) {
+  if (isPromise(arg0)) {
+    return arg0.then(curry3(_get, __, arg1, arg2))
+  }
+  if (isObject(arg0) && !isArray(arg0)) {
+    return _get(arg0, arg1, arg2)
+  }
+  return curry3(_get, __, arg0, arg1)
+}
 
 // argument resolver for curry2
 const curry2ResolveArg0 = (

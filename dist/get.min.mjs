@@ -1,7 +1,0 @@
-/**
- * rubico v1.9.7
- * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
- * rubico may be freely distributed under the MIT license.
- */
-const isArray=Array.isArray,memoizeCappedUnary=function(t,e){const r=new Map,i=function(i){if(r.has(i))return r.get(i);const a=t(i);return r.set(i,a),r.size>e&&r.clear(),a};return i.cache=r,i},pathDelimiters=/[.|[|\]]+/,parsePropertyPath=function(t){const e=t.length-1,r="["==t[0],i="]"==t[e];return r&&i?t.slice(1,e).split(pathDelimiters):r?t.slice(1).split(pathDelimiters):i?t.slice(0,e).split(pathDelimiters):t.split(pathDelimiters)},memoizedCappedParsePropertyPath=memoizeCappedUnary(parsePropertyPath,500),propertyPathToArray=t=>isArray(t)?t:"string"==typeof t?memoizedCappedParsePropertyPath(t):[t],getByPath=function(t,e){const r=propertyPathToArray(e),i=r.length;let a=-1,n=t;for(;++a<i;)if(n=n[r[a]],null==n)return;return n},get=(t,e)=>function(r){const i=null==r?void 0:getByPath(r,t);return void 0===i?"function"==typeof e?e(r):e:i};export default get;

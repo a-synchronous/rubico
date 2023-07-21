@@ -1,7 +1,0 @@
-/**
- * rubico v1.9.7
- * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
- * rubico may be freely distributed under the MIT license.
- */
-const isPromise=n=>null!=n&&"function"==typeof n.then,funcConcat=(n,r)=>function(...t){const o=n(...t);return isPromise(o)?o.then(r):r(o)},always=n=>function(){return n},tapSync=n=>function(...r){return n(...r),r[0]},thunkifyArgs=(n,r)=>function(){return n(...r)},thunkConditional=(n,r,t)=>n?r():t(),__=Symbol.for("placeholder"),curry3ResolveArg0=(n,r,t)=>function(o){return n(o,r,t)},curry3ResolveArg1=(n,r,t)=>function(o){return n(r,o,t)},curry3ResolveArg2=(n,r,t)=>function(o){return n(r,t,o)},curry3=function(n,r,t,o){return r==__?curry3ResolveArg0(n,t,o):t==__?curry3ResolveArg1(n,r,o):curry3ResolveArg2(n,r,t)},tap=n=>function(...r){const t=r[0],o=n(...r);return isPromise(o)?o.then(always(t)):t};tap.sync=tapSync,tap.if=(n,r)=>function(...t){const o=n(...t);if(isPromise(o))return o.then((e=thunkConditional,u=__,c=thunkifyArgs(tap(r),t),s=always(t[0]),u==__?curry3ResolveArg0(e,c,s):c==__?curry3ResolveArg1(e,u,s):curry3ResolveArg2(e,u,c)));var e,u,c,s;if(o){const n=r(...t);if(isPromise(n))return n.then(always(t[0]))}return t[0]};const consoleLog=console.log,trace=function(...n){const r=n[0];return"function"==typeof r?tap((t=r,o=consoleLog,function(...n){const r=t(...n);return isPromise(r)?r.then(o):o(r)})):tap(consoleLog)(...n);var t,o};export default trace;

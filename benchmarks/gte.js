@@ -1,25 +1,23 @@
-const timeInLoop = require('../x/timeInLoop')
-const rubico = require('..')
-const _ = require('lodash')
-const R = require('ramda')
+const TimeInLoopSuite = require('../_internal/TimeInLoopSuite')
+const gte = require('../gte')
 
-/**
- * @name gte
- *
- * @benchmark
- * rubico.gte(1, 0): 1e+7: 12.529ms
- * _.gte(1, 0): 1e+7: 13.886ms
- * R.gte(1, 0): 1e+7: 18.766ms
- */
+const suite = new TimeInLoopSuite()
 
-const rubicoGte = rubico.gte(1, 0)
+suite.add('rubico gte primitive', () => {
+  gte(1, 1)
+})
 
-// console.log(rubicoGte())
-// console.log(_.gte(1, 0))
-// console.log(R.gte(1, 0))
+suite.add('rubico gte left value right resolver', () => {
+  gte({ a: 1 }, 1, value => value.a)
+})
 
-// timeInLoop('rubico.gte(1, 0)', 1e7, () => rubicoGte())
+suite.add('rubico gte left resolver right resolver', () => {
+  gte({ a: 1 }, value => value.a, value => value.a)
+})
 
-// timeInLoop('_.gte(1, 0)', 1e7, () => _.gte(1, 0))
+if (process.argv[1] == __filename) {
+  suite.on('caseBestRun', run => console.log(run.output))
+  suite.run()
+}
 
-// timeInLoop('R.gte(1, 0)', 1e7, () => R.gte(1, 0))
+module.exports = suite

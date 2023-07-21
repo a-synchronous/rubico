@@ -192,7 +192,7 @@ module.exports = {
                 'allowForLoopAfterthoughts': true
             }
         ],
-        'no-process-env': 'error',
+        'no-process-env': 'off',
         'no-process-exit': 'error',
         'no-promise-executor-return': 'off',
         'no-proto': 'error',
@@ -209,7 +209,8 @@ module.exports = {
         'no-sequences': 'off',
         'no-shadow': 'off',
         'no-spaced-func': 'error',
-        'no-sync': 'error',
+        'no-sparse-arrays': 'off',
+        'no-sync': 'off',
         'no-tabs': 'error',
         'no-template-curly-in-string': 'error',
         'no-ternary': 'off',

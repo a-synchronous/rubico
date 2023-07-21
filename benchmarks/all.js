@@ -1,34 +1,43 @@
-const timeInLoop = require('../x/timeInLoop')
-const rubico = require('..')
-const _ = require('lodash')
-const R = require('ramda')
+const TimeInLoopSuite = require('../_internal/TimeInLoopSuite')
+const all = require('../all')
 
-const isOdd = number => number % 2 == 1
+const suite = new TimeInLoopSuite()
 
-const isEven = number => number % 2 == 0
+suite.add('rubico array all', () => {
+  all(5, [
+    value => value + 1,
+    value => value + 2,
+    value => value + 3,
+  ])
+})
 
-/**
- * @name allRace
- *
- * @benchmark
- * _.every: 1e+6: 20.984ms
- * R.all: 1e+6: 368.142ms
- * rubico.all: 1e+6: 24.772ms
- *
- * @remarks
- * promise check
- */
+suite.add('rubico array all tacit', () => {
+  all([
+    value => value + 1,
+    value => value + 2,
+    value => value + 3,
+  ])(5)
+})
 
-{
-  const evenNumbers = [2, 4, 6, 8, 10]
+suite.add('rubico object all', () => {
+  all(5, {
+    a: value => value + 1,
+    b: value => value + 2,
+    c: value => value + 3,
+  })
+})
 
-  // console.log(_.every(evenNumbers, isEven))
-  // console.log(R.all(isEven)(evenNumbers))
-  // console.log(rubico.all(isEven)(evenNumbers))
+suite.add('rubico object all tacit', () => {
+  all({
+    a: value => value + 1,
+    b: value => value + 2,
+    c: value => value + 3,
+  })(5)
+})
 
-  // timeInLoop('_.every', 1e6, () => _.every(evenNumbers, isEven))
-
-  // timeInLoop('R.all', 1e6, () => R.all(isEven)(evenNumbers))
-
-  // timeInLoop('rubico.all', 1e6, () => rubico.all(isEven)(evenNumbers))
+if (process.argv[1] == __filename) {
+  suite.on('caseBestRun', run => console.log(run.output))
+  suite.run()
 }
+
+module.exports = suite

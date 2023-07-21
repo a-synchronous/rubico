@@ -1,7 +1,0 @@
-/**
- * rubico v1.9.7
- * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
- * rubico may be freely distributed under the MIT license.
- */
-const isPromise=r=>null!=r&&"function"==typeof r.then,objectAssign=Object.assign,__=Symbol.for("placeholder"),curry3ResolveArg0=(r,n,e)=>function(t){return r(t,n,e)},curry3ResolveArg1=(r,n,e)=>function(t){return r(n,t,e)},curry3ResolveArg2=(r,n,e)=>function(t){return r(n,e,t)},curry3=function(r,n,e,t){return n==__?curry3ResolveArg0(r,e,t):e==__?curry3ResolveArg1(r,n,t):curry3ResolveArg2(r,n,e)},always=r=>function(){return r},promiseAll=Promise.all.bind(Promise),objectSet=function(r,n,e){return r[n]=e,r},funcObjectAll=r=>function(...n){const e={},t=[];for(const o in r){const c=r[o](...n);isPromise(c)?t.push(c.then(curry3(objectSet,e,o,__))):e[o]=c}return 0==t.length?e:promiseAll(t).then((o=e,function(){return o}));var o},assign=function(r){const n=funcObjectAll(r);return function(r){const e=n(r);return isPromise(e)?e.then(curry3(objectAssign,{},r,__)):{...r,...e}}};export default assign;

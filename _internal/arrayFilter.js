@@ -26,12 +26,11 @@ const arrayFilter = function (array, predicate) {
     resultIndex = -1
   while (++index < arrayLength) {
     const item = array[index],
-      shouldIncludeItem = predicate(item)
+      shouldIncludeItem = predicate(item, index, array)
     if (isPromise(shouldIncludeItem)) {
       return promiseAll(
-        arrayExtendMap(
-          [shouldIncludeItem], array, predicate, index)).then(
-            curry4(arrayFilterByConditions, array, result, index - 1, __))
+        arrayExtendMap([shouldIncludeItem], array, predicate, index)
+      ).then(curry4(arrayFilterByConditions, array, result, index - 1, __))
     }
     if (shouldIncludeItem) {
       result[++resultIndex] = item

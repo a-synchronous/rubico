@@ -1,25 +1,23 @@
-const timeInLoop = require('../x/timeInLoop')
-const rubico = require('..')
-const _ = require('lodash')
-const R = require('ramda')
+const TimeInLoopSuite = require('../_internal/TimeInLoopSuite')
+const eq = require('../eq')
 
-/**
- * @name eq
- *
- * @benchmark
- * rubico.eq(0, 0): 1e+7: 12.499ms
- * _.eq(0, 0): 1e+7: 12.585ms
- * R.equals(0, 0): 1e+7: 196.767ms
- */
+const suite = new TimeInLoopSuite()
 
-const rubicoEq = rubico.eq(0, 0)
+suite.add('rubico eq primitive', () => {
+  eq(1, 1)
+})
 
-// console.log(rubicoEq())
-// console.log(_.eq(0, 0))
-// console.log(R.equals(0, 0))
+suite.add('rubico eq left value right resolver', () => {
+  eq({ a: 1 }, 1, value => value.a)
+})
 
-// timeInLoop('rubico.eq(0, 0)', 1e7, () => rubicoEq())
+suite.add('rubico eq left resolver right resolver', () => {
+  eq({ a: 1 }, value => value.a, value => value.a)
+})
 
-// timeInLoop('_.eq(0, 0)', 1e7, () => _.eq(0, 0))
+if (process.argv[1] == __filename) {
+  suite.on('caseBestRun', run => console.log(run.output))
+  suite.run()
+}
 
-// timeInLoop('R.equals(0, 0)', 1e7, () => R.equals(0, 0))
+module.exports = suite

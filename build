@@ -1,0 +1,472 @@
+#!/usr/bin/env node
+
+require('./global')
+const rubico = require('./rubico')
+const x = require('./x')
+const Transducer = require('./Transducer')
+const rubicoVersion = require('./package.json').version
+const fs = require('fs')
+const nodePath = require('path')
+const { minify } = require('terser')
+
+const { identity, noop } = x
+
+const license = `
+/**
+ * rubico v${rubicoVersion}
+ * https://github.com/a-synchronous/rubico
+ * (c) 2019-${new Date().getFullYear()} Richard Tong
+ * rubico may be freely distributed under the MIT license.
+ */
+`.trim()
+
+const Stdout = {
+  concat(...args) {
+    console.log(...args)
+    return this
+  },
+}
+
+const replace = (pattern, replacement) => value => value.replace(pattern, replacement)
+
+const pathResolve = nodePath.resolve
+
+const pathDirname = nodePath.dirname
+
+// path string => cjs string
+const pathToCode = pipe([
+  fs.readFileSync,
+  value => value.toString(),
+  replace(/\/\*\*[\s\S]+?\*\//g, ''),
+  replace(/module.exports .+?\n/, ''),
+])
+
+// path string => codeBundle string
+const pathToCodeBundle = pipe([
+  all({
+    path: identity,
+    code: pathToCode,
+  }),
+
+  ({ path, code }) => {
+    const alreadyRequiredPaths = new Set()
+    const cwd = pathDirname(path)
+    let result = code
+    while (result.includes('require(')) {
+      result = result.replace(/const \w+ = require\('(?<path>.+)'\)/g, (match, p1, offset, source, groups) => {
+        const { path } = groups
+        const requiredPath = pathResolve(cwd, `${path}.js`)
+        if (alreadyRequiredPaths.has(requiredPath)) {
+          return ''
+        }
+        alreadyRequiredPaths.add(requiredPath)
+        let requiredCode = pathToCode(requiredPath)
+
+        while (requiredCode.includes('require(')) {
+          requiredCode = requiredCode.replace(
+            /const \w+ = require\('(?<path>.+)'\)/,
+            pipe([
+              (match, p1, offset, source, groups) => groups.path,
+              path => `${path}.js`,
+              curry.arity(2, pathResolve, pathDirname(requiredPath), __),
+              switchCase([
+                requiredPath => alreadyRequiredPaths.has(requiredPath),
+                always(''),
+                pipe([
+                  tap(requiredPath => alreadyRequiredPaths.add(requiredPath)),
+                  all({
+                    requiredPath: identity,
+                    code: pathToCode,
+                  }),
+                  ({ requiredPath, code }) => {
+                    code = code.replace(
+                      /const (?<moduleName>\w+) = require\('(?<path>.+)'\)/g,
+                      (match, p1, p2, offset, source, groups) => {
+                        const { moduleName, path } = groups
+                        const newPath = pathResolve(pathDirname(requiredPath), path)
+                        const newStatement = `const ${moduleName} = require('${newPath}')`
+                        return newStatement
+                      }
+                    )
+                    return code
+                  },
+                ]),
+              ]),
+            ]))
+        }
+        return requiredCode
+      })
+      result = result.replace(/\n{2,}/g, '\n\n')
+    }
+    return result
+  },
+])
+
+const ignoredNames = new Set([
+  'is',
+  'heapUsedInLoop',
+  'timeInLoop',
+  'tracef',
+])
+
+// name string => boolean
+const nameIsIgnored = name => ignoredNames.has(name)
+
+const build = pipe([
+  tap(tryCatch(
+    thunkify(fs.promises.rm, `${__dirname}/dist`, { recursive: true }),
+    noop,
+  )),
+  tap(thunkify(fs.promises.mkdir, `${__dirname}/dist/x`, { recursive: true })),
+
+  function createBundles() {
+    const bundles = []
+    for (const functionName of Object.keys(rubico)) {
+      const path = `${__dirname}/${functionName}.js`
+      bundles.push({
+        name: functionName,
+        type: 'cjs',
+        path,
+        distPath: `${__dirname}/dist/${functionName}.js`,
+      })
+      bundles.push({
+        name: functionName,
+        type: 'cjs-minified',
+        path,
+        distPath: `${__dirname}/dist/${functionName}.min.js`,
+      })
+      bundles.push({
+        name: functionName,
+        type: 'esm',
+        path,
+        distPath: `${__dirname}/dist/${functionName}.es.js`,
+      })
+      bundles.push({
+        name: functionName,
+        type: 'esm-minified',
+        path,
+        distPath: `${__dirname}/dist/${functionName}.es.min.js`,
+      })
+      bundles.push({
+        name: functionName,
+        type: 'esm',
+        path,
+        distPath: `${__dirname}/dist/${functionName}.mjs`,
+      })
+    }
+
+    for (const functionName of Object.keys(x)) {
+      const path = `${__dirname}/x/${functionName}.js`
+      bundles.push({
+        name: functionName,
+        type: 'cjs',
+        path,
+        distPath: `${__dirname}/dist/x/${functionName}.js`,
+      })
+      bundles.push({
+        name: functionName,
+        type: 'cjs-minified',
+        path,
+        distPath: `${__dirname}/dist/x/${functionName}.min.js`,
+      })
+      bundles.push({
+        name: functionName,
+        type: 'esm',
+        path,
+        distPath: `${__dirname}/dist/x/${functionName}.es.js`,
+      })
+      bundles.push({
+        name: functionName,
+        type: 'esm-minified',
+        path,
+        distPath: `${__dirname}/dist/x/${functionName}.es.min.js`,
+      })
+      bundles.push({
+        name: functionName,
+        type: 'esm',
+        path,
+        distPath: `${__dirname}/dist/x/${functionName}.mjs`,
+      })
+    }
+
+    bundles.push({
+      name: 'rubico',
+      type: 'cjs',
+      path: `${__dirname}/rubico.js`,
+      distPath: `${__dirname}/index.js`,
+    })
+
+    bundles.push({
+      name: 'rubico',
+      type: 'cjs',
+      path: `${__dirname}/rubico.js`,
+      distPath: `${__dirname}/dist/rubico.js`,
+    })
+
+    bundles.push({
+      name: 'rubico',
+      type: 'cjs-minified',
+      path: `${__dirname}/rubico.js`,
+      distPath: `${__dirname}/dist/rubico.min.js`,
+    })
+
+    bundles.push({
+      name: 'rubico',
+      type: 'cjs-global-module',
+      path: `${__dirname}/rubico.js`,
+      distPath: `${__dirname}/dist/rubico.global.js`,
+    })
+
+    bundles.push({
+      name: 'rubico',
+      type: 'cjs-global-module-minified',
+      path: `${__dirname}/rubico.js`,
+      distPath: `${__dirname}/dist/rubico.global.min.js`,
+    })
+
+    bundles.push({
+      name: 'rubico',
+      type: 'esm',
+      path: `${__dirname}/rubico.js`,
+      distPath: `${__dirname}/es.js`,
+    })
+
+    bundles.push({
+      name: 'rubico',
+      type: 'esm',
+      path: `${__dirname}/rubico.js`,
+      distPath: `${__dirname}/dist/rubico.es.js`,
+    })
+
+    bundles.push({
+      name: 'rubico',
+      type: 'esm-minified',
+      path: `${__dirname}/rubico.js`,
+      distPath: `${__dirname}/dist/rubico.es.min.js`,
+    })
+
+    bundles.push({
+      name: 'rubico',
+      type: 'esm',
+      path: `${__dirname}/rubico.js`,
+      distPath: `${__dirname}/dist/rubico.mjs`,
+    })
+
+    bundles.push({
+      name: 'Transducer',
+      type: 'cjs',
+      path: `${__dirname}/Transducer.js`,
+      distPath: `${__dirname}/dist/Transducer.js`,
+    })
+
+    bundles.push({
+      name: 'Transducer',
+      type: 'cjs-minified',
+      path: `${__dirname}/Transducer.js`,
+      distPath: `${__dirname}/dist/Transducer.min.js`,
+    })
+
+    bundles.push({
+      name: 'Transducer',
+      type: 'esm',
+      path: `${__dirname}/Transducer.js`,
+      distPath: `${__dirname}/dist/Transducer.es.js`,
+    })
+
+    bundles.push({
+      name: 'Transducer',
+      type: 'esm-minified',
+      path: `${__dirname}/Transducer.js`,
+      distPath: `${__dirname}/dist/Transducer.es.min.js`,
+    })
+
+    bundles.push({
+      name: 'Transducer',
+      type: 'esm',
+      path: `${__dirname}/Transducer.js`,
+      distPath: `${__dirname}/dist/Transducer.mjs`,
+    })
+
+    return bundles
+  },
+
+  transform(
+    compose([
+      Transducer.filter(pipe([
+        get('name'),
+        not(nameIsIgnored),
+      ])),
+
+      Transducer.map(assign({
+        baseCodeBundle: pipe([
+          get('path'),
+          pathToCodeBundle,
+        ]),
+      })),
+
+      Transducer.map(switchCase([
+        or([
+          ({ distPath }) => distPath.endsWith('rubico.mjs'),
+          ({ distPath }) => distPath.endsWith('rubico.es.js'),
+        ]),
+        assign({
+          codeBundle: ({ name, baseCodeBundle }) => `
+${license}
+${baseCodeBundle}export {
+  pipe, compose,
+
+  tap, forEach,
+
+  switchCase,
+
+  tryCatch,
+
+  all, assign, get, set, pick, omit,
+
+  map, filter, reduce, transform, flatMap,
+
+  and, or, not, some, every,
+
+  eq, gt, lt, gte, lte,
+
+  thunkify, always, curry, __,
+}
+
+export default ${name}
+`.trimStart(),
+        }),
+
+        or([
+          ({ distPath }) => distPath.endsWith('rubico.min.mjs'),
+          ({ distPath }) => distPath.endsWith('rubico.es.min.js'),
+        ]),
+        assign({
+          codeBundle: async ({ name, baseCodeBundle }) => `
+${license}
+${(await minify(`${baseCodeBundle}export {
+  pipe, compose,
+
+  tap, forEach,
+
+  switchCase,
+
+  tryCatch,
+
+  all, assign, get, set, pick, omit,
+
+  map, filter, reduce, transform, flatMap,
+
+  and, or, not, some, every,
+
+  eq, gt, lt, gte, lte,
+
+  thunkify, always, curry, __,
+}
+
+export default ${name}`)).code}
+`.trimStart(),
+        }),
+
+        eq('esm', get('type')),
+        assign({
+          codeBundle: ({ name, baseCodeBundle }) => `
+${license}
+${baseCodeBundle}export default ${name}
+`.trimStart(),
+        }),
+
+        eq('esm-minified', get('type')),
+        assign({
+          codeBundle: async ({ name, baseCodeBundle }) => `
+${license}
+${(await minify(`${baseCodeBundle}export default ${name}`)).code}
+`.trimStart(),
+        }),
+
+        eq('cjs', get('type')),
+        assign({
+          codeBundle: ({ name, baseCodeBundle }) => `
+${license}
+
+(function (root, ${name}) {
+  if (typeof module == 'object') (module.exports = ${name}) // CommonJS
+  else if (typeof define == 'function') define(() => ${name}) // AMD
+  else (root.${name} = ${name}) // Browser
+}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+${baseCodeBundle}return ${name}
+}())))
+`.trimStart(),
+        }),
+
+        eq('cjs-minified', get('type')),
+        assign({
+          codeBundle: async ({ name, baseCodeBundle }) => `
+${license}
+
+${(await minify(`(function (root, ${name}) {
+  if (typeof module == 'object') (module.exports = ${name}) // CommonJS
+  else if (typeof define == 'function') define(() => ${name}) // AMD
+  else (root.${name} = ${name}) // Browser
+}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+${baseCodeBundle}return ${name}
+}())))`)).code}
+`.trimStart(),
+        }),
+
+        eq('cjs-global-module', get('type')),
+        assign({
+          codeBundle: ({ name, baseCodeBundle }) => `
+${license}
+
+(function (root, ${name}) {
+  for (const functionName in ${name}) {
+    root[functionName] = ${name}[functionName]
+  }
+}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+${baseCodeBundle}return ${name}
+}())))
+`.trimStart(),
+        }),
+
+        eq('cjs-global-module-minified', get('type')),
+        assign({
+          codeBundle: async ({ name, baseCodeBundle }) => `
+${license}
+
+${(await minify(`(function (root, ${name}) {
+  for (const functionName in ${name}) {
+    root[functionName] = ${name}[functionName]
+  }
+}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+${baseCodeBundle}return ${name}
+}())))`)).code}
+`.trimStart(),
+        }),
+
+        function throwingUnrecognizedTypeError({ name, type }) {
+          throw new TypeError(`${name} - unrecognized type ${type}`)
+        }
+      ])),
+
+      Transducer.forEach(pipe([
+        get('distPath'),
+        replace(process.env.HOME, '~'),
+        curry.arity(2, console.log, 'writing', __),
+      ])),
+    ]),
+    {
+      async concat({ distPath, codeBundle }) {
+        await fs.promises.writeFile(distPath, codeBundle)
+        return this
+      },
+    },
+    // Stdout,
+    // null,
+  ),
+])
+
+if (require.main == module) {
+  build()
+}
+
+module.exports = build

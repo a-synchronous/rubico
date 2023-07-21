@@ -1,8 +1,9 @@
-const noop = require('./_internal/noop')
+const areAnyValuesPromises = require('./_internal/areAnyValuesPromises')
+const promiseAll = require('./_internal/promiseAll')
 const funcConcat = require('./_internal/funcConcat')
-const funcConcatSync = require('./_internal/funcConcatSync')
-const isGeneratorFunction = require('./_internal/isGeneratorFunction')
-const isAsyncGeneratorFunction = require('./_internal/isAsyncGeneratorFunction')
+const funcApply = require('./_internal/funcApply')
+const curry2 = require('./_internal/curry2')
+const __ = require('./_internal/placeholder')
 
 /**
  * @name pipe
@@ -15,7 +16,7 @@ const isAsyncGeneratorFunction = require('./_internal/isAsyncGeneratorFunction')
  * ```
  *
  * @description
- * Creates a function pipeline with an array of functions where each function passes its return value as a single argument to the next function until all functions have executed. The result of a pipeline execution is the return of its last function. If any function of the pipeline is asynchronous, the result of the execution is a Promise.
+ * Creates a function pipeline from an array of functions, where each function passes its return value as a single argument to the next function until all functions have executed. The first function is called with the arguments to the pipeline, while the result of the pipeline execution is the return of its last function. If any function of the pipeline is asynchronous, the result of the execution is a Promise.
  *
  * ```javascript [playground]
  * const syncAdd123 = pipe([
@@ -53,55 +54,17 @@ const isAsyncGeneratorFunction = require('./_internal/isAsyncGeneratorFunction')
  */
 const pipe = function (...args) {
   const funcs = args.pop()
+  const pipeline = funcs.reduce(funcConcat)
 
-  if (args.length > 0) {
-    return funcs.reduce(funcConcat)(...args)
+  if (args.length == 0) {
+    return pipeline
   }
 
-  let functionPipeline = noop,
-    functionComposition = noop
-  return function pipeline(...args) {
-    const firstArg = args[0]
-
-    if (
-      typeof firstArg == 'function'
-        && !isGeneratorFunction(firstArg)
-        && !isAsyncGeneratorFunction(firstArg)
-    ) {
-      if (functionComposition == noop) {
-        functionComposition = funcs.reduceRight(funcConcat)
-      }
-      return functionComposition(firstArg)
-    }
-
-    if (functionPipeline == noop) {
-      functionPipeline = funcs.reduce(funcConcat)
-    }
-    return functionPipeline(...args)
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args).then(curry2(funcApply, pipeline, __))
   }
+
+  return pipeline(...args)
 }
-
-// funcs Array<function> -> pipeline function
-const pipeSync = funcs => funcs.reduce(funcConcatSync)
-
-/**
- * @name pipe.sync
- *
- * @synopsis
- * ```coffeescript [specscript]
- * pipe.sync(funcs Array<function>)(...args) -> result Promise|any
- * ```
- *
- * @description
- * A synchronous version of `pipe` that does not resolve promises by default.
- *
- * ```javascript [playground]
- * pipe.sync([
- *   value => Promise.resolve(value),
- *   promise => promise.then(console.log)
- * ])('hey') // hey
- * ```
- */
-pipe.sync = pipeSync
 
 module.exports = pipe

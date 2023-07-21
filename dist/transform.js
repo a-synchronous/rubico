@@ -1,7 +1,7 @@
 /**
- * rubico v1.9.7
+ * rubico v2.2.3
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
+ * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 
@@ -305,13 +305,6 @@ const curry5 = function (baseFunc, arg0, arg1, arg2, arg3, arg4) {
 
 const objectKeys = Object.keys
 
-const objectGetFirstKey = function (object) {
-  for (const key in object) {
-    return key
-  }
-  return undefined
-}
-
 const objectReduceAsync = async function (object, reducer, result, keys, index) {
   const keysLength = keys.length
   while (++index < keysLength) {
@@ -372,24 +365,6 @@ const mapReduce = function (map, reducer, result) {
   return result
 }
 
-const funcConcatSync = (
-  funcA, funcB,
-) => function pipedFunction(...args) {
-  return funcB(funcA(...args))
-}
-
-const generatorFunctionReduce = (
-  generatorFunction, reducer, result,
-) => funcConcatSync(
-  generatorFunction,
-  curry3(iteratorReduce, __, reducer, result))
-
-const asyncGeneratorFunctionReduce = (
-  asyncGeneratorFunction, reducer, result,
-) => funcConcatSync(
-  asyncGeneratorFunction,
-  curry3(asyncIteratorReduce, __, reducer, result))
-
 const reducerConcat = (
   reducerA, reducerB,
 ) => function pipedReducer(result, item) {
@@ -399,25 +374,9 @@ const reducerConcat = (
     : reducerB(intermediate, item)
 }
 
-const genericReduce = function (args, reducer, result) {
-  const collection = args[0]
+const genericReduce = function (collection, reducer, result) {
   if (isArray(collection)) {
     return arrayReduce(collection, reducer, result)
-  }
-  if (typeof collection == 'function') {
-    if (isGeneratorFunction(collection)) {
-      return generatorFunctionReduce(collection, reducer, result)
-    }
-    if (isAsyncGeneratorFunction(collection)) {
-      return asyncGeneratorFunctionReduce(collection, reducer, result)
-    }
-    return curryArgs3(
-      genericReduce,
-      __,
-      args.length == 1
-        ? reducerConcat(reducer, collection)
-        : args.reduce(reducerConcat, reducer),
-      result)
   }
   if (collection == null) {
     return result === undefined
@@ -455,10 +414,6 @@ const genericReduce = function (args, reducer, result) {
 
 const objectAssign = Object.assign
 
-const isArrayLike = function (value) {
-  return value != null && value.length > 0
-}
-
 const _arrayExtend = function (array, values) {
   const arrayLength = array.length,
     valuesLength = values.length
@@ -470,7 +425,7 @@ const _arrayExtend = function (array, values) {
 }
 
 const arrayExtend = function (array, values) {
-  if (isArrayLike(values)) {
+  if (isArray(values) || isBinary(values)) {
     return _arrayExtend(array, values)
   }
   array.push(values)
@@ -545,57 +500,68 @@ const callConcat = function (object, values) {
   return object.concat(values)
 }
 
-const identityTransform = function (args, transducer, result) {
-  const nil = genericReduce(args, transducer(noop), null)
-  return isPromise(nil) ? nil.then(always(result)) : result
+const identityTransform = function (collection, transducer, accum) {
+  const nil = genericReduce(collection, transducer(noop), null)
+  return isPromise(nil) ? nil.then(always(accum)) : accum
 }
 
-const genericTransform = function (args, transducer, result) {
-  if (isArray(result)) {
-    return genericReduce(args, transducer(arrayExtend), result)
+const genericTransform = function (collection, transducer, accum) {
+  if (isArray(accum)) {
+    return genericReduce(collection, transducer(arrayExtend), accum)
   }
-  if (isBinary(result)) {
-    const intermediateArray = genericReduce(args, transducer(arrayExtend), [])
+  if (isBinary(accum)) {
+    const intermediateArray = genericReduce(collection, transducer(arrayExtend), [])
     return isPromise(intermediateArray)
-      ? intermediateArray.then(curry2(binaryExtend, result, __))
-      : binaryExtend(result, intermediateArray)
+      ? intermediateArray.then(curry2(binaryExtend, accum, __))
+      : binaryExtend(accum, intermediateArray)
   }
-  if (result == null) {
-    return identityTransform(args, transducer, result)
+  if (accum == null) {
+    return identityTransform(collection, transducer, accum)
   }
 
-  const resultConstructor = result.constructor
-  if (typeof result == 'string' || resultConstructor == String) {
-    // TODO: use array + join over adding
-    return genericReduce(args, transducer(add), result)
+  const constructor = accum.constructor
+  if (typeof accum == 'string' || constructor == String) {
+    const result = genericReduce(collection, transducer(arrayExtend), [accum])
+    return isPromise(result)
+      ? result.then(curry3(callPropUnary, __, 'join', ''))
+      : result.join('')
   }
-  if (typeof result.concat == 'function') {
-    return genericReduce(args, transducer(callConcat), result)
+  if (typeof accum.concat == 'function') {
+    return genericReduce(collection, transducer(callConcat), accum)
   }
-  if (typeof result.write == 'function') {
-    return genericReduce(args, transducer(streamExtend), result)
+  if (typeof accum.write == 'function') {
+    return genericReduce(collection, transducer(streamExtend), accum)
   }
-  if (resultConstructor == Set) {
-    return genericReduce(args, transducer(setExtend), result)
+  if (constructor == Set) {
+    return genericReduce(collection, transducer(setExtend), accum)
   }
-  if (resultConstructor == Object) {
-    return genericReduce(args, transducer(objectAssign), result)
+  if (constructor == Object) {
+    return genericReduce(collection, transducer(objectAssign), accum)
   }
-  return identityTransform(args, transducer, result)
+  return identityTransform(collection, transducer, accum)
 }
 
-const transform = function (transducer, init) {
-  if (typeof init == 'function') {
-    return function transforming(...args) {
-      const result = init(...args)
-      return isPromise(result)
-        ? result.then(curry3(genericTransform, args, transducer, __))
-        : genericTransform(args, transducer, result)
-    }
+// _transform(collection any, transducer function, initialValue function|any) -> Promise
+const _transform = function (collection, transducer, initialValue) {
+  if (typeof initialValue == 'function') {
+    const actualInitialValue = initialValue(collection)
+    return isPromise(actualInitialValue)
+      ? actualInitialValue.then(curry3(genericTransform, collection, transducer, __))
+      : genericTransform(collection, transducer, actualInitialValue)
   }
-  return function transforming(...args) {
-    return genericTransform(args, transducer, init)
+  return isPromise(initialValue)
+    ? initialValue.then(curry3(genericTransform, collection, transducer, __))
+    : genericTransform(collection, transducer, initialValue)
+}
+
+const transform = function (...args) {
+  if (typeof args[0] == 'function') {
+    return curry3(_transform, __, args[0], args[1])
   }
+  if (isPromise(args[0])) {
+    return args[0].then(curry3(_transform, __, args[1], args[2]))
+  }
+  return _transform(args[0], args[1], args[2])
 }
 
 return transform

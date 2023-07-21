@@ -1,7 +1,7 @@
 /**
- * rubico v1.9.7
+ * rubico v2.2.3
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
+ * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 
@@ -16,6 +16,26 @@ const isPromise = value => value != null && typeof value.then == 'function'
 const objectAssign = Object.assign
 
 const __ = Symbol.for('placeholder')
+
+// argument resolver for curry2
+const curry2ResolveArg0 = (
+  baseFunc, arg1,
+) => function arg0Resolver(arg0) {
+  return baseFunc(arg0, arg1)
+}
+
+// argument resolver for curry2
+const curry2ResolveArg1 = (
+  baseFunc, arg0,
+) => function arg1Resolver(arg1) {
+  return baseFunc(arg0, arg1)
+}
+
+const curry2 = function (baseFunc, arg0, arg1) {
+  return arg0 == __
+    ? curry2ResolveArg0(baseFunc, arg1)
+    : curry2ResolveArg1(baseFunc, arg0)
+}
 
 // argument resolver for curry3
 const curry3ResolveArg0 = (
@@ -57,7 +77,7 @@ const objectSet = function (object, property, value) {
   return object
 }
 
-const funcObjectAll = funcs => function objectAllFuncs(...args) {
+const functionObjectAll = function (funcs, args) {
   const result = {}, promises = []
   for (const key in funcs) {
     const resultItem = funcs[key](...args)
@@ -70,14 +90,21 @@ const funcObjectAll = funcs => function objectAllFuncs(...args) {
   return promises.length == 0 ? result : promiseAll(promises).then(always(result))
 }
 
-const assign = function (funcs) {
-  const allFuncs = funcObjectAll(funcs)
-  return function assignment(value) {
-    const result = allFuncs(value)
-    return isPromise(result)
-      ? result.then(curry3(objectAssign, {}, value, __))
-      : ({ ...value, ...result })
+// _assign(object Object, funcs Object<function>) -> Promise|Object
+const _assign = function (object, funcs) {
+  const result = functionObjectAll(funcs, [object])
+  return isPromise(result)
+    ? result.then(curry3(objectAssign, {}, object, __))
+    : ({ ...object, ...result })
+}
+
+const assign = function (arg0, arg1) {
+  if (arg1 == null) {
+    return curry2(_assign, __, arg0)
   }
+  return isPromise(arg0)
+    ? arg0.then(curry2(_assign, __, arg1))
+    : _assign(arg0, arg1)
 }
 
 return assign

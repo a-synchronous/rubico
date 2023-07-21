@@ -1,72 +1,138 @@
+const areAnyValuesPromises = require('./_internal/areAnyValuesPromises')
+const promiseAll = require('./_internal/promiseAll')
 const isArray = require('./_internal/isArray')
-const arrayAll = require('./_internal/arrayAll')
-const iteratorAll = require('./_internal/iteratorAll')
-const asyncIteratorAll = require('./_internal/asyncIteratorAll')
-const objectValues = require('./_internal/objectValues')
-const reducerAll = require('./_internal/reducerAll')
-const symbolIterator = require('./_internal/symbolIterator')
-const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
+const __ = require('./_internal/placeholder')
+const curry2 = require('./_internal/curry2')
+const curryArgs2 = require('./_internal/curryArgs2')
+const functionArrayAll = require('./_internal/functionArrayAll')
+const functionArrayAllSeries = require('./_internal/functionArrayAllSeries')
+const functionObjectAll = require('./_internal/functionObjectAll')
 
 /**
  * @name all
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Foldable = Iterable|AsyncIterable|Object
+ * all(...args, funcsArray Array<function>) -> result Promise|Array
  *
- * all(predicate function)(collection Foldable) -> result Promise|boolean
+ * all(funcsArray Array<function>)(...args) -> result Promise|Array
+ *
+ * all(...args, funcsObject Object<function>) -> result Promise|Object
+ *
+ * all(funcsObject Object<function>)(...args) -> result Promise|Object
  * ```
  *
  * @description
- * Test a predicate concurrently across all items of a collection, returning true if all predications are truthy.
+ * Function executor and composer. Accepts either an array of functions or an object of functions as the values. Calls each function of the provided array or object in parallel with the provided arguments. Returns either an array or object of the results of the function executions.
  *
  * ```javascript [playground]
- * const isOdd = number => number % 2 == 1
+ * const createArrayOfGreetingsFor = all([
+ *   name => `Hi ${name}`,
+ *   name => `Hey ${name}`,
+ *   name => `Hello ${name}`,
+ * ])
  *
- * console.log(
- *   all(isOdd)([1, 2, 3, 4, 5]),
- * ) // false
+ * const arrayOfGreetingsForFred = createArrayOfGreetingsFor('Fred')
  *
- * console.log(
- *   all(isOdd)([1, 3, 5]),
- * ) // true
+ * console.log(arrayOfGreetingsForFred)
+ * // ['Hi Fred', 'Hey Fred', 'Hello Fred']
+ *
+ * const createObjectOfGreetingsFor = all({
+ *   hi: name => `Hi ${name}`,
+ *   hey: name => `Hey ${name}`,
+ *   hello: name => `Hello ${name}`,
+ * })
+ *
+ * const objectOfGreetingsForJane = createObjectOfGreetingsFor('Jane')
+ *
+ * console.log(objectOfGreetingsForJane)
+ * // { hi: 'Hi Jane', hey: 'Hey Jane', hello: 'Hello Jane' }
  * ```
  *
- * The collection can be any iterable, async iterable, or object values iterable collection. Below is an example of `all` accepting an async generator as the collection.
+ * `all` can simultaneously compose objects and handle promises.
  *
  * ```javascript [playground]
- * const asyncNumbers = async function* () {
- *   yield 1; yield 2; yield 3; yield 4; yield 5
- * }
+ * const identity = value => value
  *
- * all(async number => number < 6)(asyncNumbers()).then(console.log) // true
+ * const userbase = new Map()
+ * userbase.set('1', { _id: 1, name: 'George' })
+ *
+ * const getUserByID = async id => userbase.get(id)
+ *
+ * const getAndLogUserById = pipe([
+ *   all({
+ *     id: identity,
+ *     user: getUserByID,
+ *   }),
+ *   tap(({ id, user }) => {
+ *     console.log(`Got user ${JSON.stringify(user)} by id ${id}`)
+ *   }),
+ * ])
+ *
+ * getAndLogUserById('1') // Got user {"_id":1,"name":"George"} by id 1
  * ```
  *
  * @execution concurrent
- *
- * @muxing
  */
-const all = predicate => function allTruthy(value) {
-  if (isArray(value)) {
-    return arrayAll(value, predicate)
-  }
-  if (value == null) {
-    return predicate(value)
+
+const all = function (...args) {
+  const funcs = args.pop()
+  if (args.length == 0) {
+    return isArray(funcs)
+      ? curryArgs2(functionArrayAll, funcs, __)
+      : curryArgs2(functionObjectAll, funcs, __)
   }
 
-  if (typeof value[symbolIterator] == 'function') {
-    return iteratorAll(value[symbolIterator](), predicate)
+  if (areAnyValuesPromises(args)) {
+    return isArray(funcs)
+      ? promiseAll(args).then(curry2(functionArrayAll, funcs, __))
+      : promiseAll(args).then(curry2(functionObjectAll, funcs, __))
   }
-  if (typeof value[symbolAsyncIterator] == 'function') {
-    return asyncIteratorAll(value[symbolAsyncIterator](), predicate, new Set())
+
+  return isArray(funcs)
+    ? functionArrayAll(funcs, args)
+    : functionObjectAll(funcs, args)
+}
+
+/**
+ * @name all.series
+ *
+ * @synopsis
+ * ```coffeescript [specscript]
+ * all.series(...args, funcsArray Array<function>) -> result Promise|Array
+ *
+ * all.series(funcsArray Array<function>)(...args) -> result Promise|Array
+ * ```
+ *
+ * @description
+ * `all` with serial execution.
+ *
+ * ```javascript [playground]
+ * const sleep = ms => () => new Promise(resolve => setTimeout(resolve, ms))
+ *
+ * all.series([
+ *   greeting => console.log(greeting + ' world'),
+ *   sleep(1000),
+ *   greeting => console.log(greeting + ' mom'),
+ *   sleep(1000),
+ *   greeting => console.log(greeting + ' goodbye'),
+ * ])('hello') // hello world
+ *             // hello mom
+ *             // hello goodbye
+ * ```
+ *
+ * @execution series
+ */
+
+all.series = function allSeries(...args) {
+  const funcs = args.pop()
+  if (args.length == 0) {
+    return curryArgs2(functionArrayAllSeries, funcs, __)
   }
-  if (typeof value.reduce == 'function') {
-    return value.reduce(reducerAll(predicate), true)
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args).then(curry2(functionArrayAllSeries, funcs, __))
   }
-  if (value.constructor == Object) {
-    return arrayAll(objectValues(value), predicate)
-  }
-  return predicate(value)
+  return functionArrayAllSeries(funcs, args)
 }
 
 module.exports = all

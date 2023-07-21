@@ -1,23 +1,17 @@
+const isPromise = require('./_internal/isPromise')
 const MappingIterator = require('./_internal/MappingIterator')
 const MappingAsyncIterator = require('./_internal/MappingAsyncIterator')
 const __ = require('./_internal/placeholder')
 const curry2 = require('./_internal/curry2')
 const isArray = require('./_internal/isArray')
 const isObject = require('./_internal/isObject')
-const isGeneratorFunction = require('./_internal/isGeneratorFunction')
-const isAsyncGeneratorFunction = require('./_internal/isAsyncGeneratorFunction')
 const arrayMap = require('./_internal/arrayMap')
-const generatorFunctionMap = require('./_internal/generatorFunctionMap')
-const asyncGeneratorFunctionMap = require('./_internal/asyncGeneratorFunctionMap')
-const reducerMap = require('./_internal/reducerMap')
 const stringMap = require('./_internal/stringMap')
 const setMap = require('./_internal/setMap')
 const mapMap = require('./_internal/mapMap')
 const objectMap = require('./_internal/objectMap')
 const arrayMapSeries = require('./_internal/arrayMapSeries')
 const arrayMapPool = require('./_internal/arrayMapPool')
-const arrayMapWithIndex = require('./_internal/arrayMapWithIndex')
-const objectMapOwn = require('./_internal/objectMapOwn')
 const objectMapEntries = require('./_internal/objectMapEntries')
 const mapMapEntries = require('./_internal/mapMapEntries')
 const symbolIterator = require('./_internal/symbolIterator')
@@ -69,15 +63,6 @@ const _map = function (value, mapper) {
   if (isArray(value)) {
     return arrayMap(value, mapper)
   }
-  if (typeof value == 'function') {
-    if (isGeneratorFunction(value)) {
-      return generatorFunctionMap(value, mapper)
-    }
-    if (isAsyncGeneratorFunction(value)) {
-      return asyncGeneratorFunctionMap(value, mapper)
-    }
-    return reducerMap(value, mapper)
-  }
   if (value == null) {
     return value
   }
@@ -114,37 +99,16 @@ const _map = function (value, mapper) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * arrayMapperFunc (value any, index number, array Array)=>Promise|any
+ * type Mappable = Array|Object|Set|Map|Iterator|AsyncIterator
  *
- * map(arrayMapperFunc)(value Array) -> result Promise|Array
- * map(value Array, arrayMapperFunc) -> result Promise|Array
+ * type Mapper = (
+ *   value any,
+ *   indexOrKey number|string,
+ *   collection Mappable
+ * )=>(mappedItem Promise|any)
  *
- * objectMapperFunc (value any, key string, object Object)=>Promise|any
- *
- * map(objectMapperFunc)(value Object) -> result Promise|Array
- * map(value Object, objectMapperFunc) -> result Promise|Array
- *
- * setMapperFunc (value any, value, set Set)=>Promise|any
- *
- * map(setMapperFunc)(value Set) -> result Promise|Set
- * map(value Set, setMapperFunc) -> result Promise|Set
- *
- * mapMapperFunc (value any, key any, originalMap Map)=>Promise|any
- *
- * map(mapMapperFunc)(value Map) -> result Promise|Map
- * map(value Map, mapMapperFunc) -> result Promise|Map
- *
- * iteratorMapperFunc (value any)=>any
- *
- * map(iteratorMapperFunc)(value Iterator|Generator) -> result Iterator
- * map(value Iterator|Generator, iteratorMapperFunc) -> result Iterator
- *
- * asyncIteratorMapperFunc (value any)=>Promise|any
- *
- * map(asyncIteratorMapperFunc)(value AsyncIterator|AsyncGenerator)
- *   -> result AsyncIterator
- * map(value AsyncIterator|AsyncGenerator, asyncIteratorMapperFunc)
- *   -> result AsyncIterator
+ * map(value Mappable, mapper Mapper) -> result Promise|Mappable
+ * map(mapper Mapper)(value Mappable) -> result Promise|Mappable
  * ```
  *
  * @description
@@ -285,10 +249,15 @@ const _map = function (value, mapper) {
 
 const map = (...args) => {
   const mapper = args.pop()
-  if (args.length > 0) {
-    return _map(args[0], mapper)
+  if (args.length == 0) {
+    return curry2(_map, __, mapper)
   }
-  return curry2(_map, __, mapper)
+
+  const collection = args[0]
+  if (isPromise(collection)) {
+    return collection.then(curry2(_map, __, mapper))
+  }
+  return _map(collection, mapper)
 }
 
 /**
@@ -405,81 +374,6 @@ map.pool = (concurrencyLimit, mapper) => function concurrentPoolMapping(value) {
     return arrayMapPool(value, mapper, concurrencyLimit)
   }
   throw new TypeError(`${value} is not an Array`)
-}
-
-/**
- * @name map.withIndex
- *
- * @synopsis
- * ```coffeescript [specscript]
- * map.withIndex(
- *   indexedMapperFunc (item any, index numberl, array Array)=>Promise|any,
- * )(array Array) -> result Promise|Array
- * ```
- *
- * @description
- * `map` with an indexed mapper.
- *
- * ```javascript [playground]
- * const range = length =>
- *   map.withIndex((_, index) => index + 1)(Array(length))
- *
- * console.log(range(5)) // [1, 2, 3, 4, 5]
- * ```
- *
- * @execution concurrent
- *
- * @related
- * map, filter.withIndex
- *
- * @DEPRECATED
- */
-map.withIndex = mapper => function mappingWithIndex(value) {
-  if (isArray(value)) {
-    return arrayMapWithIndex(value, mapper)
-  }
-  throw new TypeError(`${value} is not an Array`)
-}
-
-/**
- * @name map.own
- *
- * @synopsis
- * ```coffeescript [specscript]
- * map.own(
- *   mapperFunc (item any)=>Promise|any,
- * )(object Object) -> result Promise|Object
- * ```
- *
- * @description
- * Applies a mapper function concurrently to an object's own values, returning an object of results. Mapper may be asynchronous.
- * Guards mapping by validating that each property is the object's own and not inherited from the prototype chain.
- *
- * ```javascript [playground]
- * const Person = function (name) {
- *   this.name = name
- * }
- *
- * Person.prototype.greet = function () {}
- *
- * const david = new Person('david')
- * david.a = 1
- * david.b = 2
- * david.c = 3
- *
- * const square = number => number ** 2
- * console.log(
- *   map.own(square)(david)
- * ) // { name: NaN, a: 1, b: 4, c: 9 }
- * ```
- *
- * @DEPRECATED
- */
-map.own = mapper => function mappingOwnProperties(value) {
-  if (isObject(value) && !isArray(value)) {
-    return objectMapOwn(value, mapper)
-  }
-  throw new TypeError(`${value} is not an Object`)
 }
 
 module.exports = map

@@ -1,7 +1,7 @@
 /**
- * rubico v1.9.7
+ * rubico v2.2.3
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
+ * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 
@@ -11,9 +11,89 @@
   else (root.all = all) // Browser
 }(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
 
+const isPromise = value => value != null && typeof value.then == 'function'
+
+const areAnyValuesPromises = function (values) {
+  const length = values.length
+  let index = -1
+  while (++index < length) {
+    const value = values[index]
+    if (isPromise(value)) {
+      return true
+    }
+  }
+  return false
+}
+
+const promiseAll = Promise.all.bind(Promise)
+
 const isArray = Array.isArray
 
 const __ = Symbol.for('placeholder')
+
+// argument resolver for curry2
+const curry2ResolveArg0 = (
+  baseFunc, arg1,
+) => function arg0Resolver(arg0) {
+  return baseFunc(arg0, arg1)
+}
+
+// argument resolver for curry2
+const curry2ResolveArg1 = (
+  baseFunc, arg0,
+) => function arg1Resolver(arg1) {
+  return baseFunc(arg0, arg1)
+}
+
+const curry2 = function (baseFunc, arg0, arg1) {
+  return arg0 == __
+    ? curry2ResolveArg0(baseFunc, arg1)
+    : curry2ResolveArg1(baseFunc, arg0)
+}
+
+// argument resolver for curryArgs2
+const curryArgs2ResolveArgs0 = (
+  baseFunc, arg1, arg2,
+) => function args0Resolver(...args) {
+  return baseFunc(args, arg1)
+}
+
+// argument resolver for curryArgs2
+const curryArgs2ResolveArgs1 = (
+  baseFunc, arg0, arg2,
+) => function arg1Resolver(...args) {
+  return baseFunc(arg0, args)
+}
+
+const curryArgs2 = function (baseFunc, arg0, arg1) {
+  if (arg0 == __) {
+    return curryArgs2ResolveArgs0(baseFunc, arg1)
+  }
+  return curryArgs2ResolveArgs1(baseFunc, arg0)
+}
+
+const functionArrayAll = function (funcs, args) {
+  const funcsLength = funcs.length,
+    result = Array(funcsLength)
+  let funcsIndex = -1, isAsync = false
+  while (++funcsIndex < funcsLength) {
+    const resultItem = funcs[funcsIndex](...args)
+    if (isPromise(resultItem)) {
+      isAsync = true
+    }
+    result[funcsIndex] = resultItem
+  }
+  return isAsync ? promiseAll(result) : result
+}
+
+const funcConcat = (
+  funcA, funcB,
+) => function pipedFunction(...args) {
+  const intermediate = funcA(...args)
+  return isPromise(intermediate)
+    ? intermediate.then(funcB)
+    : funcB(intermediate)
+}
 
 // argument resolver for curry3
 const curry3ResolveArg0 = (
@@ -46,118 +126,119 @@ const curry3 = function (baseFunc, arg0, arg1, arg2) {
   return curry3ResolveArg2(baseFunc, arg0, arg1)
 }
 
-const isPromise = value => value != null && typeof value.then == 'function'
-
-const promiseAll = Promise.all.bind(Promise)
-
-const callPropUnary = (value, property, arg0) => value[property](arg0)
-
-const arrayAll = function (array, predicate) {
-  const arrayLength = array.length,
-    promises = []
-  let index = -1
-  while (++index < arrayLength) {
-    const predication = predicate(array[index])
-    if (isPromise(predication)) {
-      promises.push(predication)
-    } else if (!predication) {
-      return false
-    }
-  }
-  return promises.length == 0
-    ? true
-    : promiseAll(promises).then(curry3(callPropUnary, __, 'every', Boolean))
+// argument resolver for curry4
+const curry4ResolveArg0 = (
+  baseFunc, arg1, arg2, arg3,
+) => function arg0Resolver(arg0) {
+  return baseFunc(arg0, arg1, arg2, arg3)
 }
 
-const iteratorAll = function (iterator, predicate) {
-  const promises = []
-  for (const item of iterator) {
-    const predication = predicate(item)
-    if (isPromise(predication)) {
-      promises.push(predication)
-    } else if (!predication) {
-      return false
-    }
-  }
-  return promises.length == 0
-    ? true
-    : promiseAll(promises).then(curry3(callPropUnary, __, 'every', Boolean))
+// argument resolver for curry4
+const curry4ResolveArg1 = (
+  baseFunc, arg0, arg2, arg3,
+) => function arg1Resolver(arg1) {
+  return baseFunc(arg0, arg1, arg2, arg3)
 }
 
-const SelfReferencingPromise = function (basePromise) {
-  const promise = basePromise.then(res => [res, promise])
-  return promise
+// argument resolver for curry4
+const curry4ResolveArg2 = (
+  baseFunc, arg0, arg1, arg3,
+) => function arg2Resolver(arg2) {
+  return baseFunc(arg0, arg1, arg2, arg3)
 }
 
-const promiseRace = Promise.race.bind(Promise)
-
-const asyncIteratorAll = async function (
-  asyncIterator, predicate, promisesInFlight, maxConcurrency = 20,
-) {
-  let iteration = await asyncIterator.next()
-  while (!iteration.done) {
-    if (promisesInFlight.size >= maxConcurrency) {
-      const [predication, promise] = await promiseRace(promisesInFlight)
-      promisesInFlight.delete(promise)
-      if (!predication) {
-        return false
-      }
-    }
-
-    const predication = predicate(iteration.value)
-    if (isPromise(predication)) {
-      promisesInFlight.add(SelfReferencingPromise(predication))
-    } else if (!predication) {
-      return false
-    }
-    iteration = await asyncIterator.next()
-  }
-  while (promisesInFlight.size > 0) {
-    const [predication, promise] = await promiseRace(promisesInFlight)
-    promisesInFlight.delete(promise)
-    if (!predication) {
-      return false
-    }
-  }
-  return true
+// argument resolver for curry4
+const curry4ResolveArg3 = (
+  baseFunc, arg0, arg1, arg2,
+) => function arg3Resolver(arg3) {
+  return baseFunc(arg0, arg1, arg2, arg3)
 }
 
-const objectValues = Object.values
-
-const reducerAllSync = (predicate, result, item) => result ? predicate(item) : false
-
-const reducerAll = predicate => function allReducer(result, item) {
-  return result === false ? false
-    : isPromise(result) ? result.then(
-      curry3(reducerAllSync, predicate, __, item))
-    : result ? predicate(item) : false
+const curry4 = function (baseFunc, arg0, arg1, arg2, arg3) {
+  if (arg0 == __) {
+    return curry4ResolveArg0(baseFunc, arg1, arg2, arg3)
+  }
+  if (arg1 == __) {
+    return curry4ResolveArg1(baseFunc, arg0, arg2, arg3)
+  }
+  if (arg2 == __) {
+    return curry4ResolveArg2(baseFunc, arg0, arg1, arg3)
+  }
+  return curry4ResolveArg3(baseFunc, arg0, arg1, arg2)
 }
 
-const symbolIterator = Symbol.iterator
+const objectSet = function (object, property, value) {
+  object[property] = value
+  return object
+}
 
-const symbolAsyncIterator = Symbol.asyncIterator
+const asyncFunctionArrayAllSeries = async function (funcs, args, result, funcsIndex) {
+  const funcsLength = funcs.length
+  while (++funcsIndex < funcsLength) {
+    const resultItem = funcs[funcsIndex](...args)
+    result[funcsIndex] = isPromise(resultItem) ? await resultItem : resultItem
+  }
+  return result
+}
 
-const all = predicate => function allTruthy(value) {
-  if (isArray(value)) {
-    return arrayAll(value, predicate)
+const functionArrayAllSeries = function (funcs, args) {
+  const funcsLength = funcs.length, result = []
+  let funcsIndex = -1
+  while (++funcsIndex < funcsLength) {
+    const resultItem = funcs[funcsIndex](...args)
+    if (isPromise(resultItem)) {
+      return resultItem.then(funcConcat(
+        curry3(objectSet, result, funcsIndex, __),
+        curry4(asyncFunctionArrayAllSeries, funcs, args, __, funcsIndex)))
+    }
+    result[funcsIndex] = resultItem
   }
-  if (value == null) {
-    return predicate(value)
+  return result
+}
+
+const always = value => function getter() { return value }
+
+const functionObjectAll = function (funcs, args) {
+  const result = {}, promises = []
+  for (const key in funcs) {
+    const resultItem = funcs[key](...args)
+    if (isPromise(resultItem)) {
+      promises.push(resultItem.then(curry3(objectSet, result, key, __)))
+    } else {
+      result[key] = resultItem
+    }
+  }
+  return promises.length == 0 ? result : promiseAll(promises).then(always(result))
+}
+
+const all = function (...args) {
+  const funcs = args.pop()
+  if (args.length == 0) {
+    return isArray(funcs)
+      ? curryArgs2(functionArrayAll, funcs, __)
+      : curryArgs2(functionObjectAll, funcs, __)
   }
 
-  if (typeof value[symbolIterator] == 'function') {
-    return iteratorAll(value[symbolIterator](), predicate)
+  if (areAnyValuesPromises(args)) {
+    return isArray(funcs)
+      ? promiseAll(args).then(curry2(functionArrayAll, funcs, __))
+      : promiseAll(args).then(curry2(functionObjectAll, funcs, __))
   }
-  if (typeof value[symbolAsyncIterator] == 'function') {
-    return asyncIteratorAll(value[symbolAsyncIterator](), predicate, new Set())
+
+  return isArray(funcs)
+    ? functionArrayAll(funcs, args)
+    : functionObjectAll(funcs, args)
+}
+
+all.series = function allSeries(...args) {
+  const funcs = args.pop()
+  if (args.length == 0) {
+    return curryArgs2(functionArrayAllSeries, funcs, __)
   }
-  if (typeof value.reduce == 'function') {
-    return value.reduce(reducerAll(predicate), true)
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args).then(curry2(functionArrayAllSeries, funcs, __))
   }
-  if (value.constructor == Object) {
-    return arrayAll(objectValues(value), predicate)
-  }
-  return predicate(value)
+  return functionArrayAllSeries(funcs, args)
 }
 
 return all

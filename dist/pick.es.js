@@ -1,9 +1,11 @@
 /**
- * rubico v1.9.7
+ * rubico v2.2.3
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
+ * (c) 2019-2023 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
+
+const isPromise = value => value != null && typeof value.then == 'function'
 
 const isArray = Array.isArray
 
@@ -139,9 +141,12 @@ const _pick = function (source, keys) {
   return result
 }
 
-const pick = (arg0, arg1) => {
+const pick = function (arg0, arg1) {
   if (arg1 == null) {
     return curry2(_pick, __, arg0)
+  }
+  if (isPromise(arg0)) {
+    return arg0.then(curry2(_pick, __, arg1))
   }
   return _pick(arg0, arg1)
 }

@@ -1,39 +1,47 @@
 const isPromise = require('./_internal/isPromise')
 const __ = require('./_internal/placeholder')
 const curry3 = require('./_internal/curry3')
-const curryArgs3 = require('./_internal/curryArgs3')
 const genericReduce = require('./_internal/genericReduce')
+
+// _reduce(collection any, reducer function, initialValue function|any) -> Promise
+const _reduce = function (collection, reducer, initialValue) {
+  if (typeof initialValue == 'function') {
+    const actualInitialValue = initialValue(collection)
+    return isPromise(actualInitialValue)
+      ? actualInitialValue.then(curry3(genericReduce, collection, reducer, __))
+      : genericReduce(collection, reducer, actualInitialValue)
+  }
+  return isPromise(initialValue)
+    ? initialValue.then(curry3(genericReduce, collection, reducer, __))
+    : genericReduce(collection, reducer, initialValue)
+}
 
 /**
  * @name reduce
  *
  * @synopsis
  * ```coffeescript [specscript]
- * arrayReducer (result any, value any, index number, array Array)=>(result Promise|any)
- * initialValue function|any
+ * type Foldable = Array|Object|Map|Iterator|AsyncIterator
  *
- * reduce(arrayReducer, initialValue?)(array Array) -> result Promise|any
- * reduce(array Array, arrayReducer, initialValue?) -> result Promise|any
+ * type Reducer = (
+ *   accumulator any,
+ *   value any,
+ *   indexOrKey? number|string,
+ *   collection? Foldable,
+ * )=>(nextAccumulator Promise|any)
  *
- * objectReducer (result any, value any, key string, object Object)=>(result Promise|any)
+ * type Resolver = (collection Foldable)=>Promise|any
  *
- * reduce(objectReducer, initialValue?)(object Object) -> result Promise|any
- * reduce(object Object, objectReducer, initialValue?) -> result Promise|any
+ * reduce(
+ *   collection Foldable,
+ *   reducer Reducer,
+ *   initialValue? Resolver|any
+ * ) -> result Promise|any
  *
- * mapReducer (result any, value any, key any, map Map)=>(result Promise|any)
- *
- * reduce(mapReducer, initialValue?)(m Map) -> result Promise|any
- * reduce(m Map, mapReducer, initialValue?) -> result Promise|any
- *
- * reducer (result any, value any)=>(result Promise|any)
- *
- * reduce(reducer, initialValue?)(iterator Iterator) -> result Promise|any
- * reduce(iterator Iterator, reducer, initialValue?) -> result Promise|any
- *
- * reduce(reducer, initialValue?)(asyncIterator AsyncIterator)
- *   -> result Promise|any
- * reduce(asyncIterator AsyncIterator, reducer, initialValue?)
- *   -> result Promise|any
+ * reduce(
+ *   reducer Reducer,
+ *   initialValue? Resolver|any
+ * )(collection Foldable) -> result Promise|any
  * ```
  *
  * @description
@@ -46,7 +54,7 @@ const genericReduce = require('./_internal/genericReduce')
  *  * `Iterator`/`Generator`
  *  * `AsyncIterator`/`AsyncGenerator`
  *
- * For arrays (type `Array`), `reduce` executes the reducer function for each item of the array in order, returning a new result at each execution to be used in the next execution.
+ * For arrays (type `Array`), `reduce` executes the reducer function for each item of the array in order, returning a new result at each execution to be used in the next execution. On each iteration, the reducer is passed the accumulator, the item of the iteration, the index of the item in the array, and a reference to the original array.
  *
  * ```javascript [playground]
  * const max = (a, b) => a > b ? a : b
@@ -84,7 +92,7 @@ const genericReduce = require('./_internal/genericReduce')
  * // ['initial length 5', 1, 4, 9, 16, 25]
  * ```
  *
- * For objects (type `Object`), `reduce` executes the reducer function for each value of the object.
+ * For objects (type `Object`), `reduce` executes the reducer function for each value of the object. On each iteration, the reducer is passed the accumulator, the object value, the key of the object value, and a reference to the original object.
  *
  * ```javascript [playground]
  * const add = (a, b) => a + b
@@ -100,7 +108,7 @@ const genericReduce = require('./_internal/genericReduce')
  * ) // 15
  * ```
  *
- * For sets (type `Set`), `reduce` executes the reducer function for each item of the set.
+ * For sets (type `Set`), `reduce` executes the reducer function for each item of the set. On each iteration, the reducer is passed the accumulator and item of the set.
  *
  * ```javascript [playground]
  * const add = (a, b) => a + b
@@ -116,7 +124,7 @@ const genericReduce = require('./_internal/genericReduce')
  * ) // 15
  * ```
  *
- * For maps (type `Map`), `reduce` executes the reducer function for each value of each entry of the map.
+ * For maps (type `Map`), `reduce` executes the reducer function for each value of each entry of the map. On each iteration, the reducer is passed the accumulator, the map item, the key of the map item, and a reference to the original map.
  *
  * ```javascript [playground]
  * const add = (a, b) => a + b
@@ -132,7 +140,7 @@ const genericReduce = require('./_internal/genericReduce')
  * ) // 15
  * ```
  *
- * For iterators (type `Iterator`) and generators (type `Generator`), `reduce` executes the reducer function for each value of the iterator/generator. The iterator/generator is consumed in the process.
+ * For iterators (type `Iterator`) and generators (type `Generator`), `reduce` executes the reducer function for each value of the iterator/generator. On each iteration, the reducer is passed the accumulator and the item of the iteration. The iterator/generator is consumed in the process.
  *
  * ```javascript [playground]
  * const add = (a, b) => a + b
@@ -150,7 +158,7 @@ const genericReduce = require('./_internal/genericReduce')
  * ) // 15
  * ```
  *
- * For asyncIterators (type `AsyncIterator`) and asyncGenerators (type `AsyncGenerator`), `reduce` executes the reducer function for each value of the asyncIterator/asyncGenerator. The asyncIterator/asyncGenerator is consumed in the process.
+ * For asyncIterators (type `AsyncIterator`) and asyncGenerators (type `AsyncGenerator`), `reduce` executes the reducer function for each value of the asyncIterator/asyncGenerator. On each iteration, the reducer is passed the accumulator and the item of the async iteration. The asyncIterator/asyncGenerator is consumed in the process.
  *
  * ```javascript [playground]
  * const asyncAdd = async (a, b) => a + b
@@ -174,27 +182,13 @@ const genericReduce = require('./_internal/genericReduce')
  */
 
 const reduce = function (...args) {
-  if (typeof args[0] != 'function') {
-    const reducer = args[1]
-    const initialValue = args[2]
-    if (typeof initialValue == 'function') {
-      return genericReduce([args[0]], reducer, initialValue(args[0]))
-    }
-    return genericReduce([args[0]], reducer, initialValue)
+  if (typeof args[0] == 'function') {
+    return curry3(_reduce, __, args[0], args[1])
   }
-
-  const reducer = args[0]
-  const initialValue = args[1]
-
-  if (typeof initialValue == 'function') {
-    return function reducing(...args) {
-      const result = initialValue(...args)
-      return isPromise(result)
-        ? result.then(curry3(genericReduce, args, reducer, __))
-        : genericReduce(args, reducer, result)
-    }
+  if (isPromise(args[0])) {
+    return args[0].then(curry3(_reduce, __, args[1], args[2]))
   }
-  return curryArgs3(genericReduce, __, reducer, initialValue)
+  return _reduce(args[0], args[1], args[2])
 }
 
 module.exports = reduce

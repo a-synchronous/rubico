@@ -1,108 +1,32 @@
+const _fp = require('lodash/fp')
+const R = require('ramda')
+const TimeInLoopSuite = require('../_internal/TimeInLoopSuite')
 const tryCatch = require('../tryCatch')
-const timeInLoop = require('../x/timeInLoop')
 
-const isPromise = value => value != null && typeof value.then == 'function'
+const ramdaTryCatch = R.tryCatch
+const suite = new TimeInLoopSuite({ loopCount: 1e5 })
 
-const tryCatch2 = (tryer, catcher) => function tryCatcher(...args) {
-  try {
-    const output = tryer.apply(null, args)
-    return isPromise(output)
-      ? output.catch(err => catcher.call(null, err, ...args))
-      : output
-  } catch (err) {
-    return catcher.call(null, err, ...args)
-  }
+suite.add('rubico tryCatch', () => {
+  tryCatch('hello', message => {
+    throw new Error(message)
+  }, error => error)
+})
+
+suite.add('rubico tryCatch tacit', () => {
+  tryCatch(message => {
+    throw new Error(message)
+  }, error => error)('hello')
+})
+
+suite.add('ramda tryCatch', () => {
+  ramdaTryCatch(message => {
+    throw new Error(message)
+  }, error => error)('hello')
+})
+
+if (process.argv[1] == __filename) {
+  suite.on('caseBestRun', run => console.log(run.output))
+  suite.run()
 }
 
-// argument resolver for curry3
-const curry3ResolveArg0 = (
-  baseFunc, arg1, arg2,
-) => function arg0Resolver(arg0) {
-  return baseFunc(arg0, arg1, arg2)
-}
-
-// argument resolver for curry3
-const curry3ResolveArg1 = (
-  baseFunc, arg0, arg2,
-) => function arg1Resolver(arg1) {
-  return baseFunc(arg0, arg1, arg2)
-}
-
-// argument resolver for curry3
-const curry3ResolveArg2 = (
-  baseFunc, arg0, arg1,
-) => function arg2Resolver(arg2) {
-  return baseFunc(arg0, arg1, arg2)
-}
-
-/**
- * @name curry3
- *
- * @synopsis
- * __ = Symbol('placeholder')
- *
- * curry3(
- *   baseFunc function,
- *   arg0 __|any,
- *   arg1 __|any,
- *   arg2 __|any
- * ) -> function
- */
-const curry3 = function (baseFunc, arg0, arg1, arg2) {
-  if (arg0 == __) {
-    return curry3ResolveArg0(baseFunc, arg1, arg2)
-  }
-  if (arg1 == __) {
-    return curry3ResolveArg1(baseFunc, arg0, arg2)
-  }
-  return curry3ResolveArg2(baseFunc, arg0, arg1)
-}
-
-const tryCatch3 = (tryer, catcher) => function tryCatcher(...args) {
-  try {
-    const result = tryer(...args)
-    return isPromise(result)
-      ? result.catch(curry3(catcherApply, catcher, __, args))
-      : result
-  } catch (err) {
-    return catcher(err, ...args)
-  }
-}
-
-/**
- * @name tryCatch
- *
- * @benchmark
- * tryCatch2: 1e+6: 36.369ms
- * tryCatch3: 1e+6: 17.027ms
- *
- * TODO find the date
- */
-
-{
-  const identity = value => value
-
-  const noop = () => {}
-
-  const isPromise = value => value != null && typeof value.then == 'function'
-
-  // console.log(tryCatch2(identity, noop)('yo'))
-  // console.log(tryCatch3(identity, noop)('yo'))
-
-  // timeInLoop('tryCatch2', 1e6, () => tryCatch2(identity, noop)('yo'))
-
-  // timeInLoop('tryCatch3', 1e6, () => tryCatch3(identity, noop)('yo'))
-}
-
-/**
- * @name tryCatch 2022-06-13
- *
- * @benchmark
- * tryCatch: 1e+6: tryCatch: 1e+6: 39.787ms
- */
-
-{
-  const identity = value => value
-  const noop = () => {}
-  timeInLoop('tryCatch', 1e6, () => tryCatch2(identity, noop)('yo'))
-}
+module.exports = suite

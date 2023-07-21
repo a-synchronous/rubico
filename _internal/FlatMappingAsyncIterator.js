@@ -2,7 +2,7 @@ const isPromise = require('./isPromise')
 const genericReduce = require('./genericReduce')
 const symbolAsyncIterator = require('./symbolAsyncIterator')
 const arrayPush = require('./arrayPush')
-const curryArgs3 = require('./curryArgs3')
+const curry3 = require('./curry3')
 const __ = require('./placeholder')
 const promiseRace = require('./promiseRace')
 const sleep = require('./sleep')
@@ -55,12 +55,12 @@ const FlatMappingAsyncIterator = function (asyncIterator, flatMapper) {
           } else {
             const monad = flatMapper(value)
             if (isPromise(monad)) {
-              const bufferLoading = monad.then(
-              curryArgs3(genericReduce, __, arrayPush, buffer))
+              const bufferLoading =
+                monad.then(curry3(genericReduce, __, arrayPush, buffer))
               const promise = bufferLoading.then(() => promises.delete(promise))
               promises.add(promise)
             } else {
-              const bufferLoading = genericReduce([monad], arrayPush, buffer)
+              const bufferLoading = genericReduce(monad, arrayPush, buffer)
               if (isPromise(bufferLoading)) {
                 const promise = bufferLoading.then(() => promises.delete(promise))
                 promises.add(promise)

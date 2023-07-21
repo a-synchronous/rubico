@@ -5,17 +5,13 @@ const createAbc = v => ({ a: { b: { c: v } } })
 
 describe('pluck', () => {
   it('creates a new collection by getting a path from every item of an old collection', async () => {
+    const nested = [1, 2, 3].map(createAbc)
     assert.deepEqual(
-      pluck('a.b.c')([1, 2, 3].map(createAbc)),
+      pluck('a.b.c')(nested),
       [1, 2, 3],
     )
-  })
-  it('works in transducer position', async () => {
     assert.deepEqual(
-      [1, 2, 3].map(createAbc).reduce(
-        pluck('a.b.c')((a, b) => a.concat([b])),
-        [],
-      ),
+      pluck(nested, 'a.b.c'),
       [1, 2, 3],
     )
   })

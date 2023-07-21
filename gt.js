@@ -1,26 +1,25 @@
-const spread2 = require('./_internal/spread2')
-const isPromise = require('./_internal/isPromise')
-const promiseAll = require('./_internal/promiseAll')
+const ComparisonOperator = require('./_internal/ComparisonOperator')
 const greaterThan = require('./_internal/greaterThan')
-const curry2 = require('./_internal/curry2')
-const always = require('./_internal/always')
-const __ = require('./_internal/placeholder')
 
 /**
  * @name gt
  *
  * @synopsis
  * ```coffeescript [specscript]
- * gt(leftValue any, rightValue any) -> boolean
- * gt(leftValue any, right function)(value any) -> Promise|boolean
- * gt(left function, rightValue any)(value any) -> Promise|boolean
- * gt(left function, right function)(value any) -> Promise|boolean
+ * gt(leftValue Promise|any, rightValue Promise|any) -> boolean
+ *
+ * gt(leftValue Promise|any, right function)(...args) -> Promise|boolean
+ * gt(...args, leftValue Promise|any, right function) -> Promise|boolean
+ *
+ * gt(left function, rightValue Promise|any)(...args) -> Promise|boolean
+ * gt(...args, left function, rightValue Promise|any) -> Promise|boolean
+ *
+ * gt(left function, right function)(...args) -> Promise|boolean
+ * gt(...args, left function, right function) -> Promise|boolean
  * ```
  *
  * @description
- * Test if a left value is greater than (`>`) a right value. Either parameter may be an actual value.
- *
- * If both arguments are values, `gt` eagerly computes and returns a boolean value.
+ * Test if a value is greater than (`>`) another value.
  *
  * ```javascript [playground]
  * const age = 40
@@ -30,58 +29,25 @@ const __ = require('./_internal/placeholder')
  * console.log(isAgeGreaterThan21) // true
  * ```
  *
- * If both arguments are functions, `gt` treats those functions as argument resolvers and returns a function that first resolves its arguments by the argument resolvers before making the comparison.
- *
- * If only one argument is a function, `gt` still returns a function that resolves its arguments by the argument resolver, treating the value (non function) argument as an already resolved value for comparison.
+ * If either of the two values are resolver functions, `gt` returns a function that resolves the values to compare from its arguments.
  *
  * ```javascript [playground]
- * const isOfLegalAge = gt(21, person => person.age)
+ * const isOfLegalAge = gt(21, get('age'))
  *
  * const juvenile = { age: 16 }
  *
  * console.log(isOfLegalAge(juvenile)) // false
  * ```
+ *
+ * `gt` supports a tacit API for composability.
+ *
+ * ```javascript [playground]
+ * pipe({ value: 1 }, [
+ *   gt(5, get('value')),
+ *   console.log, // true
+ * ])
+ * ```
  */
-const gt = function (left, right) {
-  const isLeftResolver = typeof left == 'function',
-    isRightResolver = typeof right == 'function'
-
-  if (isLeftResolver && isRightResolver) {
-    return function greaterThanBy(value) {
-      const leftResolve = left(value),
-        rightResolve = right(value)
-      const isLeftPromise = isPromise(leftResolve),
-        isRightPromise = isPromise(rightResolve)
-      if (isLeftPromise && isRightPromise) {
-        return promiseAll(
-          [leftResolve, rightResolve]).then(spread2(greaterThan))
-      } else if (isLeftPromise) {
-        return leftResolve.then(curry2(greaterThan, __, rightResolve))
-      } else if (isRightPromise) {
-        return rightResolve.then(curry2(greaterThan, leftResolve, __))
-      }
-      return leftResolve > rightResolve
-    }
-  }
-
-  if (isLeftResolver) {
-    return function greaterThanBy(value) {
-      const leftResolve = left(value)
-      return isPromise(leftResolve)
-        ? leftResolve.then(curry2(greaterThan, __, right))
-        : leftResolve > right
-    }
-  }
-  if (isRightResolver) {
-    return function strictEqualBy(value) {
-      const rightResolve = right(value)
-      return isPromise(rightResolve)
-        ? rightResolve.then(curry2(greaterThan, left, __))
-        : left > rightResolve
-    }
-  }
-
-  return left > right
-}
+const gt = ComparisonOperator(greaterThan)
 
 module.exports = gt

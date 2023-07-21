@@ -1,24 +1,38 @@
-const timeInLoop = require('../x/timeInLoop')
-const rubico = require('rubico')
 const _ = require('lodash')
+const _fp = require('lodash/fp')
+const R = require('ramda')
+const TimeInLoopSuite = require('../_internal/TimeInLoopSuite')
+const pick = require('../pick')
 
-/**
- * @name pickRace
- *
- * @benchmark
- * rubico.pick(['a', 'b', 'c'])(object): 1e+6: 165.468ms
- * _.pick(['a', 'b', 'c'])(object): 1e+6: 1.324s
- */
+const lodashPick = _.pick
+const lodashFpPick = _fp.pick
+const ramdaPick = R.pick
 
-{
-  const objectABCDE = { a: 1, b: 2, c: 3, d: 4, e: 5 }
+const suite = new TimeInLoopSuite()
 
-  const keys = ['a', 'b', 'c']
+suite.add('rubico pick', () => {
+  pick({ a: 1, b: 2, c: 3 }, ['a'])
+})
 
-  // console.log(rubico.pick(keys)(objectABCDE))
-  // console.log(_.pick(objectABCDE, keys))
+suite.add('rubico pick tacit', () => {
+  pick(['a'])({ a: 1, b: 2, c: 3 })
+})
 
-  // timeInLoop("rubico.pick(['a', 'b', 'c'])(object)", 1e6, () => rubico.pick(keys)(objectABCDE))
+suite.add('lodash pick', () => {
+  lodashPick({ a: 1, b: 2, c: 3 }, ['a'])
+})
 
-  // timeInLoop("_.pick(['a', 'b', 'c'])(object)", 1e6, () => _.pick(objectABCDE, keys))
+suite.add('lodash fp pick', () => {
+  lodashFpPick(['a'])({ a: 1, b: 2, c: 3 })
+})
+
+suite.add('ramda pick', () => {
+  ramdaPick(['a'])({ a: 1, b: 2, c: 3 })
+})
+
+if (process.argv[1] == __filename) {
+  suite.on('caseBestRun', run => console.log(run.output))
+  suite.run()
 }
+
+module.exports = suite

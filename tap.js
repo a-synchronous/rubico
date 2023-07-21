@@ -1,16 +1,24 @@
 const isPromise = require('./_internal/isPromise')
 const always = require('./_internal/always')
-const tapSync = require('./_internal/tapSync')
 const thunkifyArgs = require('./_internal/thunkifyArgs')
 const thunkConditional = require('./_internal/thunkConditional')
 const curry3 = require('./_internal/curry3')
+const curryArgs2 = require('./_internal/curryArgs2')
 const __ = require('./_internal/placeholder')
+
+// _tap(args Array, func function) -> Promise|any
+const _tap = function (args, func) {
+  const result = args[0],
+    call = func(...args)
+  return isPromise(call) ? call.then(always(result)) : result
+}
 
 /**
  * @name tap
  *
  * @synopsis
  * ```coffeescript [specscript]
+ * tap(...args, func function) -> Promise|args[0]
  * tap(func function)(...args) -> Promise|args[0]
  * ```
  *
@@ -29,34 +37,13 @@ const __ = require('./_internal/placeholder')
  *                 // 'foobarbaz'
  * ```
  */
-const tap = func => function tapping(...args) {
-  const result = args[0],
-    call = func(...args)
-  return isPromise(call) ? call.then(always(result)) : result
+const tap = function (...args) {
+  const func = args.pop()
+  if (args.length == 0) {
+    return curryArgs2(_tap, __, func)
+  }
+  return _tap(args, func)
 }
-
-/**
- * @name tap.sync
- *
- * @synopsis
- * ```coffeescript [specscript]
- * tap.sync(func function)(...args) -> args[0]
- * ```
- *
- * @description
- * Synchronous `tap`
- *
- * ```javascript [playground]
- * const pipeline = pipe([
- *   tap.sync(number => console.log('square', number ** 2)),
- *   tap.sync(number => console.log('cube', number ** 3)),
- * ])
- *
- * pipeline(3) // 9
- *             // 27
- * ```
- */
-tap.sync = tapSync
 
 /**
  * @name tap.if

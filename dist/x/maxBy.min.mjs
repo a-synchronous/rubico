@@ -1,7 +1,0 @@
-/**
- * rubico v1.9.7
- * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
- * rubico may be freely distributed under the MIT license.
- */
-const isArray=Array.isArray,memoizeCappedUnary=function(r,e){const t=new Map,n=function(n){if(t.has(n))return t.get(n);const o=r(n);return t.set(n,o),t.size>e&&t.clear(),o};return n.cache=t,n},pathDelimiters=/[.|[|\]]+/,parsePropertyPath=function(r){const e=r.length-1,t="["==r[0],n="]"==r[e];return t&&n?r.slice(1,e).split(pathDelimiters):t?r.slice(1).split(pathDelimiters):n?r.slice(0,e).split(pathDelimiters):r.split(pathDelimiters)},memoizedCappedParsePropertyPath=memoizeCappedUnary(parsePropertyPath,500),propertyPathToArray=r=>isArray(r)?r:"string"==typeof r?memoizedCappedParsePropertyPath(r):[r],getByPath=function(r,e){const t=propertyPathToArray(e),n=t.length;let o=-1,a=r;for(;++o<n;)if(a=a[t[o]],null==a)return;return a},get=(r,e)=>function(t){const n=null==t?void 0:getByPath(t,r);return void 0===n?"function"==typeof e?e(t):e:n},__=Symbol.for("placeholder"),curry2ResolveArg0=(r,e)=>function(t){return r(t,e)},curry2ResolveArg1=(r,e)=>function(t){return r(e,t)},curry2=function(r,e,t){return e==__?curry2ResolveArg0(r,t):curry2ResolveArg1(r,e)},_maxBy=function(r,e){const t=r.length,n=get(e);let o=0,a=r[o];for(;++o<t;){const e=r[o];n(e)>n(a)&&(a=e)}return a},maxBy=function(...r){return r.length>1?_maxBy(...r):(e=_maxBy,t=__,n=r[0],t==__?curry2ResolveArg0(e,n):curry2ResolveArg1(e,t));var e,t,n};export default maxBy;

@@ -1,7 +1,0 @@
-/**
- * rubico v1.9.7
- * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
- * rubico may be freely distributed under the MIT license.
- */
-const objectValues=Object.values,values=e=>null==e?[]:"function"==typeof e.values?[...e.values()]:objectValues(e);export default values;

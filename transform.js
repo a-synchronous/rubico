@@ -3,26 +3,54 @@ const __ = require('./_internal/placeholder')
 const curry3 = require('./_internal/curry3')
 const genericTransform = require('./_internal/genericTransform')
 
+// _transform(collection any, transducer function, initialValue function|any) -> Promise
+const _transform = function (collection, transducer, initialValue) {
+  if (typeof initialValue == 'function') {
+    const actualInitialValue = initialValue(collection)
+    return isPromise(actualInitialValue)
+      ? actualInitialValue.then(curry3(genericTransform, collection, transducer, __))
+      : genericTransform(collection, transducer, actualInitialValue)
+  }
+  return isPromise(initialValue)
+    ? initialValue.then(curry3(genericTransform, collection, transducer, __))
+    : genericTransform(collection, transducer, initialValue)
+}
+
 /**
  * @name transform
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Reducer = (result any, item any)=>(result any)
- * type Transducer = Reducer=>Reducer
- * type Semigroup = Array|String|Set|TypedArray|{ concat: function }|{ write: function }|Object
- * type Foldable = Iterable|AsyncIterable|Object
+ * type Foldable = Iterable|AsyncIterable|Object<value any>
  *
- * initialValue Semigroup|((foldable Foldable)=>Promise|Semigroup)
+ * type Reducer = (
+ *   accumulator any,
+ *   value any,
+ *   indexOrKey? number|string,
+ *   collection? Foldable,
+ * )=>(nextAccumulator Promise|any)
+ *
+ * type Transducer = Reducer=>Reducer
+ *
+ * type Transformable =
+ *   Array|String|Set|TypedArray|{ concat: function }|{ write: function }|Object
+ *
+ * type TransformableResolver = (collection Foldable)=>Promise|Transformable
+ *
+ * transform(
+ *   collection Foldable,
+ *   transducer Transducer,
+ *   initialValue? Transformable|TransformableResolver,
+ * ) -> result Promise|Transformable
  *
  * transform(
  *   transducer Transducer,
- *   initialValue?,
- * )(foldable Foldable) -> result Promise|Semigroup
+ *   initialValue? Transformable|TransformableResolver,
+ * )(collection Foldable) -> result Promise|Transformable
  * ```
  *
  * @description
- * Transforms a semigroup collection into any other semigroup collection. The type of transformation depends on the collection provided by the initial value. If the initial is a function it is used as a resolver for the provided collection. `transform` accepts semigroup collections, or collections that support a concatenation operation:
+ * Transforms a transformable collection into any other transformable collection. The type of transformation depends on the collection provided by the initial value. If the initial is a function it is used as a resolver for the provided collection. `transform` accepts transformable collections, or collections that support a concatenation operation:
  *
  *  * `Array`; concatenation defined by `result.concat(values)`
  *  * `string`; concatenation defined by `result + values`
@@ -39,9 +67,9 @@ const genericTransform = require('./_internal/genericTransform')
  *
  * const isOdd = number => number % 2 == 1
  *
- * const squaredOdds = pipe([
- *   filter(isOdd),
- *   map(square),
+ * const squaredOdds = compose([
+ *   Transducer.filter(isOdd),
+ *   Transducer.map(square),
  * ])
  *
  * // transform arrays into arrays
@@ -77,7 +105,7 @@ const genericTransform = require('./_internal/genericTransform')
  *   },
  * }
  *
- * transform(map(square), Stdout)([1, 2, 3, 4, 5])
+ * transform(Transducer.map(square), Stdout)([1, 2, 3, 4, 5])
  * // 1
  * // 4
  * // 9
@@ -105,8 +133,10 @@ const genericTransform = require('./_internal/genericTransform')
  * }
  *
  * transform(
- *   map(pipe([square, toString])), process.stdout,
- * )(streamRandomInts()) // 9216576529289484980147613249169774446246768649...
+ *   streamRandomInts(),
+ *   Transducer.map(pipe([square, toString])),
+ *   process.stdout,
+ * ) // 9216576529289484980147613249169774446246768649...
  * ```
  *
  * @execution series
@@ -115,18 +145,14 @@ const genericTransform = require('./_internal/genericTransform')
  *
  * TODO explore Semigroup = Iterator|AsyncIterator
  */
-const transform = function (transducer, init) {
-  if (typeof init == 'function') {
-    return function transforming(...args) {
-      const result = init(...args)
-      return isPromise(result)
-        ? result.then(curry3(genericTransform, args, transducer, __))
-        : genericTransform(args, transducer, result)
-    }
+const transform = function (...args) {
+  if (typeof args[0] == 'function') {
+    return curry3(_transform, __, args[0], args[1])
   }
-  return function transforming(...args) {
-    return genericTransform(args, transducer, init)
+  if (isPromise(args[0])) {
+    return args[0].then(curry3(_transform, __, args[1], args[2]))
   }
+  return _transform(args[0], args[1], args[2])
 }
 
 module.exports = transform

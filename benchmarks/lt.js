@@ -1,25 +1,23 @@
-const timeInLoop = require('../x/timeInLoop')
-const rubico = require('..')
-const _ = require('lodash')
-const R = require('ramda')
+const TimeInLoopSuite = require('../_internal/TimeInLoopSuite')
+const lt = require('../lt')
 
-/**
- * @name lt
- *
- * @benchmark
- * rubico.lt(1, 0): 1e+7: 12.514ms
- * _.lt(1, 0): 1e+7: 14.042ms
- * R.lt(1, 0): 1e+7: 18.409ms
- */
+const suite = new TimeInLoopSuite()
 
-const rubicoLt = rubico.lt(1, 0)
+suite.add('rubico lt primitive', () => {
+  lt(1, 1)
+})
 
-// console.log(rubicoLt())
-// console.log(_.lt(1, 0))
-// console.log(R.lt(1, 0))
+suite.add('rubico lt left value right resolver', () => {
+  lt({ a: 1 }, 1, value => value.a)
+})
 
-// timeInLoop('rubico.lt(1, 0)', 1e7, () => rubicoLt())
+suite.add('rubico lt left resolver right resolver', () => {
+  lt({ a: 1 }, value => value.a, value => value.a)
+})
 
-// timeInLoop('_.lt(1, 0)', 1e7, () => _.lt(1, 0))
+if (process.argv[1] == __filename) {
+  suite.on('caseBestRun', run => console.log(run.output))
+  suite.run()
+}
 
-// timeInLoop('R.lt(1, 0)', 1e7, () => R.lt(1, 0))
+module.exports = suite

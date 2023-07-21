@@ -34,12 +34,4 @@ describe('flatten', () => {
   it('flatten(undefined)', async () => {
     assert.strictEqual(flatten(undefined), undefined)
   })
-  it('flatteningReducer', async () => {
-    const add = (a, b) => a + b
-    const flatteningAdd = flatten(add)
-    assert.strictEqual(
-      [[1], [2], [3], [4], [5]].reduce(flatteningAdd, 0),
-      15,
-    )
-  })
 })

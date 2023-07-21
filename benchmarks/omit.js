@@ -1,28 +1,38 @@
-const timeInLoop = require('../x/timeInLoop')
-const rubico = require('rubico')
 const _ = require('lodash')
+const _fp = require('lodash/fp')
+const R = require('ramda')
+const TimeInLoopSuite = require('../_internal/TimeInLoopSuite')
+const omit = require('../omit')
 
-/**
- * @name omitRace
- *
- * @benchmark
- * rubico.omit(['a', 'b', 'c'])(object): 1e+6: 599.19ms
- * _.omit(['a', 'b', 'c'])(object): 1e+6: 2.651s
- *
- * 2020-11-30
- * rubico.omit(['a', 'b', 'c'])(object): 1e+6: 628.47ms
- * _.omit(['a', 'b', 'c'])(object): 1e+6: 2.595s
- */
+const suite = new TimeInLoopSuite()
 
-{
-  const objectABCDE = { a: 1, b: 2, c: 3, d: 4, e: 5 }
+const lodashOmit = _.omit
+const lodashFpOmit = _fp.omit
+const ramdaOmit = R.omit
 
-  const keys = ['a', 'b', 'c']
+suite.add('rubico omit', () => {
+  omit({ a: 1, b: 2, c: 3 }, ['b', 'c'])
+})
 
-  // console.log(rubico.omit(keys)(objectABCDE))
-  // console.log(_.omit(objectABCDE, keys))
+suite.add('rubico omit tacit', () => {
+  omit(['b', 'c'])({ a: 1, b: 2, c: 3 })
+})
 
-  // timeInLoop("rubico.omit(['a', 'b', 'c'])(object)", 1e6, () => rubico.omit(keys)(objectABCDE))
+suite.add('lodash omit', () => {
+  lodashOmit({ a: 1, b: 2, c: 3 }, ['b', 'c'])
+})
 
-  // timeInLoop("_.omit(['a', 'b', 'c'])(object)", 1e6, () => _.omit(objectABCDE, keys))
+suite.add('lodash/fp omit', () => {
+  lodashFpOmit(['b', 'c'])({ a: 1, b: 2, c: 3 })
+})
+
+suite.add('ramda omit', () => {
+  ramdaOmit(['b', 'c'])({ a: 1, b: 2, c: 3 })
+})
+
+if (process.argv[1] == __filename) {
+  suite.on('caseBestRun', run => console.log(run.output))
+  suite.run()
 }
+
+module.exports = suite

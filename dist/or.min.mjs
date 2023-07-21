@@ -1,7 +1,0 @@
-/**
- * rubico v1.9.7
- * https://github.com/a-synchronous/rubico
- * (c) 2019-2021 Richard Tong
- * rubico may be freely distributed under the MIT license.
- */
-const isPromise=n=>null!=n&&"function"==typeof n.then,__=Symbol.for("placeholder"),curry3ResolveArg0=(n,r,t)=>function(e){return n(e,r,t)},curry3ResolveArg1=(n,r,t)=>function(e){return n(r,e,t)},curry3ResolveArg2=(n,r,t)=>function(e){return n(r,t,e)},curry3=function(n,r,t,e){return r==__?curry3ResolveArg0(n,t,e):t==__?curry3ResolveArg1(n,r,e):curry3ResolveArg2(n,r,t)},thunkConditional=(n,r,t)=>n?r():t(),areAllValuesNonfunctions=function(n){const r=n.length;let t=-1;for(;++t<r;)if("function"==typeof n[t])return!1;return!0},thunkify2=(n,r,t)=>function(){return n(r,t)},thunkify3=(n,r,t,e)=>function(){return n(r,t,e)},always=n=>function(){return n},areAnyNonfunctionsTruthy=function(n,r){const t=n.length;for(;++r<t;){let t=n[r];if(isPromise(t))return t.then(curry3(thunkConditional,__,always(!0),thunkify2(areAnyNonfunctionsTruthy,n,r)));if(t)return!0}return!1},asyncAreAnyPredicatesTruthy=async function(n,r,t){const e=n.length;for(;++t<e;){let e=n[t];if("function"==typeof e&&(e=e(r)),console.log("hey - or",e),isPromise(e)&&(e=await e),e)return!0}return!1},or=n=>areAllValuesNonfunctions(n)?areAnyNonfunctionsTruthy(n,-1):function(r){const t=n.length;let e=-1;for(;++e<t;){let t=n[e];if("function"==typeof t&&(t=t(r)),isPromise(t))return t.then(curry3(thunkConditional,__,always(!0),thunkify3(asyncAreAnyPredicatesTruthy,n,r,e)));if(t)return!0}return!1};export default or;
