@@ -6,7 +6,6 @@
 [![codecov](https://codecov.io/gh/a-synchronous/rubico/branch/master/graph/badge.svg)](https://codecov.io/gh/a-synchronous/rubico)
 [![npm version](https://img.shields.io/npm/v/rubico.svg?style=flat)](https://www.npmjs.com/package/rubico)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Gitter](https://badges.gitter.im/Join_Chat.svg)](https://gitter.im/a-synchronous/rubico)
 
 ### [a]synchronous functional programming
 
