@@ -1,3 +1,7 @@
+## v2.3.0
+ * Add `d.ts` files for all core functions and _internal - [#241](https://github.com/a-synchronous/rubico/pull/241) - [kalagin](https://github.com/kalagin)
+ * Consolidate chat to this issue: [#29](https://github.com/a-synchronous/rubico/issues/29)
+
 ## v2.2.3
  * more docs amendments for v2
 
