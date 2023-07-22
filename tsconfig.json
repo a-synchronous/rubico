@@ -1,0 +1,15 @@
+{
+ "include": [
+  "./*.js"
+ ],
+ "exclude": [
+  "dist-test.js",
+  "rubico.js",
+  "**/**.test.js",
+ ],
+ "compilerOptions": {
+  "declaration": true,
+  "emitDeclarationOnly": true,
+  "allowJs": true,
+ }
+}
