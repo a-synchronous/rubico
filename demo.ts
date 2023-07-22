@@ -11,13 +11,13 @@ interface Person {
   likes: string;
 }
 
-const personIsGeorge = eq((person: Person) => person.name, "George") as (person: any) => boolean;
+const personIsGeorge = eq((person: Person) => person.name, "George");
 
 console.log(personIsGeorge({ name: "George", likes: "bananas" })); // true
 
 const compare = eq(
   async (a: number, b: number) => a,
   (person: Person) => person.name
-) as (person: Person) => Promise<boolean>;
+);
 
 console.log(await compare({ name: "George", likes: "bananas" }));
