@@ -78,6 +78,7 @@
     "async": "^3.2.4",
     "bluebird": "^3.7.2",
     "codecov": "^3.7.1",
+    "del-cli": "^5.0.0",
     "eslint": "^8.4.1",
     "fantasy-land": "^4.1.0",
     "lodash": "^4.17.21",
@@ -94,6 +95,6 @@
     "test-coverage": "nyc mocha test.js x/*.test.js monad/*.test.js",
     "lint": "eslint .",
     "build": "./build",
-    "dts": "tsc"
+    "dts": "del *.d.ts _internal/*.d.ts x/*.d.ts && tsc"
   }
 }
