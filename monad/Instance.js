@@ -1,12 +1,6 @@
-/* rubico v1.5.0
- * https://github.com/a-synchronous/rubico
- * (c) 2019-2020 Richard Tong
- * rubico may be freely distributed under the MIT license.
- */
+const symbolIterator = Symbol.iterator
 
-"use strict";
-
-const symbolIterator = Symbol.iterator;
+const symbolAsyncIterator = Symbol.asyncIterator
 
 /**
  * @name Instance
@@ -19,169 +13,16 @@ const symbolIterator = Symbol.iterator;
  */
 class Instance {
   constructor(value) {
-    this.value = value;
+    this.value = value
   }
 
   /**
-   * @name Instance.isInstance
-   *
-   * @synopsis
-   * Instance.isInstance(x any) -> boolean
-   *
-   * @catchphrase
-   * `false` <- only for `undefined` and `null`
-   *
-   * @TODO Change to isDefined
-   */
-  static isInstance(x) {
-    return x != null;
-  }
-
-  /**
-   * @name Instance.is
-   *
-   * @synopsis
-   * Instance.is(x any, constructor function) -> boolean
-   */
-  static is(x, constructor) {
-    return x != null && x.constructor == constructor;
-  }
-
-  /**
-   * @name Instance.isString
-   *
-   * @synopsis
-   * Instance.isString(x any) -> boolean
-   */
-  static isString(x) {
-    return typeof x == "string" || (x != null && x.constructor == String);
-  }
-
-  /**
-   * @name Instance.isNumber
-   *
-   * @synopsis
-   * Instance.isNumber(x any) -> boolean
-   */
-  static isNumber(x) {
-    return typeof x == "number" || (x != null && x.constructor == Number);
-  }
-
-  /**
-   * @name Instance.isObject
-   *
-   * @synopsis
-   * Instance.isObject(x any) -> boolean
-   */
-  static isObject(x) {
-    return x != null && x.constructor == Object;
-  }
-
-  /**
-   * @name Instance.isSet
-   *
-   * @synopsis
-   * Instance.isSet(x any) -> boolean
-   */
-  static isSet(x) {
-    return x != null && x.constructor == Set;
-  }
-
-  /**
-   * @name Instance.isMap
-   *
-   * @synopsis
-   * Instance.isMap(x any) -> boolean
-   */
-  static isMap(x) {
-    return x != null && x.constructor == Map;
-  }
-
-  /**
-   * @name Instance.isIterable
-   *
-   * @synopsis
-   * Instance.isIterable(value any) -> boolean
-   */
-  static isIterable(value) {
-    return value != null && typeof value[symbolIterator] == "function";
-  }
-
-  /**
-   * @name Instance.isAsyncIterable
-   *
-   * @synopsis
-   * Instance.isAsyncIterable(value any) -> boolean
-   */
-  static isAsyncIterable(value) {
-    return value != null && typeof value[symbolAsyncIterator] == "function";
-  }
-
-  /**
-   * @name Instance.isFunction
-   *
-   * @synopsis
-   * Instance.isFunction(x any) -> boolean
-   */
-  static isFunction(x) {
-    return typeof x == "function";
-  }
-
-  /**
-   * @name Instance.isReadable
-   *
-   * @synopsis
-   * Instance.isReadable(x any) -> boolean
-   */
-  static isReadable(x) {
-    return x != null && typeof x.read == "function";
-  }
-
-  /**
-   * @name Instance.isWritable
-   *
-   * @synopsis
-   * Instance.isWritable(x any) -> boolean
-   */
-  static isWritable(x) {
-    return x != null && typeof x.write == "function";
-  }
-
-  /**
-   * @name Instance.isPromise
-   *
-   * @synopsis
-   * Instance.isPromise(x any) -> boolean
-   */
-  static isPromise(x) {
-    return x != null && typeof x.then == "function";
-  }
-
-  /**
-   * @name Instance.prototype.map
-   *
-   * @synopsis
-   * <A any, B any>new Instance(value A).map(func A=>B) -> Instance<B>
-  Instance.prototype.map = function(func) {
-    return new Instance(func(this.value))
-  } */
-  /**
-   * @name Instance.prototype.join
-   *
-   * @synopsis
-   * <T any>new Instance(Instance<T>).join() -> Instance<T>
-   *
-   * <T any>new Instance(value T).join() -> value T
-  Instance.prototype.join = function() {
-    return this.value
-  } */
-  /**
-   * @name Instance.prototype.*chain
+   * @name Instance.prototype.chain
    *
    * @synopsis
    * <A any, B any>new Instance(x A).chain(f A=>Instance<B>) -> Instance<B>
    *
-   * @catchphrase
+   * @description
    * For associativity
    *
    * @example
@@ -190,8 +31,52 @@ class Instance {
    *   inst.chain(number => new Instance(number ** 2))
    * ) // Instance { 9 }
    */
-  chain(f) {
-    return f(this.value);
+  chain(func) {
+    return func(this.value)
+  }
+
+  /**
+   * @name Instance.prototype.map
+   *
+   * @synopsis
+   * <A any, B any>new Instance(value A).map(func A=>B) -> Instance<B>
+  map(func) {
+    return new Instance(func(this.value))
+  } */
+
+
+  /**
+   * @name Instance.prototype.is
+   *
+   * @synopsis
+   * new Instance(x any).is(ctor function) -> boolean
+   */
+  is(ctor) {
+    const x = this.value
+    return x != null && x.constructor == ctor
+  }
+
+
+  /**
+   * @name Instance.prototype.isString
+   *
+   * @synopsis
+   * new Instance(x any).isString() -> boolean
+   */
+  isString() {
+    const x = this.value
+    return typeof x == 'string' || (x != null && x.constructor == String)
+  }
+
+  /**
+   * @name Instance.prototype.isNumber
+   *
+   * @synopsis
+   * new Instance(x any).isNumber() -> boolean
+   */
+  isNumber() {
+    const x = this.value
+    return typeof x == 'number' || (x != null && x.constructor == Number)
   }
 
   /**
@@ -201,11 +86,107 @@ class Instance {
    * new Instance(x any).isArray() -> boolean
    */
   isArray() {
-    return Array.isArray(this.value);
+    return Array.isArray(this.value)
   }
 
-  // Instance.isTypedArrayCandidate0 = x => x != null && typedArrayConstructorNames.has(x.constructor.name)
-  // Instance.isTypedArrayCandidate1 = ArrayBuffer.isView
+  /**
+   * @name Instance.prototype.isObject
+   *
+   * @synopsis
+   * new Instance(x any).isObject() -> boolean
+   */
+  isObject() {
+    const x = this.value
+    return x != null && x.constructor == Object
+  }
+
+  /**
+   * @name Instance.prototype.isSet
+   *
+   * @synopsis
+   * new Instance(x any).isSet() -> boolean
+   */
+  isSet() {
+    const x = this.value
+    return x != null && x.constructor == Set
+  }
+
+  /**
+   * @name Instance.prototype.isMap
+   *
+   * @synopsis
+   * new Instance(x any).isMap() -> boolean
+   */
+  isMap() {
+    const x = this.value
+    return x != null && x.constructor == Map
+  }
+
+  /**
+   * @name Instance.prototype.isIterable
+   *
+   * @synopsis
+   * new Instance(value any).isIterable() -> boolean
+   */
+  isIterable() {
+    const value = this.value
+    return value != null && typeof value[symbolIterator] == 'function'
+  }
+
+  /**
+   * @name Instance.prototype.isAsyncIterable
+   *
+   * @synopsis
+   * new Instance(value any).isAsyncIterable() -> boolean
+   */
+  isAsyncIterable() {
+    const value = this.value
+    return value != null && typeof value[symbolAsyncIterator] == 'function'
+  }
+
+  /**
+   * @name Instance.prototype.isFunction
+   *
+   * @synopsis
+   * new Instance(x any).isFunction() -> boolean
+   */
+  isFunction() {
+    return typeof this.value == 'function'
+  }
+
+  /**
+   * @name Instance.prototype.isReadable
+   *
+   * @synopsis
+   * new Instance(x any).isReadable() -> boolean
+   */
+  isReadable() {
+    const x = this.value
+    return x != null && typeof x.read == 'function'
+  }
+
+  /**
+   * @name Instance.prototype.isWritable
+   *
+   * @synopsis
+   * new Instance(x any).isWritable() -> boolean
+   */
+  isWritable() {
+    const x = this.value
+    return x != null && typeof x.write == 'function'
+  }
+
+  /**
+   * @name Instance.prototype.isPromise
+   *
+   * @synopsis
+   * new Instance(x any).isPromise() -> boolean
+   */
+  isPromise() {
+    const x = this.value
+    return x != null && typeof x.then == 'function'
+  }
+
   /**
    * @name Instance.prototype.isTypedArray
    *
@@ -213,157 +194,140 @@ class Instance {
    * new Instance(x any).isTypedArray() -> boolean
    */
   isTypedArray() {
-    return ArrayBuffer.isView(this.value);
+    return ArrayBuffer.isView(this.value)
   }
+
 }
 
-/**
- * @name Instance.prototype.is
+/*
+ * @name Instance.isInstance
  *
  * @synopsis
- * new Instance(x any).is(constructor function) -> boolean
+ * Instance.isInstance(x any) -> boolean
+ *
+ * @catchphrase
+ * `false` <- only for `undefined` and `null`
+ *
+ * @TODO Change to isDefined
  */
-Instance.prototype.is = function (constructor) {
-  const x = this.value;
-  return x != null && x.constructor == constructor;
-};
+Instance.isInstance = x => x != null
 
-/**
- * @name Instance.prototype.isString
+/*
+ * @name Instance.is
  *
  * @synopsis
- * new Instance(x any).isString() -> boolean
+ * Instance.is(x any, constructor function) -> boolean
  */
-Instance.prototype.isString = function () {
-  const x = this.value;
-  return typeof x == "string" || (x != null && x.constructor == String);
-};
+Instance.is = (x, constructor) => x != null && x.constructor == constructor
 
-/**
- * @name Instance.prototype.isNumber
+/*
+ * @name Instance.isString
  *
  * @synopsis
- * new Instance(x any).isNumber() -> boolean
+ * Instance.isString(x any) -> boolean
  */
-Instance.prototype.isNumber = function () {
-  const x = this.value;
-  return typeof x == "number" || (x != null && x.constructor == Number);
-};
+Instance.isString = x => (
+  typeof x == 'string' || (x != null && x.constructor == String))
 
-/**
+/*
+ * @name Instance.isNumber
+ *
+ * @synopsis
+ * Instance.isNumber(x any) -> boolean
+ */
+Instance.isNumber = x => (
+  typeof x == 'number' || (x != null && x.constructor == Number))
+
+/*
  * @name Instance.isArray
  *
  * @synopsis
  * Instance.isArray(x any) -> boolean
  */
-Instance.isArray = Array.isArray;
+Instance.isArray = Array.isArray
 
-/**
- * @name Instance.prototype.isObject
+/*
+ * @name Instance.isObject
  *
  * @synopsis
- * new Instance(x any).isObject() -> boolean
+ * Instance.isObject(x any) -> boolean
  */
-Instance.prototype.isObject = function () {
-  const x = this.value;
-  return x != null && x.constructor == Object;
-};
+Instance.isObject = x => x != null && x.constructor == Object
 
-/**
- * @name Instance.prototype.isSet
+/*
+ * @name Instance.isSet
  *
  * @synopsis
- * new Instance(x any).isSet() -> boolean
+ * Instance.isSet(x any) -> boolean
  */
-Instance.prototype.isSet = function () {
-  const x = this.value;
-  return x != null && x.constructor == Set;
-};
+Instance.isSet = x => x != null && x.constructor == Set
 
-/**
- * @name Instance.prototype.isMap
+/*
+ * @name Instance.isMap
  *
  * @synopsis
- * new Instance(x any).isMap() -> boolean
+ * Instance.isMap(x any) -> boolean
  */
-Instance.prototype.isMap = function () {
-  const x = this.value;
-  return x != null && x.constructor == Map;
-};
+Instance.isMap = x => x != null && x.constructor == Map
 
-/**
- * @name Instance.prototype.isIterable
+/*
+ * @name Instance.isIterable
  *
  * @synopsis
- * new Instance(value any).isIterable() -> boolean
+ * Instance.isIterable(value any) -> boolean
  */
-Instance.prototype.isIterable = function isIterable() {
-  const value = this.value;
-  return value != null && typeof value[symbolIterator] == "function";
-};
+Instance.isIterable = function isIterable(value) {
+  return value != null && typeof value[symbolIterator] == 'function'
+}
 
-const symbolAsyncIterator = Symbol.asyncIterator;
-
-/**
- * @name Instance.prototype.isAsyncIterable
+/*
+ * @name Instance.isAsyncIterable
  *
  * @synopsis
- * new Instance(value any).isAsyncIterable() -> boolean
+ * Instance.isAsyncIterable(value any) -> boolean
  */
-Instance.prototype.isAsyncIterable = function () {
-  const value = this.value;
-  return value != null && typeof value[symbolAsyncIterator] == "function";
-};
+Instance.isAsyncIterable = function isAsyncIterable(value) {
+  return value != null && typeof value[symbolAsyncIterator] == 'function'
+}
 
-/**
- * @name Instance.prototype.isFunction
+/*
+ * @name Instance.isFunction
  *
  * @synopsis
- * new Instance(x any).isFunction() -> boolean
+ * Instance.isFunction(x any) -> boolean
  */
-Instance.prototype.isFunction = function () {
-  return typeof this.value == "function";
-};
+Instance.isFunction = x => typeof x == 'function'
 
-/**
- * @name Instance.prototype.isReadable
+/*
+ * @name Instance.isReadable
  *
  * @synopsis
- * new Instance(x any).isReadable() -> boolean
+ * Instance.isReadable(x any) -> boolean
  */
-Instance.prototype.isReadable = function () {
-  const x = this.value;
-  return x != null && typeof x.read == "function";
-};
+Instance.isReadable = x => x != null && typeof x.read == 'function'
 
-/**
- * @name Instance.prototype.isWritable
+/*
+ * @name Instance.isWritable
  *
  * @synopsis
- * new Instance(x any).isWritable() -> boolean
+ * Instance.isWritable(x any) -> boolean
  */
-Instance.prototype.isWritable = function () {
-  const x = this.value;
-  return x != null && typeof x.write == "function";
-};
+Instance.isWritable = x => x != null && typeof x.write == 'function'
 
-/**
- * @name Instance.prototype.isPromise
+/*
+ * @name Instance.isPromise
  *
  * @synopsis
- * new Instance(x any).isPromise() -> boolean
+ * Instance.isPromise(x any) -> boolean
  */
-Instance.prototype.isPromise = function () {
-  const x = this.value;
-  return x != null && typeof x.then == "function";
-};
+Instance.isPromise = x => x != null && typeof x.then == 'function'
 
-/**
+/*
  * @name Instance.isTypedArray
  *
  * @synopsis
  * Instance.isTypedArray(x any) -> boolean
  */
-Instance.isTypedArray = ArrayBuffer.isView;
+Instance.isTypedArray = ArrayBuffer.isView
 
-module.exports = Instance;
+module.exports = Instance
