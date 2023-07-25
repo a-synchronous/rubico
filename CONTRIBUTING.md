@@ -7,7 +7,7 @@
 npm version patch|minor|major
 
 # run the build script
-./build
+npm run build
 
 # test the distribution
 node dist-test.js
