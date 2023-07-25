@@ -1,3 +1,8 @@
+## v2.3.1
+ * generate `d.ts` for `x` - [#269](https://github.com/a-synchronous/rubico/pull/269) - [kalagin](https://github.com/kalagin)
+ * add `d.ts` command before `./build` - [#269](https://github.com/a-synchronous/rubico/pull/269) - [kalagin](https://github.com/kalagin)
+ * convert monad/Instance.js to class to fix private name conflict with ts - [#269](https://github.com/a-synchronous/rubico/pull/269) - [kalagin](https://github.com/kalagin)
+
 ## v2.3.0
  * Add `d.ts` files for all core functions and _internal - [#241](https://github.com/a-synchronous/rubico/pull/241) - [kalagin](https://github.com/kalagin)
  * Consolidate chat to this issue: [#29](https://github.com/a-synchronous/rubico/issues/29)
