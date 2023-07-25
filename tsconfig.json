@@ -1,11 +1,14 @@
 {
  "include": [
-  "./*.js"
+  "./*.js",
+  "./x/*.js",
  ],
  "exclude": [
   "dist-test.js",
   "rubico.js",
   "**/**.test.js",
+  "**/**.benchmark.js",
+  "**/**.memoryUsage.js",
  ],
  "compilerOptions": {
   "declaration": true,
