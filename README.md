@@ -254,7 +254,7 @@ rubico is [MIT Licensed](https://github.com/a-synchronous/rubico/blob/master/LIC
 # Awesome Resources
 [rubico simplifies asynchronous code](https://dev.to/richytong/rubico-a-synchrnous-functional-syntax-motivation-20hf)
 <br>
-[Practical Functional Programming in JavaScript - Control Flow](https://dev.to/richytong/practical-functional-programming-in-javascript-techniques-for-composing-data-c39)
+[Practical Functional Programming in JavaScript - Control Flow](https://dev.to/richytong/practical-functional-programming-in-javascript-control-flow-2fim)
 <br>
 [Practical Functional Programming in JavaScript - Error Handling](https://dev.to/richytong/practical-functional-programming-in-javascript-error-handling-8g5)
 <br>
