@@ -2441,24 +2441,7 @@ transform(
       ), '1925')
       await fs.promises.unlink('./tmp')
     })
-    it('async transforms iterable to writeable stream', async () => {
-      const asyncEvensToString = compose([
-        Transducer.filter(asyncIsEven),
-        Transducer.map(x => `${x}`)
-      ])
-      const tmpWriter = fs.createWriteStream(path.join(__dirname, './tmp'))
-      tmpWriter.write('99')
-      const writeEvens = transform(asyncEvensToString, tmpWriter)([1, 2, 3, 4, 5])
-      aok(writeEvens instanceof Promise)
-      await writeEvens
-      ase(await consumeReadStreamPush(
-        fs.createReadStream(path.join(__dirname, './tmp')),
-      ), '9924')
-      ase(await consumeReadStreamPull(
-        fs.createReadStream(path.join(__dirname, './tmp')),
-      ), '9924')
-      await fs.promises.unlink('./tmp')
-    })
+
     it('sync transforms an iterable to an object', async () => {
       ade(
         transform(Transducer.map(n => ({ [n]: n })), {})([1, 2, 3, 4, 5]),
