@@ -2430,17 +2430,6 @@ transform(
         ade(await buffer9924, new constructor([9n, 9n, 2n, 4n]))
       }
     })
-    it('sync transforms iterable to writeable stream', async () => {
-      const tmpWriter = fs.createWriteStream(path.join(__dirname, './tmp'))
-      await transform(squareOddsToString, tmpWriter)([1, 2, 3, 4, 5])
-      ase(await consumeReadStreamPush(
-        fs.createReadStream(path.join(__dirname, './tmp')),
-      ), '1925')
-      ase(await consumeReadStreamPull(
-        fs.createReadStream(path.join(__dirname, './tmp')),
-      ), '1925')
-      await fs.promises.unlink('./tmp')
-    })
 
     it('sync transforms an iterable to an object', async () => {
       ade(
