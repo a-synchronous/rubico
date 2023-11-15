@@ -1274,6 +1274,13 @@ describe('rubico', () => {
           [1, 4, 9, 16, 25],
         )
       })
+      it('map.series index', async () => {
+        const square = (_number, index) => index
+        assert.deepEqual(
+          map.series(square)([1, 2, 4]),
+          [0, 1, 2],
+        )
+      })
     })
     it('syncly maps into array of functions', async () => {
       const arr = []
