@@ -13,7 +13,7 @@ const objectSet = require('./objectSet')
  * arrayMapSeriesAsync<
  *   T any,
  *   array Array<T>,
- *   mapper T=>Promise|any,
+ *   mapper (T,index)=>Promise|any,
  *   result Array,
  *   index number,
  * >(array, mapper, result Array, index) -> Promise|result
@@ -27,7 +27,7 @@ const arrayMapSeriesAsync = async function (
 ) {
   const arrayLength = array.length
   while (++index < arrayLength) {
-    const resultItem = mapper(array[index])
+    const resultItem = mapper(array[index], index)
     result[index] = isPromise(resultItem) ? await resultItem : resultItem
   }
   return result
@@ -41,7 +41,7 @@ const arrayMapSeriesAsync = async function (
  * arrayMapSeries<
  *   T any,
  *   array Array<T>,
- *   mapper T=>Promise|any,
+ *   mapper (T,index)=>Promise|any,
  * >(array, mapper) -> mappedInSeries Promise|Array
  * ```
  *
@@ -54,7 +54,7 @@ const arrayMapSeries = function (array, mapper) {
   let index = -1
 
   while (++index < arrayLength) {
-    const resultItem = mapper(array[index])
+    const resultItem = mapper(array[index], index)
     if (isPromise(resultItem)) {
       return resultItem.then(funcConcat(
         curry3(objectSet, result, index, __),
