@@ -186,7 +186,7 @@ declare namespace map {
      * @synopsis
      * ```coffeescript [specscript]
      * map.series(
-     *   mapperFunc (value any)=>Promise|any,
+     *   mapperFunc (value any, index number)=>Promise|any,
      * )(array Array) -> Promise|Array
      * ```
      *
@@ -207,7 +207,7 @@ declare namespace map {
      *
      * @execution series
      */
-    function series(mapper: any): (value: any) => any;
+    function series(mapper: any, index: number): (value: any) => any;
     /**
      * @name map.pool
      *
