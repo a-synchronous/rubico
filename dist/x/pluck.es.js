@@ -1,7 +1,7 @@
 /**
  * rubico v2.3.1
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2023 Richard Tong
+ * (c) 2019-2024 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 
@@ -269,7 +269,7 @@ const arrayMapSeriesAsync = async function (
 ) {
   const arrayLength = array.length
   while (++index < arrayLength) {
-    const resultItem = mapper(array[index])
+    const resultItem = mapper(array[index], index)
     result[index] = isPromise(resultItem) ? await resultItem : resultItem
   }
   return result
@@ -281,7 +281,7 @@ const arrayMapSeries = function (array, mapper) {
   let index = -1
 
   while (++index < arrayLength) {
-    const resultItem = mapper(array[index])
+    const resultItem = mapper(array[index], index)
     if (isPromise(resultItem)) {
       return resultItem.then(funcConcat(
         curry3(objectSet, result, index, __),
@@ -589,13 +589,13 @@ const _get = function (object, path, defaultValue) {
 }
 
 const get = function (arg0, arg1, arg2) {
+  if (typeof arg0 == 'string' || typeof arg0 == 'number' || isArray(arg0)) {
+    return curry3(_get, __, arg0, arg1)
+  }
   if (isPromise(arg0)) {
     return arg0.then(curry3(_get, __, arg1, arg2))
   }
-  if (isObject(arg0) && !isArray(arg0)) {
-    return _get(arg0, arg1, arg2)
-  }
-  return curry3(_get, __, arg0, arg1)
+  return _get(arg0, arg1, arg2)
 }
 
 const pluck = function (...args) {

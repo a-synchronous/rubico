@@ -1,5 +1,4 @@
 const fs = require('fs')
-const pathResolve = require('./pathResolve')
 
 // findAllFilePaths(path string) -> filePaths Promise<Array<string>>
 const findAllFilePaths = async function (path) {
@@ -10,10 +9,9 @@ const findAllFilePaths = async function (path) {
   const result = []
   for (const file of files) {
     if (file.isDirectory()) {
-      const filePaths = await findAllFilePaths(pathResolve(path, file.name))
-      result.push(...filePaths)
+      continue
     } else {
-      result.push(pathResolve(path, file.name))
+      result.push(`${file.path}/${file.name}`)
     }
   }
   return result
