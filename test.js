@@ -3241,6 +3241,8 @@ flatMap(
     const nested = [[[[[1]]]]]
     it('API coverage', async () => {
       ase(get({ a: 1 }, 'a'), 1)
+      ase(get(null, 'a'), undefined)
+      ase(get(undefined, 'a'), undefined)
       ase(await get(Promise.resolve({ a: 1 }), 'a'), 1)
       ase(get('a')({ a: 1 }), 1)
     })

@@ -83,13 +83,13 @@ const _get = function (object, path, defaultValue) {
  */
 
 const get = function (arg0, arg1, arg2) {
+  if (typeof arg0 == 'string' || typeof arg0 == 'number' || isArray(arg0)) {
+    return curry3(_get, __, arg0, arg1)
+  }
   if (isPromise(arg0)) {
     return arg0.then(curry3(_get, __, arg1, arg2))
   }
-  if (isObject(arg0) && !isArray(arg0)) {
-    return _get(arg0, arg1, arg2)
-  }
-  return curry3(_get, __, arg0, arg1)
+  return _get(arg0, arg1, arg2)
 }
 
 module.exports = get
