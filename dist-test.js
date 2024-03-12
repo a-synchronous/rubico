@@ -15,8 +15,6 @@ const distTest = async function main() {
       // TODO
     }
     else {
-      console.log('Testing', path)
-      continue
       const required = require(path)
 
       if (
