@@ -37,7 +37,7 @@ export = lt;
  * console.log(isLessThan3(5)) // false
  * ```
  *
- * `lt` supports a tacit API for composability.
+ * `lt` supports a lazy API for composability.
  *
  * ```javascript [playground]
  * pipe({ value: 1 }, [

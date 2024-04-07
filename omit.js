@@ -53,7 +53,7 @@ const _omit = function (source, paths) {
  * ) // { a: { b: { c: 'hello' } } }
  * ```
  *
- * Compose `omit` inside a `pipe` with its tacit API
+ * Compose `omit` inside a `pipe` with its lazy API
  *
  * ```javascript [playground]
  * pipe({ a: 1, b: 2, c: 3 }, [

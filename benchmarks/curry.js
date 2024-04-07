@@ -15,7 +15,7 @@ suite.add('rubico curry', () => {
   curry((a, b) => a + b, __, 1)(2)
 })
 
-suite.add('rubico curry tacit', () => {
+suite.add('rubico curry lazy', () => {
   curry((a, b) => a + b)(__, 1)(2)
 })
 

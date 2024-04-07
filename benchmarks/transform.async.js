@@ -12,7 +12,7 @@ suite.add('rubico transform', async () => {
   )
 })
 
-suite.add('rubico transform tacit', async () => {
+suite.add('rubico transform lazy', async () => {
   await transform(
     Transducer.map(async number => number ** 2),
     [],

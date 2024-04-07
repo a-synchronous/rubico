@@ -7,7 +7,7 @@ suite.add('rubico some', async () => {
   await some([1, 3, 5], async number => number % 2 == 1)
 })
 
-suite.add('rubico some tacit', async () => {
+suite.add('rubico some lazy', async () => {
   await some(async number => number % 2 == 1)([1, 3, 5])
 })
 

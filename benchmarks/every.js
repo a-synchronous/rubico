@@ -7,7 +7,7 @@ suite.add('rubico every', () => {
   every([1, 3, 5], number => number % 2 == 1)
 })
 
-suite.add('rubico every tacit', () => {
+suite.add('rubico every lazy', () => {
   every(number => number % 2 == 1)([1, 3, 5])
 })
 

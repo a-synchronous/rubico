@@ -11,7 +11,7 @@ suite.add('rubico assign', () => {
   })
 })
 
-suite.add('rubico assign tacit', () => {
+suite.add('rubico assign lazy', () => {
   assign({
     a: () => 1,
     b: () => 2,

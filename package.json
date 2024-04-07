@@ -101,6 +101,7 @@
     "javascript",
     "tacit",
     "pointfree",
+    "lazy",
     "concurrent",
     "iterator",
     "async",

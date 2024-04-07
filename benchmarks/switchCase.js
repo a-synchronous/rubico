@@ -18,7 +18,7 @@ suite.add('switchCase', () => {
   ])
 })
 
-suite.add('switchCase tacit', () => {
+suite.add('switchCase lazy', () => {
   switchCase([
     number => number % 2 == 1,
     'number is odd',

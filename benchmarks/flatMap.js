@@ -14,7 +14,7 @@ suite.add('rubico flatMap', () => {
   flatMap([1, 2, 3, 4, 5], n => [n, n])
 })
 
-suite.add('rubico flatMap tacit', () => {
+suite.add('rubico flatMap lazy', () => {
   flatMap(n => [n, n])([1, 2, 3, 4, 5])
 })
 

@@ -11,7 +11,7 @@ suite.add('rubico not predicate', () => {
   not({ a: 1 }, value => value.a == 1)
 })
 
-suite.add('rubico not predicate tacit', () => {
+suite.add('rubico not predicate lazy', () => {
   not(value => value.a == 1)({ a: 1 })
 })
 

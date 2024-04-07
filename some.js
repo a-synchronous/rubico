@@ -83,7 +83,7 @@ const _some = function (collection, predicate) {
  * promise.then(console.log) // true
  * ```
  *
- * `some` supports a tacit API for composability.
+ * `some` supports a lazy API for composability.
  *
  * ```javascript [playground]
  * pipe([1, 2, 3], [

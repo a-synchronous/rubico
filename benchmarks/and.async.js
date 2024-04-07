@@ -10,7 +10,7 @@ suite.add('rubico and', async () => {
   ])
 })
 
-suite.add('rubico and tacit', async () => {
+suite.add('rubico and lazy', async () => {
   await and([
     async value => value.a == 1,
     async value => typeof value == 'object',

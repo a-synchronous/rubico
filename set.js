@@ -81,7 +81,7 @@ const _set = function (obj, path, value) {
  * console.log(myNewObj) // { a: 1, b: 3 }
  * ```
  *
- * `set` supports a tacit API for composability.
+ * `set` supports a lazy API for composability.
  *
  * ```javascript [playground]
  * pipe({ a: 1 }, [

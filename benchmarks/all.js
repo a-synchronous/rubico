@@ -11,7 +11,7 @@ suite.add('rubico array all', () => {
   ])
 })
 
-suite.add('rubico array all tacit', () => {
+suite.add('rubico array all lazy', () => {
   all([
     value => value + 1,
     value => value + 2,
@@ -27,7 +27,7 @@ suite.add('rubico object all', () => {
   })
 })
 
-suite.add('rubico object all tacit', () => {
+suite.add('rubico object all lazy', () => {
   all({
     a: value => value + 1,
     b: value => value + 2,

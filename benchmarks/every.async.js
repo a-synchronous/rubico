@@ -7,7 +7,7 @@ suite.add('rubico every', async () => {
   await every([1, 3, 5], async number => number % 2 == 1)
 })
 
-suite.add('rubico every tacit', async () => {
+suite.add('rubico every lazy', async () => {
   await every(async number => number % 2 == 1)([1, 3, 5])
 })
 

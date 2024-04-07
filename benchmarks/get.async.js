@@ -7,7 +7,7 @@ suite.add('rubico get', async () => {
   await get({}, 'a', async () => 1)
 })
 
-suite.add('rubico get tacit', async () => {
+suite.add('rubico get lazy', async () => {
   await get('a', async () => 1)({})
 })
 

@@ -16,7 +16,7 @@ suite.add('rubico map', () => {
   map([1, 2, 3, 4, 5], value => value + 1)
 })
 
-suite.add('rubico map tacit', () => {
+suite.add('rubico map lazy', () => {
   map(value => value + 1)([1, 2, 3, 4, 5])
 })
 

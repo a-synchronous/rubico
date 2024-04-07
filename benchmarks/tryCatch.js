@@ -12,7 +12,7 @@ suite.add('rubico tryCatch', () => {
   }, error => error)
 })
 
-suite.add('rubico tryCatch tacit', () => {
+suite.add('rubico tryCatch lazy', () => {
   tryCatch(message => {
     throw new Error(message)
   }, error => error)('hello')

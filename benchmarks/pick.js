@@ -14,7 +14,7 @@ suite.add('rubico pick', () => {
   pick({ a: 1, b: 2, c: 3 }, ['a'])
 })
 
-suite.add('rubico pick tacit', () => {
+suite.add('rubico pick lazy', () => {
   pick(['a'])({ a: 1, b: 2, c: 3 })
 })
 

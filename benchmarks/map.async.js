@@ -19,7 +19,7 @@ suite.add('rubico map', async () => {
   await map([1, 2, 3, 4, 5], async value => value + 1)
 })
 
-suite.add('rubico map tacit', async () => {
+suite.add('rubico map lazy', async () => {
   await map(async value => value + 1)([1, 2, 3, 4, 5])
 })
 

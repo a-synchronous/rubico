@@ -7,7 +7,7 @@ suite.add('rubico set', async () => {
   await set({}, 'a', async () => 1)
 })
 
-suite.add('rubico set tacit', async () => {
+suite.add('rubico set lazy', async () => {
   await set('a', async () => 1)({})
 })
 

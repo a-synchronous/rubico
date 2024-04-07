@@ -39,7 +39,7 @@ const curryArgs3 = require('./_internal/curryArgs3')
  * ) // plantain is possibly a banana
  * ```
  *
- * For composability `switchCase` supports a tacit API.
+ * For composability `switchCase` supports a lazy API.
  *
  * ```javascript [playground]
  * const fruitIsYellow = fruit => fruit.color == 'yellow'

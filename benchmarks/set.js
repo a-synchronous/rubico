@@ -15,7 +15,7 @@ suite.add('rubico set', () => {
   set({}, 'a', 1)
 })
 
-suite.add('rubico set tacit', () => {
+suite.add('rubico set lazy', () => {
   set('a', 1)({})
 })
 

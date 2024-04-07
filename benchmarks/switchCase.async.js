@@ -11,7 +11,7 @@ suite.add('rubico switchCase', async () => {
   ])
 })
 
-suite.add('rubico switchCase tacit', async () => {
+suite.add('rubico switchCase lazy', async () => {
   await switchCase([
     async s => s == 'hello',
     async () => 'world',

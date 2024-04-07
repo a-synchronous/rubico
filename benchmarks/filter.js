@@ -14,7 +14,7 @@ suite.add('rubico filter', () => {
   filter([1, 2, 3, 4, 5], value => value % 2 == 1)
 })
 
-suite.add('rubico filter tacit', () => {
+suite.add('rubico filter lazy', () => {
   filter(value => value % 2 == 1)([1, 2, 3, 4, 5])
 })
 

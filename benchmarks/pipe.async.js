@@ -14,7 +14,7 @@ suite.add('rubico pipe', async () => {
   ])
 })
 
-suite.add('rubico pipe tacit', async () => {
+suite.add('rubico pipe lazy', async () => {
   await pipe([
     async n => n + 1,
     async n => n * 2,

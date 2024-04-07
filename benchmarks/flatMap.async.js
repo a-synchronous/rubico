@@ -10,7 +10,7 @@ suite.add('rubico flatMap', async () => {
   await flatMap([1, 2, 3, 4, 5], async n => [n, n])
 })
 
-suite.add('rubico flatMap tacit', async () => {
+suite.add('rubico flatMap lazy', async () => {
   await flatMap(async n => [n, n])([1, 2, 3, 4, 5])
 })
 

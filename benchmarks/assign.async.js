@@ -11,7 +11,7 @@ suite.add('rubico assign', async () => {
   })
 })
 
-suite.add('rubico assign tacit', async () => {
+suite.add('rubico assign lazy', async () => {
   await assign({
     a: async () => 1,
     b: async () => 2,

@@ -12,7 +12,7 @@ suite.add('rubico filter', async () => {
   await filter([1, 2, 3, 4, 5], async value => value % 2 == 1)
 })
 
-suite.add('rubico filter tacit', async () => {
+suite.add('rubico filter lazy', async () => {
   await filter(async value => value % 2 == 1)([1, 2, 3, 4, 5])
 })
 

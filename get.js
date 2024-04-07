@@ -39,7 +39,7 @@ const _get = function (object, path, defaultValue) {
  * console.log(get(obj, 'hello')) // world
  * ```
  *
- * `get` supports a tacit API for composability
+ * `get` supports a lazy API for composability
  *
  * ```javascript [playground]
  * const obj = { hello: 'world' }

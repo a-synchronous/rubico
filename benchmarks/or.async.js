@@ -10,7 +10,7 @@ suite.add('rubico or', async () => {
   ])
 })
 
-suite.add('rubico or tacit', async () => {
+suite.add('rubico or lazy', async () => {
   await or([
     async value => value.a == 2,
     async value => typeof value == 'object',

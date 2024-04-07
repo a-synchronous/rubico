@@ -7,7 +7,7 @@ suite.add('rubico some', () => {
   some([1, 2, 3, 4, 5], number => number % 2 == 1)
 })
 
-suite.add('rubico some tacit', () => {
+suite.add('rubico some lazy', () => {
   some(number => number % 2 == 1)([1, 2, 3, 4, 5])
 })
 

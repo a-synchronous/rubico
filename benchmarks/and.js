@@ -10,7 +10,7 @@ suite.add('rubico and', () => {
   ])
 })
 
-suite.add('rubico and tacit', () => {
+suite.add('rubico and lazy', () => {
   and([
     value => value.a == 1,
     value => typeof value == 'object',

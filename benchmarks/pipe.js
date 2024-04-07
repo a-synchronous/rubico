@@ -15,7 +15,7 @@ suite.add('rubico pipe', () => {
   ])
 })
 
-suite.add('rubico pipe tacit', () => {
+suite.add('rubico pipe lazy', () => {
   pipe([
     number => number + 1,
     number => number + 2,

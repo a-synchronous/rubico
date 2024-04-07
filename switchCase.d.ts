@@ -31,7 +31,7 @@ export = switchCase;
  * ) // plantain is possibly a banana
  * ```
  *
- * For composability `switchCase` supports a tacit API.
+ * For composability `switchCase` supports a lazy API.
  *
  * ```javascript [playground]
  * const fruitIsYellow = fruit => fruit.color == 'yellow'

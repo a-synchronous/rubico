@@ -39,7 +39,7 @@ const greaterThan = require('./_internal/greaterThan')
  * console.log(isOfLegalAge(juvenile)) // false
  * ```
  *
- * `gt` supports a tacit API for composability.
+ * `gt` supports a lazy API for composability.
  *
  * ```javascript [playground]
  * pipe({ value: 1 }, [

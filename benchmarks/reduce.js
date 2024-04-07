@@ -14,7 +14,7 @@ suite.add('rubico reduce', () => {
   reduce([1, 2, 3, 4, 5], (a, b) => a + b, 0)
 })
 
-suite.add('rubico reduce tacit', () => {
+suite.add('rubico reduce lazy', () => {
   reduce((a, b) => a + b, 0)([1, 2, 3, 4, 5])
 })
 

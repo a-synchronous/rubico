@@ -11,7 +11,7 @@ suite.add('rubico async array all', async () => {
   ])
 })
 
-suite.add('rubico async array all tacit', async () => {
+suite.add('rubico async array all lazy', async () => {
   await all([
     async value => value + 1,
     async value => value + 2,
@@ -27,7 +27,7 @@ suite.add('rubico async object all', async () => {
   })
 })
 
-suite.add('rubico async object all tacit', async () => {
+suite.add('rubico async object all lazy', async () => {
   await all({
     a: async value => value + 1,
     b: async value => value + 2,

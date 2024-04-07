@@ -10,7 +10,7 @@ suite.add('rubico tryCatch', async () => {
   }, async error => error)
 })
 
-suite.add('rubico tryCatch tacit', async () => {
+suite.add('rubico tryCatch lazy', async () => {
   await tryCatch(async message => {
     throw new Error(message)
   }, async error => error)('hello')

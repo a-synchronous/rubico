@@ -37,7 +37,7 @@ export = eq;
  * }
  * ```
  *
- * `eq` supports a tacit API for composability.
+ * `eq` supports a lazy API for composability.
  *
  * ```javascript [playground]
  * pipe({ name: 'George' }, [

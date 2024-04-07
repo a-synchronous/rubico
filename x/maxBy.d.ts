@@ -22,7 +22,7 @@ export = maxBy;
  * console.log(maxItem) // { a: 3 }
  * ```
  *
- * `maxBy` composes in a pointfree way.
+ * `maxBy` composes in a lazy way.
  *
  * ```javascript [playground]
  * import maxBy from 'https://unpkg.com/rubico/dist/x/maxBy.es.js'

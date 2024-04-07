@@ -15,7 +15,7 @@ suite.add('rubico get', () => {
   get({ a: 1 }, 'a')
 })
 
-suite.add('rubico get tacit', () => {
+suite.add('rubico get lazy', () => {
   get('a')({ a: 1 })
 })
 

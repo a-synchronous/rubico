@@ -10,7 +10,7 @@ describe('maxBy', () => {
     assert.deepEqual(maxItem, { a: 3 })
   })
 
-  it('composes in a pointfree way', async () => {
+  it('composes in a lazy way', async () => {
     const numbers = [1, 2, 3]
     const maxItem = pipe(numbers, [
       map(number => number ** 2),
