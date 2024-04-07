@@ -133,7 +133,7 @@ pipe(helloPromise, [ // helloPromise is resolved for 'hello'
 ])
 ```
 
-Most methods support both an eager and a tacit API. The eager API takes all required arguments and executes at once, while its tacit API takes only the non-data arguments and executes lazily, returning a function that expects the data arguments. This dual API supports a natural and composable code style.
+Most methods support both an eager and a lazy API. The eager API takes all required arguments and executes at once, while its lazy API takes only the non-data arguments and executes lazily, returning a function that expects the data arguments. This dual API supports a natural and composable code style.
 
 ```javascript [playground]
 const myObj = { a: 1, b: 2, c: 3 }
@@ -142,7 +142,7 @@ const myObj = { a: 1, b: 2, c: 3 }
 const myDuplicatedSquaredObject = map(myObj, pipe([
   number => [number, number],
 
-  // the second use of map is tacit
+  // the second use of map is lazy
   map(number => number ** 2),
 ]))
 

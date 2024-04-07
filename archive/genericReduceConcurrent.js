@@ -163,17 +163,17 @@ const foldableReduceConcurrent = function (foldable, reducer, result) {
 }
 
 /**
- * @name tacitGenericReduceConcurrent
+ * @name lazyGenericReduceConcurrent
  *
  * @synopsis
  * any -> T
  *
- * tacitGenericReduceConcurrent(
+ * lazyGenericReduceConcurrent(
  *   reducer (any, T)=>any,
  *   result any,
  * ) -> reducing ...any=>result
  */
-const tacitGenericReduceConcurrent = (
+const lazyGenericReduceConcurrent = (
   reducer, result,
 ) => function reducing(...args) {
   return genericReduceConcurrent(args, reducer, result)

@@ -37,7 +37,7 @@ export = lte;
  * console.log(isLessThanOrEqualTo3(5), false)
  * ```
  *
- * `lte` supports a tacit API for composability.
+ * `lte` supports a lazy API for composability.
  *
  * ```javascript [playground]
  * pipe({ value: 1 }, [

@@ -39,7 +39,7 @@ export = gte;
  * console.log(isAtLeast100(101)) // true
  * ```
  *
- * `gte` supports a tacit API for composability.
+ * `gte` supports a lazy API for composability.
  *
  * ```javascript [playground]
  * pipe({ value: 1 }, [

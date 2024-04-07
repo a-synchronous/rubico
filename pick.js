@@ -53,7 +53,7 @@ const _pick = function (source, keys) {
  * console.log(pick(['a.b.c.d'])(nested)) // { a: { b: { c: { d: 1 } } } }
  * ```
  *
- * Compose `pick` inside a `pipe` with its tacit API.
+ * Compose `pick` inside a `pipe` with its lazy API.
  *
  * ```javascript [playground]
  * pipe({ a: 1, b: 2, c: 3 }, [
