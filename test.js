@@ -1206,6 +1206,23 @@ describe('rubico', () => {
   })
 
   describe('map.entries', () => {
+    it('eager', async () => {
+      assert.deepEqual(
+        map.entries(
+          { a: 1, b: 2, c: 3 },
+          ([key, value]) => [`${key}${key}`, value ** 2]
+        ),
+        { aa: 1, bb: 4, cc: 9 },
+      )
+
+      assert.deepEqual(
+        await map.entries(
+          Promise.resolve({ a: 1, b: 2, c: 3 }),
+          ([key, value]) => [`${key}${key}`, value ** 2]
+        ),
+        { aa: 1, bb: 4, cc: 9 },
+      )
+    })
     it('is like map but over entries rather than values',
       Test(map.entries)
         .case(([key, value]) => [key, value], mappingEntries => {
