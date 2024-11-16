@@ -1,5 +1,5 @@
 /**
- * rubico v2.3.6
+ * rubico v2.3.7
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2024 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -859,19 +859,31 @@ const map = (...args) => {
   return _map(collection, mapper)
 }
 
-map.entries = function mapEntries(mapper) {
-  return function mappingEntries(value) {
-    if (value == null) {
-      throw new TypeError('value is not an Object or Map')
-    }
-    if (value.constructor == Object) {
-      return objectMapEntries(value, mapper)
-    }
-    if (value.constructor == Map) {
-      return mapMapEntries(value, mapper)
-    }
+// _mapEntries(value Object|Map, mapper function) -> Object|Map
+const _mapEntries = (value, mapper) => {
+  if (value == null) {
     throw new TypeError('value is not an Object or Map')
   }
+  if (value.constructor == Object) {
+    return objectMapEntries(value, mapper)
+  }
+  if (value.constructor == Map) {
+    return mapMapEntries(value, mapper)
+  }
+  throw new TypeError('value is not an Object or Map')
+}
+
+map.entries = function mapEntries(...args) {
+  const mapper = args.pop()
+  if (args.length == 0) {
+    return curry2(_mapEntries, __, mapper)
+  }
+
+  const collection = args[0]
+  if (isPromise(collection)) {
+    return collection.then(curry2(_mapEntries, __, mapper))
+  }
+  return _mapEntries(collection, mapper)
 }
 
 map.series = mapper => function mappingInSeries(value) {
