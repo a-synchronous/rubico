@@ -1,5 +1,5 @@
 /**
- * rubico v2.4.0
+ * rubico v2.4.1
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2024 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -809,15 +809,13 @@ const _flatMap = function (value, flatMapper) {
   return flatMapper(value)
 }
 
-const flatMap = (...args) => {
-  const flatMapper = args.pop()
-  if (args.length == 0) {
-    return curry2(_flatMap, __, flatMapper)
+const flatMap = (arg0, arg1) => {
+  if (typeof arg0 == 'function') {
+    return curry2(_flatMap, __, arg0)
   }
-  const collection = args[0]
-  return isPromise(collection)
-    ? collection.then(curry2(_flatMap, __, flatMapper))
-    : _flatMap(args[0], flatMapper)
+  return isPromise(arg0)
+    ? arg0.then(curry2(_flatMap, __, arg1))
+    : _flatMap(arg0, arg1)
 }
 
 export default flatMap

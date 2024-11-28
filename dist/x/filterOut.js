@@ -1,5 +1,5 @@
 /**
- * rubico v2.4.0
+ * rubico v2.4.1
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2024 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -317,12 +317,11 @@ const _filter = function (value, predicate) {
   return value
 }
 
-const filter = function (...args) {
-  const predicate = args.pop()
-  if (args.length == 0) {
-    return curry2(_filter, __, predicate)
+const filter = function (arg0, arg1) {
+  if (typeof arg0 == 'function') {
+    return curry2(_filter, __, arg0)
   }
-  return _filter(args[0], predicate)
+  return _filter(arg0, arg1)
 }
 
 const areAnyValuesPromises = function (values) {

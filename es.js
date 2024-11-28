@@ -1,5 +1,5 @@
 /**
- * rubico v2.4.0
+ * rubico v2.4.1
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2024 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -846,17 +846,13 @@ const _map = function (value, mapper) {
   return mapper(value)
 }
 
-const map = (...args) => {
-  const mapper = args.pop()
-  if (args.length == 0) {
-    return curry2(_map, __, mapper)
+const map = function (arg0, arg1) {
+  if (typeof arg0 == 'function') {
+    return curry2(_map, __, arg0)
   }
-
-  const collection = args[0]
-  if (isPromise(collection)) {
-    return collection.then(curry2(_map, __, mapper))
-  }
-  return _map(collection, mapper)
+  return isPromise(arg0)
+    ? arg0.then(curry2(_map, __, arg1))
+    : _map(arg0, arg1)
 }
 
 // _mapEntries(value Object|Map, mapper function) -> Object|Map
@@ -873,17 +869,13 @@ const _mapEntries = (value, mapper) => {
   throw new TypeError('value is not an Object or Map')
 }
 
-map.entries = function mapEntries(...args) {
-  const mapper = args.pop()
-  if (args.length == 0) {
-    return curry2(_mapEntries, __, mapper)
+map.entries = function mapEntries(arg0, arg1) {
+  if (typeof arg0 == 'function') {
+    return curry2(_mapEntries, __, arg0)
   }
-
-  const collection = args[0]
-  if (isPromise(collection)) {
-    return collection.then(curry2(_mapEntries, __, mapper))
-  }
-  return _mapEntries(collection, mapper)
+  return isPromise(arg0)
+    ? arg0.then(curry2(_mapEntries, __, arg1))
+    : _mapEntries(arg0, arg1)
 }
 
 map.series = mapper => function mappingInSeries(value) {
@@ -1093,12 +1085,11 @@ const _filter = function (value, predicate) {
   return value
 }
 
-const filter = function (...args) {
-  const predicate = args.pop()
-  if (args.length == 0) {
-    return curry2(_filter, __, predicate)
+const filter = function (arg0, arg1) {
+  if (typeof arg0 == 'function') {
+    return curry2(_filter, __, arg0)
   }
-  return _filter(args[0], predicate)
+  return _filter(arg0, arg1)
 }
 
 const objectValues = Object.values
@@ -1856,15 +1847,13 @@ const _flatMap = function (value, flatMapper) {
   return flatMapper(value)
 }
 
-const flatMap = (...args) => {
-  const flatMapper = args.pop()
-  if (args.length == 0) {
-    return curry2(_flatMap, __, flatMapper)
+const flatMap = (arg0, arg1) => {
+  if (typeof arg0 == 'function') {
+    return curry2(_flatMap, __, arg0)
   }
-  const collection = args[0]
-  return isPromise(collection)
-    ? collection.then(curry2(_flatMap, __, flatMapper))
-    : _flatMap(args[0], flatMapper)
+  return isPromise(arg0)
+    ? arg0.then(curry2(_flatMap, __, arg1))
+    : _flatMap(arg0, arg1)
 }
 
 const arrayForEach = function (array, callback) {
@@ -2190,18 +2179,13 @@ const _some = function (collection, predicate) {
   return predicate(collection)
 }
 
-const some = function (...args) {
-  const predicate = args.pop()
-  if (args.length == 0) {
-    return curry2(_some, __, predicate)
+const some = function (arg0, arg1) {
+  if (typeof arg0 == 'function') {
+    return curry2(_some, __, arg0)
   }
-
-  const collection = args[0]
-  if (isPromise(collection)) {
-    return collection.then(curry2(_some, __, predicate))
-  }
-
-  return _some(collection, predicate)
+  return isPromise(arg0)
+    ? arg0.then(curry2(_some, __, arg1))
+    : _some(arg0, arg1)
 }
 
 const arrayEvery = function (array, predicate) {
@@ -2302,18 +2286,13 @@ const _every = function (collection, predicate) {
   return predicate(collection)
 }
 
-const every = function (...args) {
-  const predicate = args.pop()
-  if (args.length == 0) {
-    return curry2(_every, __, predicate)
+const every = function (arg0, arg1) {
+  if (typeof arg0 == 'function') {
+    return curry2(_every, __, arg0)
   }
-
-  const collection = args[0]
-  if (isPromise(collection)) {
-    return collection.then(curry2(_every, __, predicate))
-  }
-
-  return _every(collection, predicate)
+  return isPromise(arg0)
+    ? arg0.then(curry2(_every, __, arg1))
+    : _every(arg0, arg1)
 }
 
 const areAllValuesTruthy = function (predicates, index) {

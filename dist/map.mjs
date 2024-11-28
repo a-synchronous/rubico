@@ -1,5 +1,5 @@
 /**
- * rubico v2.4.0
+ * rubico v2.4.1
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2024 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -480,17 +480,13 @@ const _map = function (value, mapper) {
   return mapper(value)
 }
 
-const map = (...args) => {
-  const mapper = args.pop()
-  if (args.length == 0) {
-    return curry2(_map, __, mapper)
+const map = function (arg0, arg1) {
+  if (typeof arg0 == 'function') {
+    return curry2(_map, __, arg0)
   }
-
-  const collection = args[0]
-  if (isPromise(collection)) {
-    return collection.then(curry2(_map, __, mapper))
-  }
-  return _map(collection, mapper)
+  return isPromise(arg0)
+    ? arg0.then(curry2(_map, __, arg1))
+    : _map(arg0, arg1)
 }
 
 // _mapEntries(value Object|Map, mapper function) -> Object|Map
@@ -507,17 +503,13 @@ const _mapEntries = (value, mapper) => {
   throw new TypeError('value is not an Object or Map')
 }
 
-map.entries = function mapEntries(...args) {
-  const mapper = args.pop()
-  if (args.length == 0) {
-    return curry2(_mapEntries, __, mapper)
+map.entries = function mapEntries(arg0, arg1) {
+  if (typeof arg0 == 'function') {
+    return curry2(_mapEntries, __, arg0)
   }
-
-  const collection = args[0]
-  if (isPromise(collection)) {
-    return collection.then(curry2(_mapEntries, __, mapper))
-  }
-  return _mapEntries(collection, mapper)
+  return isPromise(arg0)
+    ? arg0.then(curry2(_mapEntries, __, arg1))
+    : _mapEntries(arg0, arg1)
 }
 
 map.series = mapper => function mappingInSeries(value) {
