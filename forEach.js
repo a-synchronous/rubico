@@ -10,7 +10,6 @@ const iteratorForEach = require('./_internal/iteratorForEach')
 const asyncIteratorForEach = require('./_internal/asyncIteratorForEach')
 const symbolIterator = require('./_internal/symbolIterator')
 const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
-
 const arrayForEachSeries = require('./_internal/arrayForEachSeries')
 const objectForEachSeries = require('./_internal/objectForEachSeries')
 const iteratorForEachSeries = require('./_internal/iteratorForEachSeries')
@@ -73,15 +72,13 @@ const _forEach = function (collection, callback) {
  * ])
  * ```
  */
-const forEach = function (...args) {
-  const callback = args.pop()
-  if (args.length == 0) {
-    return curry2(_forEach, __, callback)
+const forEach = function (arg0, arg1) {
+  if (typeof arg0 == 'function') {
+    return curry2(_forEach, __, arg0)
   }
-  const collection = args[0]
-  return isPromise(collection)
-    ? collection.then(curry2(_forEach, __, callback))
-    : _forEach(collection, callback)
+  return isPromise(arg0)
+    ? arg0.then(curry2(_forEach, __, arg1))
+    : _forEach(arg0, arg1)
 }
 
 /**
@@ -134,15 +131,13 @@ const _forEachSeries = function (collection, callback) {
  * forEach.series({ a: 1, b: 2, c: 3 }, console.log) // 1 2 3
  * ```
  */
-forEach.series = function forEachSeries(...args) {
-  const callback = args.pop()
-  if (args.length == 0) {
-    return curry2(_forEachSeries, __, callback)
+forEach.series = function forEachSeries(arg0, arg1) {
+  if (typeof arg0 == 'function') {
+    return curry2(_forEachSeries, __, arg0)
   }
-  const collection = args[0]
-  return isPromise(collection)
-    ? collection.then(curry2(_forEach, __, callback))
-    : _forEachSeries(collection, callback)
+  return isPromise(arg0)
+    ? arg0.then(curry2(_forEachSeries, __, arg1))
+    : _forEachSeries(arg0, arg1)
 }
 
 module.exports = forEach
