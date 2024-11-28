@@ -234,6 +234,12 @@ For advanced asynchronous use cases, some of the methods have property functions
 
 For more functions beyond the core methods, please visit `rubico/x`. You can find the full documentation at [rubico.land/docs](https://rubico.land/docs).
 
+# Benchmarks
+Please find the published benchmark output inside the [benchmark-output](https://github.com/a-synchronous/rubico/tree/master/benchmark-output) folder. You can run the benchmarks on your own system with the following command:
+```
+npm run bench
+```
+
 # Contributing
 Your feedback and contributions are welcome. If you have a suggestion, please raise an issue. Prior to that, please search through the issues first in case your suggestion has been made already. If you decide to work on an issue, or feel like taking initiative and contributing anything at all, feel free to create a pull request and I will get back to you shortly.
 
