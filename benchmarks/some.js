@@ -3,6 +3,10 @@ const some = require('../some')
 
 const suite = new TimeInLoopSuite()
 
+suite.add('vanilla some', () => {
+  [1, 3, 5].some(number => number % 2 == 1)
+})
+
 suite.add('rubico some', () => {
   some([1, 2, 3, 4, 5], number => number % 2 == 1)
 })

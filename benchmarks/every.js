@@ -3,6 +3,10 @@ const every = require('../every')
 
 const suite = new TimeInLoopSuite()
 
+suite.add('vanilla every', () => {
+  [1, 3, 5].every(number => number % 2 == 1)
+})
+
 suite.add('rubico every', () => {
   every([1, 3, 5], number => number % 2 == 1)
 })
