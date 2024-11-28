@@ -246,18 +246,13 @@ const _map = function (value, mapper) {
  *
  * @TODO streamMap
  */
-
-const map = (...args) => {
-  const mapper = args.pop()
-  if (args.length == 0) {
-    return curry2(_map, __, mapper)
+const map = function (arg0, arg1) {
+  if (typeof arg0 == 'function') {
+    return curry2(_map, __, arg0)
   }
-
-  const collection = args[0]
-  if (isPromise(collection)) {
-    return collection.then(curry2(_map, __, mapper))
-  }
-  return _map(collection, mapper)
+  return isPromise(arg0)
+    ? arg0.then(curry2(_map, __, arg1))
+    : _map(arg0, arg1)
 }
 
 // _mapEntries(value Object|Map, mapper function) -> Object|Map
@@ -305,17 +300,13 @@ const _mapEntries = (value, mapper) => {
  *
  * @since v1.7.0
  */
-map.entries = function mapEntries(...args) {
-  const mapper = args.pop()
-  if (args.length == 0) {
-    return curry2(_mapEntries, __, mapper)
+map.entries = function mapEntries(arg0, arg1) {
+  if (typeof arg0 == 'function') {
+    return curry2(_mapEntries, __, arg0)
   }
-
-  const collection = args[0]
-  if (isPromise(collection)) {
-    return collection.then(curry2(_mapEntries, __, mapper))
-  }
-  return _mapEntries(collection, mapper)
+  return isPromise(arg0)
+    ? arg0.then(curry2(_mapEntries, __, arg1))
+    : _mapEntries(arg0, arg1)
 }
 
 /**

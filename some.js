@@ -98,19 +98,13 @@ const _some = function (collection, predicate) {
  *
  * @related or
  */
-
-const some = function (...args) {
-  const predicate = args.pop()
-  if (args.length == 0) {
-    return curry2(_some, __, predicate)
+const some = function (arg0, arg1) {
+  if (typeof arg0 == 'function') {
+    return curry2(_some, __, arg0)
   }
-
-  const collection = args[0]
-  if (isPromise(collection)) {
-    return collection.then(curry2(_some, __, predicate))
-  }
-
-  return _some(collection, predicate)
+  return isPromise(arg0)
+    ? arg0.then(curry2(_some, __, arg1))
+    : _some(arg0, arg1)
 }
 
 module.exports = some

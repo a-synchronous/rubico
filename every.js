@@ -86,18 +86,13 @@ const _every = function (collection, predicate) {
  *
  * @muxing
  */
-const every = function (...args) {
-  const predicate = args.pop()
-  if (args.length == 0) {
-    return curry2(_every, __, predicate)
+const every = function (arg0, arg1) {
+  if (typeof arg0 == 'function') {
+    return curry2(_every, __, arg0)
   }
-
-  const collection = args[0]
-  if (isPromise(collection)) {
-    return collection.then(curry2(_every, __, predicate))
-  }
-
-  return _every(collection, predicate)
+  return isPromise(arg0)
+    ? arg0.then(curry2(_every, __, arg1))
+    : _every(arg0, arg1)
 }
 
 module.exports = every

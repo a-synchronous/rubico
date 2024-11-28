@@ -166,15 +166,13 @@ const _flatMap = function (value, flatMapper) {
  *
  *  * For Node.js duplex streams (type [Stream](https://nodejs.org/api/stream.html#class-streamduplex)), `flatMap` applies a flatMapper function to each item of the stream, writing (`.write`) each item of each execution into the duplex stream
  */
-const flatMap = (...args) => {
-  const flatMapper = args.pop()
-  if (args.length == 0) {
-    return curry2(_flatMap, __, flatMapper)
+const flatMap = (arg0, arg1) => {
+  if (typeof arg0 == 'function') {
+    return curry2(_flatMap, __, arg0)
   }
-  const collection = args[0]
-  return isPromise(collection)
-    ? collection.then(curry2(_flatMap, __, flatMapper))
-    : _flatMap(args[0], flatMapper)
+  return isPromise(arg0)
+    ? arg0.then(curry2(_flatMap, __, arg1))
+    : _flatMap(arg0, arg1)
 }
 
 module.exports = flatMap
