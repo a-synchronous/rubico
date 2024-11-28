@@ -1,5 +1,5 @@
 /**
- * rubico v2.3.7
+ * rubico v2.3.8
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2024 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -1902,6 +1902,103 @@ const iteratorForEach = function (iterator, callback) {
   return promises.length == 0 ? iterator : promiseAll(promises).then(always(iterator))
 }
 
+// _arrayForEachSeriesAsync(
+//   array Array,
+//   callback function,
+//   index number
+// ) -> Promise<array>
+const _arrayForEachSeriesAsync = async function (array, callback, index) {
+  const length = array.length
+  while (++index < length) {
+    const operation = callback(array[index])
+    if (isPromise(operation)) {
+      await operation
+    }
+  }
+  return array
+}
+
+const arrayForEachSeries = function (array, callback) {
+  const length = array.length
+  let index = -1
+  while (++index < length) {
+    const operation = callback(array[index])
+    if (isPromise(operation)) {
+      return operation
+        .then(thunkify3(_arrayForEachSeriesAsync, array, callback, index))
+    }
+  }
+  return array
+}
+
+// _objectForEachSeriesAsync(
+//   object Object,
+//   callback function,
+//   firstKey string
+// ) -> Promise<object>
+const _objectForEachSeriesAsync = async function (object, callback, firstKey) {
+  for (const key in object) {
+    if (key == firstKey) {
+      continue
+    }
+    const operation = callback(object[key])
+    if (isPromise(operation)) {
+      await operation
+    }
+  }
+  return object
+}
+
+const objectForEachSeries = function (object, callback) {
+  for (const key in object) {
+    const operation = callback(object[key])
+    if (isPromise(operation)) {
+      return operation
+        .then(thunkify3(_objectForEachSeriesAsync, object, callback, key))
+    }
+  }
+  return object
+}
+
+// _iteratorForEachSeriesAsync(
+//   iterator Iterator,
+//   callback function,
+// ) -> Promise<iterator>
+const _iteratorForEachSeriesAsync = async function (iterator, callback) {
+  let iteration = iterator.next()
+  while (!iteration.done) {
+    const operation = callback(iteration.value)
+    if (isPromise(operation)) {
+      await operation
+    }
+    iteration = iterator.next()
+  }
+  return iterator
+}
+
+const iteratorForEachSeries = function (iterator, callback) {
+  let iteration = iterator.next()
+  while (!iterator.done) {
+    const operation = callback(iteration.value)
+    if (isPromise(operation)) {
+      return operation
+        .then(thunkify2(_iteratorForEachSeriesAsync, iterator, callback))
+    }
+    iteration = iterator.next()
+  }
+  return iterator
+}
+
+const asyncIteratorForEachSeries = async function (asyncIterator, callback) {
+  for await (const item of asyncIterator) {
+    const operation = callback(item)
+    if (isPromise(operation)) {
+      await operation
+    }
+  }
+  return asyncIterator
+}
+
 // type Collection = Array|Iterable|AsyncIterable|{ forEach: function }|Object
 // _forEach(collection Collection, callback function) -> collection Collection
 const _forEach = function (collection, callback) {
@@ -1926,15 +2023,41 @@ const _forEach = function (collection, callback) {
   return collection
 }
 
-const forEach = function (...args) {
-  const callback = args.pop()
-  if (args.length == 0) {
-    return curry2(_forEach, __, callback)
+const forEach = function (arg0, arg1) {
+  if (typeof arg0 == 'function') {
+    return curry2(_forEach, __, arg0)
   }
-  const collection = args[0]
-  return isPromise(collection)
-    ? collection.then(curry2(_forEach, __, callback))
-    : _forEach(collection, callback)
+  return isPromise(arg0)
+    ? arg0.then(curry2(_forEach, __, arg1))
+    : _forEach(arg0, arg1)
+}
+
+const _forEachSeries = function (collection, callback) {
+  if (isArray(collection)) {
+    return arrayForEachSeries(collection, callback)
+  }
+  if (collection == null) {
+    throw new Error(`invalid collection ${collection}`)
+  }
+  if (typeof collection[symbolIterator] == 'function') {
+    return iteratorForEachSeries(collection[symbolIterator](), callback)
+  }
+  if (typeof collection[symbolAsyncIterator] == 'function') {
+    return asyncIteratorForEachSeries(collection[symbolAsyncIterator](), callback)
+  }
+  if (collection.constructor == Object) {
+    return objectForEachSeries(collection, callback)
+  }
+  throw new Error(`invalid collection ${collection}`)
+}
+
+forEach.series = function forEachSeries(arg0, arg1) {
+  if (typeof arg0 == 'function') {
+    return curry2(_forEachSeries, __, arg0)
+  }
+  return isPromise(arg0)
+    ? arg0.then(curry2(_forEachSeries, __, arg1))
+    : _forEachSeries(arg0, arg1)
 }
 
 const SelfReferencingPromise = function (basePromise) {
