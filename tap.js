@@ -23,7 +23,7 @@ const _tap = function (args, func) {
  * ```
  *
  * @description
- * Call a function with any number of arguments, returning the first argument. Promises created by the tapper are resolved before returning the value.
+ * Call a function with provided arguments, returning the first argument. The return value of the function call is discarded.
  *
  * ```javascript [playground]
  * const pipeline = pipe([
