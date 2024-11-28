@@ -3253,6 +3253,107 @@ flatMap(
     })
   })
 
+  describe('forEach.series', () => {
+    it('arrays', async () => {
+      const array = [100, 80, 60, 40, 20]
+      const result = []
+      await forEach.series(array, async item => {
+        await sleep(item)
+        result.push(item)
+      })
+
+      assert.deepEqual(result, [100, 80, 60, 40, 20])
+
+      const result1 = []
+      await forEach.series(async item => {
+        await sleep(item)
+        result1.push(item)
+      })(array)
+
+      assert.deepEqual(result1, [100, 80, 60, 40, 20])
+    }).timeout(60000)
+
+    it('objects', async () => {
+      const obj = { a: 100, b: 80, c: 60, d: 40, e: 20 }
+      const result = []
+      await forEach.series(obj, async item => {
+        await sleep(item)
+        result.push(item)
+      })
+
+      assert.deepEqual(result, [100, 80, 60, 40, 20])
+
+      const result1 = []
+      await forEach.series(async item => {
+        await sleep(item)
+        result1.push(item)
+      })(obj)
+
+      assert.deepEqual(result1, [100, 80, 60, 40, 20])
+    }).timeout(60000)
+
+    it('iterators', async () => {
+      const gen = function* () {
+        yield 100; yield 80; yield 60; yield 40; yield 20
+      }
+
+      const result = []
+      await forEach.series(gen(), async item => {
+        await sleep(item)
+        result.push(item)
+      })
+
+      assert.deepEqual(result, [100, 80, 60, 40, 20])
+
+      const result1 = []
+      await forEach.series(async item => {
+        await sleep(item)
+        result1.push(item)
+      })(gen())
+
+      assert.deepEqual(result1, [100, 80, 60, 40, 20])
+    }).timeout(60000)
+
+    it('asyncIterators', async () => {
+      const gen = async function* () {
+        yield 100; yield 80; yield 60; yield 40; yield 20
+      }
+
+      const result = []
+      await forEach.series(gen(), async item => {
+        await sleep(item)
+        result.push(item)
+      })
+
+      assert.deepEqual(result, [100, 80, 60, 40, 20])
+
+      const result1 = []
+      await forEach.series(async item => {
+        await sleep(item)
+        result1.push(item)
+      })(gen())
+
+      assert.deepEqual(result1, [100, 80, 60, 40, 20])
+    }).timeout(60000)
+
+    it('other', async () => {
+      assert.throws(
+        () => forEach.series(1, () => {}),
+        new Error('invalid collection 1'),
+      )
+
+      assert.throws(
+        () => forEach.series(null, () => {}),
+        new Error('invalid collection null'),
+      )
+
+      assert.throws(
+        () => forEach.series(undefined, () => {}),
+        new Error('invalid collection undefined'),
+      )
+    })
+  })
+
   describe('get', () => {
     const aaaaa = { a: { a: { a: { a: { a: 1 } } } } }
     const nested = [[[[[1]]]]]

@@ -11,6 +11,11 @@ const asyncIteratorForEach = require('./_internal/asyncIteratorForEach')
 const symbolIterator = require('./_internal/symbolIterator')
 const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
 
+const arrayForEachSeries = require('./_internal/arrayForEachSeries')
+const objectForEachSeries = require('./_internal/objectForEachSeries')
+const iteratorForEachSeries = require('./_internal/iteratorForEachSeries')
+const asyncIteratorForEachSeries = require('./_internal/asyncIteratorForEachSeries')
+
 // type Collection = Array|Iterable|AsyncIterable|{ forEach: function }|Object
 // _forEach(collection Collection, callback function) -> collection Collection
 const _forEach = function (collection, callback) {
@@ -42,16 +47,16 @@ const _forEach = function (collection, callback) {
  * ```coffeescript [specscript]
  * type Collection = Array|Iterable|AsyncIterable|{ forEach: function }|Object
  *
- * forEach(collection Collection, callback function) -> collection Collection
+ * forEach(collection Collection, callback function) -> collection Promise|Collection
  *
- * forEach(callback function)(collection Collection) -> collection Collection
+ * forEach(callback function)(collection Collection) -> collection Promise|Collection
  * ```
  *
  * @description
- * Execute a callback for each item of a collection, returning a Promise if the execution is asynchronous.
+ * Execute a callback for each item of a collection, returning a Promise if the execution is asynchronous. Asynchronous execution happens concurrently.
  *
  * ```javascript [playground]
- * forEach([1, 2, 3, 4, 5l], console.log) // 1 2 3 4 5
+ * forEach([1, 2, 3, 4, 5], console.log) // 1 2 3 4 5
  *
  * forEach({ a: 1, b: 2, c: 3 }, console.log) // 1 2 3
  * ```
@@ -77,6 +82,67 @@ const forEach = function (...args) {
   return isPromise(collection)
     ? collection.then(curry2(_forEach, __, callback))
     : _forEach(collection, callback)
+}
+
+/**
+ * @name _forEachSeries
+ *
+ * @synopsis
+ * ```coffeescript [specscript]
+ * type Collection = Array|Iterable|AsyncIterable|{ forEach: function }|Object
+ *
+ * _forEachSeries(collection Collection, callback function) -> collection Promise|Collection
+ * ```
+ */
+const _forEachSeries = function (collection, callback) {
+  if (isArray(collection)) {
+    return arrayForEachSeries(collection, callback)
+  }
+  if (collection == null) {
+    throw new Error(`invalid collection ${collection}`)
+  }
+  if (typeof collection[symbolIterator] == 'function') {
+    return iteratorForEachSeries(collection[symbolIterator](), callback)
+  }
+  if (typeof collection[symbolAsyncIterator] == 'function') {
+    return asyncIteratorForEachSeries(collection[symbolAsyncIterator](), callback)
+  }
+  if (collection.constructor == Object) {
+    return objectForEachSeries(collection, callback)
+  }
+  throw new Error(`invalid collection ${collection}`)
+}
+
+/**
+ * @name forEach.series
+ *
+ * @synopsis
+ * ```coffeescript [specscript]
+ * type Collection = Array|Iterable|AsyncIterable|{ forEach: function }|Object
+ *
+ * forEach.series(collection Collection, callback function) -> collection Promise|Collection
+ *
+ * forEach.series(callback function)(collection Collection) -> collection Promise|Collection
+ * ```
+ *
+ * @description
+ * Execute a callback for each item of a collection, returning a Promise if the execution is asynchronous. Asynchronous execution happens in series.
+ *
+ * ```javascript [playground]
+ * forEach.series([1, 2, 3, 4, 5], console.log) // 1 2 3 4 5
+ *
+ * forEach.series({ a: 1, b: 2, c: 3 }, console.log) // 1 2 3
+ * ```
+ */
+forEach.series = function forEachSeries(...args) {
+  const callback = args.pop()
+  if (args.length == 0) {
+    return curry2(_forEachSeries, __, callback)
+  }
+  const collection = args[0]
+  return isPromise(collection)
+    ? collection.then(curry2(_forEach, __, callback))
+    : _forEachSeries(collection, callback)
 }
 
 module.exports = forEach
