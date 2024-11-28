@@ -11,6 +11,10 @@ const ramdaProp = R.prop
 
 const suite = new TimeInLoopSuite()
 
+suite.add('vanilla get', () => {
+  ({ a: 1 }).a
+})
+
 suite.add('rubico get', () => {
   get({ a: 1 }, 'a')
 })

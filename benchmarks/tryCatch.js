@@ -6,6 +6,14 @@ const tryCatch = require('../tryCatch')
 const ramdaTryCatch = R.tryCatch
 const suite = new TimeInLoopSuite({ loopCount: 1e5 })
 
+suite.add('vanilla try/catch', () => {
+  try {
+    const message = 'hello'
+    throw new Error(message)
+  } catch (error) {
+  }
+})
+
 suite.add('rubico tryCatch', () => {
   tryCatch('hello', message => {
     throw new Error(message)

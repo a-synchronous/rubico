@@ -7,6 +7,10 @@ const lodashFpForEach = _fp.forEach
 const ramdaForEach = R.forEach
 const suite = new TimeInLoopSuite()
 
+suite.add('vanilla forEach', () => {
+  [1, 2, 3, 4, 5].forEach(n => n ** 2)
+})
+
 suite.add('rubico forEach', () => {
   forEach([1, 2, 3, 4, 5], n => n ** 2)
 })

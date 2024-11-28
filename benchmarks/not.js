@@ -3,6 +3,10 @@ const not = require('../not')
 
 const suite = new TimeInLoopSuite()
 
+suite.add('vanilla not primitive', () => {
+  !true
+})
+
 suite.add('rubico not primitive', () => {
   not(true)
 })

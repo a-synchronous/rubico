@@ -10,6 +10,10 @@ const ramdaReduce = R.reduce
 
 const suite = new TimeInLoopSuite()
 
+suite.add('vanilla reduce', () => {
+  [1, 2, 3, 4, 5].reduce((a, b) => a + b, 0)
+})
+
 suite.add('rubico reduce', () => {
   reduce([1, 2, 3, 4, 5], (a, b) => a + b, 0)
 })

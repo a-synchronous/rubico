@@ -12,6 +12,10 @@ const ramdaMap = R.map
 
 const suite = new TimeInLoopSuite()
 
+suite.add('vanilla map', () => {
+  [1, 2, 3, 4, 5].map(value => value + 1)
+})
+
 suite.add('rubico map', () => {
   map([1, 2, 3, 4, 5], value => value + 1)
 })

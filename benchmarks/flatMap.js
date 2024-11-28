@@ -10,6 +10,10 @@ const ramdaFlatmap = R.chain
 
 const suite = new TimeInLoopSuite()
 
+suite.add('vanilla flatMap', () => {
+  [1, 2, 3, 4, 5].flatMap(n => [n, n])
+})
+
 suite.add('rubico flatMap', () => {
   flatMap([1, 2, 3, 4, 5], n => [n, n])
 })

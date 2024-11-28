@@ -11,6 +11,11 @@ const ramdaSet = R.set
 
 const suite = new TimeInLoopSuite()
 
+suite.add('vanilla set', () => {
+  const obj = {}
+  obj.a = 1
+})
+
 suite.add('rubico set', () => {
   set({}, 'a', 1)
 })
