@@ -6,6 +6,9 @@ const { fork, spawn } = require('child_process')
 const File = require('./_internal/File')
 const findAllFilePaths = require('./_internal/findAllFilePaths')
 const package = require('./package.json')
+const ramdaPackage = require('./node_modules/ramda/package.json')
+const lodashPackage = require('./node_modules/lodash/package.json')
+const asyncPackage = require('./node_modules/async/package.json')
 
 // sortBenchmarkFilePaths(paths Array<string>) -> sorted Array<string>
 const sortBenchmarkFilePaths = function (paths) {
@@ -25,9 +28,14 @@ const write = function (str) {
 
 // bench(options?: { bestOf?: number }) -> Promise<>
 const bench = async function (options = {}) {
-  const systemInfo = `
-rubico v${package.version} / NodeJS ${process.version} / OS ${os.release()}
-  `.trim()
+  const systemInfo = [
+    `OS ${os.release()}`,
+    `NodeJS ${process.version}`,
+    `rubico v${package.version}`,
+    `ramda v${ramdaPackage.version}`,
+    `lodash/fp v${lodashPackage.version}`,
+    `async v${asyncPackage.version}`,
+  ].join('\n')
   write(systemInfo + '\n\n')
 
   const { bestOf = 5 } = options
