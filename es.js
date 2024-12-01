@@ -1,5 +1,5 @@
 /**
- * rubico v2.4.2
+ * rubico v2.5.0
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2024 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -658,6 +658,135 @@ const arrayMapSeries = function (array, mapper) {
   return result
 }
 
+const stringMapSeries = function (string, mapper) {
+  const result = arrayMapSeries(string, mapper)
+  return isPromise(result)
+    ? result.then(curry3(callPropUnary, __, 'join', ''))
+    : result.join('')
+}
+
+const thunkify4 = (func, arg0, arg1, arg2, arg3) => function thunk() {
+  return func(arg0, arg1, arg2, arg3)
+}
+
+// _objectMapSeriesAsync(
+//   object Object,
+//   f function,
+//   result Object,
+//   doneKeys Object
+// ) -> Promise<object>
+const _objectMapSeriesAsync = async function (object, f, result, doneKeys) {
+  for (const key in object) {
+    if (key in doneKeys) {
+      continue
+    }
+    let resultItem = f(object[key])
+    if (isPromise(resultItem)) {
+      resultItem = await resultItem
+    }
+    result[key] = resultItem
+  }
+  return result
+}
+
+const objectMapSeries = function (object, f) {
+  const result = {}
+  const doneKeys = {}
+  for (const key in object) {
+    doneKeys[key] = true
+    const resultItem = f(object[key], key, object)
+    if (isPromise(resultItem)) {
+      return resultItem.then(funcConcat(
+        curry3(objectSet, result, key, __),
+        thunkify4(_objectMapSeriesAsync, object, f, result, doneKeys),
+      ))
+    }
+  }
+  return result
+}
+
+const setAdd = function (set, value) {
+  set.add(value)
+  return set
+}
+
+// _setMapSeriesAsync(
+//   iterator Iterator,
+//   f function,
+//   result Set,
+// ) -> Promise<Set>
+const _setMapSeriesAsync = async function (iterator, f, result) {
+  let iteration = iterator.next()
+  while (!iteration.done) {
+    let resultItem = f(iteration.value)
+    if (isPromise(resultItem)) {
+      resultItem = await resultItem
+    }
+    result.add(resultItem)
+    iteration = iterator.next()
+  }
+  return result
+}
+
+const setMapSeries = function (set, f) {
+  const result = new Set()
+  const iterator = set[symbolIterator]()
+  let iteration = iterator.next()
+  while (!iteration.done) {
+    const resultItem = f(iteration.value)
+    if (isPromise(resultItem)) {
+      return resultItem.then(funcConcat(
+        curry2(setAdd, result, __),
+        thunkify3(_setMapSeriesAsync, iterator, f, result),
+      ))
+    }
+    result.add(resultItem)
+    iteration = iterator.next()
+  }
+  return result
+}
+
+const mapSet = function setting(source, key, value) {
+  return source.set(key, value)
+}
+
+// _mapMapSeriesAsync(
+//   iterator Iterator,
+//   f function,
+//   result Map,
+// ) -> Promise<Map>
+const _mapMapSeriesAsync = async function (iterator, f, result) {
+  let iteration = iterator.next()
+  while (!iteration.done) {
+    let resultItem = f(iteration.value[1])
+    if (isPromise(resultItem)) {
+      resultItem = await resultItem
+    }
+    result.set(iteration.value[0], resultItem)
+    iteration = iterator.next()
+  }
+  return result
+}
+
+const mapMapSeries = function (map, f) {
+  const result = new Map()
+  const iterator = map[symbolIterator]()
+  let iteration = iterator.next()
+  while (!iteration.done) {
+    const key = iteration.value[0]
+    const resultItem = f(iteration.value[1])
+    if (isPromise(resultItem)) {
+      return resultItem.then(funcConcat(
+        curry3(mapSet, result, key, __),
+        thunkify3(_mapMapSeriesAsync, iterator, f, result),
+      ))
+    }
+    result.set(key, resultItem)
+    iteration = iterator.next()
+  }
+  return result
+}
+
 const tapSync = func => function tapping(...args) {
   func(...args)
   return args[0]
@@ -786,10 +915,6 @@ const objectMapEntries = function (object, mapper) {
     : promiseAll(promises).then(always(result))
 }
 
-const mapSet = function setting(source, key, value) {
-  return source.set(key, value)
-}
-
 // (mapper function, result Map, promises Array<Promise>) => (key any, value any) => ()
 const mapMapEntriesForEachCallback = (
   mapper, result, promises,
@@ -878,11 +1003,36 @@ map.entries = function mapEntries(arg0, arg1) {
     : _mapEntries(arg0, arg1)
 }
 
-map.series = mapper => function mappingInSeries(value) {
-  if (isArray(value)) {
-    return arrayMapSeries(value, mapper)
+const _mapSeries = function (collection, f) {
+  if (isArray(collection)) {
+    return arrayMapSeries(collection, f)
   }
-  throw new TypeError(`${value} is not an Array`)
+  if (collection == null) {
+    throw new TypeError(`invalid collection ${collection}`)
+  }
+
+  if (typeof collection == 'string' || collection.constructor == String) {
+    return stringMapSeries(collection, f)
+  }
+  if (collection.constructor == Set) {
+    return setMapSeries(collection, f)
+  }
+  if (collection.constructor == Map) {
+    return mapMapSeries(collection, f)
+  }
+  if (collection.constructor == Object) {
+    return objectMapSeries(collection, f)
+  }
+  throw new TypeError(`invalid collection ${collection}`)
+}
+
+map.series = function mapSeries(arg0, arg1) {
+  if (typeof arg0 == 'function') {
+    return curry2(_mapSeries, __, arg0)
+  }
+  return isPromise(arg0)
+    ? arg0.then(curry2(_mapSeries, __, arg1))
+    : _mapSeries(arg0, arg1)
 }
 
 map.pool = (concurrencyLimit, mapper) => function concurrentPoolMapping(value) {
@@ -1003,10 +1153,6 @@ const setFilter = function (value, predicate) {
   return promises.length == 0
     ? result
     : promiseAll(promises).then(always(result))
-}
-
-const thunkify4 = (func, arg0, arg1, arg2, arg3) => function thunk() {
-  return func(arg0, arg1, arg2, arg3)
 }
 
 const mapFilter = function (map, predicate) {
@@ -1923,11 +2069,11 @@ const arrayForEachSeries = function (array, callback) {
 // _objectForEachSeriesAsync(
 //   object Object,
 //   callback function,
-//   firstKey string
+//   doneKeys Object,
 // ) -> Promise<object>
-const _objectForEachSeriesAsync = async function (object, callback, firstKey) {
+const _objectForEachSeriesAsync = async function (object, callback, doneKeys) {
   for (const key in object) {
-    if (key == firstKey) {
+    if (key in doneKeys) {
       continue
     }
     const operation = callback(object[key])
@@ -1939,11 +2085,13 @@ const _objectForEachSeriesAsync = async function (object, callback, firstKey) {
 }
 
 const objectForEachSeries = function (object, callback) {
+  const doneKeys = {}
   for (const key in object) {
+    doneKeys[key] = true
     const operation = callback(object[key])
     if (isPromise(operation)) {
       return operation
-        .then(thunkify3(_objectForEachSeriesAsync, object, callback, key))
+        .then(thunkify3(_objectForEachSeriesAsync, object, callback, doneKeys))
     }
   }
   return object
@@ -2026,7 +2174,7 @@ const _forEachSeries = function (collection, callback) {
     return arrayForEachSeries(collection, callback)
   }
   if (collection == null) {
-    throw new Error(`invalid collection ${collection}`)
+    throw new TypeError(`invalid collection ${collection}`)
   }
   if (typeof collection[symbolIterator] == 'function') {
     return iteratorForEachSeries(collection[symbolIterator](), callback)
@@ -2037,7 +2185,7 @@ const _forEachSeries = function (collection, callback) {
   if (collection.constructor == Object) {
     return objectForEachSeries(collection, callback)
   }
-  throw new Error(`invalid collection ${collection}`)
+  throw new TypeError(`invalid collection ${collection}`)
 }
 
 forEach.series = function forEachSeries(arg0, arg1) {
