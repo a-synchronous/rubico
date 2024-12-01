@@ -107,7 +107,7 @@ const _map = function (value, mapper) {
  *
  * type Mapper = (
  *   value any,
- *   indexOrKey number|string,
+ *   indexOrKey number|string|any,
  *   collection Mappable
  * )=>(resultItem Promise|any)
  *
@@ -278,14 +278,19 @@ const _mapEntries = (value, mapper) => {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * map.entries(
- *   value Map|Object|Promise<Map|Object>,
- *   mapper ([key any, value any])=>Promise|[any, any],
- * ) -> Promise|Map|Object
+ * type EntriesMappable = Object|Map
  *
- * map.entries(
- *   mapper ([key any, value any])=>Promise|[any, any],
- * )(value Map|Object) -> Promise|Map|Object
+ * type Mapper = (
+ *   value any,
+ *   key string|any,
+ *   collection EntriesMappable
+ * )=>(resultItem Promise|any)
+ *
+ * map.entries(value Promise|EntriesMappable, mapper Mapper)
+ *   -> Promise|EntriesMappable
+ *
+ * map.entries(mapper Mapper)(value EntriesMappable)
+ *   -> Promise|EntriesMappable
  * ```
  *
  * @description
@@ -322,7 +327,7 @@ map.entries = function mapEntries(arg0, arg1) {
  *
  * type Mapper = (
  *   value any,
- *   indexOrKey number|string,
+ *   indexOrKey number|string|any,
  *   collection Mappable
  * )=>(mappedItem Promise|any)
  *
@@ -357,15 +362,15 @@ const _mapSeries = function (collection, f) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Mappable = Array|Object|Set|Map|Iterator|AsyncIterator
+ * type Mappable = Array|Object|Set|Map
  *
  * type Mapper = (
  *   value any,
- *   indexOrKey number|string,
+ *   indexOrKey number|string|any,
  *   collection Mappable
  * )=>(mappedItem Promise|any)
  *
- * map.series(collection Mappable, f Mapper) -> result Mappable
+ * map.series(collection Promise|Mappable, f Mapper) -> result Mappable
  * map.series(f Mapper)(collection Mappable) -> result Mappable
  * ```
  *
