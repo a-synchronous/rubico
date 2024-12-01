@@ -96,7 +96,7 @@ const _forEachSeries = function (collection, callback) {
     return arrayForEachSeries(collection, callback)
   }
   if (collection == null) {
-    throw new Error(`invalid collection ${collection}`)
+    throw new TypeError(`invalid collection ${collection}`)
   }
   if (typeof collection[symbolIterator] == 'function') {
     return iteratorForEachSeries(collection[symbolIterator](), callback)
@@ -107,7 +107,7 @@ const _forEachSeries = function (collection, callback) {
   if (collection.constructor == Object) {
     return objectForEachSeries(collection, callback)
   }
-  throw new Error(`invalid collection ${collection}`)
+  throw new TypeError(`invalid collection ${collection}`)
 }
 
 /**

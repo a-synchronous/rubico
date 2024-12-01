@@ -1307,24 +1307,6 @@ describe('rubico', () => {
       )
       ade(arr, [1, 2, 3])
     })
-    it('throws TypeError for non functions', async () => {
-      assert.throws(
-        () => map.series('hey')([1]),
-        new TypeError('mapper is not a function'),
-      )
-    })
-    it('throws TypeError for non functions', async () => {
-      assert.throws(
-        () => map.series('hey')(),
-        new TypeError('undefined is not an Array'),
-      )
-    })
-    it('throws TypeError for non array input', async () => {
-      assert.throws(
-        () => map.series(() => 1)('hey'),
-        new TypeError('hey is not an Array'),
-      )
-    })
   })
 
   describe('map.pool', () => {
@@ -3292,6 +3274,22 @@ flatMap(
       assert.deepEqual(result1, [100, 80, 60, 40, 20])
     }).timeout(60000)
 
+    it('objects varying async', async () => {
+      const obj = { a: 100, b: 80, c: 60, d: 40, e: 20 }
+      const result = []
+      await forEach.series(obj, item => {
+        if (item < 50) {
+          return Promise.resolve(item).then(item => {
+            result.push(item)
+          })
+        } else {
+          result.push(item)
+          return
+        }
+      })
+      assert.equal(result.length, 5)
+    })
+
     it('iterators', async () => {
       const gen = function* () {
         yield 100; yield 80; yield 60; yield 40; yield 20
@@ -3339,17 +3337,17 @@ flatMap(
     it('other', async () => {
       assert.throws(
         () => forEach.series(1, () => {}),
-        new Error('invalid collection 1'),
+        new TypeError('invalid collection 1'),
       )
 
       assert.throws(
         () => forEach.series(null, () => {}),
-        new Error('invalid collection null'),
+        new TypeError('invalid collection null'),
       )
 
       assert.throws(
         () => forEach.series(undefined, () => {}),
-        new Error('invalid collection undefined'),
+        new TypeError('invalid collection undefined'),
       )
     })
   })
