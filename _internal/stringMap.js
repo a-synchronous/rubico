@@ -17,7 +17,7 @@ const callPropUnary = require('./callPropUnary')
  * ```
  *
  * @description
- * Apply a mapper concurrently to each character of a string, returning a string result. `mapper` may be asynchronous.
+ * Apply a mapper concurrently to each character of a string, returning a string result. mapper function may be asynchronous.
  *
  * @related stringFlatMap
  */
