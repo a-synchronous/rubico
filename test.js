@@ -1307,6 +1307,126 @@ describe('rubico', () => {
       )
       ade(arr, [1, 2, 3])
     })
+
+    it('arrays', async () => {
+      const array = [100, 80, 60, 40, 20]
+      const order0 = []
+      const result0 = await map.series(array, async n => {
+        await sleep(n)
+        order0.push(n)
+        return n
+      })
+      assert.deepEqual(result0, [100, 80, 60, 40, 20])
+      assert.deepEqual(order0, [100, 80, 60, 40, 20])
+
+      const order1 = []
+      const result1 = await map.series(async n => {
+        await sleep(n)
+        order1.push(n)
+        return n
+      })(array)
+      assert.deepEqual(result1, [100, 80, 60, 40, 20])
+      assert.deepEqual(order1, [100, 80, 60, 40, 20])
+    })
+
+    it('sets', async () => {
+      const set = new Set([100, 80, 60, 40, 20])
+      const order0 = []
+      const result0 = await map.series(set, async n => {
+        await sleep(n)
+        order0.push(n)
+        return n
+      })
+      assert.deepEqual(result0, new Set([100, 80, 60, 40, 20]))
+      assert.deepEqual(order0, [100, 80, 60, 40, 20])
+
+      const order1 = []
+      const result1 = await map.series(async n => {
+        await sleep(n)
+        order1.push(n)
+        return n
+      })(set)
+      assert.deepEqual(result1, new Set([100, 80, 60, 40, 20]))
+      assert.deepEqual(order1, [100, 80, 60, 40, 20])
+    })
+
+    it('maps', async () => {
+      const m = new Map([['a', 100], ['b', 80], ['c', 60], ['d', 40], ['e', 20]])
+      const order0 = []
+      const result0 = await map.series(m, async n => {
+        await sleep(n)
+        order0.push(n)
+        return n
+      })
+      assert.deepEqual(result0, new Map([['a', 100], ['b', 80], ['c', 60], ['d', 40], ['e', 20]]))
+      assert.deepEqual(order0, [100, 80, 60, 40, 20])
+
+      const order1 = []
+      const result1 = await map.series(async n => {
+        await sleep(n)
+        order1.push(n)
+        return n
+      })(m)
+      assert.deepEqual(result1, new Map([['a', 100], ['b', 80], ['c', 60], ['d', 40], ['e', 20]]))
+      assert.deepEqual(order1, [100, 80, 60, 40, 20])
+    })
+
+    it('objects', async () => {
+      const o = { a: 100, b: 80, c: 60, d: 40, e: 20 }
+      const order0 = []
+      const result0 = await map.series(o, async n => {
+        await sleep(n)
+        order0.push(n)
+        return n
+      })
+      assert.deepEqual(result0, { a: 100, b: 80, c: 60, d: 40, e: 20 })
+      assert.deepEqual(order0, [100, 80, 60, 40, 20])
+
+      const order1 = []
+      const result1 = await map.series(async n => {
+        await sleep(n)
+        order1.push(n)
+        return n
+      })(o)
+      assert.deepEqual(result1, { a: 100, b: 80, c: 60, d: 40, e: 20 })
+      assert.deepEqual(order1, [100, 80, 60, 40, 20])
+    })
+
+    it('strings', async () => {
+      const s = '98765'
+      const order0 = []
+      const result0 = await map.series(s, async n => {
+        await sleep(Number(n))
+        order0.push(n)
+        return n
+      })
+      assert.deepEqual(result0, '98765')
+      assert.deepEqual(order0, ['9', '8', '7', '6', '5'])
+
+      const order1 = []
+      const result1 = await map.series(async n => {
+        await sleep(Number(n))
+        order1.push(n)
+        return n
+      })(s)
+      assert.deepEqual(result1, '98765')
+      assert.deepEqual(order1, ['9', '8', '7', '6', '5'])
+    })
+
+    it('invalid', async () => {
+      assert.throws(
+        () => map.series(undefined, () => {}),
+        new TypeError('invalid collection undefined'),
+      )
+      assert.throws(
+        () => map.series(null, () => {}),
+        new TypeError('invalid collection null'),
+      )
+      assert.throws(
+        () => map.series(3, () => {}),
+        new TypeError('invalid collection 3'),
+      )
+    })
   })
 
   describe('map.pool', () => {
@@ -3282,10 +3402,9 @@ flatMap(
           return Promise.resolve(item).then(item => {
             result.push(item)
           })
-        } else {
-          result.push(item)
-          return
         }
+        result.push(item)
+        return undefined
       })
       assert.equal(result.length, 5)
     })

@@ -11,6 +11,10 @@ const setMap = require('./_internal/setMap')
 const mapMap = require('./_internal/mapMap')
 const objectMap = require('./_internal/objectMap')
 const arrayMapSeries = require('./_internal/arrayMapSeries')
+const stringMapSeries = require('./_internal/stringMapSeries')
+const objectMapSeries = require('./_internal/objectMapSeries')
+const setMapSeries = require('./_internal/setMapSeries')
+const mapMapSeries = require('./_internal/mapMapSeries')
 const arrayMapPool = require('./_internal/arrayMapPool')
 const objectMapEntries = require('./_internal/objectMapEntries')
 const mapMapEntries = require('./_internal/mapMapEntries')
@@ -105,10 +109,10 @@ const _map = function (value, mapper) {
  *   value any,
  *   indexOrKey number|string,
  *   collection Mappable
- * )=>(mappedItem Promise|any)
+ * )=>(resultItem Promise|any)
  *
- * map(value Mappable, mapper Mapper) -> result Promise|Mappable
- * map(mapper Mapper)(value Mappable) -> result Promise|Mappable
+ * map(collection Mappable, f Mapper) -> result Promise|Mappable
+ * map(f Mapper)(collection Mappable) -> result Promise|Mappable
  * ```
  *
  * @description
@@ -310,10 +314,59 @@ map.entries = function mapEntries(arg0, arg1) {
 }
 
 /**
+ * @name _mapSeries
+ *
+ * @synopsis
+ * ```coffeescript [specscript]
+ * type Mappable = Array|Object|Set|Map|Iterator|AsyncIterator
+ *
+ * type Mapper = (
+ *   value any,
+ *   indexOrKey number|string,
+ *   collection Mappable
+ * )=>(mappedItem Promise|any)
+ *
+ * _mapSeries(collection Mappable, f Mapper) -> result Promise|Mappable
+ * ```
+ */
+const _mapSeries = function (collection, f) {
+  if (isArray(collection)) {
+    return arrayMapSeries(collection, f)
+  }
+  if (collection == null) {
+    throw new TypeError(`invalid collection ${collection}`)
+  }
+
+  if (typeof collection == 'string' || collection.constructor == String) {
+    return stringMapSeries(collection, f)
+  }
+  if (collection.constructor == Set) {
+    return setMapSeries(collection, f)
+  }
+  if (collection.constructor == Map) {
+    return mapMapSeries(collection, f)
+  }
+  if (collection.constructor == Object) {
+    return objectMapSeries(collection, f)
+  }
+  throw new TypeError(`invalid collection ${collection}`)
+}
+
+/**
  * @name map.series
  *
  * @synopsis
  * ```coffeescript [specscript]
+ * type Mappable = Array|Object|Set|Map|Iterator|AsyncIterator
+ *
+ * type Mapper = (
+ *   value any,
+ *   indexOrKey number|string,
+ *   collection Mappable
+ * )=>(mappedItem Promise|any)
+ *
+ * map.series( Mappable)
+ *
  * map.series(
  *   mapperFunc (value any)=>Promise|any,
  * )(array Array) -> Promise|Array
@@ -336,11 +389,13 @@ map.entries = function mapEntries(arg0, arg1) {
  *
  * @execution series
  */
-map.series = mapper => function mappingInSeries(value) {
-  if (isArray(value)) {
-    return arrayMapSeries(value, mapper)
+map.series = function mapSeries(arg0, arg1) {
+  if (typeof arg0 == 'function') {
+    return curry2(_mapSeries, __, arg0)
   }
-  throw new TypeError(`${value} is not an Array`)
+  return isPromise(arg0)
+    ? arg0.then(curry2(_mapSeries, __, arg1))
+    : _mapSeries(arg0, arg1)
 }
 
 /**
