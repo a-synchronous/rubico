@@ -365,11 +365,8 @@ const _mapSeries = function (collection, f) {
  *   collection Mappable
  * )=>(mappedItem Promise|any)
  *
- * map.series( Mappable)
- *
- * map.series(
- *   mapperFunc (value any)=>Promise|any,
- * )(array Array) -> Promise|Array
+ * map.series(collection Mappable, f Mapper) -> result Mappable
+ * map.series(f Mapper)(collection Mappable) -> result Mappable
  * ```
  *
  * @description
@@ -384,7 +381,7 @@ const _mapSeries = function (collection, f) {
  * })
  *
  * console.log('start')
- * map.series(delayedLog)([1, 2, 3, 4, 5])
+ * map.series([1, 2, 3, 4, 5], delayedLog)
  * ```
  *
  * @execution series
