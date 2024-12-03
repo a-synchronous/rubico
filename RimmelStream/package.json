@@ -1,0 +1,21 @@
+{
+  "name": "rubico-rimmel-stream",
+  "version": "0.0.0",
+  "description": "rubico/RimmelStream",
+  "author": "Richard Tong",
+  "license": "MIT",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "github:a-synchronous/rubico",
+    "directory": "RimmelStream"
+  },
+  "scripts": {
+    "test": "mocha test.js *.test.js */**.test.js",
+    "test-coverage": "nyc mocha test.js x/*.test.js monad/*.test.js",
+    "lint": "eslint .",
+    "build": "npm run dts && ./build",
+    "bench": "./bench",
+    "dts": "del *.d.ts _internal/*.d.ts x/*.d.ts && tsc"
+  }
+}
