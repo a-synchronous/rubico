@@ -115,10 +115,9 @@ const _transform = function (collection, transducer, initialValue) {
  *
  * `transform` an async generator into `process.stdout`, a Node.js writable stream that implements `.write`.
  *
- * ```javascript [node]
- * // this example is duplicated in rubico/examples/transformStreamRandomInts.js
- *
- * const { pipe, map, transform } = require('rubico')
+ * ```javascript [playground]
+ * const { pipe, compose, transform } = rubico
+ * // global Transducer
  *
  * const square = number => number ** 2
  *
@@ -126,17 +125,36 @@ const _transform = function (collection, transducer, initialValue) {
  *
  * const randomInt = () => Math.ceil(Math.random() * 100)
  *
- * const streamRandomInts = async function* () {
- *   while (true) {
+ * const streamRandomInts = async function* (n) {
+ *   let ct = 0
+ *   while (ct < n) {
+ *     ct += 1
  *     yield randomInt()
  *   }
  * }
  *
+ * const Stdout = {
+ *   concat(...args) {
+ *     console.log(...args)
+ *     return this
+ *   },
+ * }
+ *
  * transform(
- *   streamRandomInts(),
- *   Transducer.map(pipe([square, toString])),
- *   process.stdout,
- * ) // 9216576529289484980147613249169774446246768649...
+ *   streamRandomInts(10),
+ *   compose([
+ *     Transducer.map(square),
+ *     Transducer.map(toString),
+ *   ]),
+ *   Stdout,
+ * )
+ * // 8281
+ * // 8836
+ * // 1156
+ * // 8649
+ * // 5625
+ * // 2500
+ * // ...
  * ```
  *
  * @execution series
