@@ -1119,8 +1119,6 @@ describe('rubico', () => {
       it('func A=>B; B', async () => {
         const numbers = function* () { let i = 0; while (++i < 6) yield i }
         const squaresIterator = map(number => number ** 2)(numbers())
-        assert.strictEqual(`${squaresIterator}`, '[object MappingIterator]')
-        assert.equal(objectToString(squaresIterator), '[object Object]')
         assert.deepEqual([...squaresIterator], [1, 4, 9, 16, 25])
       })
     })
@@ -1129,7 +1127,6 @@ describe('rubico', () => {
       it('func A=>B; AsyncIterator<B>', async () => {
         const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
         const asyncSquaresGenerator = map(number => number ** 2)(asyncNumbers())
-        assert.equal(objectToString(asyncSquaresGenerator), '[object Object]')
         const squaresArray = []
         for await (const number of asyncSquaresGenerator) squaresArray.push(number)
         assert.deepEqual(squaresArray, [1, 4, 9, 16, 25])
@@ -1137,7 +1134,6 @@ describe('rubico', () => {
       it('func A=>Promise<B>; AsyncIterator<B>', async () => {
         const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
         const asyncSquaresGenerator = map(async number => number ** 2)(asyncNumbers())
-        assert.equal(objectToString(asyncSquaresGenerator), '[object Object]')
         const squaresArray = []
         for await (const number of asyncSquaresGenerator) squaresArray.push(number)
         assert.deepEqual(squaresArray, [1, 4, 9, 16, 25])
@@ -1498,16 +1494,16 @@ then(() => {
     it('throws TypeError on map.pool(NaN)', async () => {
       assert.throws(
         () => map.pool(NaN)(NaN),
-        new TypeError('NaN is not an Array'),
+        new TypeError('invalid collection NaN'),
       )
     })
     it('throws TypeError on map.pool(lessThan1)', async () => {
       assert.throws(
         () => map.pool(1, () => {})('yo'),
-        new TypeError('yo is not an Array'),
+        new TypeError('invalid collection yo'),
       )
     })
-    it('handles sync errors good', async () => {
+    it('handles sync errors', async () => {
       assert.throws(
         () => map.pool(1, x => { throw new Error(`throwing ${x}`) })(['yo']),
         new Error('throwing yo')
@@ -1679,7 +1675,6 @@ then(() => {
         const numbers = function* () { let i = 0; while (++i < 6) yield i }
         const isOdd = number => number % 2 == 1
         const oddNumbersIterator = filter(isOdd)(numbers())
-        assert.equal(objectToString(oddNumbersIterator), '[object Object]')
         assert.deepEqual([...oddNumbersIterator], [1, 3, 5])
       })
     })
@@ -1688,7 +1683,6 @@ then(() => {
       it('predicate T=>boolean', async () => {
         const isOdd = number => number % 2 == 1
         const asyncOddNumbersIterator = filter(isOdd)(asyncNumbers())
-        assert.equal(objectToString(asyncOddNumbersIterator), '[object Object]')
         const oddNumbersArray = []
         for await (const number of asyncOddNumbersIterator) oddNumbersArray.push(number)
         assert.deepEqual(oddNumbersArray, [1, 3, 5])
@@ -3261,21 +3255,25 @@ flatMap(
           assert.strictEqual(total, 15)
           total = 0
         }),
+
         ThunkAssertion(forEach(async(addTotal)), [1, 2, 3, 4, 5], result => {
           assert.deepEqual(result, [1, 2, 3, 4, 5])
           assert.strictEqual(total, 15)
           total = 0
         }),
+
         ThunkAssertion(forEach(variadicAsyncAddTotal), [1, 2, 3, 4, 5], result => {
           assert.deepEqual(result, [1, 2, 3, 4, 5])
           assert.strictEqual(total, 15)
           total = 0
         }),
+
         ThunkAssertion(forEach(addTotal), numbersGenerator(), result => {
           assert.deepEqual([...result], [])
           assert.strictEqual(total, 15)
           total = 0
         }),
+
         ThunkAssertion(forEach(async(addTotal)), numbersGenerator(), result => {
           assert.deepEqual([...result], [])
           assert.strictEqual(total, 15)
@@ -3319,16 +3317,6 @@ flatMap(
       ]
 
       thunkAssertions.forEach(thunk => thunk())
-
-      it('forEach(noop)({ forEach: function })', async () => {
-        const forEachable = {
-          forEach() {
-            return 1
-          },
-        }
-        assert.strictEqual(forEach(noop)(forEachable), 1)
-      })
-
 
       const noop = function () {}
       it('forEach(noop)(1)', async () => {

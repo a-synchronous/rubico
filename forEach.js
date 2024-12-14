@@ -25,7 +25,8 @@ const _forEach = function (collection, callback) {
     return collection
   }
   if (typeof collection.forEach == 'function') {
-    return collection.forEach(callback)
+    collection.forEach(callback)
+    return collection
   }
   if (typeof collection[symbolIterator] == 'function') {
     return iteratorForEach(collection[symbolIterator](), callback)
