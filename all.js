@@ -113,12 +113,15 @@ const _allValues = function (values) {
  * getAndLogUserById('1') // Got user {"_id":1,"name":"George"} by id 1
  * ```
  *
- * Values passed in resolver position are set on the result object or array directly. If any of these values are promises, they are resolved for their values before being set on the result object or array.
+ * Values may be provided along with functions, in which case they are set on the result object or array directly. If any of these values are promises, they are resolved for their values before being set on the result object or array.
  *
  * ```javascript [playground]
- * all({}, [
- *   Promise.resolve(1),
- * ])
+ * all({}, {
+ *   a: Promise.resolve(1),
+ *   b: 2,
+ *   c: () => 3,
+ *   d: async () => 4,
+ * }).then(console.log) // { a: 1, b: 2, c: 3, d: 4 }
  * ```
  *
  * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
@@ -161,26 +164,6 @@ const all = function (...args) {
   return isArray(resolversOrValues)
     ? functionArrayAll(resolversOrValues, argValues)
     : functionObjectAll(resolversOrValues, argValues)
-
-  /*
-  ////////////////////////////////////////////////////////////////
-  const funcs = args.pop()
-  if (args.length == 0) {
-    return isArray(funcs)
-      ? curryArgs2(functionArrayAll, funcs, __)
-      : curryArgs2(functionObjectAll, funcs, __)
-  }
-
-  if (areAnyValuesPromises(args)) {
-    return isArray(funcs)
-      ? promiseAll(args).then(curry2(functionArrayAll, funcs, __))
-      : promiseAll(args).then(curry2(functionObjectAll, funcs, __))
-  }
-
-  return isArray(funcs)
-    ? functionArrayAll(funcs, args)
-    : functionObjectAll(funcs, args)
-  */
 }
 
 /**
