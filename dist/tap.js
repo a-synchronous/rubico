@@ -1,5 +1,5 @@
 /**
- * rubico v2.5.0
+ * rubico v2.6.0
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2024 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -24,6 +24,26 @@ const thunkConditional = (
 ) => conditionalExpression ? thunkOnTruthy() : thunkOnFalsy()
 
 const __ = Symbol.for('placeholder')
+
+// argument resolver for curry2
+const curry2ResolveArg0 = (
+  baseFunc, arg1,
+) => function arg0Resolver(arg0) {
+  return baseFunc(arg0, arg1)
+}
+
+// argument resolver for curry2
+const curry2ResolveArg1 = (
+  baseFunc, arg0,
+) => function arg1Resolver(arg1) {
+  return baseFunc(arg0, arg1)
+}
+
+const curry2 = function (baseFunc, arg0, arg1) {
+  return arg0 == __
+    ? curry2ResolveArg0(baseFunc, arg1)
+    : curry2ResolveArg1(baseFunc, arg0)
+}
 
 // argument resolver for curry3
 const curry3ResolveArg0 = (
@@ -77,6 +97,20 @@ const curryArgs2 = function (baseFunc, arg0, arg1) {
   return curryArgs2ResolveArgs1(baseFunc, arg0)
 }
 
+const areAnyValuesPromises = function (values) {
+  const length = values.length
+  let index = -1
+  while (++index < length) {
+    const value = values[index]
+    if (isPromise(value)) {
+      return true
+    }
+  }
+  return false
+}
+
+const promiseAll = Promise.all.bind(Promise)
+
 // _tap(args Array, func function) -> Promise|any
 const _tap = function (args, func) {
   const result = args[0],
@@ -88,6 +122,9 @@ const tap = function (...args) {
   const func = args.pop()
   if (args.length == 0) {
     return curryArgs2(_tap, __, func)
+  }
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args).then(curry2(_tap, __, func))
   }
   return _tap(args, func)
 }

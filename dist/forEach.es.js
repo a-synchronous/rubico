@@ -1,5 +1,5 @@
 /**
- * rubico v2.5.0
+ * rubico v2.6.0
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2024 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -217,7 +217,8 @@ const _forEach = function (collection, callback) {
     return collection
   }
   if (typeof collection.forEach == 'function') {
-    return collection.forEach(callback)
+    collection.forEach(callback)
+    return collection
   }
   if (typeof collection[symbolIterator] == 'function') {
     return iteratorForEach(collection[symbolIterator](), callback)

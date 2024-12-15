@@ -1,5 +1,5 @@
 /**
- * rubico v2.5.0
+ * rubico v2.6.0
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2024 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -163,6 +163,9 @@ const tap = function (...args) {
   const func = args.pop()
   if (args.length == 0) {
     return curryArgs2(_tap, __, func)
+  }
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args).then(curry2(_tap, __, func))
   }
   return _tap(args, func)
 }
@@ -707,6 +710,7 @@ const objectMapSeries = function (object, f) {
         thunkify4(_objectMapSeriesAsync, object, f, result, doneKeys),
       ))
     }
+    result[key] = resultItem
   }
   return result
 }
@@ -801,15 +805,14 @@ const tapSync = func => function tapping(...args) {
 const promiseRace = Promise.race.bind(Promise)
 
 const arrayMapPoolAsync = async function (
-  array, mapper, concurrencyLimit, result, index, promises,
+  array, f, concurrencyLimit, result, index, promises,
 ) {
   const arrayLength = array.length
   while (++index < arrayLength) {
     if (promises.size >= concurrencyLimit) {
       await promiseRace(promises)
     }
-
-    const resultItem = mapper(array[index])
+    const resultItem = f(array[index])
     if (isPromise(resultItem)) {
       const selfDeletingPromise = resultItem.then(
         tapSync(() => promises.delete(selfDeletingPromise)))
@@ -822,13 +825,12 @@ const arrayMapPoolAsync = async function (
   return promiseAll(result)
 }
 
-const arrayMapPool = function (array, mapper, concurrentLimit) {
+const arrayMapPool = function (array, concurrency, f) {
   const arrayLength = array.length,
     result = Array(arrayLength)
   let index = -1
   while (++index < arrayLength) {
-
-    const resultItem = mapper(array[index])
+    const resultItem = f(array[index])
     if (isPromise(resultItem)) {
       const promises = new Set(),
         selfDeletingPromise = resultItem.then(
@@ -836,9 +838,163 @@ const arrayMapPool = function (array, mapper, concurrentLimit) {
       promises.add(selfDeletingPromise)
       result[index] = selfDeletingPromise
       return arrayMapPoolAsync(
-        array, mapper, concurrentLimit, result, index, promises)
+        array, f, concurrency, result, index, promises)
     }
     result[index] = resultItem
+  }
+  return result
+}
+
+const stringMapPool = function (s, concurrency, f) {
+  const result = arrayMapPool(s, concurrency, f)
+  return isPromise(result)
+    ? result.then(curry3(callPropUnary, __, 'join', ''))
+    : result.join('')
+}
+
+const _setMapPoolAsync = async function (
+  s, iterator, concurrency, f, result, promises,
+) {
+  let iteration = iterator.next()
+  while (!iteration.done) {
+    if (promises.size >= concurrency) {
+      await promiseRace(promises)
+    }
+    const resultItem = f(iteration.value, iteration.value, s)
+    if (isPromise(resultItem)) {
+      const selfDeletingPromise = resultItem.then(resolvedValue => {
+        promises.delete(selfDeletingPromise)
+        result.add(resolvedValue)
+      })
+      promises.add(selfDeletingPromise)
+    } else {
+      result.add(resultItem)
+    }
+    iteration = iterator.next()
+  }
+  if (promises.size > 0) {
+    await promiseAll(promises)
+  }
+  return result
+}
+
+const setMapPool = function (s, concurrency, f) {
+  const result = new Set()
+  const iterator = s[symbolIterator]()
+  let iteration = iterator.next()
+  while (!iteration.done) {
+    const resultItem = f(iteration.value, iteration.value, s)
+    if (isPromise(resultItem)) {
+      const promises = new Set()
+      const selfDeletingPromise = resultItem.then(resolvedValue => {
+        promises.delete(selfDeletingPromise)
+        result.add(resolvedValue)
+      })
+      promises.add(selfDeletingPromise)
+      return _setMapPoolAsync(s, iterator, concurrency, f, result, promises)
+    }
+    result.add(resultItem)
+    iteration = iterator.next()
+  }
+  return result
+}
+
+const _mapMapPoolAsync = async function (
+  m, iterator, concurrency, f, result, promises,
+) {
+  let iteration = iterator.next()
+  while (!iteration.done) {
+    if (promises.size >= concurrency) {
+      await promiseRace(promises)
+    }
+    const key = iteration.value[0]
+    const resultItem = f(iteration.value[1], key, m)
+    if (isPromise(resultItem)) {
+      result.set(key, resultItem)
+      const selfDeletingPromise = resultItem.then(resolvedValue => {
+        promises.delete(selfDeletingPromise)
+        result.set(key, resolvedValue)
+      })
+      promises.add(selfDeletingPromise)
+    } else {
+      result.set(key, resultItem)
+    }
+    iteration = iterator.next()
+  }
+  if (promises.size > 0) {
+    await promiseAll(promises)
+  }
+  return result
+}
+
+const mapMapPool = function (m, concurrency, f) {
+  const result = new Map()
+  const iterator = m[symbolIterator]()
+  let iteration = iterator.next()
+  while (!iteration.done) {
+    const key = iteration.value[0]
+    const resultItem = f(iteration.value[1], key, m)
+    if (isPromise(resultItem)) {
+      const promises = new Set()
+      result.set(key, resultItem)
+      const selfDeletingPromise = resultItem.then(resolvedValue => {
+        promises.delete(selfDeletingPromise)
+        result.set(key, resolvedValue)
+      })
+      promises.add(selfDeletingPromise)
+      return _mapMapPoolAsync(m, iterator, concurrency, f, result, promises)
+    }
+    result.set(key, resultItem)
+    iteration = iterator.next()
+  }
+  return result
+}
+
+const _objectMapPoolAsync = async function (
+  o, concurrency, f, result, doneKeys, promises,
+) {
+  for (const key in o) {
+    if (key in doneKeys) {
+      continue
+    }
+    if (promises.size >= concurrency) {
+      await promiseRace(promises)
+    }
+    const resultItem = f(o[key], key, o)
+    if (isPromise(resultItem)) {
+      result[key] = resultItem
+      const selfDeletingPromise = resultItem.then(resolvedValue => {
+        promises.delete(selfDeletingPromise)
+        result[key] = resolvedValue
+      })
+      promises.add(selfDeletingPromise)
+    } else {
+      result[key] = resultItem
+    }
+  }
+  if (promises.size > 0) {
+    await promiseAll(promises)
+  }
+  return result
+}
+
+const objectMapPool = function (o, concurrency, f) {
+  const result = {}
+  const doneKeys = {}
+  for (const key in o) {
+    doneKeys[key] = true
+    const resultItem = f(o[key], key, o)
+    if (isPromise(resultItem)) {
+      const promises = new Set()
+      result[key] = resultItem
+      const selfDeletingPromise = resultItem.then(resolvedValue => {
+        promises.delete(selfDeletingPromise)
+        result[key] = resolvedValue
+      })
+      promises.add(selfDeletingPromise)
+      return _objectMapPoolAsync(o, concurrency, f, result, doneKeys, promises)
+    }
+    result[key] = resultItem
   }
   return result
 }
@@ -978,7 +1134,7 @@ const _map = function (value, mapper) {
 }
 
 const map = function (arg0, arg1) {
-  if (typeof arg0 == 'function') {
+  if (arg1 == null) {
     return curry2(_map, __, arg0)
   }
   return isPromise(arg0)
@@ -1001,7 +1157,7 @@ const _mapEntries = (value, mapper) => {
 }
 
 map.entries = function mapEntries(arg0, arg1) {
-  if (typeof arg0 == 'function') {
+  if (arg1 == null) {
     return curry2(_mapEntries, __, arg0)
   }
   return isPromise(arg0)
@@ -1033,7 +1189,7 @@ const _mapSeries = function (collection, f) {
 }
 
 map.series = function mapSeries(arg0, arg1) {
-  if (typeof arg0 == 'function') {
+  if (arg1 == null) {
     return curry2(_mapSeries, __, arg0)
   }
   return isPromise(arg0)
@@ -1041,11 +1197,35 @@ map.series = function mapSeries(arg0, arg1) {
     : _mapSeries(arg0, arg1)
 }
 
-map.pool = (concurrencyLimit, mapper) => function concurrentPoolMapping(value) {
-  if (isArray(value)) {
-    return arrayMapPool(value, mapper, concurrencyLimit)
+const _mapPool = function (collection, concurrency, f) {
+  if (isArray(collection)) {
+    return arrayMapPool(collection, concurrency, f)
   }
-  throw new TypeError(`${value} is not an Array`)
+  if (collection == null) {
+    throw new TypeError(`invalid collection ${collection}`)
+  }
+  if (typeof collection == 'string' || collection.constructor == String) {
+    return stringMapPool(collection, concurrency, f)
+  }
+  if (collection.constructor == Set) {
+    return setMapPool(collection, concurrency, f)
+  }
+  if (collection.constructor == Map) {
+    return mapMapPool(collection, concurrency, f)
+  }
+  if (collection.constructor == Object) {
+    return objectMapPool(collection, concurrency, f)
+  }
+  throw new TypeError(`invalid collection ${collection}`)
+}
+
+map.pool = function mapPool(arg0, arg1, arg2) {
+  if (arg2 == null) {
+    return curry3(_mapPool, __, arg0, arg1)
+  }
+  return isPromise(arg0)
+    ? arg0.then(curry3(_mapPool, __, arg1, arg2))
+    : _mapPool(arg0, arg1, arg2)
 }
 
 const FilteringIterator = (iterator, predicate) => ({
@@ -2152,7 +2332,8 @@ const _forEach = function (collection, callback) {
     return collection
   }
   if (typeof collection.forEach == 'function') {
-    return collection.forEach(callback)
+    collection.forEach(callback)
+    return collection
   }
   if (typeof collection[symbolIterator] == 'function') {
     return iteratorForEach(collection[symbolIterator](), callback)
