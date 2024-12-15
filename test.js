@@ -697,6 +697,13 @@ describe('rubico', () => {
       aok(tap(async x => x + 1)(1) instanceof Promise)
       ase(await tap(async x => x + 1)(1), 1)
     })
+    it('Promise arguments', async () => {
+      const arr = []
+      await tap(Promise.resolve(1), Promise.resolve(2), 3, (a, b, c) => {
+        arr.push(a, b, c)
+      })
+      assert.deepEqual(arr, [1, 2, 3])
+    })
     it('multiple arguments', async () => {
       const array = []
       const point = tap((...args) => (array.push(...args)))(1, 2, 3, 4, 5)

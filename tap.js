@@ -2,9 +2,12 @@ const isPromise = require('./_internal/isPromise')
 const always = require('./_internal/always')
 const thunkifyArgs = require('./_internal/thunkifyArgs')
 const thunkConditional = require('./_internal/thunkConditional')
+const curry2 = require('./_internal/curry2')
 const curry3 = require('./_internal/curry3')
 const curryArgs2 = require('./_internal/curryArgs2')
 const __ = require('./_internal/placeholder')
+const areAnyValuesPromises = require('./_internal/areAnyValuesPromises')
+const promiseAll = require('./_internal/promiseAll')
 
 // _tap(args Array, func function) -> Promise|any
 const _tap = function (args, func) {
@@ -36,11 +39,19 @@ const _tap = function (args, func) {
  *                 // 'foobar'
  *                 // 'foobarbaz'
  * ```
+ *
+ * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ * ```javascript [playground]
+ * tap(Promise.resolve(1), Promise.resolve(2), 3, console.log) // 1, 2, 3
+ * ```
  */
 const tap = function (...args) {
   const func = args.pop()
   if (args.length == 0) {
     return curryArgs2(_tap, __, func)
+  }
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args).then(curry2(_tap, __, func))
   }
   return _tap(args, func)
 }
