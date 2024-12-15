@@ -1,5 +1,5 @@
 /**
- * rubico v2.6.0
+ * rubico v2.6.1
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2024 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -91,6 +91,37 @@ const curryArgs2 = function (baseFunc, arg0, arg1) {
   return curryArgs2ResolveArgs1(baseFunc, arg0)
 }
 
+// argument resolver for curryArgs3
+const curryArgs3ResolveArgs0 = (
+  baseFunc, arg1, arg2,
+) => function args0Resolver(...args) {
+  return baseFunc(args, arg1, arg2)
+}
+
+// argument resolver for curryArgs3
+const curryArgs3ResolveArgs1 = (
+  baseFunc, arg0, arg2,
+) => function arg1Resolver(...args) {
+  return baseFunc(arg0, args, arg2)
+}
+
+// argument resolver for curryArgs3
+const curryArgs3ResolveArgs2 = (
+  baseFunc, arg0, arg1,
+) => function arg2Resolver(...args) {
+  return baseFunc(arg0, arg1, args)
+}
+
+const curryArgs3 = function (baseFunc, arg0, arg1, arg2) {
+  if (arg0 == __) {
+    return curryArgs3ResolveArgs0(baseFunc, arg1, arg2)
+  }
+  if (arg1 == __) {
+    return curryArgs3ResolveArgs1(baseFunc, arg0, arg2)
+  }
+  return curryArgs3ResolveArgs2(baseFunc, arg0, arg1)
+}
+
 const areAnyValuesPromises = function (values) {
   const length = values.length
   let index = -1
@@ -105,37 +136,55 @@ const areAnyValuesPromises = function (values) {
 
 const promiseAll = Promise.all.bind(Promise)
 
-// _tap(args Array, func function) -> Promise|any
-const _tap = function (args, func) {
+// _tap(args Array, f function) -> Promise|any
+const _tap = function (args, f) {
   const result = args[0],
-    call = func(...args)
+    call = f(...args)
   return isPromise(call) ? call.then(always(result)) : result
 }
 
 const tap = function (...args) {
-  const func = args.pop()
+  const f = args.pop()
   if (args.length == 0) {
-    return curryArgs2(_tap, __, func)
+    return curryArgs2(_tap, __, f)
   }
   if (areAnyValuesPromises(args)) {
-    return promiseAll(args).then(curry2(_tap, __, func))
+    return promiseAll(args).then(curry2(_tap, __, f))
   }
-  return _tap(args, func)
+  return _tap(args, f)
 }
 
-tap.if = (predicate, func) => function tappingIf(...args) {
-  const predication = predicate(...args)
-  if (isPromise(predication)) {
-    return predication.then(curry3(
-      thunkConditional, __, thunkifyArgs(tap(func), args), always(args[0])))
+const _tapIf = function (predicate, f, args) {
+  const b = predicate(...args)
+  if (isPromise(b)) {
+    return b.then(curry3(
+      thunkConditional,
+      __,
+      thunkifyArgs(tap(f), args),
+      always(args[0]),
+    ))
   }
-  if (predication) {
-    const execution = func(...args)
+  if (b) {
+    const execution = f(...args)
     if (isPromise(execution)) {
       return execution.then(always(args[0]))
     }
   }
   return args[0]
+}
+
+tap.if = function (...args) {
+  if (args.length == 2) {
+    return curryArgs3(_tapIf, args[0], args[1], __)
+  }
+  const argsLength = args.length
+  const f = args[argsLength - 1]
+  const predicate = args[argsLength - 2]
+  const argValues = args.slice(0, -2)
+  if (areAnyValuesPromises(argValues)) {
+    return promiseAll(argValues).then(curry3(_tapIf, predicate, f, __))
+  }
+  return _tapIf(predicate, f, args)
 }
 
 export default tap
