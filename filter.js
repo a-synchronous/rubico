@@ -226,6 +226,15 @@ const _filter = function (value, predicate) {
  * }
  * ```
  *
+ * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ *
+ * ```javascript [playground]
+ * const isOdd = number => number % 2 == 1
+ *
+ * filter(Promise.resolve([1, 2, 3, 4, 5]), isOdd).then(console.log)
+ * // [1, 3, 5]
+ * ```
+ *
  * @execution concurrent
  *
  * @transducing

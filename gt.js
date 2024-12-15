@@ -47,6 +47,12 @@ const greaterThan = require('./_internal/greaterThan')
  *   console.log, // true
  * ])
  * ```
+ *
+ * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ *
+ * ```javascript [playground]
+ * gt(Promise.resolve({ a: 2, b: 1 }), get('a'), get('b')).then(console.log) // true
+ * ```
  */
 const gt = ComparisonOperator(greaterThan)
 

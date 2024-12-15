@@ -157,6 +157,16 @@ const _transform = function (collection, transducer, initialValue) {
  * // ...
  * ```
  *
+ * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ *
+ * ```javascript [playground]
+ * transform(
+ *   Promise.resolve([1, 2, 3, 4, 5]),
+ *   Transducer.map(n => n ** 2),
+ *   [],
+ * ).then(console.log) // [1, 4, 9, 16, 25]
+ * ```
+ *
  * @execution series
  *
  * @transducing

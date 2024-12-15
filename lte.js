@@ -47,6 +47,12 @@ const lessThanOrEqual = require('./_internal/lessThanOrEqual')
  *   console.log, // true
  * ])
  * ```
+ *
+ * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ *
+ * ```javascript [playground]
+ * lte(Promise.resolve({ a: 1, b: 1 }), get('a'), get('b')).then(console.log) // true
+ * ```
  */
 const lte = ComparisonOperator(lessThanOrEqual)
 

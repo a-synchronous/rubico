@@ -90,6 +90,12 @@ const _set = function (obj, path, value) {
  * ])
  * ```
  *
+ * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ *
+ * ```javascript [playground]
+ * set(Promise.resolve({}), 'a', 1).then(console.log) // { a: 1 }
+ * ```
+ *
  * @since 1.7.0
  */
 

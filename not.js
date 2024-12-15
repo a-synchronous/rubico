@@ -45,6 +45,14 @@ const _not = function (args, predicate) {
  *   not(isOdd)(3),
  * ) // false
  * ```
+ *
+ * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ *
+ * ```javascript [playground]
+ * const isOdd = number => number % 2 == 1
+ *
+ * not(Promise.resolve(3), isOdd).then(console.log) // false
+ * ```
  */
 
 const not = function (...args) {

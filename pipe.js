@@ -46,6 +46,14 @@ const __ = require('./_internal/placeholder')
  * ])
  * ```
  *
+ * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ *
+ * ```javascript [playground]
+ * pipe(Promise.resolve(1), 2, Promise.resolve(3), [
+ *   console.log, // [1, 2, 3]
+ * ])
+ * ```
+ *
  * @execution series
  *
  * @transducing

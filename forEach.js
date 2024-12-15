@@ -72,6 +72,15 @@ const _forEach = function (collection, callback) {
  *                         // 25
  * ])
  * ```
+ *
+ * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ *
+ * ```javascript [playground]
+ * forEach(Promise.resolve([1, 2, 3]), console.log)
+ * // 1
+ * // 2
+ * // 3
+ * ```
  */
 const forEach = function (arg0, arg1) {
   if (typeof arg0 == 'function') {
@@ -130,6 +139,15 @@ const _forEachSeries = function (collection, callback) {
  * forEach.series([1, 2, 3, 4, 5], console.log) // 1 2 3 4 5
  *
  * forEach.series({ a: 1, b: 2, c: 3 }, console.log) // 1 2 3
+ * ```
+ *
+ * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ *
+ * ```javascript [playground]
+ * forEach.series(Promise.resolve([1, 2, 3]), console.log)
+ * // 1
+ * // 2
+ * // 3
  * ```
  */
 forEach.series = function forEachSeries(arg0, arg1) {

@@ -62,6 +62,13 @@ const _omit = function (source, paths) {
  *   console.log, // { c: 9 }
  * ])
  * ```
+ *
+ * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ *
+ * ```javascript [playground]
+ * omit(Promise.resolve({ a: 1, b: 2, c: 3 }), ['a', 'b']).then(console.log)
+ * // { c: 3 }
+ * ```
  */
 const omit = function (arg0, arg1) {
   if (arg1 == null) {

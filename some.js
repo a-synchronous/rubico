@@ -92,6 +92,12 @@ const _some = function (collection, predicate) {
  * ])
  * ```
  *
+ * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ *
+ * ```javascript [playground]
+ * some(Promise.resolve([1, 2, 3, 4, 5]), n => n > 6).then(console.log) // false
+ * ```
+ *
  * @execution concurrent
  *
  * @muxing

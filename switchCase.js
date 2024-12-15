@@ -79,6 +79,18 @@ const curryArgs3 = require('./_internal/curryArgs3')
  * console.log(myDrink) // Beer
  * ```
  *
+ * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ *
+ * ```javascript [playground]
+ * switchCase(Promise.resolve(1), 2, Promise.resolve(3), [
+ *   function doValuesAddUpTo6(a, b, c) {
+ *     return a + b + c == 6
+ *   },
+ *   (a, b, c) => console.log(`${a} + ${b} + ${c} == 6`),
+ *   (a, b, c) => console.log(`${a} + ${b} + ${c} != 6`),
+ * ]) // 1 + 2 + 3 == 6
+ * ```
+ *
  * @execution series
  */
 const switchCase = (...args) => {

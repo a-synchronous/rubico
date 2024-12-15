@@ -80,6 +80,12 @@ const _get = function (object, path, defaultValue) {
  * console.log(get00000BracketNotation([[[[['foo']]]]])) // foo
  * console.log(get00000ArrayNotation([[[[['foo']]]]])) // foo
  * ```
+ *
+ * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ *
+ * ```javascript [playground]
+ * get(Promise.resolve({ a: 1 }), 'a').then(console.log) // 1
+ * ```
  */
 
 const get = function (arg0, arg1, arg2) {

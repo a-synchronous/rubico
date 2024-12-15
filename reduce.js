@@ -172,6 +172,14 @@ const _reduce = function (collection, reducer, initialValue) {
  * reduce(asyncAdd)(asyncGenerate12345()).then(console.log) // 15
  * ```
  *
+ * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ *
+ * ```javascript [playground]
+ * const add = (a, b) => a + b
+ *
+ * reduce(Promise.resolve([1, 2, 3, 4, 5]), add, 0).then(console.log) // 15
+ * ```
+ *
  * @execution series
  *
  * @transducing

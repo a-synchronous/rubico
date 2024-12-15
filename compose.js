@@ -27,6 +27,14 @@ const funcConcat = require('./_internal/funcConcat')
  *   compose(5, [f, g]),
  * ) // 16
  * ```
+ *
+ * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ *
+ * ```javascript [playground]
+ * compose(Promise.resolve(1), 2, Promise.resolve(3), [
+ *   console.log, // [1, 2, 3]
+ * ])
+ * ```
  */
 const compose = function (...args) {
   const funcs = args.pop()

@@ -236,6 +236,15 @@ const _map = function (value, mapper) {
  * })()
  * ```
  *
+ * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ *
+ * ```javascript [playground]
+ * const asyncSquare = async n => n ** 2
+ *
+ * map(Promise.resolve([1, 2, 3, 4, 5]), asyncSquare).then(console.log)
+ * // [1, 4, 9, 16, 25]
+ * ```
+ *
  * @execution concurrent
  *
  * @TODO streamMap
@@ -295,6 +304,18 @@ const _mapEntries = (value, mapper) => {
  *
  * console.log(upperCaseKeysAndSquareValues(new Map([['a', 1], ['b', 2], ['c', 3]])))
  * // Map(3) { 'A' => 1, 'B' => 4, 'C' => 9 }
+ * ```
+ *
+ * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ *
+ * ```javascript [playground]
+ * const asyncSquareEntries = async ([k, v]) => [k, v ** 2]
+ *
+ * map.entries(
+ *   Promise.resolve({ a: 1, b: 2, c: 3 }),
+ *   asyncSquareEntries,
+ * ).then(console.log)
+ * // { a: 1, b: 4, c: 9 }
  * ```
  *
  * @since v1.7.0
@@ -379,6 +400,15 @@ const _mapSeries = function (collection, f) {
  * map.series([1, 2, 3, 4, 5], delayedLog)
  * ```
  *
+ * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ *
+ * ```javascript [playground]
+ * const asyncSquare = async n => n ** 2
+ *
+ * map.series(Promise.resolve([1, 2, 3, 4, 5]), asyncSquare).then(console.log)
+ * // [1, 4, 9, 16, 25]
+ * ```
+ *
  * @execution series
  */
 map.series = function mapSeries(arg0, arg1) {
@@ -458,6 +488,15 @@ const _mapPool = function (collection, concurrency, f) {
  *   delayedIdentity,
  *   console.log,
  * ]))(ids)
+ * ```
+ *
+ * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ *
+ * ```javascript [playground]
+ * const asyncSquare = async n => n ** 2
+ *
+ * map.pool(Promise.resolve([1, 2, 3, 4, 5]), 5, asyncSquare).then(console.log)
+ * // [1, 4, 9, 16, 25]
  * ```
  *
  * @TODO objectMapPool

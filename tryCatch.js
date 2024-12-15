@@ -61,6 +61,20 @@ const _tryCatch = function (tryer, catcher, args) {
  *   console.error(error.message) // the sum is 6
  * })
  * ```
+ *
+ * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ *
+ * ```javascript [playground]
+ * tryCatch(Promise.resolve(1), 2, Promise.resolve(3), (a, b, c) => {
+ *   const sum = a + b + c
+ *   if (sum > 5) {
+ *     throw new Error('limit exceeded')
+ *   }
+ *   console.log('sum:', sum)
+ * }, (error, a, b, c) => {
+ *   console.error(`${a} + ${b} + ${c}: ${error.message}`)
+ * })
+ * ```
  */
 
 const tryCatch = function (...args) {

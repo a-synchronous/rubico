@@ -18,7 +18,7 @@ const _assign = function (object, funcs) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * assign(object Object, resolvers Object<function>) -> result Promise|Object
+ * assign(object Promise|Object, resolvers Object<function>) -> result Promise|Object
  *
  * assign(resolvers Object<function>)(object Object) -> result Promise|Object
  * ```
@@ -53,6 +53,19 @@ const _assign = function (object, funcs) {
  *
  * asyncAssignTotal({ numbers: [1, 2, 3, 4, 5] }).then(console.log)
  * // { numbers: [1, 2, 3, 4, 5], total: 15 }
+ * ```
+ *
+ * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ *
+ * ```javascript [playground]
+ * assign(Promise.resolve({}), {
+ *   a() {
+ *     return 1
+ *   },
+ *   b() {
+ *     return 2
+ *   },
+ * }).then(console.log)
  * ```
  *
  * @execution concurrent

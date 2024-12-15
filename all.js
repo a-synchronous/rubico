@@ -23,7 +23,7 @@ const functionObjectAll = require('./_internal/functionObjectAll')
  * ```
  *
  * @description
- * Function executor and composer. Accepts either an array of functions or an object of functions as the values. Calls each function of the provided array or object in parallel with the provided arguments. Returns either an array or object of the results of the function executions.
+ * Function executor and composer. Accepts either an array of functions or an object of functions. Calls each function of the provided array or object in parallel with the provided arguments. Returns either an array or object of the execution results.
  *
  * ```javascript [playground]
  * const createArrayOfGreetingsFor = all([
@@ -70,6 +70,16 @@ const functionObjectAll = require('./_internal/functionObjectAll')
  * ])
  *
  * getAndLogUserById('1') // Got user {"_id":1,"name":"George"} by id 1
+ * ```
+ *
+ * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ *
+ * ```javascript [playground]
+ * all(Promise.resolve({ a: 1 }), [
+ *   obj => obj.a + 1,
+ *   obj => obj.a + 2,
+ *   obj => obj.a + 3,
+ * ]).then(console.log) // [2, 3, 4]
  * ```
  *
  * @execution concurrent

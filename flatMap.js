@@ -157,6 +157,13 @@ const _flatMap = function (value, flatMapper) {
  * ) // Set(10) { 1, 101, 2, 102, 3, 103, 4, 104, 5, 105 }
  * ```
  *
+ * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ *
+ * ```javascript [playground]
+ * flatMap(Promise.resolve([1, 2, 3, 4, 5]), n => [n, n]).then(console.log)
+ * // [1, 1, 2, 2, 3, 3, 4, 4, 5, 5]
+ * ```
+ *
  * @execution concurrent
  *
  * @transducing
