@@ -122,6 +122,13 @@ const _allValues = function (values) {
  *   c: () => 3,
  *   d: async () => 4,
  * }).then(console.log) // { a: 1, b: 2, c: 3, d: 4 }
+ *
+ * all([], [
+ *   Promise.resolve(1),
+ *   2,
+ *   () => 3,
+ *   async () => 4,
+ * ]).then(console.log) // [1, 2, 3, 4]
  * ```
  *
  * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
