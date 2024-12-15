@@ -42,7 +42,7 @@ const _tap = function (args, func) {
  *
  * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
  * ```javascript [playground]
- * tap(Promise.resolve(1), Promise.resolve(2), 3, console.log) // 1, 2, 3
+ * tap(Promise.resolve(1), Promise.resolve(2), 3, console.log) // 1 2 3
  * ```
  */
 const tap = function (...args) {
