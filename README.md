@@ -86,15 +86,12 @@ When you import this library, you obtain the freedom that comes from having thos
 
 # Introduction
 
-rubico is a library for async-enabled functional programming in JavaScript. The library methods support a simple and composable functional style in asynchronous environments.
+rubico is a library for async-enabled functional programming in JavaScript. The library operators support a simple and composable functional style in asynchronous environments.
 
 ```javascript
 const {
   // compose functions
-  pipe, compose,
-
-  // handle effects
-  tap, forEach,
+  pipe, compose, tap,
 
   // control flow
   switchCase,
@@ -102,8 +99,11 @@ const {
   // handle errors
   tryCatch,
 
-  // handle objects
+  // compose data
   all, assign, get, set, pick, omit,
+
+  // iterate
+  forEach,
 
   // transform data
   map, filter, reduce, transform, flatMap,
@@ -119,7 +119,7 @@ const {
 } = rubico
 ```
 
-With async-enabled, or [a]synchronous, functional programming, functions provided to the rubico methods may be asynchronous and return a Promise. Any promises in argument position are also resolved before continuing with the operation.
+With async-enabled, or [a]synchronous, functional programming, functions provided to the rubico operators may be asynchronous and return a Promise. Any promises in argument position are also resolved before continuing with the operation.
 
 ```javascript [playground]
 const helloPromise = Promise.resolve('hello')
@@ -133,7 +133,7 @@ pipe(helloPromise, [ // helloPromise is resolved for 'hello'
 ])
 ```
 
-Most methods support both an eager and a lazy API. The eager API takes all required arguments and executes at once, while its lazy API takes only the non-data arguments and executes lazily, returning a function that expects the data arguments. This dual API supports a natural and composable code style.
+All rubico operators support both an eager and a lazy API. The eager API takes all required arguments and executes at once, while its lazy API takes only the non-data arguments and executes lazily, returning a function that expects the data arguments. This dual API supports a natural and composable code style.
 
 ```javascript [playground]
 const myObj = { a: 1, b: 2, c: 3 }
@@ -150,7 +150,7 @@ console.log(myDuplicatedSquaredObject)
 // { a: [1, 1], b: [4, 4], c: [9, 9] }
 ```
 
-The rubico methods are versatile and act on a wide range of vanilla JavaScript types to create declarative, extensible, and async-enabled function compositions. The same operator `map` can act on an array and also a `Map` data structure.
+The rubico operators are versatile and act on a wide range of vanilla JavaScript types to create declarative, extensible, and async-enabled function compositions. The same operator `map` can act on an array and also a `Map` data structure.
 
 ```javascript [playground]
 const { pipe, tap, map, filter } = rubico
@@ -203,7 +203,7 @@ pipe(todoIDs, [
 ])
 ```
 
-rubico offers transducers in its `Transducer` module. You can consume these transducers with the `transform` and `compose` methods. You should use `compose` over `pipe` to chain a left-to-right composition of transducers.
+rubico offers transducers in its `Transducer` module. You can consume these transducers with the `transform` and `compose` operators. You should use `compose` over `pipe` to chain a left-to-right composition of transducers.
 
 ```javascript [playground]
 const isOdd = number => number % 2 == 1
@@ -227,12 +227,12 @@ pipe(generateNumbers(), [
 ])
 ```
 
-For advanced asynchronous use cases, some of the methods have property functions that have different asynchronous behavior, e.g.
+For advanced asynchronous use cases, some of the operators have property functions that have different asynchronous behavior, e.g.
  * `map` - apply a mapper function concurrently
  * `map.pool` - apply a mapper function concurrently with a concurrency limit
  * `map.series` - apply a mapper function serially
 
-For more functions beyond the core methods, please visit `rubico/x`. You can find the full documentation at [rubico.land/docs](https://rubico.land/docs).
+For more functions beyond the core operators, please visit `rubico/x`. You can find the full documentation at [rubico.land/docs](https://rubico.land/docs).
 
 # Benchmarks
 Please find the published benchmark output inside the [benchmark-output](https://github.com/a-synchronous/rubico/tree/master/benchmark-output) folder. You can run the benchmarks on your own system with the following command:
