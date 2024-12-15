@@ -19,7 +19,8 @@ const objectSet = require('./objectSet')
 const functionObjectAll = function (funcs, args) {
   const result = {}, promises = []
   for (const key in funcs) {
-    const resultItem = funcs[key](...args)
+    const f = funcs[key]
+    const resultItem = typeof f == 'function' ? f(...args) : f
     if (isPromise(resultItem)) {
       promises.push(resultItem.then(curry3(objectSet, result, key, __)))
     } else {

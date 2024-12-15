@@ -18,13 +18,18 @@ const _assign = function (object, funcs) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * assign(object Promise|Object, resolvers Object<function>) -> result Promise|Object
+ * assign(
+ *   o Promise|Object,
+ *   resolversOrValues Object<function|Promise|any>
+ * ) -> result Promise|Object
  *
- * assign(resolvers Object<function>)(object Object) -> result Promise|Object
+ * assign(
+ *   resolversOrValues Object<function|Promise|any>
+ * )(o Object) -> result Promise|Object
  * ```
  *
  * @description
- * Function executor and composer. Accepts an object of resolver functions and an argument object. Creates a result object from the argument object, evaluates each resolver with the argument object, and assigns to the result object the evaluations at the corresponding resolver keys.
+ * Function executor and composer. Accepts an object of resolver functions or values and an object `o`. Creates a result object from the argument object, evaluates each resolver with the argument object, and assigns to the result object the evaluations at the corresponding resolver keys.
  *
  * ```javascript [playground]
  * const assignSquaredAndCubed = assign({
@@ -53,6 +58,17 @@ const _assign = function (object, funcs) {
  *
  * asyncAssignTotal({ numbers: [1, 2, 3, 4, 5] }).then(console.log)
  * // { numbers: [1, 2, 3, 4, 5], total: 15 }
+ * ```
+ *
+ * Values passed in resolver position are set on the result object directly. If any of these values are promises, they are resolved for their values before being assigned to the result object.
+ *
+ * ```javascript [playground]
+ * assign({}, {
+ *   a: 1,
+ *   b: Promise.resolve(2),
+ *   c: () => 3,
+ *   d: async o => Object.keys(o).length,
+ * }).then(console.log) // { a: 1, b: 2, c: 3, d: 0 }
  * ```
  *
  * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.

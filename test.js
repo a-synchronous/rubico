@@ -488,33 +488,33 @@ describe('rubico', () => {
       )
     })
     it('maps input to array of sync functions', async () => {
-      ade(all([hi, hi, hi])('yo'), ['yohi', 'yohi', 'yohi'])
+      ade(all([hi, hi, hi])('hi'), ['hihi', 'hihi', 'hihi'])
     })
     it('maps input to object of sync functions', async () => {
       ade(
-        all({ a: hi, b: hi, c: hi })('yo'),
-        { a: 'yohi', b: 'yohi', c: 'yohi' },
+        all({ a: hi, b: hi, c: hi })('hi'),
+        { a: 'hihi', b: 'hihi', c: 'hihi' },
       )
     })
     it('maps input to array of async functions', async () => {
-      aok(all([asyncHey, asyncHey, asyncHey])('yo') instanceof Promise)
+      aok(all([asyncHey, asyncHey, asyncHey])('hi') instanceof Promise)
       ade(
-        await all([asyncHey, asyncHey, asyncHey])('yo'),
-        ['yohey', 'yohey', 'yohey'],
+        await all([asyncHey, asyncHey, asyncHey])('hey'),
+        ['heyhey', 'heyhey', 'heyhey'],
       )
     })
     it('maps input to object of async functions', async () => {
       aok(all({ a: asyncHey, b: asyncHey, c: asyncHey })('yo') instanceof Promise)
       ade(
-        await all({ a: asyncHey, b: asyncHey, c: asyncHey })('yo'),
-        { a: 'yohey', b: 'yohey', c: 'yohey' },
+        await all({ a: asyncHey, b: asyncHey, c: asyncHey })('hey'),
+        { a: 'heyhey', b: 'heyhey', c: 'heyhey' },
       )
     })
     it('any functions async => Promise', async () => {
-      aok(all([asyncHey, asyncHey, hi])('yo') instanceof Promise)
+      aok(all([asyncHey, asyncHey, hi])('1') instanceof Promise)
       ade(
-        await all([asyncHey, asyncHey, hi])('yo'),
-        ['yohey', 'yohey', 'yohi'],
+        await all([asyncHey, asyncHey, hi])('1'),
+        ['1hey', '1hey', '1hi'],
       )
     })
     it('all([])() -> []', async () => {
@@ -529,18 +529,6 @@ describe('rubico', () => {
       assert.throws(
         () => all(['hey'])(),
         new TypeError('funcs[funcsIndex] is not a function'),
-      )
-    })
-    it('throws TypeError for all({ a: nonFunction })', async () => {
-      assert.throws(
-        () => all({ a: 'hey' })(),
-        new TypeError('funcs[key] is not a function'),
-      )
-    })
-    it('throws TypeError for String', async () => {
-      assert.throws(
-        () => all('ayelmao')(),
-        new TypeError('funcs[key] is not a function'),
       )
     })
     it('{} for Set<[func]>; no functions exposed via in', async () => {
@@ -638,11 +626,13 @@ describe('rubico', () => {
 
   describe('assign', () => {
     it('API coverage', async () => {
-      ade(assign({}, {
+      ade(await assign({}, {
         a: () => 1,
         b: () => 2,
         c: () => 3,
-      }), { a: 1, b: 2, c: 3 })
+        e: 4,
+        f: Promise.resolve(5),
+      }), { a: 1, b: 2, c: 3, e: 4, f: 5 })
 
       ade(assign({
         a: () => 1,
