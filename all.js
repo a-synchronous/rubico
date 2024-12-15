@@ -1,5 +1,8 @@
+const isPromise = require('./_internal/isPromise')
 const areAnyValuesPromises = require('./_internal/areAnyValuesPromises')
+const areAllValuesNonfunctions = require('./_internal/areAllValuesNonfunctions')
 const promiseAll = require('./_internal/promiseAll')
+const promiseObjectAll = require('./_internal/promiseObjectAll')
 const isArray = require('./_internal/isArray')
 const __ = require('./_internal/placeholder')
 const curry2 = require('./_internal/curry2')
@@ -9,21 +12,54 @@ const functionArrayAllSeries = require('./_internal/functionArrayAllSeries')
 const functionObjectAll = require('./_internal/functionObjectAll')
 
 /**
+ * @name _allValues
+ *
+ * @synopsis
+ * ```coffeescript [specscript]
+ * _allValues(values Array<Promise|any>) -> Promise<Array>
+ * _allValues(values Object<Promise|any>) -> Promise<Object>
+ * ```
+ */
+const _allValues = function (values) {
+  if (isArray(values)) {
+    return areAnyValuesPromises(values)
+      ? promiseAll(values)
+      : values
+  }
+  return areAnyValuesPromises(values)
+    ? promiseObjectAll(values)
+    : values
+}
+
+/**
  * @name all
  *
  * @synopsis
  * ```coffeescript [specscript]
- * all(...args, funcsArray Array<function>) -> result Promise|Array
+ * all(values Promise|Array<Promise|any>) -> result Promise|Array
+ * all(values Promise|Object<Promise|any>) -> result Promise|Object
  *
- * all(funcsArray Array<function>)(...args) -> result Promise|Array
+ * all(
+ *   ...args,
+ *   resolversOrValues Array<function|Promise|any>
+ * ) -> result Promise|Array
  *
- * all(...args, funcsObject Object<function>) -> result Promise|Object
+ * all(
+ *   resolversOrValues Array<function|Promise|any>
+ * )(...args) -> result Promise|Array
  *
- * all(funcsObject Object<function>)(...args) -> result Promise|Object
+ * all(
+ *   ...args,
+ *   resolversOrValues Object<function|Promise|any>
+ * ) -> result Promise|Object
+ *
+ * all(
+ *   resolversOrValues Object<function|Promise|any>
+ * )(...args) -> result Promise|Object
  * ```
  *
  * @description
- * Function executor and composer. Accepts either an array of functions or an object of functions. Calls each function of the provided array or object in parallel with the provided arguments. Returns either an array or object of the execution results.
+ * Calls an array or object of resolver functions or values `resolversOrValues` with provided arguments.
  *
  * ```javascript [playground]
  * const createArrayOfGreetingsFor = all([
@@ -32,24 +68,29 @@ const functionObjectAll = require('./_internal/functionObjectAll')
  *   name => `Hello ${name}`,
  * ])
  *
- * const arrayOfGreetingsForFred = createArrayOfGreetingsFor('Fred')
+ * const arrayOfGreetingsFor1 = createArrayOfGreetingsFor('1')
  *
- * console.log(arrayOfGreetingsForFred)
- * // ['Hi Fred', 'Hey Fred', 'Hello Fred']
- *
- * const createObjectOfGreetingsFor = all({
- *   hi: name => `Hi ${name}`,
- *   hey: name => `Hey ${name}`,
- *   hello: name => `Hello ${name}`,
- * })
- *
- * const objectOfGreetingsForJane = createObjectOfGreetingsFor('Jane')
- *
- * console.log(objectOfGreetingsForJane)
- * // { hi: 'Hi Jane', hey: 'Hey Jane', hello: 'Hello Jane' }
+ * console.log(arrayOfGreetingsFor1)
+ * // ['Hi 1', 'Hey 1', 'Hello 1']
  * ```
  *
- * `all` can simultaneously compose objects and handle promises.
+ * If provided only values for `resolversOrValues`, returns an array or object with the same shape as `resolversOrValues` with any Promises resolved.
+ *
+ * ```javascript [playground]
+ * all([
+ *   Promise.resolve(1),
+ *   Promise.resolve(2),
+ *   3,
+ * ]).then(console.log) // [1, 2, 3]
+ *
+ * all({
+ *   a: Promise.resolve(1),
+ *   b: Promise.resolve(2),
+ *   c: 3,
+ * }).then(console.log) // { a: 1, b: 2, c: 3 }
+ * ```
+ *
+ * `all` can be used in a pipeline to compose and manpulate data.
  *
  * ```javascript [playground]
  * const identity = value => value
@@ -72,6 +113,14 @@ const functionObjectAll = require('./_internal/functionObjectAll')
  * getAndLogUserById('1') // Got user {"_id":1,"name":"George"} by id 1
  * ```
  *
+ * Values passed in resolver position are set on the result object or array directly. If any of these values are promises, they are resolved for their values before being set on the result object or array.
+ *
+ * ```javascript [playground]
+ * all({}, [
+ *   Promise.resolve(1),
+ * ])
+ * ```
+ *
  * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
  *
  * ```javascript [playground]
@@ -84,8 +133,37 @@ const functionObjectAll = require('./_internal/functionObjectAll')
  *
  * @execution concurrent
  */
-
 const all = function (...args) {
+  if (args.length == 1) {
+    const resolversOrValues = args[0]
+    if (isPromise(resolversOrValues)) {
+      return resolversOrValues.then(_allValues)
+    }
+    if (areAllValuesNonfunctions(resolversOrValues)) {
+      return _allValues(resolversOrValues)
+    }
+    return isArray(resolversOrValues)
+      ? curryArgs2(functionArrayAll, resolversOrValues, __)
+      : curryArgs2(functionObjectAll, resolversOrValues, __)
+  }
+
+  const resolversOrValues = args[args.length - 1]
+  const argValues = args.slice(0, -1)
+
+  if (areAnyValuesPromises(argValues)) {
+    return isArray(resolversOrValues)
+      ? promiseAll(argValues)
+        .then(curry2(functionArrayAll, resolversOrValues, __))
+      : promiseAll(argValues)
+        .then(curry2(functionObjectAll, resolversOrValues, __))
+  }
+
+  return isArray(resolversOrValues)
+    ? functionArrayAll(resolversOrValues, argValues)
+    : functionObjectAll(resolversOrValues, argValues)
+
+  /*
+  ////////////////////////////////////////////////////////////////
   const funcs = args.pop()
   if (args.length == 0) {
     return isArray(funcs)
@@ -102,6 +180,7 @@ const all = function (...args) {
   return isArray(funcs)
     ? functionArrayAll(funcs, args)
     : functionObjectAll(funcs, args)
+  */
 }
 
 /**

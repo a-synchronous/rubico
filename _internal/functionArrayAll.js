@@ -14,7 +14,8 @@ const functionArrayAll = function (funcs, args) {
     result = Array(funcsLength)
   let funcsIndex = -1, isAsync = false
   while (++funcsIndex < funcsLength) {
-    const resultItem = funcs[funcsIndex](...args)
+    const f = funcs[funcsIndex]
+    const resultItem = typeof f == 'function' ? f(...args) : f
     if (isPromise(resultItem)) {
       isAsync = true
     }

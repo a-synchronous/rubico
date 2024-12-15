@@ -60,7 +60,7 @@ const _assign = function (object, funcs) {
  * // { numbers: [1, 2, 3, 4, 5], total: 15 }
  * ```
  *
- * Values passed in resolver position are set on the result object directly. If any of these values are promises, they are resolved for their values before being assigned to the result object.
+ * Values passed in resolver position are set on the result object directly. If any of these values are promises, they are resolved for their values before being set on the result object.
  *
  * ```javascript [playground]
  * assign({}, {

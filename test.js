@@ -436,6 +436,21 @@ describe('rubico', () => {
       )
 
       ade(
+        all([
+          Array.of,
+          Array.of,
+          Array.of,
+          4,
+        ])(1, 2, 3),
+        [
+          [1, 2, 3],
+          [1, 2, 3],
+          [1, 2, 3],
+          4,
+        ],
+      )
+
+      ade(
         await all(Promise.resolve(1), 2, Promise.resolve(3), [
           Array.of,
           Array.of,
@@ -486,6 +501,21 @@ describe('rubico', () => {
           c: [1, 2, 3],
         },
       )
+
+      ade(
+        all({
+          a: Array.of,
+          b: Array.of,
+          c: Array.of,
+          d: 4,
+        })(1, 2, 3),
+        {
+          a: [1, 2, 3],
+          b: [1, 2, 3],
+          c: [1, 2, 3],
+          d: 4,
+        },
+      )
     })
     it('maps input to array of sync functions', async () => {
       ade(all([hi, hi, hi])('hi'), ['hihi', 'hihi', 'hihi'])
@@ -517,25 +547,23 @@ describe('rubico', () => {
         ['1hey', '1hey', '1hi'],
       )
     })
-    it('all([])() -> []', async () => {
-      ade(all([])(), [])
-      ade(all([])('hey'), [])
-    })
-    it('all({})() -> {}', async () => {
-      ade(all({})(), {})
-      ade(all({})('hey'), {})
-    })
-    it('TypeError for all([\'hey\'])()', async () => {
-      assert.throws(
-        () => all(['hey'])(),
-        new TypeError('funcs[funcsIndex] is not a function'),
-      )
-    })
-    it('{} for Set<[func]>; no functions exposed via in', async () => {
-      assert.deepEqual(all(new Set([() => 'yo']))('hey'), {})
-    })
-    it('{} for Map<[[1, func]]>', async () => {
-      assert.deepEqual(all(new Map([[1, () => 'yo']]))('hey'), {})
+    it('only nonfunctions', async () => {
+      ade(all([1, 2, 3]), [1, 2, 3])
+      ade(await all(Promise.resolve([Promise.resolve(1), 2, 3])), [1, 2, 3])
+      ade(await all([Promise.resolve(1), Promise.resolve(2), 3]), [1, 2, 3])
+      ade(all([]), [])
+      ade(all({ a: 1, b: 2, c: 3 }), { a: 1, b: 2, c: 3 })
+      ade(await all(Promise.resolve({
+        a: Promise.resolve(1),
+        b: 2,
+        c: 3,
+      })), { a: 1, b: 2, c: 3 })
+      ade(await all({
+        a: Promise.resolve(1),
+        b: Promise.resolve(2),
+        c: 3,
+      }), { a: 1, b: 2, c: 3 })
+      ade(all({}), {})
     })
   })
 
