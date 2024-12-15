@@ -54,6 +54,7 @@ const objectMapSeries = function (object, f) {
         thunkify4(_objectMapSeriesAsync, object, f, result, doneKeys),
       ))
     }
+    result[key] = resultItem
   }
   return result
 }

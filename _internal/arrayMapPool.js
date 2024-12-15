@@ -11,27 +11,26 @@ const promiseRace = require('./promiseRace')
  * arrayMapPoolAsync<
  *   T any,
  *   array Array<T>,
- *   mapper T=>Promise|any,
+ *   f T=>Promise|any,
  *   concurrencyLimit number,
  *   result Array,
  *   index number,
  *   promises Set<Promise>,
- * >(array, mapper, concurrencyLimit, result, index, promises) -> result
+ * >(array, f, concurrencyLimit, result, index, promises) -> result
  * ```
  *
  * @description
- * Apply a mapper with limited concurrency to each item of an array, returning a Promise of an array of results.
+ * Apply a function `f` with limited concurrency to each item of an array, returning a Promise of an array of results.
  */
 const arrayMapPoolAsync = async function (
-  array, mapper, concurrencyLimit, result, index, promises,
+  array, f, concurrencyLimit, result, index, promises,
 ) {
   const arrayLength = array.length
   while (++index < arrayLength) {
     if (promises.size >= concurrencyLimit) {
       await promiseRace(promises)
     }
-
-    const resultItem = mapper(array[index])
+    const resultItem = f(array[index])
     if (isPromise(resultItem)) {
       const selfDeletingPromise = resultItem.then(
         tapSync(() => promises.delete(selfDeletingPromise)))
@@ -45,29 +44,22 @@ const arrayMapPoolAsync = async function (
 }
 
 /**
- * @name
- * arrayMapPool
+ * @name arrayMapPool
  *
  * @synopsis
  * ```coffeescript [specscript]
- * arrayMapPool<
- *   T any,
- *   array Array<T>
- *   mapper T=>Promise|any,
- *   concurrentLimit number,
- * >(array, mapper, concurrentLimit) -> Promise|Array
+ * arrayMapPool(array Array, concurrency number, f function) -> Promise|string
  * ```
  *
  * @description
- * Apply a mapper with limited concurrency to each item of an array, returning an array of results.
+ * Apply a function `f` with limited concurrency to each item of an array, returning an array of results.
  */
-const arrayMapPool = function (array, mapper, concurrentLimit) {
+const arrayMapPool = function (array, concurrency, f) {
   const arrayLength = array.length,
     result = Array(arrayLength)
   let index = -1
   while (++index < arrayLength) {
-
-    const resultItem = mapper(array[index])
+    const resultItem = f(array[index])
     if (isPromise(resultItem)) {
       const promises = new Set(),
         selfDeletingPromise = resultItem.then(
@@ -75,7 +67,7 @@ const arrayMapPool = function (array, mapper, concurrentLimit) {
       promises.add(selfDeletingPromise)
       result[index] = selfDeletingPromise
       return arrayMapPoolAsync(
-        array, mapper, concurrentLimit, result, index, promises)
+        array, f, concurrency, result, index, promises)
     }
     result[index] = resultItem
   }

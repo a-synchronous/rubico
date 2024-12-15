@@ -3,6 +3,7 @@ const MappingIterator = require('./_internal/MappingIterator')
 const MappingAsyncIterator = require('./_internal/MappingAsyncIterator')
 const __ = require('./_internal/placeholder')
 const curry2 = require('./_internal/curry2')
+const curry3 = require('./_internal/curry3')
 const isArray = require('./_internal/isArray')
 const isObject = require('./_internal/isObject')
 const arrayMap = require('./_internal/arrayMap')
@@ -16,6 +17,10 @@ const objectMapSeries = require('./_internal/objectMapSeries')
 const setMapSeries = require('./_internal/setMapSeries')
 const mapMapSeries = require('./_internal/mapMapSeries')
 const arrayMapPool = require('./_internal/arrayMapPool')
+const stringMapPool = require('./_internal/stringMapPool')
+const setMapPool = require('./_internal/setMapPool')
+const mapMapPool = require('./_internal/mapMapPool')
+const objectMapPool = require('./_internal/objectMapPool')
 const objectMapEntries = require('./_internal/objectMapEntries')
 const mapMapEntries = require('./_internal/mapMapEntries')
 const symbolIterator = require('./_internal/symbolIterator')
@@ -45,21 +50,6 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  *   originalMap Map,
  *   mapMapper (value any, key any, originalMap Map)=>Promise|any
  * ) -> mappedMap Promise|Map
- *
- * _map(
- *   generatorFunction ...args=>Generator,
- *   syncMapper (value any)=>any,
- * ) -> mappingGeneratorFunction ...args=>Generator
- *
- * _map(
- *   asyncGeneratorFunction ...args=>AsyncGenerator,
- *   mapper (value any)=>Promise|any
- * ) -> mappingAsyncGeneratorFunction ...args=>AsyncGenerator
- *
- * _map(
- *   originalReducer Reducer,
- *   mapper (value any)=>Promise|any,
- * ) -> mappingReducer Reducer
  * ```
  */
 
@@ -111,7 +101,7 @@ const _map = function (value, mapper) {
  *   collection Mappable
  * )=>(resultItem Promise|any)
  *
- * map(collection Mappable, f Mapper) -> result Promise|Mappable
+ * map(collection Promise|Mappable, f Mapper) -> result Promise|Mappable
  * map(f Mapper)(collection Mappable) -> result Promise|Mappable
  * ```
  *
@@ -251,7 +241,7 @@ const _map = function (value, mapper) {
  * @TODO streamMap
  */
 const map = function (arg0, arg1) {
-  if (typeof arg0 == 'function') {
+  if (arg1 == null) {
     return curry2(_map, __, arg0)
   }
   return isPromise(arg0)
@@ -310,7 +300,7 @@ const _mapEntries = (value, mapper) => {
  * @since v1.7.0
  */
 map.entries = function mapEntries(arg0, arg1) {
-  if (typeof arg0 == 'function') {
+  if (arg1 == null) {
     return curry2(_mapEntries, __, arg0)
   }
   return isPromise(arg0)
@@ -323,7 +313,7 @@ map.entries = function mapEntries(arg0, arg1) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Mappable = Array|Object|Set|Map|Iterator|AsyncIterator
+ * type Mappable = Array|Object|Set|Map
  *
  * type Mapper = (
  *   value any,
@@ -375,7 +365,7 @@ const _mapSeries = function (collection, f) {
  * ```
  *
  * @description
- * `map` with serial execution.
+ * [map](/docs/map) with serial execution.
  *
  * ```javascript [playground]
  * const delayedLog = number => new Promise(function (resolve) {
@@ -392,7 +382,7 @@ const _mapSeries = function (collection, f) {
  * @execution series
  */
 map.series = function mapSeries(arg0, arg1) {
-  if (typeof arg0 == 'function') {
+  if (arg1 == null) {
     return curry2(_mapSeries, __, arg0)
   }
   return isPromise(arg0)
@@ -401,18 +391,58 @@ map.series = function mapSeries(arg0, arg1) {
 }
 
 /**
+ * @name _mapPool
+ *
+ * @synopsis
+ * ```coffeescript [specscript]
+ * type Mappable = Array|Object|Set|Map
+ *
+ * _mapPool(collection Mappable, concurrency number, f function) -> result Promise|Mappable
+ * ```
+ */
+const _mapPool = function (collection, concurrency, f) {
+  if (isArray(collection)) {
+    return arrayMapPool(collection, concurrency, f)
+  }
+  if (collection == null) {
+    throw new TypeError(`invalid collection ${collection}`)
+  }
+  if (typeof collection == 'string' || collection.constructor == String) {
+    return stringMapPool(collection, concurrency, f)
+  }
+  if (collection.constructor == Set) {
+    return setMapPool(collection, concurrency, f)
+  }
+  if (collection.constructor == Map) {
+    return mapMapPool(collection, concurrency, f)
+  }
+  if (collection.constructor == Object) {
+    return objectMapPool(collection, concurrency, f)
+  }
+  throw new TypeError(`invalid collection ${collection}`)
+}
+
+/**
  * @name map.pool
  *
  * @synopsis
  * ```coffeescript [specscript]
+ * type Mappable = Array|Object|Set|Map
+ *
  * map.pool(
- *   maxConcurrency number,
+ *   concurrency number,
  *   mapper (value any)=>Promise|any,
- * )(array Array) -> result Promise|Array
+ * )(collection Mappable) -> result Promise|Array
+ *
+ * map.pool(
+ *   collection Mappable,
+ *   concurrency number,
+ *   mapper (value any)=>Promise|any,
+ * ) -> result Promise|Array
  * ```
  *
  * @description
- * `map` that specifies the maximum concurrency (number of ongoing promises at any time) of the execution. Only works for arrays.
+ * [map](/docs/map) with limited [concurrency](https://web.mit.edu/6.005/www/fa14/classes/17-concurrency/).
  *
  * ```javascript [playground]
  * const ids = [1, 2, 3, 4, 5]
@@ -434,11 +464,13 @@ map.series = function mapSeries(arg0, arg1) {
  *
  * @execution concurrent
  */
-map.pool = (concurrencyLimit, mapper) => function concurrentPoolMapping(value) {
-  if (isArray(value)) {
-    return arrayMapPool(value, mapper, concurrencyLimit)
+map.pool = function mapPool(arg0, arg1, arg2) {
+  if (arg2 == null) {
+    return curry3(_mapPool, __, arg0, arg1)
   }
-  throw new TypeError(`${value} is not an Array`)
+  return isPromise(arg0)
+    ? arg0.then(curry3(_mapPool, __, arg1, arg2))
+    : _mapPool(arg0, arg1, arg2)
 }
 
 module.exports = map
