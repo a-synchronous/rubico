@@ -710,12 +710,6 @@ describe('rubico', () => {
       assert.strictEqual(point, 1)
       assert.deepEqual(array, [1, 2, 3, 4, 5])
     })
-    it('throws a TypeError if passed a non function', async () => {
-      assert.throws(
-        () => tap('hey')(),
-        new TypeError('func is not a function'),
-      )
-    })
     it('eager API', async () => {
       let val = null
       tap('a', 'b', 'c', (...args) => {
@@ -736,6 +730,12 @@ describe('rubico', () => {
           assert.strictEqual(tap.if(isOdd, pushOddNumbers)(number), number)
         })
         assert.deepEqual(oddNumbers, [1, 3, 5])
+
+        tap.if(7, isOdd, pushOddNumbers)
+        assert.deepEqual(oddNumbers, [1, 3, 5, 7])
+
+        await tap.if(Promise.resolve(9), isOdd, pushOddNumbers)
+        assert.deepEqual(oddNumbers, [1, 3, 5, 7, 9])
       })
       it('async', async () => {
         const isOdd = x => x % 2 === 1

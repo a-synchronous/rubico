@@ -5,14 +5,15 @@ const thunkConditional = require('./_internal/thunkConditional')
 const curry2 = require('./_internal/curry2')
 const curry3 = require('./_internal/curry3')
 const curryArgs2 = require('./_internal/curryArgs2')
+const curryArgs3 = require('./_internal/curryArgs3')
 const __ = require('./_internal/placeholder')
 const areAnyValuesPromises = require('./_internal/areAnyValuesPromises')
 const promiseAll = require('./_internal/promiseAll')
 
-// _tap(args Array, func function) -> Promise|any
-const _tap = function (args, func) {
+// _tap(args Array, f function) -> Promise|any
+const _tap = function (args, f) {
   const result = args[0],
-    call = func(...args)
+    call = f(...args)
   return isPromise(call) ? call.then(always(result)) : result
 }
 
@@ -21,8 +22,8 @@ const _tap = function (args, func) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * tap(...args, func function) -> Promise|args[0]
- * tap(func function)(...args) -> Promise|args[0]
+ * tap(...args, f function) -> Promise|args[0]
+ * tap(f function)(...args) -> Promise|args[0]
  * ```
  *
  * @description
@@ -41,19 +42,51 @@ const _tap = function (args, func) {
  * ```
  *
  * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ *
  * ```javascript [playground]
  * tap(Promise.resolve(1), Promise.resolve(2), 3, console.log) // 1 2 3
  * ```
  */
 const tap = function (...args) {
-  const func = args.pop()
+  const f = args.pop()
   if (args.length == 0) {
-    return curryArgs2(_tap, __, func)
+    return curryArgs2(_tap, __, f)
   }
   if (areAnyValuesPromises(args)) {
-    return promiseAll(args).then(curry2(_tap, __, func))
+    return promiseAll(args).then(curry2(_tap, __, f))
   }
-  return _tap(args, func)
+  return _tap(args, f)
+}
+
+/**
+ * @name _tapIf
+ *
+ * @synopsis
+ * ```coffeescript [specscript]
+ * _tapIf(
+ *   predicate function,
+ *   f function,
+ *   args Array,
+ * ) -> Promise|args[0]
+ * ```
+ */
+const _tapIf = function (predicate, f, args) {
+  const b = predicate(...args)
+  if (isPromise(b)) {
+    return b.then(curry3(
+      thunkConditional,
+      __,
+      thunkifyArgs(tap(f), args),
+      always(args[0]),
+    ))
+  }
+  if (b) {
+    const execution = f(...args)
+    if (isPromise(execution)) {
+      return execution.then(always(args[0]))
+    }
+  }
+  return args[0]
 }
 
 /**
@@ -61,37 +94,42 @@ const tap = function (...args) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * tap.if(predicate function, func function)(...args) -> Promise|args[0]
+ * tap.if(...args, predicate function, f function) -> Promise|args[0]
+ * tap.if(predicate function, f function)(...args) -> Promise|args[0]
  * ```
  *
  * @description
- * A version of `tap` that accepts a predicate function (a function that returns a boolean value) before the function to execute. Only executes the function if the predicate function tests true for the same arguments provided to the execution function.
+ * A version of `tap` that accepts a predicate function (a function that returns a boolean value) before the function `f` to execute. Only executes `f` if the predicate function tests true. The arguments are the same to both the predicate function and the function to execute `f`.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
  *
- * const logIfOdd = tap.if(
- *   isOdd,
- *   number => console.log(number, 'is an odd number')
- * )
+ * const logIfOdd = tap.if(isOdd, console.log)
  *
  * logIfOdd(2)
- * logIfOdd(3) // 3 is an odd number
+ * logIfOdd(3) // 3
+ * ```
+ *
+ * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ *
+ * ```javascript [playground]
+ * tap.if(Promise.resolve(1), n => n < 5, console.log) // 1
+ * tap.if(Promise.resolve(6), n => n < 5, console.log)
  * ```
  */
-tap.if = (predicate, func) => function tappingIf(...args) {
-  const predication = predicate(...args)
-  if (isPromise(predication)) {
-    return predication.then(curry3(
-      thunkConditional, __, thunkifyArgs(tap(func), args), always(args[0])))
+
+tap.if = function (...args) {
+  if (args.length == 2) {
+    return curryArgs3(_tapIf, args[0], args[1], __)
   }
-  if (predication) {
-    const execution = func(...args)
-    if (isPromise(execution)) {
-      return execution.then(always(args[0]))
-    }
+  const argsLength = args.length
+  const f = args[argsLength - 1]
+  const predicate = args[argsLength - 2]
+  const argValues = args.slice(0, -2)
+  if (areAnyValuesPromises(argValues)) {
+    return promiseAll(argValues).then(curry3(_tapIf, predicate, f, __))
   }
-  return args[0]
+  return _tapIf(predicate, f, args)
 }
 
 module.exports = tap
