@@ -86,7 +86,7 @@ When you import this library, you obtain the freedom that comes from having thos
 
 # Introduction
 
-rubico is a library for async-enabled functional programming in JavaScript. The library operators support a simple and composable functional style in asynchronous environments.
+rubico is a library for async-enabled functional programming in JavaScript. The library supports a simple and composable functional style in asynchronous environments.
 
 ```javascript
 const {
