@@ -3,6 +3,14 @@ const assign = require('../assign')
 
 const suite = new TimeInLoopSuite()
 
+suite.add('rubico assign values', () => {
+  assign({}, {
+    a: 1,
+    b: 2,
+    c: 3,
+  })
+})
+
 suite.add('rubico assign', () => {
   assign({}, {
     a: () => 1,
