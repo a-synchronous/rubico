@@ -1493,11 +1493,11 @@ describe('rubico', () => {
     it('null/invalid', async () => {
       assert.throws(
         () => map.pool(null, 1, () => {}),
-        new TypeError(`invalid collection null`)
+        new TypeError('invalid collection null')
       )
       assert.throws(
         () => map.pool(1, 1, () => {}),
-        new TypeError(`invalid collection 1`)
+        new TypeError('invalid collection 1')
       )
     })
     it('maps with asynchronous limit for strings', async () => {
@@ -1505,8 +1505,9 @@ describe('rubico', () => {
       const sdupe = 'aabbccddee'
       const duplicate = s => `${s}${s}`
       const asyncDuplicate = async s => `${s}${s}`
-      const alternatingAsyncDuplicate = async s =>
+      const alternatingAsyncDuplicate = async s => (
         ['a', 'c', 'e'].includes(s) ? Promise.resolve(`${s}${s}`) : `${s}${s}`
+      )
       aok(map.pool(1, asyncDuplicate)(s) instanceof Promise)
       ade(await map.pool(1, asyncDuplicate)(s), sdupe)
       ade(await map.pool(9, asyncDuplicate)(s), sdupe)
