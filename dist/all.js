@@ -1,5 +1,5 @@
 /**
- * rubico v2.6.1
+ * rubico v2.6.2
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2024 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -13,11 +13,23 @@
 
 const isPromise = value => value != null && typeof value.then == 'function'
 
+const isArray = Array.isArray
+
 const areAnyValuesPromises = function (values) {
-  const length = values.length
-  let index = -1
-  while (++index < length) {
-    const value = values[index]
+  if (isArray(values)) {
+    const length = values.length
+    let index = -1
+    while (++index < length) {
+      const value = values[index]
+      if (isPromise(value)) {
+        return true
+      }
+    }
+    return false
+  }
+
+  for (const key in values) {
+    const value = values[key]
     if (isPromise(value)) {
       return true
     }
@@ -25,9 +37,52 @@ const areAnyValuesPromises = function (values) {
   return false
 }
 
+const areAllValuesNonfunctions = function (values) {
+  if (isArray(values)) {
+    const length = values.length
+    let index = -1
+    while (++index < length) {
+      if (typeof values[index] == 'function') {
+        return false
+      }
+    }
+    return true
+  }
+
+  for (const key in values) {
+    if (typeof values[key] == 'function') {
+      return false
+    }
+  }
+  return true
+}
+
 const promiseAll = Promise.all.bind(Promise)
 
-const isArray = Array.isArray
+const promiseObjectAllExecutor = object => function executor(resolve) {
+  const result = {}
+  let numPromises = 0
+  for (const key in object) {
+    const value = object[key]
+    if (isPromise(value)) {
+      numPromises += 1
+      value.then((key => function (res) {
+        result[key] = res
+        numPromises -= 1
+        if (numPromises == 0) {
+          resolve(result)
+        }
+      })(key))
+    } else {
+      result[key] = value
+    }
+  }
+  if (numPromises == 0) {
+    resolve(result)
+  }
+}
+
+const promiseObjectAll = object => new Promise(promiseObjectAllExecutor(object))
 
 const __ = Symbol.for('placeholder')
 
@@ -77,7 +132,8 @@ const functionArrayAll = function (funcs, args) {
     result = Array(funcsLength)
   let funcsIndex = -1, isAsync = false
   while (++funcsIndex < funcsLength) {
-    const resultItem = funcs[funcsIndex](...args)
+    const f = funcs[funcsIndex]
+    const resultItem = typeof f == 'function' ? f(...args) : f
     if (isPromise(resultItem)) {
       isAsync = true
     }
@@ -201,7 +257,8 @@ const always = value => function getter() { return value }
 const functionObjectAll = function (funcs, args) {
   const result = {}, promises = []
   for (const key in funcs) {
-    const resultItem = funcs[key](...args)
+    const f = funcs[key]
+    const resultItem = typeof f == 'function' ? f(...args) : f
     if (isPromise(resultItem)) {
       promises.push(resultItem.then(curry3(objectSet, result, key, __)))
     } else {
@@ -211,7 +268,48 @@ const functionObjectAll = function (funcs, args) {
   return promises.length == 0 ? result : promiseAll(promises).then(always(result))
 }
 
+const _allValues = function (values) {
+  if (isArray(values)) {
+    return areAnyValuesPromises(values)
+      ? promiseAll(values)
+      : values
+  }
+  return areAnyValuesPromises(values)
+    ? promiseObjectAll(values)
+    : values
+}
+
 const all = function (...args) {
+  if (args.length == 1) {
+    const resolversOrValues = args[0]
+    if (isPromise(resolversOrValues)) {
+      return resolversOrValues.then(_allValues)
+    }
+    if (areAllValuesNonfunctions(resolversOrValues)) {
+      return _allValues(resolversOrValues)
+    }
+    return isArray(resolversOrValues)
+      ? curryArgs2(functionArrayAll, resolversOrValues, __)
+      : curryArgs2(functionObjectAll, resolversOrValues, __)
+  }
+
+  const resolversOrValues = args[args.length - 1]
+  const argValues = args.slice(0, -1)
+
+  if (areAnyValuesPromises(argValues)) {
+    return isArray(resolversOrValues)
+      ? promiseAll(argValues)
+        .then(curry2(functionArrayAll, resolversOrValues, __))
+      : promiseAll(argValues)
+        .then(curry2(functionObjectAll, resolversOrValues, __))
+  }
+
+  return isArray(resolversOrValues)
+    ? functionArrayAll(resolversOrValues, argValues)
+    : functionObjectAll(resolversOrValues, argValues)
+
+  /*
+  ////////////////////////////////////////////////////////////////
   const funcs = args.pop()
   if (args.length == 0) {
     return isArray(funcs)
@@ -228,6 +326,7 @@ const all = function (...args) {
   return isArray(funcs)
     ? functionArrayAll(funcs, args)
     : functionObjectAll(funcs, args)
+  */
 }
 
 all.series = function allSeries(...args) {
