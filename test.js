@@ -1344,6 +1344,14 @@ describe('rubico', () => {
       })(set)
       assert.deepEqual(result1, new Set([100, 80, 60, 40, 20]))
       assert.deepEqual(order1, [100, 80, 60, 40, 20])
+
+      const order2 = []
+      const result2 = await map.series(set, n => {
+        order2.push(n)
+        return n
+      })
+      assert.deepEqual(result2, new Set([100, 80, 60, 40, 20]))
+      assert.deepEqual(order2, [100, 80, 60, 40, 20])
     })
 
     it('maps', async () => {
@@ -1365,6 +1373,14 @@ describe('rubico', () => {
       })(m)
       assert.deepEqual(result1, new Map([['a', 100], ['b', 80], ['c', 60], ['d', 40], ['e', 20]]))
       assert.deepEqual(order1, [100, 80, 60, 40, 20])
+
+      const order2 = []
+      const result2 = await map.series(m, n => {
+        order2.push(n)
+        return n
+      })
+      assert.deepEqual(result2, new Map([['a', 100], ['b', 80], ['c', 60], ['d', 40], ['e', 20]]))
+      assert.deepEqual(order2, [100, 80, 60, 40, 20])
     })
 
     it('objects', async () => {
@@ -1386,6 +1402,14 @@ describe('rubico', () => {
       })(o)
       assert.deepEqual(result1, { a: 100, b: 80, c: 60, d: 40, e: 20 })
       assert.deepEqual(order1, [100, 80, 60, 40, 20])
+
+      const order2 = []
+      const result2 = map.series(n => {
+        order2.push(n)
+        return n
+      })(o)
+      assert.deepEqual(result2, { a: 100, b: 80, c: 60, d: 40, e: 20 })
+      assert.deepEqual(order2, [100, 80, 60, 40, 20])
     })
 
     it('strings', async () => {
@@ -1407,6 +1431,14 @@ describe('rubico', () => {
       })(s)
       assert.deepEqual(result1, '98765')
       assert.deepEqual(order1, ['9', '8', '7', '6', '5'])
+
+      const order2 = []
+      const result2 = map.series(s, n => {
+        order2.push(n)
+        return n
+      })
+      assert.deepEqual(result2, '98765')
+      assert.deepEqual(order2, ['9', '8', '7', '6', '5'])
     })
 
     it('invalid', async () => {
@@ -1426,10 +1458,12 @@ describe('rubico', () => {
   })
 
   describe('map.pool', () => {
-    const asyncSquare = async x => x ** 2
-    const possiblyAsyncSquare = x => x % 2 == 1 ? Promise.resolve(x ** 2) : x ** 2
     it('maps with asynchronous limit for Arrays', async () => {
+      const square = n => n ** 2
+      const asyncSquare = async x => x ** 2
       aok(map.pool(1, asyncSquare)([1, 2, 3, 4, 5]) instanceof Promise)
+      ade(map.pool(await Promise.resolve([1, 2, 3, 4, 5]), 1, square), [1, 4, 9, 16, 25])
+      ade(map.pool(1, square)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
       ade(await map.pool(1, asyncSquare)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
       ade(await map.pool(9, asyncSquare)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
       ade(await map.pool(100, asyncSquare)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
@@ -1437,37 +1471,91 @@ describe('rubico', () => {
       ade(await map.pool(9, asyncSquare)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
     })
     it('alternating Promises', async () => {
-      ade(await map.pool(1, possiblyAsyncSquare)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
-      ade(await map.pool(9, possiblyAsyncSquare)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
+      const alternatingAsyncSquare = x => x % 2 == 1 ? Promise.resolve(x ** 2) : x ** 2
+      ade(await map.pool(1, alternatingAsyncSquare)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
+      ade(await map.pool(9, alternatingAsyncSquare)([1, 2, 3, 4, 5]), [1, 4, 9, 16, 25])
     })
     it('=> [] for empty array', async () => {
-      assert.deepEqual(map.pool(1, asyncSquare)([]), [])
+      const asyncSquare = async x => x ** 2
+      assert.deepEqual(await map.pool(1, asyncSquare)([]), [])
     })
     it('works for arrays of undefined values', async () => {
       ade(await map.pool(1, x => x)(Array(5)), Array(5).fill(undefined))
       ade(await map.pool(1, x => x)(Array(5).fill(null)), Array(5).fill(null))
     })
-    xit('maps with asynchronous limit for Sets', async () => {
+    it('null/invalid', async () => {
+      assert.throws(
+        () => map.pool(null, 1, () => {}),
+        new TypeError(`invalid collection null`)
+      )
+      assert.throws(
+        () => map.pool(1, 1, () => {}),
+        new TypeError(`invalid collection 1`)
+      )
+    })
+    it('maps with asynchronous limit for strings', async () => {
+      const s = 'abcde'
+      const sdupe = 'aabbccddee'
+      const duplicate = s => `${s}${s}`
+      const asyncDuplicate = async s => `${s}${s}`
+      const alternatingAsyncDuplicate = async s =>
+        ['a', 'c', 'e'].includes(s) ? Promise.resolve(`${s}${s}`) : `${s}${s}`
+      aok(map.pool(1, asyncDuplicate)(s) instanceof Promise)
+      ade(await map.pool(1, asyncDuplicate)(s), sdupe)
+      ade(await map.pool(9, asyncDuplicate)(s), sdupe)
+      ade(await map.pool(100, asyncDuplicate)(s), sdupe)
+      ade(await map.pool(1, asyncDuplicate)(s), sdupe)
+      ade(await map.pool(9, asyncDuplicate)(s), sdupe)
+      ade(await map.pool(s, 9, alternatingAsyncDuplicate), sdupe)
+      ade(map.pool(s, 9, duplicate), sdupe)
+    })
+    it('maps with asynchronous limit for Sets', async () => {
+      const square = n => n ** 2
+      const asyncSquare = async x => x ** 2
+      const alternatingAsyncSquare = x => x % 2 == 1 ? Promise.resolve(x ** 2) : x ** 2
       const numbersSet = new Set([1, 2, 3, 4, 5])
       const squaresSet = new Set([1, 4, 9, 16, 25])
       aok(map.pool(1, asyncSquare)(numbersSet) instanceof Promise)
-      ade(await map.pool(1, asyncSquare)(numbersSet), squaresSet)
+      ade(map.pool(numbersSet, 1, square), squaresSet)
+      ade(map.pool(1, square)(numbersSet), squaresSet)
+      ade(await map.pool(numbersSet, 1, asyncSquare), squaresSet)
+      ade(await map.pool(numbersSet, 1, alternatingAsyncSquare), squaresSet)
       ade(await map.pool(9, asyncSquare)(numbersSet), squaresSet)
       ade(await map.pool(100, asyncSquare)(numbersSet), squaresSet)
       ade(await map.pool(1, asyncSquare)(numbersSet), squaresSet)
-      ade(await map.pool(9, asyncSquare)(numbersSet), squaresSet)
+      ade(await map.pool(numbersSet, 9, asyncSquare), squaresSet)
     })
-    xit('maps with asynchronous limit for Maps', async () => {
-      const squareEntry = entry => entry.map(asyncSquare)
-      const asyncSquareEntry = async entry => entry.map(asyncSquare)
+    it('maps with asynchronous limit for Maps', async () => {
+      const square = n => n ** 2
+      const asyncSquare = async x => x ** 2
+      const alternatingAsyncSquare = x => x % 2 == 1 ? Promise.resolve(x ** 2) : x ** 2
       const numbersMap = new Map([[1, 1], [2, 2], [3, 3], [4, 4], [5, 5]])
-      const squaresMap = new Map([[1, 1], [4, 4], [9, 9], [16, 16], [25, 25]])
-      aok(map.pool(1, squareEntry)(numbersMap) instanceof Promise)
-      ade(await map.pool(1, squareEntry)(numbersMap), squaresMap)
-      ade(await map.pool(9, squareEntry)(numbersMap), squaresMap)
-      ade(await map.pool(100, squareEntry)(numbersMap), squaresMap)
-      ade(await map.pool(1, asyncSquareEntry)(numbersMap), squaresMap)
-      ade(await map.pool(9, asyncSquareEntry)(numbersMap), squaresMap)
+      const squaresMap = new Map([[1, 1], [2, 4], [3, 9], [4, 16], [5, 25]])
+      aok(map.pool(1, asyncSquare)(numbersMap) instanceof Promise)
+      ade(map.pool(1, square)(numbersMap), squaresMap)
+      ade(await map.pool(1, asyncSquare)(numbersMap), squaresMap)
+      ade(await map.pool(numbersMap, 1, asyncSquare), squaresMap)
+      ade(await map.pool(numbersMap, 1, alternatingAsyncSquare), squaresMap)
+      ade(await map.pool(9, asyncSquare)(numbersMap), squaresMap)
+      ade(await map.pool(100, asyncSquare)(numbersMap), squaresMap)
+      ade(await map.pool(1, asyncSquare)(numbersMap), squaresMap)
+      ade(await map.pool(9, asyncSquare)(numbersMap), squaresMap)
+    })
+    it('maps with asynchronous limit for Objects', async () => {
+      const square = x => x ** 2
+      const asyncSquare = async x => x ** 2
+      const squareEntry = entry => entry.map(asyncSquare)
+      const alternatingAsyncSquare = x => x % 2 == 1 ? Promise.resolve(x ** 2) : x ** 2
+      const numbersObject = { a: 1, b: 2, c: 3, d: 4, e: 5 }
+      const squaresObject = { a: 1, b: 4, c: 9, d: 16, e: 25 }
+      aok(map.pool(1, asyncSquare)(numbersObject) instanceof Promise)
+      ade(await map.pool(numbersObject, 1, alternatingAsyncSquare), squaresObject)
+      ade(await map.pool(1, asyncSquare)(numbersObject), squaresObject)
+      ade(await map.pool(9, asyncSquare)(numbersObject), squaresObject)
+      ade(await map.pool(100, asyncSquare)(numbersObject), squaresObject)
+      ade(await map.pool(1, asyncSquare)(numbersObject), squaresObject)
+      ade(await map.pool(9, asyncSquare)(numbersObject), squaresObject)
+      ade(map.pool(numbersObject, 9, square), squaresObject)
     })
     it('abides by asynchronous limit for arrays and sets', async () => {
       const numbers = [1, 2, 3, 4, 5, 6]
@@ -1497,23 +1585,20 @@ then(() => {
         new TypeError('invalid collection NaN'),
       )
     })
-    it('throws TypeError on map.pool(lessThan1)', async () => {
-      assert.throws(
-        () => map.pool(1, () => {})('yo'),
-        new TypeError('invalid collection yo'),
-      )
-    })
     it('handles sync errors', async () => {
       assert.throws(
         () => map.pool(1, x => { throw new Error(`throwing ${x}`) })(['yo']),
         new Error('throwing yo')
       )
     })
-    it('handles async errors good', async () => {
+    it('handles async errors', async () => {
       assert.rejects(
         () => map.pool(1, async x => { throw new Error(`throwing ${x}`) })(['yo']),
         new Error('throwing yo'),
       )
+    })
+
+    it('sets', async () => {
     })
   })
 
@@ -3361,6 +3446,12 @@ flatMap(
       })(array)
 
       assert.deepEqual(result1, [100, 80, 60, 40, 20])
+
+      const result2 = []
+      await forEach.series(array, item => {
+        result2.push(item)
+      })
+      assert.deepEqual(result2, [100, 80, 60, 40, 20])
     }).timeout(60000)
 
     it('objects', async () => {
@@ -3370,7 +3461,6 @@ flatMap(
         await sleep(item)
         result.push(item)
       })
-
       assert.deepEqual(result, [100, 80, 60, 40, 20])
 
       const result1 = []
@@ -3378,8 +3468,13 @@ flatMap(
         await sleep(item)
         result1.push(item)
       })(obj)
-
       assert.deepEqual(result1, [100, 80, 60, 40, 20])
+
+      const result2 = []
+      forEach.series(obj, item => {
+        result2.push(item)
+      })
+      assert.deepEqual(result2, [100, 80, 60, 40, 20])
     }).timeout(60000)
 
     it('objects varying async', async () => {
