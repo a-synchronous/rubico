@@ -3,6 +3,22 @@ const all = require('../all')
 
 const suite = new TimeInLoopSuite({ async: true, loopCount: 1e5 })
 
+suite.add('rubico async array all promises', async () => {
+  await all([
+    Promise.resolve(1),
+    Promise.resolve(2),
+    Promise.resolve(3),
+  ])
+})
+
+suite.add('rubico async object all promises', async () => {
+  await all({
+    a: Promise.resolve(1),
+    b: Promise.resolve(2),
+    c: Promise.resolve(3),
+  })
+})
+
 suite.add('rubico async array all', async () => {
   await all(5, [
     async value => value + 1,
