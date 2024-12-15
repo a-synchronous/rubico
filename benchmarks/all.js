@@ -3,6 +3,14 @@ const all = require('../all')
 
 const suite = new TimeInLoopSuite()
 
+suite.add('rubico array all values', async () => {
+  all([1, 2, 3])
+})
+
+suite.add('rubico object all values', async () => {
+  all({ a: 1, b: 2, c: 3 })
+})
+
 suite.add('rubico array all', () => {
   all(5, [
     value => value + 1,
