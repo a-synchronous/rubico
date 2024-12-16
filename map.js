@@ -53,39 +53,39 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  * ```
  */
 
-const _map = function (value, mapper) {
+const _map = function (value, f) {
   if (isArray(value)) {
-    return arrayMap(value, mapper)
+    return arrayMap(value, f)
   }
   if (value == null) {
     return value
   }
 
   if (typeof value.then == 'function') {
-    return value.then(mapper)
+    return value.then(f)
   }
   if (typeof value.map == 'function') {
-    return value.map(mapper)
+    return value.map(f)
   }
   if (typeof value == 'string' || value.constructor == String) {
-    return stringMap(value, mapper)
+    return stringMap(value, f)
   }
   if (value.constructor == Set) {
-    return setMap(value, mapper)
+    return setMap(value, f)
   }
   if (value.constructor == Map) {
-    return mapMap(value, mapper)
+    return mapMap(value, f)
   }
   if (typeof value[symbolIterator] == 'function') {
-    return MappingIterator(value[symbolIterator](), mapper)
+    return MappingIterator(value[symbolIterator](), f)
   }
   if (typeof value[symbolAsyncIterator] == 'function') {
-    return MappingAsyncIterator(value[symbolAsyncIterator](), mapper)
+    return MappingAsyncIterator(value[symbolAsyncIterator](), f)
   }
   if (value.constructor == Object) {
-    return objectMap(value, mapper)
+    return objectMap(value, f)
   }
-  return mapper(value)
+  return f(value)
 }
 
 /**
@@ -106,7 +106,7 @@ const _map = function (value, mapper) {
  * ```
  *
  * @description
- * Applies a synchronous or asynchronous mapper function concurrently to each item of a collection, returning the results in a new collection of the same type. If order is implied by the collection, it is maintained in the result. `map` accepts the following collections:
+ * Applies a synchronous or asynchronous mapper function `f` concurrently to each item of a collection, returning the results in a new collection of the same type. If order is implied by the collection, it is maintained in the result. `map` accepts the following collections:
  *
  *  * `Array`
  *  * `Object`
@@ -115,7 +115,7 @@ const _map = function (value, mapper) {
  *  * `Iterator`/`Generator`
  *  * `AsyncIterator`/`AsyncGenerator`
  *
- * With arrays (type `Array`), `map` applies the mapper function to each item of the array, returning the transformed results in a new array ordered the same as the original array.
+ * With arrays (type `Array`), `map` applies the mapper function `f` to each item of the array, returning the transformed results in a new array ordered the same as the original array.
  *
  * ```javascript [playground]
  * const square = number => number ** 2
@@ -131,7 +131,7 @@ const _map = function (value, mapper) {
  * ) // [1, 4, 9, 16, 25]
  * ```
  *
- * With objects (type `Object`), `map` applies the mapper function to each value of the object, returning the transformed results as values in a new object ordered by the keys of the original object
+ * With objects (type `Object`), `map` applies the mapper function `f` to each value of the object, returning the transformed results as values in a new object ordered by the keys of the original object
  *
  * ```javascript [playground]
  * const square = number => number ** 2
@@ -147,7 +147,7 @@ const _map = function (value, mapper) {
  * ) // { a: 1, b: 4, c: 9, d: 16, e: 25 }
  * ```
  *
- * With sets (type `Set`), `map` applies the mapper function to each value of the set, returning the transformed results unordered in a new set.
+ * With sets (type `Set`), `map` applies the mapper function `f` to each value of the set, returning the transformed results unordered in a new set.
  *
  * ```javascript [playground]
  * const square = number => number ** 2
@@ -163,7 +163,7 @@ const _map = function (value, mapper) {
  * ) // [1, 4, 9, 16, 25]
  * ```
  *
- * With maps (type `Map`), `map` applies the mapper function to each value of the map, returning the results at the same keys in a new map. The entries of the resulting map are in the same order as those of the original map
+ * With maps (type `Map`), `map` applies the mapper function `f` to each value of the map, returning the results at the same keys in a new map. The entries of the resulting map are in the same order as those of the original map
  *
  * ```javascript [playground]
  * const square = number => number ** 2
@@ -179,7 +179,7 @@ const _map = function (value, mapper) {
  * ) // Map { 'a' => 1, 'b' => 4, 'c' => 9, 'd' => 16, 'e' => 25 }
  * ```
  *
- * With iterators (type `Iterator`) or generators (type `Generator`), `map` applies the mapper function lazily to each value of the iterator/generator, creating a new iterator with transformed iterations.
+ * With iterators (type `Iterator`) or generators (type `Generator`), `map` applies the mapper function `f` lazily to each value of the iterator/generator, creating a new iterator with transformed iterations.
  *
  * ```javascript [playground]
  * const capitalize = string => string.toUpperCase()
@@ -199,7 +199,7 @@ const _map = function (value, mapper) {
  * console.log([...ABCGenerator2]) // ['A', 'B', 'C']
  * ```
  *
- * With asyncIterators (type `AsyncIterator`, or `AsyncGenerator`), `map` applies the mapper function lazily to each value of the asyncIterator, creating a new asyncIterator with transformed iterations
+ * With asyncIterators (type `AsyncIterator`, or `AsyncGenerator`), `map` applies the mapper function `f` lazily to each value of the asyncIterator, creating a new asyncIterator with transformed iterations
  *
  * ```javascript [playground]
  * const capitalize = string => string.toUpperCase()
@@ -258,16 +258,16 @@ const map = function (arg0, arg1) {
     : _map(arg0, arg1)
 }
 
-// _mapEntries(value Object|Map, mapper function) -> Object|Map
-const _mapEntries = (value, mapper) => {
+// _mapEntries(value Object|Map, f function) -> Object|Map
+const _mapEntries = (value, f) => {
   if (value == null) {
     throw new TypeError('value is not an Object or Map')
   }
   if (value.constructor == Object) {
-    return objectMapEntries(value, mapper)
+    return objectMapEntries(value, f)
   }
   if (value.constructor == Map) {
-    return mapMapEntries(value, mapper)
+    return mapMapEntries(value, f)
   }
   throw new TypeError('value is not an Object or Map')
 }
@@ -285,10 +285,10 @@ const _mapEntries = (value, mapper) => {
  *   collection EntriesMappable
  * )=>(resultItem Promise|any)
  *
- * map.entries(value Promise|EntriesMappable, mapper Mapper)
+ * map.entries(value Promise|EntriesMappable, f Mapper)
  *   -> Promise|EntriesMappable
  *
- * map.entries(mapper Mapper)(value EntriesMappable)
+ * map.entries(f Mapper)(value EntriesMappable)
  *   -> Promise|EntriesMappable
  * ```
  *
@@ -511,5 +511,25 @@ map.pool = function mapPool(arg0, arg1, arg2) {
     ? arg0.then(curry3(_mapPool, __, arg1, arg2))
     : _mapPool(arg0, arg1, arg2)
 }
+
+/**
+ * @name map.rate
+ *
+ * @synopsis
+ * ```coffeescript [specscript]
+ * type Mappable = Array|Object|Set|Map
+ *
+ * map.rate(
+ *   rate number,
+ *   f (value any)=>Promise|any,
+ * )(collection Mappable) -> result Promise|Array
+ *
+ * map.rate(
+ *   collection Mappable,
+ *   rate number,
+ *   f (value any)=>Promise|any,
+ * ) -> result Promise|Array
+ * ```
+ */
 
 module.exports = map
