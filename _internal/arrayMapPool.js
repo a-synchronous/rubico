@@ -48,7 +48,7 @@ const arrayMapPoolAsync = async function (
  *
  * @synopsis
  * ```coffeescript [specscript]
- * arrayMapPool(array Array, concurrency number, f function) -> Promise|string
+ * arrayMapPool(array Array, concurrency number, f function) -> Promise|array
  * ```
  *
  * @description
