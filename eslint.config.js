@@ -326,8 +326,8 @@ module.exports = {
             'error',
             'never'
         ]
-    }
-    ignores: [
+    },
+    'ignores': [
         'archive',
         'dist',
         'es.js',
