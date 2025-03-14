@@ -251,7 +251,7 @@ For more information please see [CONTRIBUTING.md](/CONTRIBUTING.md)
 rubico is [MIT Licensed](https://github.com/a-synchronous/rubico/blob/master/LICENSE).
 
 # Support
- * minimum Node.js version: 12
+ * minimum Node.js version: 16
  * minimum Chrome version: 63
  * minimum Firefox version: 57
  * minimum Edge version: 79
