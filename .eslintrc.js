@@ -327,4 +327,11 @@ module.exports = {
             'never'
         ]
     }
+    ignores: [
+        'archive',
+        'dist',
+        'es.js',
+        'index.js',
+        'benchmarks',
+    ],
 }
