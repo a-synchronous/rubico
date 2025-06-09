@@ -115,7 +115,7 @@ const _transform = function (collection, transducer, initialValue) {
  *
  * `transform` an async generator into `process.stdout`, a Node.js writable stream that implements `.write`.
  *
- * ```javascript [playground]
+ * ```javascript
  * const { pipe, compose, transform } = rubico
  * // global Transducer
  *
@@ -133,28 +133,14 @@ const _transform = function (collection, transducer, initialValue) {
  *   }
  * }
  *
- * const Stdout = {
- *   concat(...args) {
- *     console.log(...args)
- *     return this
- *   },
- * }
- *
  * transform(
  *   streamRandomInts(10),
  *   compose([
  *     Transducer.map(square),
  *     Transducer.map(toString),
  *   ]),
- *   Stdout,
+ *   process.stdout // 2893600784289441449001600409684644624324923044411225
  * )
- * // 8281
- * // 8836
- * // 1156
- * // 8649
- * // 5625
- * // 2500
- * // ...
  * ```
  *
  * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
