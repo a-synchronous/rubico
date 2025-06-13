@@ -89,8 +89,7 @@ const _filter = function (value, predicate) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Iterable = Iterable|AsyncIterable|Object<value any>
- * type Filterable = Array|Object|Set|Iterator|AsyncIterator
+ * type Filterable = Array|Object|Set|Generator|AsyncGenerator
  *
  * type Predicate = (
  *   value any,
@@ -109,8 +108,8 @@ const _filter = function (value, predicate) {
  *  * `array`
  *  * `object`
  *  * `set`
- *  * `iterator`
- *  * `asyncIterator`
+ *  * `generator`
+ *  * `async generator`
  *
  * The filtering operation is defined by a given predicate function. The predicate function dictates whether a given item from the filterable should be included in the returned filterable.
  *
@@ -165,7 +164,7 @@ const _filter = function (value, predicate) {
  * console.log(result) // Map(3) { 'a' => 1, 'c' => 3, 'e' => 5 }
  * ```
  *
- * For iterators, `filter` returns a lazily filtered iterator. All values that are normally yielded by the iterator that test falsy by the predicate are skipped.
+ * For generators, `filter` returns a lazily filtered generator. All values that are normally yielded by the generator that test falsy by the predicate are skipped.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -192,7 +191,7 @@ const _filter = function (value, predicate) {
  * }
  * ```
  *
- * For async iterators, `filter` returns a lazily filtered async iterator. All values that are normally yielded by the async iterator that test falsy by the predicate are skipped.
+ * For async generators, `filter` returns a lazily filtered async generator. All values that are normally yielded by the async generator that test falsy by the predicate are skipped.
  *
  * ```javascript [playground]
  * const asyncIsOdd = async number => number % 2 == 1
