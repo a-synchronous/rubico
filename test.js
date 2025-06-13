@@ -1511,11 +1511,11 @@ describe('rubico', () => {
     it('null/invalid', async () => {
       assert.throws(
         () => map.pool(null, 1, () => {}),
-        new TypeError('invalid collection null')
+        new TypeError('invalid functor null')
       )
       assert.throws(
         () => map.pool(1, 1, () => {}),
-        new TypeError('invalid collection 1')
+        new TypeError('invalid functor 1')
       )
     })
     it('maps with asynchronous limit for strings', async () => {
@@ -1608,7 +1608,7 @@ then(() => {
     it('throws TypeError on map.pool(NaN)', async () => {
       assert.throws(
         () => map.pool(NaN)(NaN),
-        new TypeError('invalid collection NaN'),
+        new TypeError('invalid functor NaN'),
       )
     })
     it('handles sync errors', async () => {
