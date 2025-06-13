@@ -1635,6 +1635,12 @@ then(() => {
       assert.deepEqual(odds, [1, 3])
     })
 
+    it('promise', async () => {
+      const numbers = Promise.resolve([1, 2, 3])
+      const odds = await filter(numbers, number => number % 2 == 1)
+      assert.deepEqual(odds, [1, 3])
+    })
+
     describe('filter(predicate T=>Promise|boolean)(Array<T>) -> Promise|Array<T>', () => {
       it('predicate T=>boolean', async () => {
         const isOdd = number => number % 2 == 1

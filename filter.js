@@ -3,6 +3,7 @@ const curry2 = require('./_internal/curry2')
 const FilteringIterator = require('./_internal/FilteringIterator')
 const FilteringAsyncIterator = require('./_internal/FilteringAsyncIterator')
 const isArray = require('./_internal/isArray')
+const isPromise = require('./_internal/isPromise')
 const arrayFilter = require('./_internal/arrayFilter')
 const stringFilter = require('./_internal/stringFilter')
 const setFilter = require('./_internal/setFilter')
@@ -236,7 +237,9 @@ const filter = function (arg0, arg1) {
   if (typeof arg0 == 'function') {
     return curry2(_filter, __, arg0)
   }
-  return _filter(arg0, arg1)
+  return isPromise(arg0)
+    ? arg0.then(curry2(_filter, __, arg1))
+    : _filter(arg0, arg1)
 }
 
 module.exports = filter
