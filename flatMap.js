@@ -65,12 +65,13 @@ const _flatMap = function (value, flatMapper) {
  * @synopsis
  * ```coffeescript [specscript]
  * type Monad = Array|String|Set|Iterator|AsyncIterator
+ * type Iterable = Iterable|AsyncIterable|Object<value any>
  *
  * type FlatMapper = (
  *   item any,
  *   indexOrKey string,
  *   m Monad
- * )=>Promise|Monad
+ * )=>Promise|Iterable|any
  *
  * flatMap(m Monad, flatMapper FlatMapper) -> result Promise|Monad
  * flatMap(flatMapper FlatMapper)(m Monad) -> result Promise|Monad
