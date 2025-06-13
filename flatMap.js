@@ -66,8 +66,6 @@ const _flatMap = function (value, flatMapper) {
  * ```coffeescript [specscript]
  * type Monad = Array|String|Set|Iterator|AsyncIterator
  *
- * type Iterable = Iterable|AsyncIterable|Object<value any>
- *
  * type FlatMapper = (
  *   item any,
  *   indexOrKey string,
