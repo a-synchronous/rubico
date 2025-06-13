@@ -98,30 +98,57 @@ const _map = function (value, f) {
  * type Mapper = (
  *   item any,
  *   indexOrKey number|string|any,
- *   f Map|Functor
+ *   ftor Map|Functor
  * )=>(resultItem Promise|any)
  *
- * map(f Promise|Map|Functor, mapper Mapper) -> result Promise|Map|Functor
- * map(mapper Mapper)(f Map|Functor) -> result Promise|Map|Functor
+ * map(ftor Promise|Map|Functor, mapper Mapper) -> result Promise|Map|Functor
+ * map(mapper Mapper)(ftor Map|Functor) -> result Promise|Map|Functor
  * ```
  *
  * @description
- * Applies a mapper function to each item of a functor, returning a functor of the same type with the transformed items. The order of the items is maintained.
+ * Applies a mapper function to each item of a functor, returning a functor of the same type with the mapped items. The order of the items is maintained.
  *
  * The following data types are considered functors:
  *  * `array`
  *  * `object`
  *  * `set`
- *  * `iterator`
- *  * `async iterator`
+ *  * `generator`
+ *  * `async generator`
  *
- * The mapper function defines the transformation of a given item in the provided functor.
+ * The mapper function defines a transformation of a given item.
  *
  * ```javascript
  * const mapper = function (item) {
  *   // resultItem is the result of some operation on item
  *   return resultItem
  * }
+ * ```
+ *
+ * The mapper function signature changes depending on the provided functor.
+ *
+ * If the functor is an array:
+ * ```coffeescript [specscript]
+ * mapper(item any, index number, ftor Array) -> resultItem Promise|any
+ * ```
+ *
+ * If the functor is an object:
+ * ```coffeescript [specscript]
+ * mapper(item any, key string|symbol, ftor Object) -> resultItem Promise|any
+ * ```
+ *
+ * If the functor is a set:
+ * ```coffeescript [specscript]
+ * mapper(item any, item any, ftor Set) -> resultItem Promise|any
+ * ```
+ *
+ * If the functor is a generator:
+ * ```coffeescript [specscript]
+ * mapper(item any) -> resultItem Promise|any
+ * ```
+ *
+ * If the functor is an async generator:
+ * ```coffeescript [specscript]
+ * mapper(item any) -> resultItem Promise|any
  * ```
  *
  * `map` works for arrays.
@@ -146,7 +173,7 @@ const _map = function (value, f) {
  * promise.then(console.log) // [1, 4, 9, 16, 25]
  * ```
  *
- * For objects, `map` applies the mapper function to just the values.
+ * `map` applies the mapper function to just the values of an object.
  *
  * ```javascript [playground]
  * const square = number => number ** 2
@@ -157,7 +184,7 @@ const _map = function (value, f) {
  * console.log(result) // { a: 1, b: 4, c: 9, d: 16, e: 25 }
  * ```
  *
- * For maps, `map` applies the mapper function to the values of the entries.
+ * `map` applies the mapper function to the values of the entries of a map.
  *
  * ```javascript [playground]
  * const square = number => number ** 2
@@ -168,7 +195,7 @@ const _map = function (value, f) {
  * console.log(result) // Map { 'a' => 1, 'b' => 4, 'c' => 9, 'd' => 16, 'e' => 25 }
  * ```
  *
- * For generators, `map` applies the mapper function lazily to each value of the iterator, creating a new iterator with transformed items.
+ * `map` applies the mapper function lazily to each value of a generator, creating a new generator with mapped items.
  *
  * ```javascript [playground]
  * const capitalize = string => string.toUpperCase()
@@ -185,7 +212,7 @@ const _map = function (value, f) {
  * console.log([...ABCGenerator]) // ['A', 'B', 'C']
  * ```
  *
- * For async generators, `map` applies the mapper function lazily to each value of the async generator, creating a new async generator with transformed items.
+ * `map` applies the mapper function lazily to each value of an async generator, creating a new async generator with mapped items.
  *
  * ```javascript [playground]
  * const capitalize = string => string.toUpperCase()
