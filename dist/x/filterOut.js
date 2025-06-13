@@ -1,7 +1,7 @@
 /**
- * rubico v2.6.2
+ * rubico v2.6.6
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2024 Richard Tong
+ * (c) 2019-2025 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 
@@ -321,7 +321,9 @@ const filter = function (arg0, arg1) {
   if (typeof arg0 == 'function') {
     return curry2(_filter, __, arg0)
   }
-  return _filter(arg0, arg1)
+  return isPromise(arg0)
+    ? arg0.then(curry2(_filter, __, arg1))
+    : _filter(arg0, arg1)
 }
 
 const areAnyValuesPromises = function (values) {

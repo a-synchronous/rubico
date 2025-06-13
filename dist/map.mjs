@@ -1,7 +1,7 @@
 /**
- * rubico v2.6.2
+ * rubico v2.6.6
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2024 Richard Tong
+ * (c) 2019-2025 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 
@@ -727,39 +727,39 @@ const mapMapEntries = function (source, mapper) {
     : promiseAll(promises).then(always(result))
 }
 
-const _map = function (value, mapper) {
+const _map = function (value, f) {
   if (isArray(value)) {
-    return arrayMap(value, mapper)
+    return arrayMap(value, f)
   }
   if (value == null) {
     return value
   }
 
   if (typeof value.then == 'function') {
-    return value.then(mapper)
+    return value.then(f)
   }
   if (typeof value.map == 'function') {
-    return value.map(mapper)
+    return value.map(f)
   }
   if (typeof value == 'string' || value.constructor == String) {
-    return stringMap(value, mapper)
+    return stringMap(value, f)
   }
   if (value.constructor == Set) {
-    return setMap(value, mapper)
+    return setMap(value, f)
   }
   if (value.constructor == Map) {
-    return mapMap(value, mapper)
+    return mapMap(value, f)
   }
   if (typeof value[symbolIterator] == 'function') {
-    return MappingIterator(value[symbolIterator](), mapper)
+    return MappingIterator(value[symbolIterator](), f)
   }
   if (typeof value[symbolAsyncIterator] == 'function') {
-    return MappingAsyncIterator(value[symbolAsyncIterator](), mapper)
+    return MappingAsyncIterator(value[symbolAsyncIterator](), f)
   }
   if (value.constructor == Object) {
-    return objectMap(value, mapper)
+    return objectMap(value, f)
   }
-  return mapper(value)
+  return f(value)
 }
 
 const map = function (arg0, arg1) {
@@ -771,16 +771,16 @@ const map = function (arg0, arg1) {
     : _map(arg0, arg1)
 }
 
-// _mapEntries(value Object|Map, mapper function) -> Object|Map
-const _mapEntries = (value, mapper) => {
+// _mapEntries(value Object|Map, f function) -> Object|Map
+const _mapEntries = (value, f) => {
   if (value == null) {
     throw new TypeError('value is not an Object or Map')
   }
   if (value.constructor == Object) {
-    return objectMapEntries(value, mapper)
+    return objectMapEntries(value, f)
   }
   if (value.constructor == Map) {
-    return mapMapEntries(value, mapper)
+    return mapMapEntries(value, f)
   }
   throw new TypeError('value is not an Object or Map')
 }
@@ -826,26 +826,26 @@ map.series = function mapSeries(arg0, arg1) {
     : _mapSeries(arg0, arg1)
 }
 
-const _mapPool = function (collection, concurrency, f) {
-  if (isArray(collection)) {
-    return arrayMapPool(collection, concurrency, f)
+const _mapPool = function (f, concurrency, mapper) {
+  if (isArray(f)) {
+    return arrayMapPool(f, concurrency, mapper)
   }
-  if (collection == null) {
-    throw new TypeError(`invalid collection ${collection}`)
+  if (f == null) {
+    throw new TypeError(`invalid functor ${f}`)
   }
-  if (typeof collection == 'string' || collection.constructor == String) {
-    return stringMapPool(collection, concurrency, f)
+  if (typeof f == 'string' || f.constructor == String) {
+    return stringMapPool(f, concurrency, mapper)
   }
-  if (collection.constructor == Set) {
-    return setMapPool(collection, concurrency, f)
+  if (f.constructor == Set) {
+    return setMapPool(f, concurrency, mapper)
   }
-  if (collection.constructor == Map) {
-    return mapMapPool(collection, concurrency, f)
+  if (f.constructor == Map) {
+    return mapMapPool(f, concurrency, mapper)
   }
-  if (collection.constructor == Object) {
-    return objectMapPool(collection, concurrency, f)
+  if (f.constructor == Object) {
+    return objectMapPool(f, concurrency, mapper)
   }
-  throw new TypeError(`invalid collection ${collection}`)
+  throw new TypeError(`invalid functor ${f}`)
 }
 
 map.pool = function mapPool(arg0, arg1, arg2) {

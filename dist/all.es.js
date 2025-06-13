@@ -1,7 +1,7 @@
 /**
- * rubico v2.6.2
+ * rubico v2.6.6
  * https://github.com/a-synchronous/rubico
- * (c) 2019-2024 Richard Tong
+ * (c) 2019-2025 Richard Tong
  * rubico may be freely distributed under the MIT license.
  */
 
@@ -301,26 +301,6 @@ const all = function (...args) {
   return isArray(resolversOrValues)
     ? functionArrayAll(resolversOrValues, argValues)
     : functionObjectAll(resolversOrValues, argValues)
-
-  /*
-  ////////////////////////////////////////////////////////////////
-  const funcs = args.pop()
-  if (args.length == 0) {
-    return isArray(funcs)
-      ? curryArgs2(functionArrayAll, funcs, __)
-      : curryArgs2(functionObjectAll, funcs, __)
-  }
-
-  if (areAnyValuesPromises(args)) {
-    return isArray(funcs)
-      ? promiseAll(args).then(curry2(functionArrayAll, funcs, __))
-      : promiseAll(args).then(curry2(functionObjectAll, funcs, __))
-  }
-
-  return isArray(funcs)
-    ? functionArrayAll(funcs, args)
-    : functionObjectAll(funcs, args)
-  */
 }
 
 all.series = function allSeries(...args) {
