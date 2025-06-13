@@ -21,13 +21,11 @@ const _transform = function (collection, transducer, initialValue) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Foldable = Iterable|AsyncIterable|Object<value any>
+ * type Foldable = Array|Set|Map|Generator|AsyncGenerator|{ reduce: function }|Object
  *
  * type Reducer = (
  *   accumulator any,
  *   value any,
- *   indexOrKey number|string,
- *   f Foldable,
  * )=>(nextAccumulator Promise|any)
  *
  * type Transducer = Reducer=>Reducer
@@ -35,38 +33,93 @@ const _transform = function (collection, transducer, initialValue) {
  * type Semigroup =
  *   Array|String|Set|TypedArray|{ concat: function }|{ write: function }|Object
  *
- * type SemigroupResolver = (f Foldable)=>Promise|Semigroup
+ * type SemigroupResolver = (fold Foldable)=>Promise|Semigroup
  *
  * transform(
- *   f Foldable,
+ *   fold Foldable,
  *   transducer Transducer,
- *   initialValue? Semigroup|SemigroupResolver,
+ *   initial? Semigroup|SemigroupResolver,
  * ) -> result Promise|Semigroup
  *
  * transform(
  *   transducer Transducer,
- *   initialValue? Semigroup|SemigroupResolver,
- * )(f Foldable) -> result Promise|Semigroup
+ *   initial? Semigroup|SemigroupResolver,
+ * )(fold Foldable) -> result Promise|Semigroup
  * ```
  *
  * @description
- * Transforms a foldable into a semigroup. The type of transformation depends on the type of semigroup provided as the initial value. If the initial value is a function it is treated as a resolver of the semigroup.
+ * Transforms a foldable with [transducers](https://rubico.land/blog/transducers-crash-course-rubico-v2) into a semigroup.
  *
  * The following data types are considered foldables:
- *  * `iterable`
- *  * `async iterable`
- *  * `object`; only the values of the object are transformed
+ *  * `array`
+ *  * `set`
+ *  * `generator`
+ *  * `async generator`
+ *  * `object with .reduce method`
+ *  * `object`
+ *
+ * Transducers, due to their lazy nature, don't have knowledge of the foldable they are transforming. As such, the transducer signature for all foldables is the same:
+ *
+ * ```coffeescript [specscript]
+ * type Reducer = (
+ *   accumulator any,
+ *   value any,
+ * )=>(nextAccumulator Promise|any)
+ *
+ * type Transducer = Reducer=>Reducer
+ * ```
  *
  * The following data types are considered semigroups:
- *  * `array`; concatenation defined by `result.concat(values)`
- *  * `string`; concatenation defined by `result + values`
- *  * `set`; concatenation defined by `result.add(...values)`
- *  * `binary`; concatenation defined by `result.set(prevResult); result.set(values, offset)`
- *  * `{ concat: function }`; concatenation defined by `result.concat(values)`
- *  * `{ write: function }`; concatenation defined by `result.write(item)`
- *  * `object`; concatenation defined by `({ ...result, ...values })`
+ *  * `array`
+ *  * `string`
+ *  * `set`
+ *  * `binary`
+ *  * `{ concat: function }`
+ *  * `{ write: function }`
+ *  * `object`
  *
- * `transform` can transform any of the above collections into any of the other above collections.
+ * The concatenation operation changes depending on the provided semigroup:
+ *
+ * If the semigroup is an array, concatenation is defined as:
+ * ```javascript
+ * nextAccumulator = accumulator.concat(values)
+ * ```
+ *
+ * If the semigroup is a string, concatenation is defined as:
+ * ```javascript
+ * nextAccumulator = accumulator + values
+ * ```
+ *
+ * If the semigroup is a set, concatenation is defined as:
+ * ```javascript
+ * nextAccumulator = accumulator.add(...values)
+ * ```
+ *
+ * If the semigroup is binary, concatenation is defined as:
+ * ```javascript
+ * nextAccumulator = new accumulator.constructor(accumulator.length + values.length)
+ * nextAccumulator.set(accumulator)
+ * nextAccumulator.set(values, accumulator.length)
+ * ```
+ *
+ * If the semigroup is an object with a `.concat` method, concatenation is defined as:
+ * ```javascript
+ * nextAccumulator = accumulator
+ * accumulator.concat(values)
+ * ```
+ *
+ * If the semigroup is an object with a `.write` method, concatenation is defined as:
+ * ```javascript
+ * nextAccumulator = accumulator
+ * accumulator.write(values)
+ * ```
+ *
+ * If the semigroup is a plain object, concatenation is defined as:
+ * ```javascript
+ * nextAccumulator = ({ ...accumulator, ...values })
+ * ```
+ *
+ * `transform` transforms numbers from an array into another array.
  *
  * ```javascript [playground]
  * const square = number => number ** 2
@@ -80,22 +133,22 @@ const _transform = function (collection, transducer, initialValue) {
  *
  * // transform arrays into arrays
  * console.log(
- *   transform(squaredOdds, [])([1, 2, 3, 4, 5])
+ *   transform([1, 2, 3, 4, 5], squaredOdds, [])
  * ) // [1, 9, 25]
  *
  * // transform arrays into strings
  * console.log(
- *   transform(squaredOdds, '')([1, 2, 3, 4, 5])
+ *   transform([1, 2, 3, 4, 5], squaredOdds, '')
  * ) // '1925'
  *
  * // transform arrays into sets
  * console.log(
- *   transform(squaredOdds, new Set())([1, 2, 3, 4, 5])
+ *   transform([1, 2, 3, 4, 5], squaredOdds, new Set())
  * ) // Set (3) { 1, 9, 25 }
  *
  * // transform arrays into typed arrays
  * console.log(
- *   transform(squaredOdds, new Uint8Array())([1, 2, 3, 4, 5]),
+ *   transform([1, 2, 3, 4, 5], squaredOdds, new Uint8Array()),
  * ) // Uint8Array(3) [ 1, 9, 25 ]
  * ```
  *
@@ -111,7 +164,7 @@ const _transform = function (collection, transducer, initialValue) {
  *   },
  * }
  *
- * transform(Transducer.map(square), Stdout)([1, 2, 3, 4, 5])
+ * transform([1, 2, 3, 4, 5], Transducer.map(square), Stdout)
  * // 1
  * // 4
  * // 9
@@ -149,14 +202,28 @@ const _transform = function (collection, transducer, initialValue) {
  * )
  * ```
  *
+ * If the initial value is a function it is treated as a resolver of the semigroup. The resolver may be asynchronous.
+ *
+ * ```javascript [playground]
+ * const promise = transform(
+ *   [1, 2, 3, 4, 5],
+ *   Transducer.map(number => number ** 2),
+ *   async () => ['a'],
+ * )
+ *
+ * promise.then(console.log)
+ * ```
+ *
  * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
  *
  * ```javascript [playground]
- * transform(
+ * const promise = transform(
  *   Promise.resolve([1, 2, 3, 4, 5]),
  *   Transducer.map(n => n ** 2),
  *   [],
- * ).then(console.log) // [1, 4, 9, 16, 25]
+ * )
+ *
+ * promise.then(console.log) // [1, 4, 9, 16, 25]
  * ```
  *
  * @execution series

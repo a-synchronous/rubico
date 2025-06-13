@@ -15,7 +15,7 @@ const __ = require('./_internal/placeholder')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Monad = Array|String|Set|Iterator|AsyncIterator
+ * type Monad = Array|String|Set|Generator|AsyncGenerator
  * type Iterable = Iterable|AsyncIterable|Object<value any>
  *
  * _flatMap(
@@ -64,35 +64,36 @@ const _flatMap = function (value, flatMapper) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Monad = Array|String|Set|Iterator|AsyncIterator
- * type Flattenable = Iterable|AsyncIterable|Object<value any>
+ * type Monad = Array|String|Set|Generator|AsyncGenerator|{ flatMap: string }|{ chain: string }|Object
  *
  * type FlatMapper = (
  *   item any,
- *   indexOrKey string,
- *   m Monad
- * )=>Promise|Flattenable|any
+ *   indexOrKey number|string|any,
+ *   mon Monad
+ * )=>Promise|Monad|any
  *
- * flatMap(m Monad, flatMapper FlatMapper) -> result Promise|Monad
- * flatMap(flatMapper FlatMapper)(m Monad) -> result Promise|Monad
+ * flatMap(mon Monad, flatMapper FlatMapper) -> result Promise|Monad
+ * flatMap(flatMapper FlatMapper)(mon Monad) -> result Promise|Monad
  * ```
  *
  * @description
- * Applies a flatMapper function concurrently to each item of a monad, returning a monad of the same type. A flatMapping operation iterates through each item of a monad and applies the flatMapper function to each item, flattening the result of the execution into the returned monad. The result of an individual execution can be any iterable, async iterable, or object with enumerable values. The flatMapper function may be asynchronous.
+ * Applies a flatMapper function to each item of a monad, returning a monad of the same type.
  *
- * The following data types are considered monads:
+ * A flatMapping operation iterates through each item of a monad and applies the flatMapper function to each item, flattening the result of the execution into the returned monad.
+ *
+ * If the flatMapper is asynchronous, it is executed concurrently. The execution result may be asynchronously iterable, in which case it is muxed into the returned monad.
+ *
+ * The following data types are considered monads, all are flattenable into other monads:
  *  * `array`
  *  * `string`
  *  * `set`
- *  * `iterator`
- *  * `async iterator`
+ *  * `genreator`
+ *  * `async generator`
+ *  * `object with .flatMap method`
+ *  * `object with .chain method`
+ *  * `object`
  *
- * The following data types are considered flattenable:
- *  * `iterable` - the execution result is iterated and each item is added to the result collection
- *  * `async iterable` - the execution result is asynchronously iterated and each item is added to the result collection
- *  * `object` - the execution result values are added to the result collection
- *
- * `flatMap` can flatten various data types.
+ * `flatMap` flattens various data types.
  *
  * ```javascript [playground]
  * const identity = value => value
@@ -100,15 +101,15 @@ const _flatMap = function (value, flatMapper) {
  * flatMap(identity)([
  *   [1, 1], // array
  *   new Set([2, 2]), // set
- *   (function* () { yield 3; yield 3 })(), // generator
- *   (async function* () { yield 7; yield 7 })(), // asyncGenerator
+ *   (function* () { yield 3; yield 3 })(),
+ *   (async function* () { yield 7; yield 7 })(),
  *   { a: 5, b: 5 }, // object
  *   new Uint8Array([8]), // typedArray
  * ]).then(console.log)
  * // [1, 1, 2, 3, 3, 5, 5, 8, 7, 7]
  * ```
  *
- * `flatMap` muxes asynchronous values. Muxing, or asynchronously "mixing", is the process of combining multiple asynchronous sources into one source, with order determined by the asynchronous resolution of the individual items.
+ * Values from async generators are muxed. Muxing, or asynchronously "mixing", is the process of combining multiple asynchronous sources into one source, with order determined by the asynchronous resolution of the individual items.
  *
  * ```javascript [playground]
  * const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
@@ -129,12 +130,12 @@ const _flatMap = function (value, flatMapper) {
  *   yield message
  * }
  *
- * // async is muxed
+ * // values from async generators are muxed
  * flatMap(['foo', 'bar', 'baz'], asyncRepeat3).then(console.log)
  * // ['foo', 'bar', 'baz', 'foo', 'bar', 'baz', 'foo', 'bar', 'baz']
  * ```
  *
- * For arrays (type `Array`), `flatMap` applies the flatMapper function to each item, pushing (`.push`) the items of each execution into a new array.
+ * `flatMap` applies the flatMapper function to each item of an array, flattening the results into a new array.
  *
  * ```javascript [playground]
  * const duplicate = value => [value, value]

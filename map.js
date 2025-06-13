@@ -93,7 +93,7 @@ const _map = function (value, f) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Functor = Array|Object|Set|Map|Generator|AsyncGenerator|{ map: function }
+ * type Functor = Array|Set|Map|Generator|AsyncGenerator|{ map: function }|Object
  *
  * type Mapper = (
  *   item any,
@@ -110,11 +110,12 @@ const _map = function (value, f) {
  *
  * The following data types are considered functors:
  *  * `array`
- *  * `object`
  *  * `set`
  *  * `map`
  *  * `generator`
  *  * `async generator`
+ *  * `object with .map method`
+ *  * `object`
  *
  * The mapper function defines a mapping between a given item in the functor to a resulting item in the returned functor.
  *
@@ -130,11 +131,6 @@ const _map = function (value, f) {
  * If the functor is an array:
  * ```coffeescript [specscript]
  * mapper(item any, index number, ftor Array) -> resultItem Promise|any
- * ```
- *
- * If the functor is an object:
- * ```coffeescript [specscript]
- * mapper(item any, key string, ftor Object) -> resultItem Promise|any
  * ```
  *
  * If the functor is a set:
@@ -155,6 +151,13 @@ const _map = function (value, f) {
  * If the functor is an async generator:
  * ```coffeescript [specscript]
  * mapper(item any) -> resultItem Promise|any
+ * ```
+ *
+ * If the functor is an object with a `.map` method, the mapper function signature is defined externally.
+ *
+ * If the functor is a plain object:
+ * ```coffeescript [specscript]
+ * mapper(item any, key string, ftor Object) -> resultItem Promise|any
  * ```
  *
  * `map` works for arrays.
@@ -384,16 +387,21 @@ const _mapSeries = function (collection, f) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Functor = Array|Object|Set|Map
+ * type MapSeriesFunctor = Array|Object|Set|Map
  *
  * type Mapper = (
  *   value any,
  *   indexOrKey number|string|any,
- *   f Functor
+ *   ftor MapSeriesFunctor,
  * )=>(mappedItem Promise|any)
  *
- * map.series(f Promise|Functor, f Mapper) -> result Functor
- * map.series(f Mapper)(f Functor) -> result Functor
+ * map.series(
+ *   ftor Promise|MapSeriesFunctor,
+ *   mapper Mapper
+ * ) -> result MapSeriesFunctor
+ *
+ * map.series(mapper Mapper)(ftor MapSeriesFunctor)
+ *   -> result MapSeriesFunctor
  * ```
  *
  * @description
@@ -468,18 +476,24 @@ const _mapPool = function (f, concurrency, mapper) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Functor = Array|Object|Set|Map
+ * type MapPoolFunctor = Array|Object|Set|Map
+ *
+ * type Mapper = (
+ *   item any,
+ *   indexOrKey number|string|any,
+ *   ftor Functor
+ * )=>(resultItem Promise|any)
  *
  * map.pool(
+ *   ftor MapPoolFunctor,
  *   concurrency number,
- *   mapper (value any)=>Promise|any,
- * )(f Functor) -> result Promise|Array
- *
- * map.pool(
- *   f Functor,
- *   concurrency number,
- *   mapper (value any)=>Promise|any,
+ *   mapper Mapper
  * ) -> result Promise|Array
+ *
+ * map.pool(
+ *   concurrency number,
+ *   mapper Mapper
+ * )(ftor MapPoolFunctor) -> result Promise|Array
  * ```
  *
  * @description

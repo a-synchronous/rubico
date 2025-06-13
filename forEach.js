@@ -45,13 +45,13 @@ const _forEach = function (collection, callback) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Iterable = Array|Object|Set|Map|Generator|AsyncGenerator|{ forEach: function }
+ * type Iterable = Array|Set|Map|Generator|AsyncGenerator|{ forEach: function }|Object
  *
  * type Callback = (
  *   item any,
  *   indexOrKey number|string|any,
  *   iter Iterable
- * )=>undefined
+ * )=>Promise|undefined
  *
  * forEach(iter Iterable, cb Callback) -> iter Promise|Iterable
  *
@@ -63,23 +63,18 @@ const _forEach = function (collection, callback) {
  *
  * The following data types are considered iterables:
  *  * `array`
- *  * `object`
  *  * `set`
  *  * `map`
  *  * `generator`
  *  * `async generator`
  *  * `object with .forEach method`
+ *  * `object`
  *
  * The callback function signature changes depending on the provided iterable.
  *
  * If the iterable is an array:
  * ```coffeescript [specscript]
  * callback(item any, index number, iter Array) -> Promise|undefined
- * ```
- *
- * If the iterable is an object:
- * ```coffeescript [specscript]
- * callback(item any, key string, iter Object) -> Promise|undefined
  * ```
  *
  * If the iterable is a set:
@@ -102,7 +97,12 @@ const _forEach = function (collection, callback) {
  * callback(item any) -> Promise|undefined
  * ```
  *
- * If the iterable is an object with a `.forEach` method, the callback function signature is defined by the user.
+ * If the iterable is an object with a `.forEach` method, the callback function signature is defined externally.
+ *
+ * If the iterable is a plain object:
+ * ```coffeescript [specscript]
+ * callback(item any, key string, iter Object) -> Promise|undefined
+ * ```
  *
  * If the callback function is asynchronous, it is executed concurrently.
  *
@@ -191,13 +191,13 @@ const _forEachSeries = function (collection, callback) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Iterable = Array|Object|Set|Map|Generator|AsyncGenerator|{ forEach: function }
+ * type Iterable = Array|Set|Map|Generator|AsyncGenerator|{ forEach: function }|Object
  *
  * type Callback = (
  *   item any,
  *   indexOrKey number|string|any,
  *   iter Iterable
- * )=>undefined
+ * )=>Promise|undefined
  *
  * forEach(iter Iterable, cb Callback) -> iter Promise|Iterable
  *

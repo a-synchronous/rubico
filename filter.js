@@ -90,7 +90,7 @@ const _filter = function (value, predicate) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Filterable = Array|Object|Set|Map|Generator|AsyncGenerator
+ * type Filterable = Array|Set|Map|Generator|AsyncGenerator|{ filter: function }|Object
  *
  * type Predicate = (
  *   value any,
@@ -103,14 +103,15 @@ const _filter = function (value, predicate) {
  * ```
  *
  * @description
- * Filters out items from a filterable. Returns a filterable of the same type.
+ * Filters out items from a filterable. Returns a filterable of the same type. The order of the items in the filterable is preserved.
  *
  * The following data types are considered filterable:
  *  * `array`
- *  * `object`
  *  * `set`
  *  * `generator`
  *  * `async generator`
+ *  * `object with .filter method`
+ *  * `object`
  *
  * The filtering operation is defined by a given predicate function. The predicate function dictates whether a given item from the filterable should be included in the returned filterable.
  *
@@ -126,11 +127,6 @@ const _filter = function (value, predicate) {
  * If the filterable is an array:
  * ```coffeescript [specscript]
  * predicate(item any, index number, filt Array) -> condition Promise|boolean|any
- * ```
- *
- * If the filterable is an object:
- * ```coffeescript [specscript]
- * predicate(item any, key string, filt Object) -> condition Promise|boolean|any
  * ```
  *
  * If the filterable is a set:
@@ -153,7 +149,14 @@ const _filter = function (value, predicate) {
  * predicate(item any) -> condition Promise|boolean|any
  * ```
  *
- * `filter` applies a provided predicate function to each item of an array, returning an array of the same type containing only the items that tested true by the predicate. The order of the items is preserved.
+ * If the filterable is an object with a `.filter` method, the predicate function signature is defined externally.
+ *
+ * If the filterable is a plain object:
+ * ```coffeescript [specscript]
+ * predicate(item any, key string, filt Object) -> condition Promise|boolean|any
+ * ```
+ *
+ * `filter` works for arrays.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -164,7 +167,7 @@ const _filter = function (value, predicate) {
  * console.log(result) // [1, 3, 5]
  * ```
  *
- * The predicate may be asynchronous, in which case the returned promise is concurrently resolved for its boolean condition before continuing with the filtering operation.
+ * If the predicate is asynchronous, the returned promise is concurrently resolved for its boolean condition before continuing with the filtering operation.
  *
  * ```javascript [playground]
  * const asyncIsOdd = async number => number % 2 == 1
@@ -175,7 +178,7 @@ const _filter = function (value, predicate) {
  * promise.then(console.log) // [1, 3, 5]
  * ```
  *
- * For objects, `filter` applies the predicate function to just the values.
+ * `filter` applies the predicate function to just the values of an object.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -186,7 +189,7 @@ const _filter = function (value, predicate) {
  * console.log(result) // { a: 1, c: 3, e: 5 }
  * ```
  *
- * For maps, `filter` applies the predicate to the values of the entries. The order of the entries is preserved.
+ * `filter` applies the predicate to the values of the entries of a map.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1

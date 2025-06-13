@@ -24,8 +24,6 @@ const Transducer = {}
  * type Reducer = (
  *   accumulator any,
  *   value any,
- *   indexOrKey? number|string,
- *   collection? Foldable,
  * )=>(nextAccumulator Promise|any)
  *
  * type Transducer = Reducer=>Reducer
@@ -77,8 +75,6 @@ Transducer.map = function transducerMap(mapper) {
  * type Reducer = (
  *   accumulator any,
  *   value any,
- *   indexOrKey? number|string,
- *   collection? Foldable,
  * )=>(nextAccumulator Promise|any)
  *
  * type Transducer = Reducer=>Reducer
@@ -113,8 +109,6 @@ Transducer.filter = function transducerFilter(predicate) {
  * type Reducer = (
  *   accumulator any,
  *   value any,
- *   indexOrKey? number|string,
- *   collection? Foldable,
  * )=>(nextAccumulator Promise|any)
  *
  * type Transducer = Reducer=>Reducer
@@ -149,8 +143,6 @@ Transducer.flatMap = function transducerFlatMap(flatMapper) {
  * type Reducer = (
  *   accumulator any,
  *   value any,
- *   indexOrKey? number|string,
- *   collection? Foldable,
  * )=>(nextAccumulator Promise|any)
  *
  * type Transducer = Reducer=>Reducer
@@ -181,8 +173,6 @@ Transducer.forEach = function transducerForEach(func) {
  * type Reducer = (
  *   accumulator any,
  *   value any,
- *   indexOrKey? number|string,
- *   collection? Foldable,
  * )=>(nextAccumulator Promise|any)
  *
  * type Transducer = Reducer=>Reducer
@@ -218,8 +208,6 @@ Transducer.passthrough = function transducerPassthrough(reducer) {
  * type Reducer = (
  *   accumulator any,
  *   item any,
- *   indexOrKey? number|string,
- *   collection? Foldable,
  * )=>(nextAccumulator Promise|any)
  *
  * type Transducer = Reducer=>Reducer
