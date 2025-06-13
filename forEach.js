@@ -45,20 +45,86 @@ const _forEach = function (collection, callback) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Collection = Array|Iterable|AsyncIterable|{ forEach: function }|Object
+ * type Iterable = Array|Object|Set|Map|Generator|AsyncGenerator|{ forEach: function }
  *
- * forEach(collection Collection, callback function) -> collection Promise|Collection
+ * type Callback = (
+ *   item any,
+ *   indexOrKey number|string|any,
+ *   iter Iterable
+ * )=>undefined
  *
- * forEach(callback function)(collection Collection) -> collection Promise|Collection
+ * forEach(iter Iterable, cb Callback) -> iter Promise|Iterable
+ *
+ * forEach(cb Callback)(iter Iterable) -> iter Promise|Iterable
  * ```
  *
  * @description
- * Execute a callback for each item of a collection, returning a Promise if the execution is asynchronous. Asynchronous execution happens concurrently.
+ * Execute a callback function for each item of an iterable, returning the original iterable unmodified.
+ *
+ * The following data types are considered iterables:
+ *  * `array`
+ *  * `object`
+ *  * `set`
+ *  * `map`
+ *  * `generator`
+ *  * `async generator`
+ *  * `object with .forEach method`
+ *
+ * The callback function signature changes depending on the provided iterable.
+ *
+ * If the iterable is an array:
+ * ```coffeescript [specscript]
+ * callback(item any, index number, iter Array) -> Promise|undefined
+ * ```
+ *
+ * If the iterable is an object:
+ * ```coffeescript [specscript]
+ * callback(item any, key string, iter Object) -> Promise|undefined
+ * ```
+ *
+ * If the iterable is a set:
+ * ```coffeescript [specscript]
+ * callback(item any, key any, iter Set) -> Promise|undefined
+ * ```
+ *
+ * If the iterable is a map:
+ * ```coffeescript [specscript]
+ * callback(item any, key any, filt Map) -> Promise|undefined
+ * ```
+ *
+ * If the iterable is a generator:
+ * ```coffeescript [specscript]
+ * callback(item any) -> Promise|undefined
+ * ```
+ *
+ * If the iterable is an async generator:
+ * ```coffeescript [specscript]
+ * callback(item any) -> Promise|undefined
+ * ```
+ *
+ * If the iterable is an object with a `.forEach` method, the callback function signature is defined by the user.
+ *
+ * If the callback function is asynchronous, it is executed concurrently.
  *
  * ```javascript [playground]
- * forEach([1, 2, 3, 4, 5], console.log) // 1 2 3 4 5
+ * forEach([1, 2, 3, 4, 5], async number => {
+ *   await new Promise(resolve => {
+ *     setTimeout(resolve, 1000)
+ *   })
+ *   console.log(number)
+ * })
+ * ```
  *
- * forEach({ a: 1, b: 2, c: 3 }, console.log) // 1 2 3
+ * `forEach` works for arrays.
+ *
+ * ```javascript [playground]
+ * forEach([1, 2, 3, 4, 5], num => console.log(num)) // 1 2 3 4 5
+ * ```
+ *
+ * `forEach` works for objects.
+ *
+ * ```javascript [playground]
+ * forEach({ a: 1, b: 2, c: 3 }, num => console.log(num)) // 1 2 3
  * ```
  *
  * Omit the data argument for a composable API
@@ -125,20 +191,34 @@ const _forEachSeries = function (collection, callback) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Collection = Array|Iterable|AsyncIterable|{ forEach: function }|Object
+ * type Iterable = Array|Object|Set|Map|Generator|AsyncGenerator|{ forEach: function }
  *
- * forEach.series(collection Collection, callback function) -> collection Promise|Collection
+ * type Callback = (
+ *   item any,
+ *   indexOrKey number|string|any,
+ *   iter Iterable
+ * )=>undefined
  *
- * forEach.series(callback function)(collection Collection) -> collection Promise|Collection
+ * forEach(iter Iterable, cb Callback) -> iter Promise|Iterable
+ *
+ * forEach(cb Callback)(iter Iterable) -> iter Promise|Iterable
  * ```
  *
  * @description
- * Execute a callback for each item of a collection, returning a Promise if the execution is asynchronous. Asynchronous execution happens in series.
+ * [forEach](/docs/forEach) with serial execution.
  *
  * ```javascript [playground]
- * forEach.series([1, 2, 3, 4, 5], console.log) // 1 2 3 4 5
- *
- * forEach.series({ a: 1, b: 2, c: 3 }, console.log) // 1 2 3
+ * forEach.series([1, 2, 3, 4, 5], async number => {
+ *   await new Promise(resolve => {
+ *     setTimeout(resolve, 1000)
+ *   })
+ *   console.log(number)
+ *   // 1
+ *   // 2
+ *   // 3
+ *   // 4
+ *   // 5
+ * })
  * ```
  *
  * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.

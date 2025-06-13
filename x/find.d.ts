@@ -23,12 +23,12 @@ export = find;
  * const users = [
  *   { name: 'John', age: 16 },
  *   { name: 'Jill', age: 32 },
- *   { name: 'George', age: 51 },
+ *   { name: 'John', age: 51 },
  * ]
  *
  * console.log(
  *   find(user => user.age > 50)(users),
- * ) // { name: 'George', age: 51 }
+ * ) // { name: 'John', age: 51 }
  * ```
  */
 declare function find(predicate: any): (value: any) => any;

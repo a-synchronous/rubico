@@ -22,7 +22,7 @@ const equals = require('./_internal/equals')
  * Test for [equality (`==`)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Equality) between two values.
  *
  * ```javascript [playground]
- * const areNamesEqual = eq('Ted', 'George')
+ * const areNamesEqual = eq('Ted', 'John')
  *
  * console.log(areNamesEqual) // false
  * ```
@@ -30,11 +30,11 @@ const equals = require('./_internal/equals')
  * If either of the two values are resolver functions, `eq` returns a function that resolves the values to compare from its arguments.
  *
  * ```javascript [playground]
- * const personIsGeorge = eq(get('name'), 'George')
+ * const personIsJohn = eq(get('name'), 'John')
  *
- * const person = { name: 'George', likes: 'bananas' }
+ * const person = { name: 'John', likes: 'bananas' }
  *
- * if (personIsGeorge(person)) {
+ * if (personIsJohn(person)) {
  *   console.log('The person is george')
  * }
  * ```
@@ -42,8 +42,8 @@ const equals = require('./_internal/equals')
  * `eq` supports a lazy API for composability.
  *
  * ```javascript [playground]
- * pipe({ name: 'George' }, [
- *   eq('George', get('name')),
+ * pipe({ name: 'John' }, [
+ *   eq('John', get('name')),
  *   console.log, // true
  * ])
  * ```

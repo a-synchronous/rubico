@@ -235,7 +235,7 @@ Transducer.passthrough = function transducerPassthrough(reducer) {
  *
  * ```javascript [playground]
  * const db = new Map()
- * db.set('a', { id: 'a', name: 'George' })
+ * db.set('a', { id: 'a', name: 'John' })
  * db.set('b', { id: 'b', name: 'Jane' })
  * db.set('c', { id: 'c', name: 'Jill' })
  * db.set('e', { id: 'e', name: 'Jim' })

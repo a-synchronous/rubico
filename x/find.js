@@ -30,12 +30,12 @@ const asyncIteratorFind = require('../_internal/asyncIteratorFind')
  * const users = [
  *   { name: 'John', age: 16 },
  *   { name: 'Jill', age: 32 },
- *   { name: 'George', age: 51 },
+ *   { name: 'John', age: 51 },
  * ]
  *
  * console.log(
  *   find(user => user.age > 50)(users),
- * ) // { name: 'George', age: 51 }
+ * ) // { name: 'John', age: 51 }
  * ```
  */
 const find = predicate => function finding(value) {

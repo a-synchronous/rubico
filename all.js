@@ -96,7 +96,7 @@ const _allValues = function (values) {
  * const identity = value => value
  *
  * const userbase = new Map()
- * userbase.set('1', { _id: 1, name: 'George' })
+ * userbase.set('1', { _id: 1, name: 'John' })
  *
  * const getUserByID = async id => userbase.get(id)
  *
@@ -110,7 +110,7 @@ const _allValues = function (values) {
  *   }),
  * ])
  *
- * getAndLogUserById('1') // Got user {"_id":1,"name":"George"} by id 1
+ * getAndLogUserById('1') // Got user {"_id":1,"name":"John"} by id 1
  * ```
  *
  * Values may be provided along with functions, in which case they are set on the result object or array directly. If any of these values are promises, they are resolved for their values before being set on the result object or array.

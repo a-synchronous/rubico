@@ -91,11 +91,11 @@ const objectDefaultsDeepFromObject = function (object, defaultObject) {
  * })
  *
  * console.log(defaultUser({
- *   name: 'George',
+ *   name: 'John',
  *   images: [{ url: 'https://via.placeholder.com/150/0000FF/808080%20?Text=Digital.com' }],
  * }))
  * // {
- * //   name: 'George',
+ * //   name: 'John',
  * //   images: [
  * //    { url: 'https://via.placeholder.com/150/0000FF/808080%20?Text=Digital.com' },
  * //    { url: 'https://via.placeholder.com/150' },

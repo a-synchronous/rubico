@@ -22,14 +22,14 @@ export = pluck;
  * import pluck from 'https://unpkg.com/rubico/dist/x/pluck.es.js'
  *
  * const users = [
- *   { name: 'George', age: 33 },
+ *   { name: 'John', age: 33 },
  *   { name: 'Jane', age: 51 },
  *   { name: 'Jim', age: 22 },
  * ]
  *
  * const usernames = pluck(users, 'name')
  *
- * console.log(usernames) // ['George', 'Jane', 'Jim']
+ * console.log(usernames) // ['John', 'Jane', 'Jim']
  * ```
  */
 declare function pluck(...args: any[]): any;

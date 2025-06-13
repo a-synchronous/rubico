@@ -90,20 +90,20 @@ const _filter = function (value, predicate) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Filterable = Array|Object|Set|Generator|AsyncGenerator
+ * type Filterable = Array|Object|Set|Map|Generator|AsyncGenerator
  *
  * type Predicate = (
  *   value any,
- *   indexOrKey number|string,
- *   collection Filterable,
+ *   indexOrKey number|string|any,
+ *   filt Filterable,
  * )=>boolean
  *
- * filter(f Map|Filterable, predicate Predicate) -> result Promise|Map|Filterable
- * filter(predicate Predicate)(f Map|Filterable) -> result Promise|Map|Filterable
+ * filter(filt Filterable, predicate Predicate) -> result Promise|Filterable
+ * filter(predicate Predicate)(filt Filterable) -> result Promise|Filterable
  * ```
  *
  * @description
- * Filter out items from a filterable. Returns a filterable of the same type.
+ * Filters out items from a filterable. Returns a filterable of the same type.
  *
  * The following data types are considered filterable:
  *  * `array`
@@ -116,12 +116,44 @@ const _filter = function (value, predicate) {
  *
  * ```javascript
  * const predicate = function (item) {
- *   // condition is a boolean value involving item
+ *   // condition is the boolean result of the predicate test on item
  *   return condition
  * }
  * ```
  *
- * `filter` applies a provided predicate function to each item of a filterable, returning a filterable of the same type containing only the items with truthy conditions by the predicate. The order of the items is preserved.
+ * The predicate function signature changes depending on the provided filterable.
+ *
+ * If the filterable is an array:
+ * ```coffeescript [specscript]
+ * predicate(item any, index number, filt Array) -> condition Promise|boolean|any
+ * ```
+ *
+ * If the filterable is an object:
+ * ```coffeescript [specscript]
+ * predicate(item any, key string, filt Object) -> condition Promise|boolean|any
+ * ```
+ *
+ * If the filterable is a set:
+ * ```coffeescript [specscript]
+ * predicate(item any, item any, filt Set) -> condition Promise|boolean|any
+ * ```
+ *
+ * If the filterable is a map:
+ * ```coffeescript [specscript]
+ * predicate(item any, key any, filt Map) -> condition Promise|boolean|any
+ * ```
+ *
+ * If the filterable is a generator:
+ * ```coffeescript [specscript]
+ * predicate(item any) -> condition Promise|boolean|any
+ * ```
+ *
+ * If the filterable is an async generator:
+ * ```coffeescript [specscript]
+ * predicate(item any) -> condition Promise|boolean|any
+ * ```
+ *
+ * `filter` applies a provided predicate function to each item of an array, returning an array of the same type containing only the items that tested true by the predicate. The order of the items is preserved.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -132,7 +164,7 @@ const _filter = function (value, predicate) {
  * console.log(result) // [1, 3, 5]
  * ```
  *
- * The predicate may be asynchronous, in which case the returned promise is concurrently resolved for its boolean condition before deciding whether to include the corresponding item in the result.
+ * The predicate may be asynchronous, in which case the returned promise is concurrently resolved for its boolean condition before continuing with the filtering operation.
  *
  * ```javascript [playground]
  * const asyncIsOdd = async number => number % 2 == 1
@@ -165,7 +197,7 @@ const _filter = function (value, predicate) {
  * console.log(result) // Map(3) { 'a' => 1, 'c' => 3, 'e' => 5 }
  * ```
  *
- * For generators, `filter` returns a lazily filtered generator. All values that are normally yielded by the generator that test falsy by the predicate are skipped.
+ * For generators, `filter` returns a lazily filtered generator. All values that are normally yielded by the generator that test false by the predicate are excluded from the returned generator.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -192,7 +224,7 @@ const _filter = function (value, predicate) {
  * }
  * ```
  *
- * For async generators, `filter` returns a lazily filtered async generator. All values that are normally yielded by the async generator that test falsy by the predicate are skipped.
+ * For async generators, `filter` returns a lazily filtered async generator. All values that are normally yielded by the async generator that test falsy by the predicate are excluded from the returned async generator.
  *
  * ```javascript [playground]
  * const asyncIsOdd = async number => number % 2 == 1

@@ -2,7 +2,7 @@ import eq from "./eq";
 
 // just for testing
 
-const areNamesEqual = eq("Ted", "George");
+const areNamesEqual = eq("Ted", "John");
 
 console.log(areNamesEqual); // false
 
@@ -11,13 +11,13 @@ interface Person {
   likes: string;
 }
 
-const personIsGeorge = eq((person: Person) => person.name, "George");
+const personIsJohn = eq((person: Person) => person.name, "John");
 
-console.log(personIsGeorge({ name: "George", likes: "bananas" })); // true
+console.log(personIsJohn({ name: "John", likes: "bananas" })); // true
 
 const compare = eq(
   async (a: number, b: number) => a,
   (person: Person) => person.name
 );
 
-console.log(await compare({ name: "George", likes: "bananas" }));
+console.log(await compare({ name: "John", likes: "bananas" }));

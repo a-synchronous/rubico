@@ -2006,8 +2006,8 @@ describe('rubico', () => {
   describe('_.capitalize', () => {
     aname(_.capitalize, 'capitalize')
     it('capitalizes', async () => {
-      ase(_.capitalize('george'), 'George')
-      ase(_.capitalize('george benson'), 'George benson')
+      ase(_.capitalize('george'), 'John')
+      ase(_.capitalize('george benson'), 'John benson')
       ase(_.capitalize(''), '')
     })
     it('throws TypeError', async () => {

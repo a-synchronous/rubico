@@ -102,14 +102,14 @@ describe('unionWith', () => {
       assert.deepEqual(result, new Set([1, 2, 3]))
     })
     it('predicate item => item.name; values Set<[{...}, {...}, {...}]>; result Promise|<Set<[{...}, {...}]>>', async () => {
-      const people = new Set([{ name: 'George' }, { name: 'George' }, { name: 'Jim' }])
+      const people = new Set([{ name: 'John' }, { name: 'John' }, { name: 'Jim' }])
       const result = unionWith((personA, personB) => personA.name === personB.name)(people)
-      assert.deepEqual(result, new Set([{ name: 'George' }, { name: 'Jim' }]))
+      assert.deepEqual(result, new Set([{ name: 'John' }, { name: 'Jim' }]))
       {
         const p = unionWith(async (personA, personB) => personA.name === personB.name)(people)
         assert(p instanceof Promise)
         const result = await p
-        assert.deepEqual(result, new Set([{ name: 'George' }, { name: 'Jim' }]))
+        assert.deepEqual(result, new Set([{ name: 'John' }, { name: 'Jim' }]))
       }
     })
     it('predicate () => false; values Set<[[1], 2, [3]]>; result Set<[1, 2, 3]>', async () => {

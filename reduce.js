@@ -21,19 +21,19 @@ const _reduce = function (collection, reducer, initialValue) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Foldable = Iterable|AsyncIterable|Object<value any>
+ * type Foldable = Array|Object|Set|Map|Generator|AsyncGenerator
  *
  * type Reducer = (
  *   accumulator any,
  *   item any,
  *   indexOrKey? number|string,
- *   f? Map|Foldable,
+ *   fold? Foldable,
  * )=>(nextAccumulator Promise|any)
  *
- * type Resolver = (f Map|Foldable)=>Promise|any
+ * type Resolver = (fold Foldable)=>Promise|any
  *
  * reduce(
- *   f Map|Foldable,
+ *   fold Foldable,
  *   reducer Reducer,
  *   initialValue? Resolver|any
  * ) -> result Promise|any
@@ -41,30 +41,83 @@ const _reduce = function (collection, reducer, initialValue) {
  * reduce(
  *   reducer Reducer,
  *   initialValue? Resolver|any
- * )(f Map|Foldable) -> result Promise|any
+ * )(fold Foldable) -> result Promise|any
  * ```
  *
  * @description
  * Reduces a map or foldable to a single value.
  *
  * The following data types are considered foldables:
- *  * `iterable`
- *  * `async iterable`
- *  * `object`; only the values of the object are transformed
- *
- * The following data types are considered iterable:
  *  * `array`
+ *  * `object`
  *  * `set`
- *  * `map`
+ *  * `generator`
+ *  * `async generator`
  *
  * The reducing operation is dictated by a provided reducer function, which defines a transformation between the accumulator and a given item of the map or foldable.
  *
  * ```javascript
  * const reducer = function (accumulator, item) {
- *   const nextAccumulator = f(accumulator, item)
+ *   // nextAccumulator is the result of some operation between accumulator and item
+ *   // and becomes the accumulator for the next iteration and invocation of the reducer
  *   return nextAccumulator
- *   // nextAccumulator becomes the accumulator for the next iteration and invocation of the reducer
  * }
+ * ```
+ *
+ * The reducer function signature changes depending on the provided foldable.
+ *
+ * If the foldable is an array:
+ * ```coffeescript [specscript]
+ * reducer(
+ *   accumulator any,
+ *   item any,
+ *   index number,
+ *   fold Array
+ * ) -> nextAccumulator Promise|any
+ * ```
+ *
+ * If the foldable is an object:
+ * ```coffeescript [specscript]
+ * reducer(
+ *   accumulator any,
+ *   item any,
+ *   key string,
+ *   fold Object
+ * ) -> nextAccumulator Promise|any
+ * ```
+ *
+ * If the foldable is a set:
+ * ```coffeescript [specscript]
+ * reducer(
+ *   accumulator any,
+ *   item any
+ * ) -> nextAccumulator Promise|any
+ * ```
+ *
+ * If the foldable is a map:
+ * ```coffeescript [specscript]
+ * reducer(
+ *   accumulator any,
+ *   item any,
+ *   key any,
+ *   fold Map
+ * ) -> nextAccumulator Promise|any
+ * ```
+ *
+ * If the foldable is a generator:
+ * ```coffeescript [specscript]
+ * reducer(
+ *   accumulator any,
+ *   item any
+ * ) -> nextAccumulator Promise|any
+ * ```
+ *
+ * If the foldable is a async generator:
+ * ```coffeescript [specscript]
+ * reducer(
+ *   accumulator any,
+ *   item any
+ * ) -> nextAccumulator Promise|any
  * ```
  *
  * The result of the last invocation of the reducer is the result of the reducing operation. The reducer may be asynchronous and return a promise, in which case the promise is resolved for its value before continuing with the reducing operation.

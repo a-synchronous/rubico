@@ -46,7 +46,7 @@ export = all;
  * const identity = value => value
  *
  * const userbase = new Map()
- * userbase.set('1', { _id: 1, name: 'George' })
+ * userbase.set('1', { _id: 1, name: 'John' })
  *
  * const getUserByID = async id => userbase.get(id)
  *
@@ -60,7 +60,7 @@ export = all;
  *   }),
  * ])
  *
- * getAndLogUserById('1') // Got user {"_id":1,"name":"George"} by id 1
+ * getAndLogUserById('1') // Got user {"_id":1,"name":"John"} by id 1
  * ```
  *
  * @execution concurrent

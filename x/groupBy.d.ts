@@ -24,13 +24,13 @@ export = groupBy;
  *
  * console.log(
  *   groupBy('age')([
- *     { name: 'George', age: 22 },
+ *     { name: 'John', age: 22 },
  *     { name: 'Jane', age: 22 },
  *     { name: 'Henry', age: 23 },
  *   ]),
  * )
  * // Map {
- * //   22 => [{ name: 'George', age: 22 }, { name: 'Jane', age: 22 }],
+ * //   22 => [{ name: 'John', age: 22 }, { name: 'Jane', age: 22 }],
  * //   23 => [{ name: 'Henry', age: 23 }],
  * // }
  * ```

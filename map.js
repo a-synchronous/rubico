@@ -93,16 +93,16 @@ const _map = function (value, f) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Functor = Array|Object|Set|Generator|AsyncGenerator
+ * type Functor = Array|Object|Set|Map|Generator|AsyncGenerator|{ map: function }
  *
  * type Mapper = (
  *   item any,
  *   indexOrKey number|string|any,
- *   ftor Map|Functor
+ *   ftor Functor
  * )=>(resultItem Promise|any)
  *
- * map(ftor Promise|Map|Functor, mapper Mapper) -> result Promise|Map|Functor
- * map(mapper Mapper)(ftor Map|Functor) -> result Promise|Map|Functor
+ * map(ftor Promise|Functor, mapper Mapper) -> result Promise|Functor
+ * map(mapper Mapper)(ftor Functor) -> result Promise|Functor
  * ```
  *
  * @description
@@ -112,14 +112,15 @@ const _map = function (value, f) {
  *  * `array`
  *  * `object`
  *  * `set`
+ *  * `map`
  *  * `generator`
  *  * `async generator`
  *
- * The mapper function defines a transformation of a given item.
+ * The mapper function defines a mapping between a given item in the functor to a resulting item in the returned functor.
  *
  * ```javascript
  * const mapper = function (item) {
- *   // resultItem is the result of some operation on item
+ *   // resultItem is the result of a mapping from item
  *   return resultItem
  * }
  * ```
@@ -133,12 +134,17 @@ const _map = function (value, f) {
  *
  * If the functor is an object:
  * ```coffeescript [specscript]
- * mapper(item any, key string|symbol, ftor Object) -> resultItem Promise|any
+ * mapper(item any, key string, ftor Object) -> resultItem Promise|any
  * ```
  *
  * If the functor is a set:
  * ```coffeescript [specscript]
  * mapper(item any, item any, ftor Set) -> resultItem Promise|any
+ * ```
+ *
+ * If the functor is a map:
+ * ```coffeescript [specscript]
+ * mapper(item any, key any, ftor Map) -> resultItem Promise|any
  * ```
  *
  * If the functor is a generator:

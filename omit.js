@@ -30,8 +30,8 @@ const _omit = function (source, paths) {
  *
  * ```javascript [playground]
  * console.log(
- *   omit({ _id: '1', name: 'George' }, ['_id']),
- * ) // { name: 'George' }
+ *   omit({ _id: '1', name: 'John' }, ['_id']),
+ * ) // { name: 'John' }
  * ```
  *
  * `omit` supports three types of path patterns for nested property access
