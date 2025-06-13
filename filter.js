@@ -108,6 +108,7 @@ const _filter = function (value, predicate) {
  * The following data types are considered to be filterables:
  *  * `array`
  *  * `set`
+ *  * `map`
  *  * `generator`
  *  * `async generator`
  *  * `object with .filter method`

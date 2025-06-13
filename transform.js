@@ -53,6 +53,7 @@ const _transform = function (collection, transducer, initialValue) {
  * The following data types are considered to be foldables:
  *  * `array`
  *  * `set`
+ *  * `map`
  *  * `generator`
  *  * `async generator`
  *  * `object with .reduce method`
