@@ -48,16 +48,16 @@ const _reduce = function (collection, reducer, initialValue) {
  * Reduces a map or foldable to a single value.
  *
  * The following data types are considered foldables:
- *  * `Iterable`
- *  * `AsyncIterable`
- *  * `Object`; only the values of the object are transformed
+ *  * `iterable`
+ *  * `async iterable`
+ *  * `object`; only the values of the object are transformed
  *
  * The following data types are considered iterable:
- *  * `Array`
- *  * `Set`
- *  * `Map`
+ *  * `array`
+ *  * `set`
+ *  * `map`
  *
- * The reducing operation is dictated by a provided reducer function, which defines an operation between the accumulator and a given item of the map or foldable.
+ * The reducing operation is dictated by a provided reducer function, which defines a transformation between the accumulator and a given item of the map or foldable.
  *
  * ```javascript
  * const reducer = function (accumulator, item) {
@@ -68,7 +68,6 @@ const _reduce = function (collection, reducer, initialValue) {
  * ```
  *
  * The result of the last invocation of the reducer is the result of the reducing operation. The reducer may be asynchronous and return a promise, in which case the promise is resolved for its value before continuing with the reducing operation.
- *
  *
  * `reduce` executes a reducer function for each item of the array in order. If no initial value is provided, `reduce` uses the first item of the map or foldable as the initial value and starts iterating from the second item of the map or foldable.
  *
@@ -101,7 +100,7 @@ const _reduce = function (collection, reducer, initialValue) {
  * // ['initial length 5', 1, 4, 9, 16, 25]
  * ```
  *
- * For objects (with constructor `Object`), `reduce` iterates over the object values.
+ * For objects, `reduce` iterates over just the values.
  *
  * ```javascript [playground]
  * const add = (a, b) => a + b
@@ -112,7 +111,7 @@ const _reduce = function (collection, reducer, initialValue) {
  * console.log(result) // 15
  * ```
  *
- * For maps (type `Map`), `reduce` iterates over the values of the map's entries.
+ * For maps, `reduce` iterates over the values of the entries.
  *
  * ```javascript [playground]
  * const add = (a, b) => a + b

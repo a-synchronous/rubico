@@ -65,26 +65,34 @@ const _flatMap = function (value, flatMapper) {
  * @synopsis
  * ```coffeescript [specscript]
  * type Monad = Array|String|Set|Iterator|AsyncIterator
- * type Iterable = Iterable|AsyncIterable|Object<value any>
+ * type Flattenable = Iterable|AsyncIterable|Object<value any>
  *
  * type FlatMapper = (
  *   item any,
  *   indexOrKey string,
  *   m Monad
- * )=>Promise|Iterable|any
+ * )=>Promise|Flattenable|any
  *
  * flatMap(m Monad, flatMapper FlatMapper) -> result Promise|Monad
  * flatMap(flatMapper FlatMapper)(m Monad) -> result Promise|Monad
  * ```
  *
  * @description
- * Applies a flatMapper function concurrently to each item of a collection, creating a new collection of the same type. A flatMapping operation iterates through each item of a collection and applies the flatMapper function to each item, flattening the result of the execution into the result collection. The result of an individual execution can be any iterable, async iterable, or object values iterable collection. The flatMapper function may be asynchronous.
+ * Applies a flatMapper function concurrently to each item of a monad, returning a monad of the same type. A flatMapping operation iterates through each item of a monad and applies the flatMapper function to each item, flattening the result of the execution into the returned monad. The result of an individual execution can be any iterable, async iterable, or object with enumerable values. The flatMapper function may be asynchronous.
  *
- *  * `Iterable` - the execution result is iterated and each item is added to the result collection
- *  * `AsyncIterable` - the execution result is asynchronously iterated and each item is added to the result collection
- *  * `Object` - the execution result values are added to the result collection
+ * The following data types are considered monads:
+ *  * `array`
+ *  * `string`
+ *  * `set`
+ *  * `iterator`
+ *  * `async iterator`
  *
- * The following example demonstrates various execution results being flattened into the same array.
+ * The following data types are considered flattenable:
+ *  * `iterable` - the execution result is iterated and each item is added to the result collection
+ *  * `async iterable` - the execution result is asynchronously iterated and each item is added to the result collection
+ *  * `object` - the execution result values are added to the result collection
+ *
+ * `flatMap` can flatten various data types.
  *
  * ```javascript [playground]
  * const identity = value => value
@@ -100,7 +108,7 @@ const _flatMap = function (value, flatMapper) {
  * // [1, 1, 2, 3, 3, 5, 5, 8, 7, 7]
  * ```
  *
- * A flatMapping operation concatenates onto the resulting collection synchronous values and muxes any asynchronous values. Muxing, or asynchronously "mixing", is the process of combining multiple asynchronous sources into one source, with order determined by the asynchronous resolution of the individual items.
+ * `flatMap` muxes asynchronous values. Muxing, or asynchronously "mixing", is the process of combining multiple asynchronous sources into one source, with order determined by the asynchronous resolution of the individual items.
  *
  * ```javascript [playground]
  * const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
@@ -136,7 +144,7 @@ const _flatMap = function (value, flatMapper) {
  * ) // [1, 1, 2, 2, 3, 3, 4, 4, 5, 5]
  * ```
  *
- * For strings (type `String`), `flatMap` applies the flatMapper function to each character, adding (`+`) the items of each execution into a new string
+ * `flatMap` acts on each character of a string.
  *
  * ```javascript [playground]
  * const duplicate = value => [value, value]
@@ -144,16 +152,6 @@ const _flatMap = function (value, flatMapper) {
  * console.log(
  *   flatMap('12345', duplicate)
  * ) // 1122334455
- * ```
- *
- * For sets (type `Set`), `flatMap` applies the flatMapper function to each item, adding (`.add`) the items of each execution into a new set
- *
- * ```javascript [playground]
- * const pairPlus100 = value => [value, value + 100]
- *
- * console.log(
- *   flatMap(new Set([1, 2, 3, 4, 5]), pairPlus100)
- * ) // Set(10) { 1, 101, 2, 102, 3, 103, 4, 104, 5, 105 }
  * ```
  *
  * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.

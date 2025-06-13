@@ -93,93 +93,82 @@ const _map = function (value, f) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Mappable = Array|Object|Set|Map|Iterator|AsyncIterator
+ * type Functor = Array|Object|Set|Generator|AsyncGenerator
  *
  * type Mapper = (
- *   value any,
+ *   item any,
  *   indexOrKey number|string|any,
- *   collection Mappable
+ *   f Map|Functor
  * )=>(resultItem Promise|any)
  *
- * map(collection Promise|Mappable, f Mapper) -> result Promise|Mappable
- * map(f Mapper)(collection Mappable) -> result Promise|Mappable
+ * map(f Promise|Map|Functor, mapper Mapper) -> result Promise|Map|Functor
+ * map(mapper Mapper)(f Map|Functor) -> result Promise|Map|Functor
  * ```
  *
  * @description
- * Applies a synchronous or asynchronous mapper function `f` concurrently to each item of a collection, returning the results in a new collection of the same type. If order is implied by the collection, it is maintained in the result. `map` accepts the following collections:
+ * Applies a mapper function to each item of a functor, returning a functor of the same type with the transformed items. The order of the items is maintained.
  *
- *  * `Array`
- *  * `Object`
- *  * `Set`
- *  * `Map`
- *  * `Iterator`/`Generator`
- *  * `AsyncIterator`/`AsyncGenerator`
+ * The following data types are considered functors:
+ *  * `array`
+ *  * `object`
+ *  * `set`
+ *  * `iterator`
+ *  * `async iterator`
  *
- * With arrays (type `Array`), `map` applies the mapper function `f` to each item of the array, returning the transformed results in a new array ordered the same as the original array.
+ * The mapper function defines the transformation of a given item in the provided functor.
+ *
+ * ```javascript
+ * const mapper = function (item) {
+ *   // resultItem is the result of some operation on item
+ *   return resultItem
+ * }
+ * ```
+ *
+ * `map` works for arrays.
  *
  * ```javascript [playground]
  * const square = number => number ** 2
  *
  * const array = [1, 2, 3, 4, 5]
  *
- * console.log(
- *   map(array, square)
- * ) // [1, 4, 9, 16, 25]
- *
- * console.log(
- *   map(square)(array)
- * ) // [1, 4, 9, 16, 25]
+ * const result = map(array, square)
+ * console.log(result) // [1, 4, 9, 16, 25]
  * ```
  *
- * With objects (type `Object`), `map` applies the mapper function `f` to each value of the object, returning the transformed results as values in a new object ordered by the keys of the original object
+ * The mapper function may be asynchronous, in which case it is applied concurrently.
+ *
+ * ```javascript [playground]
+ * const asyncSquare = async number => number ** 2
+ *
+ * const array = [1, 2, 3, 4, 5]
+ *
+ * const promise = map(array, asyncSquare)
+ * promise.then(console.log) // [1, 4, 9, 16, 25]
+ * ```
+ *
+ * For objects, `map` applies the mapper function to just the values.
  *
  * ```javascript [playground]
  * const square = number => number ** 2
  *
  * const obj = { a: 1, b: 2, c: 3, d: 4, e: 5 }
  *
- * console.log(
- *   map(square)(obj)
- * ) // { a: 1, b: 4, c: 9, d: 16, e: 25 }
- *
- * console.log(
- *   map(obj, square)
- * ) // { a: 1, b: 4, c: 9, d: 16, e: 25 }
+ * const result = map(obj, square)
+ * console.log(result) // { a: 1, b: 4, c: 9, d: 16, e: 25 }
  * ```
  *
- * With sets (type `Set`), `map` applies the mapper function `f` to each value of the set, returning the transformed results unordered in a new set.
- *
- * ```javascript [playground]
- * const square = number => number ** 2
- *
- * const set = new Set([1, 2, 3, 4, 5])
- *
- * console.log(
- *   map(set, square)
- * ) // [1, 4, 9, 16, 25]
- *
- * console.log(
- *   map(square)(set)
- * ) // [1, 4, 9, 16, 25]
- * ```
- *
- * With maps (type `Map`), `map` applies the mapper function `f` to each value of the map, returning the results at the same keys in a new map. The entries of the resulting map are in the same order as those of the original map
+ * For maps, `map` applies the mapper function to the values of the entries.
  *
  * ```javascript [playground]
  * const square = number => number ** 2
  *
  * const m = new Map([['a', 1], ['b', 2], ['c', 3], ['d', 4], ['e', 5]])
  *
- * console.log(
- *   map(square)(m)
- * ) // Map { 'a' => 1, 'b' => 4, 'c' => 9, 'd' => 16, 'e' => 25 }
- *
- * console.log(
- *   map(m, square)
- * ) // Map { 'a' => 1, 'b' => 4, 'c' => 9, 'd' => 16, 'e' => 25 }
+ * const result = map(m, square)
+ * console.log(result) // Map { 'a' => 1, 'b' => 4, 'c' => 9, 'd' => 16, 'e' => 25 }
  * ```
  *
- * With iterators (type `Iterator`) or generators (type `Generator`), `map` applies the mapper function `f` lazily to each value of the iterator/generator, creating a new iterator with transformed iterations.
+ * For generators, `map` applies the mapper function lazily to each value of the iterator, creating a new iterator with transformed items.
  *
  * ```javascript [playground]
  * const capitalize = string => string.toUpperCase()
@@ -190,16 +179,13 @@ const _map = function (value, f) {
  *
  * const abcGenerator = abcGeneratorFunc()
  * const ABCGenerator = map(abcGeneratorFunc(), capitalize)
- * const ABCGenerator2 = map(capitalize)(abcGeneratorFunc())
  *
  * console.log([...abcGenerator]) // ['a', 'b', 'c']
  *
  * console.log([...ABCGenerator]) // ['A', 'B', 'C']
- *
- * console.log([...ABCGenerator2]) // ['A', 'B', 'C']
  * ```
  *
- * With asyncIterators (type `AsyncIterator`, or `AsyncGenerator`), `map` applies the mapper function `f` lazily to each value of the asyncIterator, creating a new asyncIterator with transformed iterations
+ * For async generators, `map` applies the mapper function lazily to each value of the async generator, creating a new async generator with transformed items.
  *
  * ```javascript [playground]
  * const capitalize = string => string.toUpperCase()
@@ -210,7 +196,6 @@ const _map = function (value, f) {
  *
  * const abcAsyncGenerator = abcAsyncGeneratorFunc()
  * const ABCGenerator = map(abcAsyncGeneratorFunc(), capitalize)
- * const ABCGenerator2 = map(capitalize)(abcAsyncGeneratorFunc())
  *
  * ;(async function () {
  *   for await (const letter of abcAsyncGenerator) {
@@ -221,13 +206,6 @@ const _map = function (value, f) {
  *   }
  *
  *   for await (const letter of ABCGenerator) {
- *     console.log(letter)
- *     // A
- *     // B
- *     // C
- *   }
- *
- *   for await (const letter of ABCGenerator2) {
  *     console.log(letter)
  *     // A
  *     // B
@@ -334,15 +312,15 @@ map.entries = function mapEntries(arg0, arg1) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Mappable = Array|Object|Set|Map
+ * type Functor = Array|Object|Set|Map
  *
  * type Mapper = (
  *   value any,
  *   indexOrKey number|string|any,
- *   collection Mappable
+ *   f Functor
  * )=>(mappedItem Promise|any)
  *
- * _mapSeries(collection Mappable, f Mapper) -> result Promise|Mappable
+ * _mapSeries(f Functor, f Mapper) -> result Promise|Functor
  * ```
  */
 const _mapSeries = function (collection, f) {
@@ -373,16 +351,16 @@ const _mapSeries = function (collection, f) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Mappable = Array|Object|Set|Map
+ * type Functor = Array|Object|Set|Map
  *
  * type Mapper = (
  *   value any,
  *   indexOrKey number|string|any,
- *   collection Mappable
+ *   f Functor
  * )=>(mappedItem Promise|any)
  *
- * map.series(collection Promise|Mappable, f Mapper) -> result Mappable
- * map.series(f Mapper)(collection Mappable) -> result Mappable
+ * map.series(f Promise|Functor, f Mapper) -> result Functor
+ * map.series(f Mapper)(f Functor) -> result Functor
  * ```
  *
  * @description
@@ -425,31 +403,31 @@ map.series = function mapSeries(arg0, arg1) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Mappable = Array|Object|Set|Map
+ * type Functor = Array|Object|Set|Map
  *
- * _mapPool(collection Mappable, concurrency number, f function) -> result Promise|Mappable
+ * _mapPool(f Functor, concurrency number, mapper function) -> result Promise|Functor
  * ```
  */
-const _mapPool = function (collection, concurrency, f) {
-  if (isArray(collection)) {
-    return arrayMapPool(collection, concurrency, f)
+const _mapPool = function (f, concurrency, mapper) {
+  if (isArray(f)) {
+    return arrayMapPool(f, concurrency, mapper)
   }
-  if (collection == null) {
-    throw new TypeError(`invalid collection ${collection}`)
+  if (f == null) {
+    throw new TypeError(`invalid functor ${f}`)
   }
-  if (typeof collection == 'string' || collection.constructor == String) {
-    return stringMapPool(collection, concurrency, f)
+  if (typeof f == 'string' || f.constructor == String) {
+    return stringMapPool(f, concurrency, mapper)
   }
-  if (collection.constructor == Set) {
-    return setMapPool(collection, concurrency, f)
+  if (f.constructor == Set) {
+    return setMapPool(f, concurrency, mapper)
   }
-  if (collection.constructor == Map) {
-    return mapMapPool(collection, concurrency, f)
+  if (f.constructor == Map) {
+    return mapMapPool(f, concurrency, mapper)
   }
-  if (collection.constructor == Object) {
-    return objectMapPool(collection, concurrency, f)
+  if (f.constructor == Object) {
+    return objectMapPool(f, concurrency, mapper)
   }
-  throw new TypeError(`invalid collection ${collection}`)
+  throw new TypeError(`invalid functor ${f}`)
 }
 
 /**
@@ -457,15 +435,15 @@ const _mapPool = function (collection, concurrency, f) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Mappable = Array|Object|Set|Map
+ * type Functor = Array|Object|Set|Map
  *
  * map.pool(
  *   concurrency number,
  *   mapper (value any)=>Promise|any,
- * )(collection Mappable) -> result Promise|Array
+ * )(f Functor) -> result Promise|Array
  *
  * map.pool(
- *   collection Mappable,
+ *   f Functor,
  *   concurrency number,
  *   mapper (value any)=>Promise|any,
  * ) -> result Promise|Array
@@ -517,15 +495,15 @@ map.pool = function mapPool(arg0, arg1, arg2) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Mappable = Array|Object|Set|Map
+ * type Functor = Array|Object|Set|Map
  *
  * map.rate(
  *   rate number,
  *   f (value any)=>Promise|any,
- * )(collection Mappable) -> result Promise|Array
+ * )(f Functor) -> result Promise|Array
  *
  * map.rate(
- *   collection Mappable,
+ *   f Functor,
  *   rate number,
  *   f (value any)=>Promise|any,
  * ) -> result Promise|Array

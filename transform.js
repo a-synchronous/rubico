@@ -53,18 +53,18 @@ const _transform = function (collection, transducer, initialValue) {
  * Transforms a foldable into a semigroup. The type of transformation depends on the type of semigroup provided as the initial value. If the initial value is a function it is treated as a resolver of the semigroup.
  *
  * The following data types are considered foldables:
- *  * `Iterable`
- *  * `AsyncIterable`
- *  * `Object`; only the values of the object are transformed
+ *  * `iterable`
+ *  * `async iterable`
+ *  * `object`; only the values of the object are transformed
  *
  * The following data types are considered semigroups:
- *  * `Array`; concatenation defined by `result.concat(values)`
+ *  * `array`; concatenation defined by `result.concat(values)`
  *  * `string`; concatenation defined by `result + values`
- *  * `Set`; concatenation defined by `result.add(...values)`
- *  * `TypedArray`; concatenation defined by `result.set(prevResult); result.set(values, offset)`
+ *  * `set`; concatenation defined by `result.add(...values)`
+ *  * `binary`; concatenation defined by `result.set(prevResult); result.set(values, offset)`
  *  * `{ concat: function }`; concatenation defined by `result.concat(values)`
  *  * `{ write: function }`; concatenation defined by `result.write(item)`
- *  * `Object`; concatenation defined by `({ ...result, ...values })`
+ *  * `object`; concatenation defined by `({ ...result, ...values })`
  *
  * `transform` can transform any of the above collections into any of the other above collections.
  *
@@ -99,7 +99,7 @@ const _transform = function (collection, transducer, initialValue) {
  * ) // Uint8Array(3) [ 1, 9, 25 ]
  * ```
  *
- * `transform` arrays into objects that implement `.concat`.
+ * `transform` transforms arrays into objects that implement `.concat`.
  *
  * ```javascript [playground]
  * const square = number => number ** 2
@@ -119,7 +119,7 @@ const _transform = function (collection, transducer, initialValue) {
  * // 25
  * ```
  *
- * `transform` an async generator into `process.stdout`, a Node.js writable stream that implements `.write`.
+ * `transform` transforms an async generator into `process.stdout`, a Node.js writable stream that implements `.write`.
  *
  * ```javascript
  * const { pipe, compose, transform } = rubico
