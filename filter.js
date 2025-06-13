@@ -105,7 +105,7 @@ const _filter = function (value, predicate) {
  * @description
  * Filters out items from a filterable. Returns a filterable of the same type. The order of the items in the filterable is preserved.
  *
- * The following data types are considered filterable:
+ * The following data types are considered to be filterables:
  *  * `array`
  *  * `set`
  *  * `generator`

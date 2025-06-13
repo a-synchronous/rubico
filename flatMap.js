@@ -83,7 +83,7 @@ const _flatMap = function (value, flatMapper) {
  *
  * If the flatMapper is asynchronous, it is executed concurrently. The execution result may be asynchronously iterable, in which case it is muxed into the returned monad.
  *
- * The following data types are considered monads, all are flattenable into other monads:
+ * The following data types are considered to be monads, all are flattenable into other monads:
  *  * `array`
  *  * `string`
  *  * `set`

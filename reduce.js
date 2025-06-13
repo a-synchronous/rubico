@@ -47,7 +47,7 @@ const _reduce = function (collection, reducer, initial) {
  * @description
  * Reduces a foldable to a single value.
  *
- * The following data types are considered foldables:
+ * The following data types are considered to be foldables:
  *  * `array`
  *  * `set`
  *  * `generator`

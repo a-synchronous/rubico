@@ -50,7 +50,7 @@ const _transform = function (collection, transducer, initialValue) {
  * @description
  * Transforms a foldable with [transducers](https://rubico.land/blog/transducers-crash-course-rubico-v2) into a semigroup.
  *
- * The following data types are considered foldables:
+ * The following data types are considered to be foldables:
  *  * `array`
  *  * `set`
  *  * `generator`
@@ -69,7 +69,7 @@ const _transform = function (collection, transducer, initialValue) {
  * type Transducer = Reducer=>Reducer
  * ```
  *
- * The following data types are considered semigroups:
+ * The following data types are considered to be semigroups:
  *  * `array`
  *  * `string`
  *  * `set`

@@ -61,7 +61,7 @@ const _forEach = function (collection, callback) {
  * @description
  * Execute a callback function for each item of an iterable, returning the original iterable unmodified.
  *
- * The following data types are considered iterables:
+ * The following data types are considered to be iterables:
  *  * `array`
  *  * `set`
  *  * `map`

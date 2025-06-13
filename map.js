@@ -108,7 +108,7 @@ const _map = function (value, f) {
  * @description
  * Applies a mapper function to each item of a functor, returning a functor of the same type with the mapped items. The order of the items is maintained.
  *
- * The following data types are considered functors:
+ * The following data types are considered to be functors:
  *  * `array`
  *  * `set`
  *  * `map`
