@@ -57,7 +57,7 @@ const _reduce = function (collection, reducer, initialValue) {
  *  * `Set`
  *  * `Map`
  *
- * The reducing operation is dictated by a provided reducer function, which defines a transformation between the accumulator and a given item of the map or foldable.
+ * The reducing operation is dictated by a provided reducer function, which defines an operation between the accumulator and a given item of the map or foldable.
  *
  * ```javascript
  * const reducer = function (accumulator, item) {
