@@ -21,19 +21,19 @@ const _reduce = function (collection, reducer, initialValue) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Foldable = Array|Object|Map|Iterator|AsyncIterator
+ * type Foldable = Iterable|AsyncIterable|Object<value any>
  *
  * type Reducer = (
  *   accumulator any,
- *   value any,
+ *   item any,
  *   indexOrKey? number|string,
- *   collection? Foldable,
+ *   f? Map|Foldable,
  * )=>(nextAccumulator Promise|any)
  *
- * type Resolver = (collection Foldable)=>Promise|any
+ * type Resolver = (f Map|Foldable)=>Promise|any
  *
  * reduce(
- *   collection Foldable,
+ *   f Map|Foldable,
  *   reducer Reducer,
  *   initialValue? Resolver|any
  * ) -> result Promise|any
@@ -41,43 +41,54 @@ const _reduce = function (collection, reducer, initialValue) {
  * reduce(
  *   reducer Reducer,
  *   initialValue? Resolver|any
- * )(collection Foldable) -> result Promise|any
+ * )(f Map|Foldable) -> result Promise|any
  * ```
  *
  * @description
- * Transforms a collection based on a reducer function and optional initial value. In a reducing operation, the result is defined in the beginning as either the initial value if supplied or the first item of the collection. The reducing operation then iterates through the remaining items in the collection, executing the reducer at each iteration to return the result to be used in the next iteration. The final result is the result of the execution of the reducer at the last item of the iteration. `reduce` accepts the following collections:
+ * Reduces a map or foldable to a single value.
  *
+ * The following data types are considered foldables:
+ *  * `Iterable`
+ *  * `AsyncIterable`
+ *  * `Object`; only the values of the object are transformed
+ *
+ * The following data types are considered iterable:
  *  * `Array`
- *  * `Object`
  *  * `Set`
  *  * `Map`
- *  * `Iterator`/`Generator`
- *  * `AsyncIterator`/`AsyncGenerator`
  *
- * For arrays (type `Array`), `reduce` executes the reducer function for each item of the array in order, returning a new result at each execution to be used in the next execution. On each iteration, the reducer is passed the accumulator, the item of the iteration, the index of the item in the array, and a reference to the original array.
+ * The reducing operation is dictated by a provided reducer function, which defines a transformation between the accumulator and a given item of the map or foldable.
+ *
+ * ```javascript
+ * const reducer = function (accumulator, item) {
+ *   const nextAccumulator = f(accumulator, item)
+ *   return nextAccumulator
+ *   // nextAccumulator becomes the accumulator for the next iteration and invocation of the reducer
+ * }
+ * ```
+ *
+ * The result of the last invocation of the reducer is the result of the reducing operation. The reducer may be asynchronous and return a promise, in which case the promise is resolved for its value before continuing with the reducing operation.
+ *
+ *
+ * `reduce` executes a reducer function for each item of the array in order. If no initial value is provided, `reduce` uses the first item of the map or foldable as the initial value and starts iterating from the second item of the map or foldable.
  *
  * ```javascript [playground]
  * const max = (a, b) => a > b ? a : b
  *
- * console.log(
- *   reduce([1, 3, 5, 4, 2], max)
- * ) // 5
- *
- * console.log(
- *   reduce(max)([1, 3, 5, 4, 2])
- * ) // 5
+ * const result = reduce([1, 3, 5, 4, 2], max)
+ * console.log(result) // 5
  * ```
  *
- * If an optional initial value is provided, the result starts as the provided initial value rather than the first item of the collection.
+ * If an initial value is provided, the accumulator starts as the initial value rather than the first item of the map or foldable.
  *
  * ```javascript [playground]
  * const add = (a, b) => a + b
  *
- * console.log(reduce([1, 2, 3, 4, 5], add, 0)) // 15
- * console.log(reduce(add, 0)([1, 2, 3, 4, 5])) // 15
+ * const result = reduce([1, 2, 3, 4, 5], add, 0)
+ * console.log(result) // 15
  * ```
  *
- * If the initialization parameter is a function, it is treated as a resolver and called with the arguments to resolve the initial value.
+ * If the initialization parameter is a function, it is treated as a resolver of the initial value and called with the map or foldable.
  *
  * ```javascript [playground]
  * const concatSquares = (array, value) => array.concat(value ** 2)
@@ -86,90 +97,42 @@ const _reduce = function (collection, reducer, initialValue) {
  *
  * const array = [1, 2, 3, 4, 5]
  *
- * console.log(reduce(concatSquares, contrivedInitializer)(array))
- * // ['initial length 5', 1, 4, 9, 16, 25]
  * console.log(reduce(array, concatSquares, contrivedInitializer))
  * // ['initial length 5', 1, 4, 9, 16, 25]
  * ```
  *
- * For objects (type `Object`), `reduce` executes the reducer function for each value of the object. On each iteration, the reducer is passed the accumulator, the object value, the key of the object value, and a reference to the original object.
+ * For objects (with constructor `Object`), `reduce` iterates over the object values.
  *
  * ```javascript [playground]
  * const add = (a, b) => a + b
  *
  * const obj = { a: 1, b: 2, c: 3, d: 4, e: 5 }
  *
- * console.log(
- *   reduce(obj, add)
- * ) // 15
- *
- * console.log(
- *   reduce(add)(obj)
- * ) // 15
+ * const result = reduce(obj, add)
+ * console.log(result) // 15
  * ```
  *
- * For sets (type `Set`), `reduce` executes the reducer function for each item of the set. On each iteration, the reducer is passed the accumulator and item of the set.
- *
- * ```javascript [playground]
- * const add = (a, b) => a + b
- *
- * const set = new Set([1, 2, 3, 4, 5])
- *
- * console.log(
- *   reduce(set, add)
- * ) // 15
- *
- * console.log(
- *   reduce(add)(set)
- * ) // 15
- * ```
- *
- * For maps (type `Map`), `reduce` executes the reducer function for each value of each entry of the map. On each iteration, the reducer is passed the accumulator, the map item, the key of the map item, and a reference to the original map.
+ * For maps (type `Map`), `reduce` iterates over the values of the map's entries.
  *
  * ```javascript [playground]
  * const add = (a, b) => a + b
  *
  * const m = new Map([['a', 1], ['b', 2], ['c', 3], ['d', 4], ['e', 5]])
  *
- * console.log(
- *   reduce(m, add)
- * ) // 15
- *
- * console.log(
- *   reduce(add)(m)
- * ) // 15
+ * const result = reduce(m, add)
+ * console.log(result) // 15
  * ```
  *
- * For iterators (type `Iterator`) and generators (type `Generator`), `reduce` executes the reducer function for each value of the iterator/generator. On each iteration, the reducer is passed the accumulator and the item of the iteration. The iterator/generator is consumed in the process.
- *
- * ```javascript [playground]
- * const add = (a, b) => a + b
- *
- * const generate12345 = function* () {
- *   yield 1; yield 2; yield 3; yield 4; yield 5
- * }
- *
- * console.log(
- *   reduce(generate12345(), add)
- * ) // 15
- *
- * console.log(
- *   reduce(add)(generate12345())
- * ) // 15
- * ```
- *
- * For asyncIterators (type `AsyncIterator`) and asyncGenerators (type `AsyncGenerator`), `reduce` executes the reducer function for each value of the asyncIterator/asyncGenerator. On each iteration, the reducer is passed the accumulator and the item of the async iteration. The asyncIterator/asyncGenerator is consumed in the process.
+ * `reduce` works for async iterators.
  *
  * ```javascript [playground]
  * const asyncAdd = async (a, b) => a + b
  *
- * const asyncGenerate12345 = async function* () {
+ * const asyncGenerate = async function* () {
  *   yield 1; yield 2; yield 3; yield 4; yield 5
  * }
  *
- * reduce(asyncGenerate12345(), asyncAdd).then(console.log) // 15
- *
- * reduce(asyncAdd)(asyncGenerate12345()).then(console.log) // 15
+ * reduce(asyncGenerate(), asyncAdd).then(console.log) // 15
  * ```
  *
  * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
