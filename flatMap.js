@@ -15,13 +15,13 @@ const __ = require('./_internal/placeholder')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type FlatMappable = Array|String|Set|Iterator|AsyncIterator
+ * type Monad = Array|String|Set|Iterator|AsyncIterator
  * type Iterable = Iterable|AsyncIterable|Object<value any>
  *
  * _flatMap(
- *   value FlatMappable,
+ *   m Monad,
  *   flatMapper (item any)=>Promise|Iterable,
- * ) -> result Promise|FlatMappable
+ * ) -> result Promise|Monad
  * ```
  */
 const _flatMap = function (value, flatMapper) {
@@ -64,18 +64,18 @@ const _flatMap = function (value, flatMapper) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type FlatMappable = Array|String|Set|Iterator|AsyncIterator
+ * type Monad = Array|String|Set|Iterator|AsyncIterator
  *
  * type Iterable = Iterable|AsyncIterable|Object<value any>
  *
  * type FlatMapper = (
  *   item any,
  *   indexOrKey string,
- *   collection FlatMappable
- * )=>Promise|FlatMappable
+ *   m Monad
+ * )=>Promise|Monad
  *
- * flatMap(collection FlatMappable, flatMapper FlatMapper) -> result Promise|FlatMappable
- * flatMap(flatMapper FlatMapper)(collection FlatMappable) -> result Promise|FlatMappable
+ * flatMap(m Monad, flatMapper FlatMapper) -> result Promise|Monad
+ * flatMap(flatMapper FlatMapper)(m Monad) -> result Promise|Monad
  * ```
  *
  * @description
