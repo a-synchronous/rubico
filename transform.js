@@ -26,32 +26,38 @@ const _transform = function (collection, transducer, initialValue) {
  * type Reducer = (
  *   accumulator any,
  *   value any,
- *   indexOrKey? number|string,
- *   collection? Foldable,
+ *   indexOrKey number|string,
+ *   f Foldable,
  * )=>(nextAccumulator Promise|any)
  *
  * type Transducer = Reducer=>Reducer
  *
- * type Transformable =
+ * type Semigroup =
  *   Array|String|Set|TypedArray|{ concat: function }|{ write: function }|Object
  *
- * type TransformableResolver = (collection Foldable)=>Promise|Transformable
+ * type SemigroupResolver = (f Foldable)=>Promise|Semigroup
  *
  * transform(
- *   collection Foldable,
+ *   f Foldable,
  *   transducer Transducer,
- *   initialValue? Transformable|TransformableResolver,
- * ) -> result Promise|Transformable
+ *   initialValue? Semigroup|SemigroupResolver,
+ * ) -> result Promise|Semigroup
  *
  * transform(
  *   transducer Transducer,
- *   initialValue? Transformable|TransformableResolver,
- * )(collection Foldable) -> result Promise|Transformable
+ *   initialValue? Semigroup|SemigroupResolver,
+ * )(f Foldable) -> result Promise|Semigroup
  * ```
  *
  * @description
- * Transforms a transformable collection into any other transformable collection. The type of transformation depends on the collection provided by the initial value. If the initial is a function it is used as a resolver for the provided collection. `transform` accepts transformable collections, or collections that support a concatenation operation:
+ * Transforms a foldable into a semigroup. The type of transformation depends on the type of semigroup provided as the initial value. If the initial value is a function it is treated as a resolver of the semigroup.
  *
+ * The following data types are considered foldables:
+ *  * `Iterable`
+ *  * `AsyncIterable`
+ *  * `Object`; only the values of the object are transformed
+ *
+ * The following data types are considered semigroups:
  *  * `Array`; concatenation defined by `result.concat(values)`
  *  * `string`; concatenation defined by `result + values`
  *  * `Set`; concatenation defined by `result.add(...values)`
