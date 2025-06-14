@@ -10,22 +10,37 @@ const funcConcat = require('./_internal/funcConcat')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * compose(funcs Array<function>)(...args) -> result Promise|any
+ * funcs Array<function>
+ * args Array<any>
+ * argsWithPromises Array<Promise|any>
  *
- * compose(...args, funcs Array<function>) -> result Promise|any
+ * compose(funcs)(...args) -> result Promise|any
+ *
+ * compose(...argsWithPromises, funcs) -> result Promise|any
+ *
+ * compose(...funcs)(...args) -> result Promise|any
  * ```
  *
  * @description
- * Creates a function composition from an array of functions, where each function passes its return value as a single argument to the previous function until all functions have executed. The last function is called with the arguments to the composition, while the result of a function composition is the return value of its first function. If any function of the composition is asynchronous, the result of the execution is a Promise. `compose` is effectively `pipe` in reverse.
+ * Creates a function composition from multiple functions. Each function in the composition is evaluated starting from the last function in the composition in series, passing its return value as an argument to the previous function. The result of a composition execution is the return value of the first function in the composition. If any function in the composition is asynchronous, the result of the composition execution is a Promise.
  *
  * ```javascript [playground]
- * const f = number => number * 2
+ * const f = x => x * 2
+ * const g = x => x + 3
  *
- * const g = number => number + 3
+ * const result = compose(5, [f, g])
+ * console.log(result) // 16
+ * ```
  *
- * console.log(
- *   compose(5, [f, g]),
- * ) // 16
+ * `compose` supports a mathematical API
+ *
+ * ```javascript [playground]
+ * const f = x => x * 2
+ * const g = x => x + 1
+ *
+ * const composition = compose(f, g)
+ *
+ * console.log(composition(1)) // 4
  * ```
  *
  * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
@@ -43,6 +58,10 @@ const funcConcat = require('./_internal/funcConcat')
  *  * [tryCatch](/docs/tryCatch)
  */
 const compose = function (...args) {
+  if (typeof args[0] == 'function') {
+    return args.reduceRight(funcConcat)
+  }
+
   const funcs = args.pop()
   const composition = funcs.reduceRight(funcConcat)
 

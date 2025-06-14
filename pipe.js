@@ -10,13 +10,19 @@ const __ = require('./_internal/placeholder')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * pipe(funcs Array<function>)(...args) -> result Promise|any
+ * funcs Array<function>
+ * args Array<any>
+ * argsWithPromises Array<Promise|any>
  *
- * pipe(...args, funcs Array<function>) -> result Promise|any
+ * pipe(funcs)(...args) -> result Promise|any
+ *
+ * pipe(...argsWithPromises, funcs Array<function>) -> result Promise|any
+ *
+ * pipe(...funcs)(...args) -> result Promise|any
  * ```
  *
  * @description
- * Creates a function pipeline from an array of functions, where each function passes its return value as a single argument to the next function until all functions have executed. The first function is called with the arguments to the pipeline, while the result of the pipeline execution is the return of its last function. If any function of the pipeline is asynchronous, the result of the execution is a Promise.
+ * Creates a function pipeline from multiple functions. Each function in the pipeline is evaluated in series, passing its return value as an argument to the next function. The result of a pipeline execution is the return value of the last function in the pipeline. If any function in the pipeline is asynchronous, the result of the pipeline execution is a Promise.
  *
  * ```javascript [playground]
  * const syncAdd123 = pipe([
@@ -34,6 +40,17 @@ const __ = require('./_internal/placeholder')
  * ])
  *
  * asyncAdd123(5).then(console.log) // 11
+ * ```
+ *
+ * `pipe` supports a mathematical API
+ *
+ * ```javascript [playground]
+ * const appendB = x => x + 'b'
+ * const appendC = x => x + 'c'
+ *
+ * const appendBC = pipe(appendB, appendC)
+ *
+ * console.log(appendBC(a)) // 'abc'
  * ```
  *
  * When passed any amount of arguments before the array of functions, `pipe` executes eagerly; the array of functions is immediately invoked with the supplied arguments.
@@ -67,6 +84,10 @@ const __ = require('./_internal/placeholder')
  * @since 1.6.0
  */
 const pipe = function (...args) {
+  if (typeof args[0] == 'function') {
+    return args.reduce(funcConcat)
+  }
+
   const funcs = args.pop()
   const pipeline = funcs.reduce(funcConcat)
 

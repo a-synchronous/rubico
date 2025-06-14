@@ -272,6 +272,12 @@ describe('rubico', () => {
       ])
       assert.deepEqual(array, [3, 6, 9])
     })
+    it('mathematical API', async () => {
+      const appendB = x => x + 'b'
+      const appendC = x => x + 'c'
+      const appendBC = pipe(appendB, appendC)
+      assert.equal(appendBC('a'), 'abc')
+    })
     it('behaves eagerly and resolves any amount of Promise arguments before the array of functions', async () => {
       const array = await pipe(Promise.resolve(1), 2, Promise.resolve(3), [
         Array.of,
@@ -330,14 +336,6 @@ describe('rubico', () => {
       const arr = []
       for await (const item of iter) arr.push(item)
       assert.deepEqual(arr, [1, 9, 25])
-    })
-    it('throws a TypeError if first argument not an array', async () => {
-      assert.throws(
-        () => {
-          pipe(() => 1, undefined, () => 2)()
-        },
-        new TypeError('funcs.reduce is not a function')
-      )
     })
     it('throws a TypeError if passed less than one function', async () => {
       assert.throws(
@@ -404,6 +402,17 @@ describe('rubico', () => {
         ]),
         [9, 25, 49],
       )
+    })
+
+    it('mathematical API', async () => {
+      const f = x => x * 2
+      const g = x => x + 1
+
+      const composition = compose(f, g)
+
+      assert.equal(composition(1), 4)
+      assert.equal(composition(2), 6)
+      assert.equal(composition(3), 8)
     })
   })
 
