@@ -265,6 +265,14 @@ const _filter = function (value, predicate) {
  * // [1, 3, 5]
  * ```
  *
+ * See also:
+ *  * [forEach](/docs/forEach)
+ *  * [map](/docs/map)
+ *  * [reduce](/docs/reduce)
+ *  * [transform](/docs/transform)
+ *  * [flatMap](/docs/flatMap)
+ *  * [some](/docs/some)
+ *
  * @execution concurrent
  *
  * @transducing

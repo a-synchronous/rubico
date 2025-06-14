@@ -227,6 +227,14 @@ const _transform = function (collection, transducer, initialValue) {
  * promise.then(console.log) // [1, 4, 9, 16, 25]
  * ```
  *
+ * See also:
+ *  * [forEach](/docs/forEach)
+ *  * [map](/docs/map)
+ *  * [filter](/docs/filter)
+ *  * [reduce](/docs/reduce)
+ *  * [flatMap](/docs/flatMap)
+ *  * [some](/docs/some)
+ *
  * @execution series
  *
  * @transducing

@@ -46,6 +46,13 @@ const _tap = function (args, f) {
  * ```javascript [playground]
  * tap(Promise.resolve(1), Promise.resolve(2), 3, console.log) // 1 2 3
  * ```
+ *
+ * See also:
+ *  * [pipe](/docs/pipe)
+ *  * [compose](/docs/compose)
+ *  * [tap.if](/docs/tap.if)
+ *  * [switchCase](/docs/switchCase)
+ *  * [tryCatch](/docs/tryCatch)
  */
 const tap = function (...args) {
   const f = args.pop()
@@ -116,6 +123,13 @@ const _tapIf = function (predicate, f, args) {
  * tap.if(Promise.resolve(1), n => n < 5, console.log) // 1
  * tap.if(Promise.resolve(6), n => n < 5, console.log)
  * ```
+ *
+ * See also:
+ *  * [pipe](/docs/pipe)
+ *  * [compose](/docs/compose)
+ *  * [tap](/docs/tap)
+ *  * [switchCase](/docs/switchCase)
+ *  * [tryCatch](/docs/tryCatch)
  */
 
 tap.if = function (...args) {

@@ -69,6 +69,15 @@ const _omit = function (source, paths) {
  * omit(Promise.resolve({ a: 1, b: 2, c: 3 }), ['a', 'b']).then(console.log)
  * // { c: 3 }
  * ```
+ *
+ * See also:
+ *  * [pipe](/docs/pipe)
+ *  * [all](/docs/all)
+ *  * [assign](/docs/assign)
+ *  * [get](/docs/get)
+ *  * [set](/docs/set)
+ *  * [pick](/docs/pick)
+ *  * [forEach](/docs/forEach)
  */
 const omit = function (arg0, arg1) {
   if (arg1 == null) {

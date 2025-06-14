@@ -84,6 +84,15 @@ const _assign = function (object, funcs) {
  * }).then(console.log)
  * ```
  *
+ * See also:
+ *  * [pipe](/docs/pipe)
+ *  * [all](/docs/all)
+ *  * [get](/docs/get)
+ *  * [set](/docs/set)
+ *  * [pick](/docs/pick)
+ *  * [omit](/docs/omit)
+ *  * [forEach](/docs/forEach)
+ *
  * @execution concurrent
  */
 const assign = function (arg0, arg1) {

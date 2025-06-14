@@ -69,6 +69,15 @@ const _pick = function (source, keys) {
  * pick(Promise.resolve({ a: 1, b: 2, c: 3 }), ['a', 'b']).then(console.log)
  * // { a: 1, b: 2 }
  * ```
+ *
+ * See also:
+ *  * [pipe](/docs/pipe)
+ *  * [all](/docs/all)
+ *  * [assign](/docs/assign)
+ *  * [get](/docs/get)
+ *  * [set](/docs/set)
+ *  * [omit](/docs/omit)
+ *  * [forEach](/docs/forEach)
  */
 const pick = function (arg0, arg1) {
   if (arg1 == null) {

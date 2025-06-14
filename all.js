@@ -141,6 +141,15 @@ const _allValues = function (values) {
  * ]).then(console.log) // [2, 3, 4]
  * ```
  *
+ * See also:
+ *  * [pipe](/docs/pipe)
+ *  * [assign](/docs/assign)
+ *  * [get](/docs/get)
+ *  * [set](/docs/set)
+ *  * [pick](/docs/pick)
+ *  * [omit](/docs/omit)
+ *  * [forEach](/docs/forEach)
+ *
  * @execution concurrent
  */
 const all = function (...args) {

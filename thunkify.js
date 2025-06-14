@@ -22,6 +22,14 @@ const funcApply = require('./_internal/funcApply')
  *
  * console.log(thunkAdd12()) // 3
  * ```
+ *
+ * See also:
+ *  * [eq](/docs/eq)
+ *  * [always](/docs/always)
+ *  * [curry](/docs/curry)
+ *  * [__](/docs/__)
+ *  * [Transducer.map](/docs/Transducer.map)
+ *
  */
 const thunkify = (func, ...args) => function thunk() {
   if (areAnyValuesPromises(args)) {

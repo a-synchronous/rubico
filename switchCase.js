@@ -91,6 +91,12 @@ const curryArgs3 = require('./_internal/curryArgs3')
  * ]) // 1 + 2 + 3 == 6
  * ```
  *
+ * See also:
+ *  * [pipe](/docs/pipe)
+ *  * [tap.if](/docs/tap.if)
+ *  * [tryCatch](/docs/tryCatch)
+ *  * [all](/docs/all)
+ *
  * @execution series
  */
 const switchCase = (...args) => {

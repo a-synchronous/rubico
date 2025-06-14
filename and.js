@@ -140,6 +140,12 @@ const areAllPredicatesTruthy = function (args, predicates) {
  * ]).then(console.log) // true
  * ```
  *
+ * See also:
+ *  * [some](/docs/some)
+ *  * [or](/docs/or)
+ *  * [not](/docs/not)
+ *  * [eq](/docs/eq)
+ *
  * @execution series
  *
  * @note ...args slows down here by an order of magnitude

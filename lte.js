@@ -53,6 +53,15 @@ const lessThanOrEqual = require('./_internal/lessThanOrEqual')
  * ```javascript [playground]
  * lte(Promise.resolve({ a: 1, b: 1 }), get('a'), get('b')).then(console.log) // true
  * ```
+ *
+ * See also:
+ *  * [and](/docs/and)
+ *  * [eq](/docs/eq)
+ *  * [lt](/docs/lt)
+ *  * [gt](/docs/gt)
+ *  * [gte](/docs/gte)
+ *  * [thunkify](/docs/thunkify)
+ *
  */
 const lte = ComparisonOperator(lessThanOrEqual)
 

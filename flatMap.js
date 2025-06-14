@@ -162,6 +162,14 @@ const _flatMap = function (value, flatMapper) {
  * // [1, 1, 2, 2, 3, 3, 4, 4, 5, 5]
  * ```
  *
+ * See also:
+ *  * [forEach](/docs/forEach)
+ *  * [map](/docs/map)
+ *  * [filter](/docs/filter)
+ *  * [reduce](/docs/reduce)
+ *  * [transform](/docs/transform)
+ *  * [some](/docs/some)
+ *
  * @execution concurrent
  *
  * @transducing

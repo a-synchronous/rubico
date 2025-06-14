@@ -215,6 +215,14 @@ const _reduce = function (collection, reducer, initial) {
  * promise.then(console.log) // 15
  * ```
  *
+ * See also:
+ *  * [forEach](/docs/forEach)
+ *  * [map](/docs/map)
+ *  * [filter](/docs/filter)
+ *  * [transform](/docs/transform)
+ *  * [flatMap](/docs/flatMap)
+ *  * [some](/docs/some)
+ *
  * @execution series
  *
  * @transducing

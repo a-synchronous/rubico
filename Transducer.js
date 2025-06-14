@@ -61,7 +61,16 @@ const Transducer = {}
  * ) // [1, 4, 9, 16, 25]
  * ```
  *
- * Read more on transducers [here](/blog/transducers-crash-course-rubico-v2).
+ * Read more on [transducers](/blog/transducers-crash-course-rubico-v2).
+ *
+ * See also:
+ *  * [thunkify](/docs/thunkify)
+ *  * [Transducer.filter](/docs/Transducer.filter)
+ *  * [Transducer.flatMap](/docs/Transducer.flatMap)
+ *  * [Transducer.forEach](/docs/Transducer.forEach)
+ *  * [Transducer.passthrough](/docs/Transducer.passthrough)
+ *  * [Transducer.tryCatch](/docs/Transducer.tryCatch)
+ *
  */
 Transducer.map = function transducerMap(mapper) {
   return curry2(reducerMap, __, mapper)
@@ -96,6 +105,17 @@ Transducer.map = function transducerMap(mapper) {
  *   [1, 2, 3, 4, 5].reduce(concatOddNumbers, []),
  * ) // [1, 3, 5]
  * ```
+ *
+ * Read more on [transducers](/blog/transducers-crash-course-rubico-v2).
+ *
+ * See also:
+ *  * [thunkify](/docs/thunkify)
+ *  * [Transducer.map](/docs/Transducer.map)
+ *  * [Transducer.flatMap](/docs/Transducer.flatMap)
+ *  * [Transducer.forEach](/docs/Transducer.forEach)
+ *  * [Transducer.passthrough](/docs/Transducer.passthrough)
+ *  * [Transducer.tryCatch](/docs/Transducer.tryCatch)
+ *
  */
 Transducer.filter = function transducerFilter(predicate) {
   return curry2(reducerFilter, __, predicate)
@@ -129,7 +149,16 @@ Transducer.filter = function transducerFilter(predicate) {
  * ) // [1, 1, 1, 2, 4, 8, 3, 9, 27, 4, 16, 64, 5, 25, 125]
  * ```
  *
- * Read more on transducers [here](/blog/transducers-crash-course-rubico-v2).
+ * Read more on [transducers](/blog/transducers-crash-course-rubico-v2).
+ *
+ * See also:
+ *  * [thunkify](/docs/thunkify)
+ *  * [Transducer.map](/docs/Transducer.map)
+ *  * [Transducer.filter](/docs/Transducer.filter)
+ *  * [Transducer.forEach](/docs/Transducer.forEach)
+ *  * [Transducer.passthrough](/docs/Transducer.passthrough)
+ *  * [Transducer.tryCatch](/docs/Transducer.tryCatch)
+ *
  */
 Transducer.flatMap = function transducerFlatMap(flatMapper) {
   return curry2(reducerFlatMap, __, flatMapper)
@@ -160,6 +189,17 @@ Transducer.flatMap = function transducerFlatMap(flatMapper) {
  *   Transducer.forEach(console.log), // 1 4 9 16 25
  * ]), null)
  * ```
+ *
+ * Read more on [transducers](/blog/transducers-crash-course-rubico-v2).
+ *
+ * See also:
+ *  * [thunkify](/docs/thunkify)
+ *  * [Transducer.map](/docs/Transducer.map)
+ *  * [Transducer.filter](/docs/Transducer.filter)
+ *  * [Transducer.flatMap](/docs/Transducer.flatMap)
+ *  * [Transducer.passthrough](/docs/Transducer.passthrough)
+ *  * [Transducer.tryCatch](/docs/Transducer.tryCatch)
+ *
  */
 Transducer.forEach = function transducerForEach(func) {
   return curry2(reducerForEach, __, func)
@@ -195,6 +235,17 @@ Transducer.forEach = function transducerForEach(func) {
  * transform(createAsyncNumbers(), Transducer.passthrough, [])
  *   .then(console.log) // [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
  * ```
+ *
+ * Read more on [transducers](/blog/transducers-crash-course-rubico-v2).
+ *
+ * See also:
+ *  * [thunkify](/docs/thunkify)
+ *  * [Transducer.map](/docs/Transducer.map)
+ *  * [Transducer.filter](/docs/Transducer.filter)
+ *  * [Transducer.flatMap](/docs/Transducer.flatMap)
+ *  * [Transducer.forEach](/docs/Transducer.forEach)
+ *  * [Transducer.tryCatch](/docs/Transducer.tryCatch)
+ *
  */
 Transducer.passthrough = function transducerPassthrough(reducer) {
   return reducer
@@ -247,7 +298,17 @@ Transducer.passthrough = function transducerPassthrough(reducer) {
  *   // original userId for which the error was thrown is provided
  * }), null)
  * ```
-
+ *
+ * Read more on [transducers](/blog/transducers-crash-course-rubico-v2).
+ *
+ * See also:
+ *  * [thunkify](/docs/thunkify)
+ *  * [Transducer.map](/docs/Transducer.map)
+ *  * [Transducer.filter](/docs/Transducer.filter)
+ *  * [Transducer.flatMap](/docs/Transducer.flatMap)
+ *  * [Transducer.forEach](/docs/Transducer.forEach)
+ *  * [Transducer.passthrough](/docs/Transducer.passthrough)
+ *
  */
 Transducer.tryCatch = function transducerTryCatch(transducerTryer, catcher) {
   return curry3(reducerTryCatch, __, transducerTryer, catcher)

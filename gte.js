@@ -55,6 +55,15 @@ const greaterThanOrEqual = require('./_internal/greaterThanOrEqual')
  * ```javascript [playground]
  * gte(Promise.resolve({ a: 1, b: 1 }), get('a'), get('b')).then(console.log) // true
  * ```
+ *
+ * See also:
+ *  * [and](/docs/and)
+ *  * [eq](/docs/eq)
+ *  * [lt](/docs/lt)
+ *  * [gt](/docs/gt)
+ *  * [lte](/docs/lte)
+ *  * [thunkify](/docs/thunkify)
+ *
  */
 const gte = ComparisonOperator(greaterThanOrEqual)
 

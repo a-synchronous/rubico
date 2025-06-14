@@ -147,6 +147,13 @@ const _forEach = function (collection, callback) {
  * // 2
  * // 3
  * ```
+ *
+ * See also:
+ *  * [pipe](/docs/pipe)
+ *  * [tap](/docs/tap)
+ *  * [all](/docs/all)
+ *  * [forEach.series](/docs/forEach.series)
+ *  * [map](/docs/map)
  */
 const forEach = function (arg0, arg1) {
   if (typeof arg0 == 'function') {
@@ -229,6 +236,13 @@ const _forEachSeries = function (collection, callback) {
  * // 2
  * // 3
  * ```
+ *
+ * See also:
+ *  * [pipe](/docs/pipe)
+ *  * [tap](/docs/tap)
+ *  * [all](/docs/all)
+ *  * [forEach](/docs/forEach)
+ *  * [map](/docs/map)
  */
 forEach.series = function forEachSeries(arg0, arg1) {
   if (typeof arg0 == 'function') {

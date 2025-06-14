@@ -86,6 +86,15 @@ const _get = function (object, path, defaultValue) {
  * ```javascript [playground]
  * get(Promise.resolve({ a: 1 }), 'a').then(console.log) // 1
  * ```
+ *
+ * See also:
+ *  * [pipe](/docs/pipe)
+ *  * [all](/docs/all)
+ *  * [assign](/docs/assign)
+ *  * [set](/docs/set)
+ *  * [pick](/docs/pick)
+ *  * [omit](/docs/omit)
+ *  * [forEach](/docs/forEach)
  */
 
 const get = function (arg0, arg1, arg2) {

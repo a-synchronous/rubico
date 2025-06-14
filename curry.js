@@ -35,6 +35,15 @@ const curryArity = require('./_internal/curryArity')
  * console.log(curry(add, __, __, 'c')('a', 'b')) // abc
  * console.log(curry(add, __, __, 'c')(__, 'b')('a')) // abc
  * ```
+ *
+ * See also:
+ *  * [eq](/docs/eq)
+ *  * [thunkify](/docs/thunkify)
+ *  * [always](/docs/always)
+ *  * [curry.arity](/docs/curry.arity)
+ *  * [__](/docs/__)
+ *  * [Transducer.map](/docs/Transducer.map)
+ *
  */
 const curry = (func, ...args) => curryArity(func.length, func, args)
 
@@ -66,6 +75,15 @@ const curry = (func, ...args) => curryArity(func.length, func, args)
  *
  * console.log(curry.arity(2, add, 1, 2)) // 3
  * ```
+ *
+ * See also:
+ *  * [eq](/docs/eq)
+ *  * [thunkify](/docs/thunkify)
+ *  * [always](/docs/always)
+ *  * [curry](/docs/curry)
+ *  * [__](/docs/__)
+ *  * [Transducer.map](/docs/Transducer.map)
+ *
  */
 curry.arity = function curryArity_(arity, func, ...args) {
   return curryArity(arity, func, args)

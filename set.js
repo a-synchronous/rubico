@@ -96,6 +96,15 @@ const _set = function (obj, path, value) {
  * set(Promise.resolve({}), 'a', 1).then(console.log) // { a: 1 }
  * ```
  *
+ * See also:
+ *  * [pipe](/docs/pipe)
+ *  * [all](/docs/all)
+ *  * [assign](/docs/assign)
+ *  * [get](/docs/get)
+ *  * [pick](/docs/pick)
+ *  * [omit](/docs/omit)
+ *  * [forEach](/docs/forEach)
+ *
  * @since 1.7.0
  */
 

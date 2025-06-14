@@ -41,15 +41,15 @@ const _every = function (collection, predicate) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Foldable = Array|Iterable|AsyncIterable|{ reduce: function }|Object
+ * type Foldable = Array|Set|Map|Generator|AsyncGenerator|{ reduce: function }|Object
  *
- * every(collection Foldable, predicate function) -> result Promise|boolean
+ * every(fold Foldable, predicate function) -> result Promise|boolean
  *
- * every(predicate function)(collection Foldable) -> result Promise|boolean
+ * every(predicate function)(fold Foldable) -> result Promise|boolean
  * ```
  *
  * @description
- * Test a predicate concurrently across all items of a collection, returning true if all predications are truthy.
+ * Test a predicate concurrently across all items of a foldable, returning true if all executions return true.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -63,7 +63,16 @@ const _every = function (collection, predicate) {
  * ) // true
  * ```
  *
- * The collection can be any iterable, async iterable, or object values iterable collection. Below is an example of `every` accepting an async generator as the collection.
+ * The following data types are considered to be foldables:
+ *  * `array`
+ *  * `set`
+ *  * `map`
+ *  * `generator`
+ *  * `async generator`
+ *  * `object with .reduce method`
+ *  * `object`
+ *
+ * `every` works for async generators.
  *
  * ```javascript [playground]
  * const asyncNumbers = async function* () {
@@ -87,6 +96,11 @@ const _every = function (collection, predicate) {
  * ```javascript [playground]
  * every(Promise.resolve([1, 2, 3, 4, 5]), n => n < 6).then(console.log) // true
  * ```
+ *
+ * See also:
+ *  * [map](/docs/map)
+ *  * [some](/docs/some)
+ *  * [and](/docs/and)
  *
  * @execution concurrent
  *

@@ -35,6 +35,12 @@ const funcConcat = require('./_internal/funcConcat')
  *   console.log, // [1, 2, 3]
  * ])
  * ```
+ *
+ * See also:
+ *  * [pipe](/docs/pipe)
+ *  * [tap](/docs/tap)
+ *  * [switchCase](/docs/switchCase)
+ *  * [tryCatch](/docs/tryCatch)
  */
 const compose = function (...args) {
   const funcs = args.pop()

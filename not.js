@@ -53,6 +53,13 @@ const _not = function (args, predicate) {
  *
  * not(Promise.resolve(3), isOdd).then(console.log) // false
  * ```
+ *
+ * See also:
+ *  * [some](/docs/some)
+ *  * [and](/docs/and)
+ *  * [or](/docs/or)
+ *  * [eq](/docs/eq)
+ *
  */
 
 const not = function (...args) {

@@ -259,6 +259,17 @@ const _map = function (value, f) {
  * // [1, 4, 9, 16, 25]
  * ```
  *
+ * See also:
+ *  * [forEach](/docs/forEach)
+ *  * [map.entries](/docs/map.entries)
+ *  * [map.series](/docs/map.series)
+ *  * [map.pool](/docs/map.pool)
+ *  * [filter](/docs/filter)
+ *  * [reduce](/docs/reduce)
+ *  * [transform](/docs/transform)
+ *  * [flatMap](/docs/flatMap)
+ *  * [some](/docs/some)
+ *
  * @execution concurrent
  *
  * @TODO streamMap
@@ -331,6 +342,17 @@ const _mapEntries = (value, f) => {
  * ).then(console.log)
  * // { a: 1, b: 4, c: 9 }
  * ```
+ *
+ * See also:
+ *  * [forEach](/docs/forEach)
+ *  * [map](/docs/map)
+ *  * [map.series](/docs/map.series)
+ *  * [map.pool](/docs/map.pool)
+ *  * [filter](/docs/filter)
+ *  * [reduce](/docs/reduce)
+ *  * [transform](/docs/transform)
+ *  * [flatMap](/docs/flatMap)
+ *  * [some](/docs/some)
  *
  * @since v1.7.0
  */
@@ -428,6 +450,17 @@ const _mapSeries = function (collection, f) {
  * // [1, 4, 9, 16, 25]
  * ```
  *
+ * See also:
+ *  * [forEach](/docs/forEach)
+ *  * [map](/docs/map)
+ *  * [map.entries](/docs/map.entries)
+ *  * [map.pool](/docs/map.pool)
+ *  * [filter](/docs/filter)
+ *  * [reduce](/docs/reduce)
+ *  * [transform](/docs/transform)
+ *  * [flatMap](/docs/flatMap)
+ *  * [some](/docs/some)
+ *
  * @execution series
  */
 map.series = function mapSeries(arg0, arg1) {
@@ -523,6 +556,17 @@ const _mapPool = function (f, concurrency, mapper) {
  * map.pool(Promise.resolve([1, 2, 3, 4, 5]), 5, asyncSquare).then(console.log)
  * // [1, 4, 9, 16, 25]
  * ```
+ *
+ * See also:
+ *  * [forEach](/docs/forEach)
+ *  * [map](/docs/map)
+ *  * [map.entries](/docs/map.entries)
+ *  * [map.series](/docs/map.series)
+ *  * [filter](/docs/filter)
+ *  * [reduce](/docs/reduce)
+ *  * [transform](/docs/transform)
+ *  * [flatMap](/docs/flatMap)
+ *  * [some](/docs/some)
  *
  * @TODO objectMapPool
  *

@@ -16,6 +16,15 @@ const __ = require('./_internal/placeholder')
  *   curry.arity(3, Array.of, __, 2, 3)(1),
  * ) // [1, 2, 3]
  * ```
+ *
+ * See also:
+ *  * [eq](/docs/eq)
+ *  * [thunkify](/docs/thunkify)
+ *  * [always](/docs/always)
+ *  * [curry](/docs/curry)
+ *  * [curry.arity](/docs/curry.arity)
+ *  * [Transducer.map](/docs/Transducer.map)
+ *
  */
 
 module.exports = __

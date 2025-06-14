@@ -18,6 +18,14 @@ const always = require('./_internal/always')
  * console.log(always5()) // 5
  * console.log(always5()) // 5
  * ```
+ *
+ * See also:
+ *  * [eq](/docs/eq)
+ *  * [thunkify](/docs/thunkify)
+ *  * [curry](/docs/curry)
+ *  * [__](/docs/__)
+ *  * [Transducer.map](/docs/Transducer.map)
+ *
  */
 
 module.exports = always

@@ -53,6 +53,15 @@ const greaterThan = require('./_internal/greaterThan')
  * ```javascript [playground]
  * gt(Promise.resolve({ a: 2, b: 1 }), get('a'), get('b')).then(console.log) // true
  * ```
+ *
+ * See also:
+ *  * [and](/docs/and)
+ *  * [eq](/docs/eq)
+ *  * [lt](/docs/lt)
+ *  * [gte](/docs/gte)
+ *  * [lte](/docs/lte)
+ *  * [thunkify](/docs/thunkify)
+ *
  */
 const gt = ComparisonOperator(greaterThan)
 

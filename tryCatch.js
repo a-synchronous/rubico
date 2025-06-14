@@ -75,6 +75,11 @@ const _tryCatch = function (tryer, catcher, args) {
  *   console.error(`${a} + ${b} + ${c}: ${error.message}`)
  * })
  * ```
+ *
+ * See also:
+ *  * [pipe](/docs/pipe)
+ *  * [switchCase](/docs/switchCase)
+ *  * [all](/docs/all)
  */
 
 const tryCatch = function (...args) {

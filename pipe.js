@@ -54,6 +54,12 @@ const __ = require('./_internal/placeholder')
  * ])
  * ```
  *
+ * See also:
+ *  * [compose](/docs/compose)
+ *  * [tap](/docs/tap)
+ *  * [switchCase](/docs/switchCase)
+ *  * [tryCatch](/docs/tryCatch)
+ *
  * @execution series
  *
  * @transducing

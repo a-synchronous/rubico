@@ -54,6 +54,14 @@ const equals = require('./_internal/equals')
  * eq(Promise.resolve({ a: 1, b: 1 }), get('a'), get('b')).then(console.log) // true
  * ```
  *
+ * See also:
+ *  * [and](/docs/and)
+ *  * [gt](/docs/gt)
+ *  * [lt](/docs/lt)
+ *  * [gte](/docs/gte)
+ *  * [lte](/docs/lte)
+ *  * [thunkify](/docs/thunkify)
+ *
  * @execution concurrent
  */
 

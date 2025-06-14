@@ -40,7 +40,7 @@ const _some = function (collection, predicate) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Foldable = Array|Iterable|AsyncIterable|{ reduce: function }|Object
+ * type Foldable = Array|Set|Map|Generator|AsyncGenerator|{ reduce: function }|Object
  *
  * some(collection Foldable, predicate function) -> Promise|boolean
  *
@@ -48,7 +48,7 @@ const _some = function (collection, predicate) {
  * ```
  *
  * @description
- * Test a predicate concurrently across all items of a collection, returning true if any executions return truthy.
+ * Test a predicate concurrently across all items of a foldable, returning true if any executions return true.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -58,7 +58,16 @@ const _some = function (collection, predicate) {
  * ) // true
  * ```
  *
- * The collection can be any iterable, async iterable, or object values iterable collection. Below is an example of `some` accepting an async generator as the collection.
+ * The following data types are considered to be foldables:
+ *  * `array`
+ *  * `set`
+ *  * `map`
+ *  * `generator`
+ *  * `async generator`
+ *  * `object with .reduce method`
+ *  * `object`
+ *
+ * `some` works for async generators.
  *
  * ```javascript [playground]
  * const toTodosUrl = id => 'https://jsonplaceholder.typicode.com/todos/' + id
@@ -97,6 +106,11 @@ const _some = function (collection, predicate) {
  * ```javascript [playground]
  * some(Promise.resolve([1, 2, 3, 4, 5]), n => n > 6).then(console.log) // false
  * ```
+ *
+ * See also:
+ *  * [map](/docs/map)
+ *  * [every](/docs/every)
+ *  * [and](/docs/and)
  *
  * @execution concurrent
  *
