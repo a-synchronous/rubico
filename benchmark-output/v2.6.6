@@ -1,0 +1,297 @@
+OS 6.14.6-arch1-1
+NodeJS v22.12.0
+rubico v2.6.6
+ramda v0.30.1
+lodash/fp v4.17.21
+async v3.2.6
+
+benchmarks/all.async.js
+rubico async array all promises: 1e+5: 86.497ms
+rubico async object all promises: 1e+5: 88.695ms
+rubico async array all: 1e+5: 108.520ms
+rubico async array all lazy: 1e+5: 211.119ms
+rubico async object all: 1e+5: 191.263ms
+rubico async object all lazy: 1e+5: 195.663ms
+
+benchmarks/all.js
+rubico array all values: 1e+6: 31.626ms
+rubico object all values: 1e+6: 69.498ms
+rubico array all: 1e+6: 249.216ms
+rubico array all lazy: 1e+6: 1.038s
+rubico object all: 1e+6: 346.051ms
+rubico object all lazy: 1e+6: 405.289ms
+
+benchmarks/always.js
+rubico always: 1e+7: 10.106ms
+
+benchmarks/and.async.js
+rubico and: 1e+5: 83.498ms
+rubico and lazy: 1e+5: 84.594ms
+
+benchmarks/and.js
+rubico and: 1e+6: 133.047ms
+rubico and lazy: 1e+6: 170.631ms
+
+benchmarks/assign.async.js
+rubico assign async values: 1e+5: 214.230ms
+rubico assign: 1e+5: 232.729ms
+rubico assign lazy: 1e+5: 247.115ms
+
+benchmarks/assign.js
+rubico assign values: 1e+6: 254.607ms
+rubico assign: 1e+6: 363.317ms
+rubico assign lazy: 1e+6: 391.499ms
+
+benchmarks/curry.js
+rubico curry: 1e+6: 132.860ms
+rubico curry lazy: 1e+6: 232.349ms
+lodash/fp curry: 1e+6: 4.526s
+ramda curry: 1e+6: 513.660ms
+
+benchmarks/eq.async.js
+rubico eq Promises: 1e+5: 92.650ms
+rubico eq left value right resolver: 1e+5: 98.977ms
+rubico eq left resolver right resolver: 1e+5: 97.116ms
+
+benchmarks/eq.js
+rubico eq primitive: 1e+6: 31.765ms
+rubico eq left value right resolver: 1e+6: 80.471ms
+rubico eq left resolver right resolver: 1e+6: 130.928ms
+
+benchmarks/every.async.js
+rubico every: 1e+5: 101.890ms
+rubico every lazy: 1e+5: 107.885ms
+
+benchmarks/every.js
+vanilla every: 1e+6: 5.525ms
+rubico every: 1e+6: 11.451ms
+rubico every lazy: 1e+6: 75.207ms
+
+benchmarks/filter.async.js
+rubico filter: 1e+5: 196.372ms
+rubico filter lazy: 1e+5: 205.120ms
+async filter: 1e+5: 183.243ms
+Bluebird filter: 1e+5: 997.836ms
+
+benchmarks/filter.js
+vanilla filter: 1e+6: 39.365ms
+rubico filter: 1e+6: 46.257ms
+rubico filter lazy: 1e+6: 135.218ms
+lodash filter: 1e+6: 130.649ms
+lodash/fp filter: 1e+6: 3.404s
+ramda filter: 1e+6: 296.232ms
+
+benchmarks/flatMap.async.js
+rubico flatMap: 1e+5: 131.440ms
+rubico flatMap lazy: 1e+5: 140.230ms
+async flatMap: 1e+5: 341.721ms
+
+benchmarks/flatMap.js
+vanilla flatMap: 1e+6: 484.060ms
+rubico flatMap: 1e+6: 174.594ms
+rubico flatMap lazy: 1e+6: 261.355ms
+lodash flatMap: 1e+6: 224.540ms
+lodash/fp flatMap: 1e+6: 3.430s
+ramda flatMap: 1e+6: 1.411s
+
+benchmarks/forEach.js
+vanilla forEach: 1e+6: 5.745ms
+rubico forEach: 1e+6: 24.448ms
+rubico forEach.series: 1e+6: 24.488ms
+rubico forEach lazy: 1e+6: 87.260ms
+ramda forEach: 1e+6: 24.858ms
+lodash/fp forEach: 1e+6: 267.836ms
+
+benchmarks/get.async.js
+rubico get: 1e+5: 31.350ms
+rubico get lazy: 1e+5: 32.776ms
+
+benchmarks/get.js
+vanilla get: 1e+6: 0.981ms
+rubico get: 1e+6: 22.257ms
+rubico get lazy: 1e+6: 39.942ms
+lodash get: 1e+6: 46.453ms
+lodash/fp get: 1e+6: 3.189s
+ramda get: 1e+6: 221.406ms
+
+benchmarks/gt.async.js
+rubico gt Promises: 1e+5: 102.830ms
+rubico gt left value right resolver: 1e+5: 111.537ms
+rubico gt left resolver right resolver: 1e+5: 105.930ms
+
+benchmarks/gt.js
+rubico gt primitive: 1e+6: 32.244ms
+rubico gt left value right resolver: 1e+6: 85.107ms
+rubico gt left resolver right resolver: 1e+6: 146.010ms
+
+benchmarks/gte.async.js
+rubico gte Promises: 1e+5: 99.144ms
+rubico gte left value right resolver: 1e+5: 107.223ms
+rubico gte left resolver right resolver: 1e+5: 102.719ms
+
+benchmarks/gte.js
+rubico gte primitive: 1e+6: 33.754ms
+rubico gte left value right resolver: 1e+6: 83.203ms
+rubico gte left resolver right resolver: 1e+6: 132.021ms
+
+benchmarks/lt.async.js
+rubico lt Promises: 1e+5: 91.988ms
+rubico lt left value right resolver: 1e+5: 99.243ms
+rubico lt left resolver right resolver: 1e+5: 102.880ms
+
+benchmarks/lt.js
+rubico lt primitive: 1e+6: 33.822ms
+rubico lt left value right resolver: 1e+6: 86.499ms
+rubico lt left resolver right resolver: 1e+6: 140.668ms
+
+benchmarks/lte.async.js
+rubico lte Promises: 1e+5: 111.232ms
+rubico lte left value right resolver: 1e+5: 116.689ms
+rubico lte left resolver right resolver: 1e+5: 107.207ms
+
+benchmarks/lte.js
+rubico lte primitive: 1e+6: 31.700ms
+rubico lte left value right resolver: 1e+6: 80.103ms
+rubico lte left resolver right resolver: 1e+6: 142.876ms
+
+benchmarks/map.async.js
+rubico map: 1e+5: 102.679ms
+rubico map lazy: 1e+5: 111.501ms
+async map: 1e+5: 226.976ms
+bluebird map: 1e+5: 947.496ms
+vanilla map and Promise.all: 1e+5: 97.720ms
+
+benchmarks/map.js
+vanilla map: 1e+6: 27.847ms
+rubico map: 1e+6: 25.028ms
+rubico map lazy: 1e+6: 119.979ms
+lodash map: 1e+6: 47.052ms
+lodash/fp map: 1e+6: 3.602s
+ramda map: 1e+6: 315.529ms
+
+benchmarks/not.js
+vanilla not primitive: 1e+6: 1.020ms
+rubico not primitive: 1e+6: 13.669ms
+rubico not predicate: 1e+6: 67.683ms
+rubico not predicate lazy: 1e+6: 97.378ms
+
+benchmarks/omit.js
+rubico omit: 1e+6: 549.014ms
+rubico omit lazy: 1e+6: 584.986ms
+lodash omit: 1e+6: 1.687s
+lodash/fp omit: 1e+6: 6.346s
+ramda omit: 1e+6: 395.941ms
+
+benchmarks/or.async.js
+rubico or: 1e+5: 94.919ms
+rubico or lazy: 1e+5: 93.411ms
+
+benchmarks/or.js
+rubico or: 1e+6: 128.039ms
+rubico or lazy: 1e+6: 164.286ms
+
+benchmarks/pick.js
+rubico pick: 1e+6: 87.540ms
+rubico pick lazy: 1e+6: 123.871ms
+lodash pick: 1e+6: 417.366ms
+lodash fp pick: 1e+6: 4.107s
+ramda pick: 1e+6: 295.905ms
+
+benchmarks/pipe.async.js
+rubico pipe: 1e+5: 98.856ms
+rubico pipe lazy: 1e+5: 90.457ms
+async waterfall: 1e+5: 149.761ms
+
+benchmarks/pipe.js
+rubico pipe: 1e+6: 214.922ms
+rubico pipe lazy: 1e+6: 184.938ms
+ramda pipe: 1e+6: 1.243s
+lodash/fp pipe: 1e+6: 506.095ms
+
+benchmarks/reduce.async.js
+rubico reduce: 1e+5: 213.105ms
+rubico reduce lazy: 1e+5: 220.621ms
+async reduce: 1e+5: 227.860ms
+Bluebird reduce: 1e+5: 2.564s
+
+benchmarks/reduce.js
+vanilla reduce: 1e+6: 7.739ms
+rubico reduce: 1e+6: 32.691ms
+rubico reduce lazy: 1e+6: 106.084ms
+lodash reduce: 1e+6: 46.589ms
+lodash/fp reduce: 1e+6: 3.557s
+ramda reduce: 1e+6: 560.773ms
+
+benchmarks/set.async.js
+rubico set: 1e+5: 57.150ms
+rubico set lazy: 1e+5: 66.455ms
+
+benchmarks/set.js
+vanilla set: 1e+6: 1.017ms
+rubico set: 1e+6: 54.646ms
+rubico set lazy: 1e+6: 70.773ms
+lodash set: 1e+6: 62.758ms
+lodash/fp set: 1e+6: 5.480s
+ramda get: 1e+6: 1.268s
+
+benchmarks/some.async.js
+rubico some: 1e+5: 304.875ms
+rubico some lazy: 1e+5: 314.915ms
+
+benchmarks/some.js
+vanilla some: 1e+6: 4.903ms
+rubico some: 1e+6: 10.785ms
+rubico some lazy: 1e+6: 56.649ms
+
+benchmarks/switchCase.async.js
+rubico switchCase: 1e+5: 72.338ms
+rubico switchCase lazy: 1e+5: 202.104ms
+
+benchmarks/switchCase.js
+switchCase: 1e+6: 59.532ms
+switchCase lazy: 1e+6: 600.597ms
+lodash cond: 1e+6: 1.203s
+lodash/fp cond: 1e+6: 1.286s
+ramda cond: 1e+6: 1.154s
+
+benchmarks/tap.js
+tap: 1e+7: 583.403ms
+
+benchmarks/thunkify.js
+rubico thunkify: 1e+7: 9.829ms
+
+benchmarks/transform.async.js
+rubico transform: 1e+5: 539.277ms
+rubico transform lazy: 1e+5: 535.060ms
+
+benchmarks/transform.js
+rubico transform array -> array: 1e+6: 146.907ms
+rubico transform array -> array lazy: 1e+6: 300.335ms
+rubico transform array -> string: 1e+6: 508.693ms
+rubico transform array -> string lazy: 1e+6: 558.239ms
+ramda into array -> array: 1e+6: 1.103s
+ramda into array -> string: 1e+6: 1.480s
+
+benchmarks/tryCatch.async.js
+rubico tryCatch: 1e+4: 159.026ms
+rubico tryCatch lazy: 1e+4: 132.097ms
+
+benchmarks/tryCatch.js
+vanilla try/catch: 1e+5: 586.737ms
+rubico tryCatch: 1e+5: 1.040s
+rubico tryCatch lazy: 1e+5: 936.421ms
+ramda tryCatch: 1e+5: 1.020s
+
+benchmarks/misc/Promise.js
+vanilla Promise: 1e+6: 638.959ms
+Bluebird Promise: 1e+6: 1.290s
+
+benchmarks/misc/isPromise.js
+isPromise .then: 1e+5: 1.240ms
+isPromise instanceof: 1e+5: 1.670ms
+
+benchmarks/misc/promiseAll.js
+rubico promiseAll: 1e+5: 272.643ms
+vanilla Promise.all: 1e+5: 260.701ms
+Bluebird Promise.all: 1e+5: 501.538ms
+
