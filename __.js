@@ -5,7 +5,7 @@ const __ = require('./_internal/placeholder')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * __ = Symbol(placeholder)
+ * __ Symbol
  * ```
  *
  * @description
