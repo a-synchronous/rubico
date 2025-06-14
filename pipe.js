@@ -50,7 +50,7 @@ const __ = require('./_internal/placeholder')
  *
  * const appendBC = pipe(appendB, appendC)
  *
- * console.log(appendBC(a)) // 'abc'
+ * console.log(appendBC('a')) // 'abc'
  * ```
  *
  * When passed any amount of arguments before the array of functions, `pipe` executes eagerly; the array of functions is immediately invoked with the supplied arguments.
