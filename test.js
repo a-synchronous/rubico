@@ -4497,8 +4497,8 @@ flatMap(
       assert.strictEqual(thunkAdd212(), 3)
     })
 
+    const asyncThunkAdd212 = thunkify(add2, Promise.resolve(1), 2)
     it('creates a thunk that resolves any promise arguments', async () => {
-      const asyncThunkAdd212 = await thunkify(add2, Promise.resolve(1), 2)
       assert.strictEqual(asyncThunkAdd212.length, 0)
       assert.strictEqual(await asyncThunkAdd212(), 3)
     })
