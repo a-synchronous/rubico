@@ -1,5 +1,5 @@
 /**
- * rubico v2.6.6
+ * rubico v2.7.0
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2025 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -67,6 +67,10 @@ const curry2 = function (baseFunc, arg0, arg1) {
 }
 
 const pipe = function (...args) {
+  if (typeof args[0] == 'function') {
+    return args.reduce(funcConcat)
+  }
+
   const funcs = args.pop()
   const pipeline = funcs.reduce(funcConcat)
 

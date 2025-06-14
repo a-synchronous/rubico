@@ -1,5 +1,5 @@
 /**
- * rubico v2.6.6
+ * rubico v2.7.0
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2025 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -72,6 +72,10 @@ const funcConcat = (
 }
 
 const compose = function (...args) {
+  if (typeof args[0] == 'function') {
+    return args.reduceRight(funcConcat)
+  }
+
   const funcs = args.pop()
   const composition = funcs.reduceRight(funcConcat)
 

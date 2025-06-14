@@ -1,5 +1,5 @@
 /**
- * rubico v2.6.6
+ * rubico v2.7.0
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2025 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -73,6 +73,10 @@ const curry2 = function (baseFunc, arg0, arg1) {
 }
 
 const pipe = function (...args) {
+  if (typeof args[0] == 'function') {
+    return args.reduce(funcConcat)
+  }
+
   const funcs = args.pop()
   const pipeline = funcs.reduce(funcConcat)
 
@@ -88,6 +92,10 @@ const pipe = function (...args) {
 }
 
 const compose = function (...args) {
+  if (typeof args[0] == 'function') {
+    return args.reduceRight(funcConcat)
+  }
+
   const funcs = args.pop()
   const composition = funcs.reduceRight(funcConcat)
 
@@ -1745,17 +1753,17 @@ const genericReduce = function (collection, reducer, result) {
     : reducer(result, collection)
 }
 
-// _reduce(collection any, reducer function, initialValue function|any) -> Promise
-const _reduce = function (collection, reducer, initialValue) {
-  if (typeof initialValue == 'function') {
-    const actualInitialValue = initialValue(collection)
+// _reduce(collection any, reducer function, initial function|any) -> Promise
+const _reduce = function (collection, reducer, initial) {
+  if (typeof initial == 'function') {
+    const actualInitialValue = initial(collection)
     return isPromise(actualInitialValue)
       ? actualInitialValue.then(curry3(genericReduce, collection, reducer, __))
       : genericReduce(collection, reducer, actualInitialValue)
   }
-  return isPromise(initialValue)
-    ? initialValue.then(curry3(genericReduce, collection, reducer, __))
-    : genericReduce(collection, reducer, initialValue)
+  return isPromise(initial)
+    ? initial.then(curry3(genericReduce, collection, reducer, __))
+    : genericReduce(collection, reducer, initial)
 }
 
 const reduce = function (...args) {
