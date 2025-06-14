@@ -35,6 +35,9 @@ const isArray = require('../_internal/isArray')
  * }
  * ```
  *
+ * See also:
+ *  * [callProp](/docs/callProp)
+ *
  * @since 1.7.3
  */
 

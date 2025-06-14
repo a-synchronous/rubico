@@ -15,6 +15,11 @@
  * const priceRoundedDown = callProp('toFixed', 2)(5.992)
  * console.log('priceRoundedDown:', priceRoundedDown) // '5.99'
  * ```
+ *
+ * See also:
+ *  * [append](/docs/append)
+ *  * [defaultsDeep](/docs/defaultsDeep)
+ *
  */
 const callProp = (property, ...args) => function callingProp(object) {
   return object[property](...args)

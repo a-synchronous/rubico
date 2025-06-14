@@ -103,6 +103,11 @@ const objectDefaultsDeepFromObject = function (object, defaultObject) {
  * //   ],
  * // }
  * ```
+ *
+ * See also:
+ *  * [callProp](/docs/callProp)
+ *  * [differenceWith](/docs/differenceWith)
+ *
  */
 const defaultsDeep = defaultCollection => function defaulting(value) {
   if (isArray(value) && isArray(defaultCollection)) {

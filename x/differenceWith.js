@@ -96,6 +96,11 @@ const differenceWithArray = function (comparator, allValues, array) {
  *   differenceWith(isDeepEqual, [{ a: 1 }, { b: 2 }, { c: 3 }])([{ b: 2 }]),
  * ) // [{ a: 1 }, { c: 3 }]
  * ```
+ *
+ * See also:
+ *  * [defaultsDeep](/docs/defaultsDeep)
+ *  * [filterOut](/docs/filterOut)
+ *
  */
 const differenceWith = (
   comparator, allValues,
