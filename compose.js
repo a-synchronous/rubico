@@ -32,7 +32,7 @@ const funcConcat = require('./_internal/funcConcat')
  * console.log(result) // 16
  * ```
  *
- * `compose` supports a mathematical API
+ * `compose` supports a mathematical API.
  *
  * ```javascript [playground]
  * const f = x => x * 2

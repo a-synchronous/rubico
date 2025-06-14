@@ -42,7 +42,7 @@ const __ = require('./_internal/placeholder')
  * asyncAdd123(5).then(console.log) // 11
  * ```
  *
- * `pipe` supports a mathematical API
+ * `pipe` supports a mathematical API.
  *
  * ```javascript [playground]
  * const appendB = x => x + 'b'
