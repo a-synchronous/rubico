@@ -1,5 +1,5 @@
 /**
- * rubico v2.7.1
+ * rubico v2.7.2
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2025 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -57,15 +57,11 @@ const curry2 = function (baseFunc, arg0, arg1) {
 
 const funcApply = (func, args) => func(...args)
 
-const thunkify = function (func, ...args) {
+const thunkify = (func, ...args) => function thunk() {
   if (areAnyValuesPromises(args)) {
-    return promiseAll(args).then(resolvedArgs => function thunk() {
-      return func(...resolvedArgs)
-    })
+    return promiseAll(args).then(curry2(funcApply, func, __))
   }
-  return function thunk() {
-    return func(...args)
-  }
+  return func(...args)
 }
 
 export default thunkify
