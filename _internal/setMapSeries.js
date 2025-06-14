@@ -1,3 +1,4 @@
+const __ = require('./placeholder')
 const isPromise = require('./isPromise')
 const curry2 = require('./curry2')
 const thunkify3 = require('./thunkify3')
