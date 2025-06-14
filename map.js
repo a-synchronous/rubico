@@ -302,23 +302,49 @@ const _mapEntries = (value, f) => {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type EntriesMappable = Object|Map
+ * type FunctorWithEntries = Map|Object
  *
- * type Mapper = (
- *   value any,
- *   key string|any,
- *   collection EntriesMappable
- * )=>(resultItem Promise|any)
+ * type EntryMapper = (
+ *   entry [key string|any, value any],
+ * )=>(resultEntry Promise|[resultKey string|any, resultItem any])
  *
- * map.entries(value Promise|EntriesMappable, f Mapper)
- *   -> Promise|EntriesMappable
+ * map.entries(
+ *   value Promise|FunctorWithEntries,
+ *   mapper EntryMapper
+ * ) -> Promise|FunctorWithEntries
  *
- * map.entries(f Mapper)(value EntriesMappable)
- *   -> Promise|EntriesMappable
+ * map.entries(mapper EntryMapper)(value FunctorWithEntries)
+ *   -> Promise|FunctorWithEntries
  * ```
  *
  * @description
- * `map` over the entries rather than the values of a collection. Accepts collections of type `Map` or `Object`.
+ * `map` over the entries of a functor as opposed to the values.
+ *
+ * The following data types are considered to be functors with entries:
+ *   * `map`
+ *   * `object`
+ *
+ * The signature of the mapper function changes depending on the provided functor:
+ *
+ * If the functor is a map:
+ *
+ * ```coffeescript [specscript]
+ * mapper(entry [key any, value any]) -> resultEntry Promise|[
+ *   resultKey any,
+ *   resultValue any,
+ * ]
+ * ```
+ *
+ * If the functor is an object:
+ *
+ * ```coffeescript [specscript]
+ * mapper(entry [key string, value any]) -> resultEntry Promise|[
+ *   resultKey string,
+ *   resultValue any,
+ * ]
+ * ```
+ *
+ * `map.entries` works for objects and maps.
  *
  * ```javascript [playground]
  * const upperCaseKeysAndSquareValues =
