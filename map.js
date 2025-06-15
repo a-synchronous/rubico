@@ -98,11 +98,11 @@ const _map = function (value, f) {
  * type Mapper = (
  *   item any,
  *   indexOrKey number|string|any,
- *   ftor Functor
+ *   functor Functor
  * )=>(resultItem Promise|any)
  *
- * map(ftor Promise|Functor, mapper Mapper) -> result Promise|Functor
- * map(mapper Mapper)(ftor Functor) -> result Promise|Functor
+ * map(functor Promise|Functor, mapper Mapper) -> result Promise|Functor
+ * map(mapper Mapper)(functor Functor) -> result Promise|Functor
  * ```
  *
  * @description

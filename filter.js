@@ -95,11 +95,11 @@ const _filter = function (value, predicate) {
  * type Predicate = (
  *   value any,
  *   indexOrKey number|string|any,
- *   filt Filterable,
+ *   filterable Filterable,
  * )=>boolean
  *
- * filter(filt Filterable, predicate Predicate) -> result Promise|Filterable
- * filter(predicate Predicate)(filt Filterable) -> result Promise|Filterable
+ * filter(filterable Promise|Filterable, predicate Predicate) -> result Promise|Filterable
+ * filter(predicate Predicate)(filterable Filterable) -> result Promise|Filterable
  * ```
  *
  * @description

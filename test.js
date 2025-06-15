@@ -4074,6 +4074,10 @@ flatMap(
         false,
       )
     })
+    it('not(promise)', async () => {
+      assert.strictEqual(typeof not(Promise.resolve(false)).then, 'function')
+      assert.strictEqual(await not(Promise.resolve(false)), true)
+    })
     it('not(someValue) -> !someValue', async () => {
       assert.strictEqual(not(false), true)
       assert.strictEqual(not(null), true)

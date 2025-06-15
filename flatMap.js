@@ -69,11 +69,13 @@ const _flatMap = function (value, flatMapper) {
  * type FlatMapper = (
  *   item any,
  *   indexOrKey number|string|any,
- *   mon Monad
+ *   monad Monad
  * )=>Promise|Monad|any
  *
- * flatMap(mon Monad, flatMapper FlatMapper) -> result Promise|Monad
- * flatMap(flatMapper FlatMapper)(mon Monad) -> result Promise|Monad
+ * flatMapper FlatMapper
+ *
+ * flatMap(monad Promise|Monad, flatMapper) -> result Promise|Monad
+ * flatMap(flatMapper)(monad Monad) -> result Promise|Monad
  * ```
  *
  * @description

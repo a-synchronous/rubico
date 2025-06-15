@@ -43,9 +43,8 @@ const _every = function (collection, predicate) {
  * ```coffeescript [specscript]
  * type Foldable = Array|Set|Map|Generator|AsyncGenerator|{ reduce: function }|Object
  *
- * every(fold Foldable, predicate function) -> result Promise|boolean
- *
- * every(predicate function)(fold Foldable) -> result Promise|boolean
+ * every(foldable Foldable, predicate function) -> result Promise|boolean
+ * every(predicate function)(foldable Foldable) -> result Promise|boolean
  * ```
  *
  * @description

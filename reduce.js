@@ -27,21 +27,16 @@ const _reduce = function (collection, reducer, initial) {
  *   accumulator any,
  *   item any,
  *   indexOrKey number|string|any,
- *   fold Foldable
+ *   foldable Foldable
  * )=>(nextAccumulator Promise|any)
  *
- * type Resolver = (fold Foldable)=>Promise|any
+ * type Resolver = (foldable Foldable)=>Promise|any
  *
- * reduce(
- *   fold Foldable,
- *   reducer Reducer,
- *   initial? Resolver|any
- * ) -> result Promise|any
+ * reducer Reducer
+ * initial Resolver|any
  *
- * reduce(
- *   reducer Reducer,
- *   initial? Resolver|any
- * )(fold Foldable) -> result Promise|any
+ * reduce(foldable Promise|Foldable, reducer, initial?) -> result Promise|any
+ * reduce(reducer, initial?)(foldable Foldable) -> result Promise|any
  * ```
  *
  * @description
