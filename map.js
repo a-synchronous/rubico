@@ -95,14 +95,14 @@ const _map = function (value, f) {
  * ```coffeescript [specscript]
  * type Functor = Array|Set|Map|Generator|AsyncGenerator|{ map: function }|Object
  *
- * type Mapper = (
+ * type SyncOrAsyncMapper = (
  *   element any,
  *   indexOrKey number|string|any,
  *   functor Functor
  * )=>(resultElement Promise|any)
  *
- * map(functor Promise|Functor, mapper Mapper) -> result Promise|Functor
- * map(mapper Mapper)(functor Functor) -> result Promise|Functor
+ * map(functor Promise|Functor, mapper SyncOrAsyncMapper) -> result Promise|Functor
+ * map(mapper SyncOrAsyncMapper)(functor Functor) -> result Promise|Functor
  * ```
  *
  * @description
@@ -398,13 +398,13 @@ map.entries = function mapEntries(arg0, arg1) {
  * ```coffeescript [specscript]
  * type Functor = Array|Object|Set|Map
  *
- * type Mapper = (
+ * type SyncOrAsyncMapper = (
  *   value any,
  *   indexOrKey number|string|any,
  *   f Functor
  * )=>(mappedElement Promise|any)
  *
- * _mapSeries(f Functor, f Mapper) -> result Promise|Functor
+ * _mapSeries(f Functor, f SyncOrAsyncMapper) -> result Promise|Functor
  * ```
  */
 const _mapSeries = function (collection, f) {
@@ -437,7 +437,7 @@ const _mapSeries = function (collection, f) {
  * ```coffeescript [specscript]
  * type MapSeriesFunctor = Array|Object|Set|Map
  *
- * type Mapper = (
+ * type SyncOrAsyncMapper = (
  *   value any,
  *   indexOrKey number|string|any,
  *   ftor MapSeriesFunctor,
@@ -445,10 +445,10 @@ const _mapSeries = function (collection, f) {
  *
  * map.series(
  *   ftor Promise|MapSeriesFunctor,
- *   mapper Mapper
+ *   mapper SyncOrAsyncMapper
  * ) -> result MapSeriesFunctor
  *
- * map.series(mapper Mapper)(ftor MapSeriesFunctor)
+ * map.series(mapper SyncOrAsyncMapper)(ftor MapSeriesFunctor)
  *   -> result MapSeriesFunctor
  * ```
  *
@@ -537,7 +537,7 @@ const _mapPool = function (f, concurrency, mapper) {
  * ```coffeescript [specscript]
  * type MapPoolFunctor = Array|Object|Set|Map
  *
- * type Mapper = (
+ * type SyncOrAsyncMapper = (
  *   element any,
  *   indexOrKey number|string|any,
  *   ftor Functor
@@ -546,12 +546,12 @@ const _mapPool = function (f, concurrency, mapper) {
  * map.pool(
  *   ftor MapPoolFunctor,
  *   concurrency number,
- *   mapper Mapper
+ *   mapper SyncOrAsyncMapper
  * ) -> result Promise|Array
  *
  * map.pool(
  *   concurrency number,
- *   mapper Mapper
+ *   mapper SyncOrAsyncMapper
  * )(ftor MapPoolFunctor) -> result Promise|Array
  * ```
  *

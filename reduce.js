@@ -23,7 +23,7 @@ const _reduce = function (collection, reducer, initial) {
  * ```coffeescript [specscript]
  * type Foldable = Array|Set|Map|Generator|AsyncGenerator|{ reduce: function }|Object
  *
- * type Reducer = (
+ * type SyncOrAsyncReducer = (
  *   accumulator any,
  *   element any,
  *   indexOrKey number|string|any,
@@ -32,7 +32,7 @@ const _reduce = function (collection, reducer, initial) {
  *
  * type UnarySyncOrAsyncResolver = any=>Promise|any
  *
- * reducer Reducer
+ * reducer SyncOrAsyncReducer
  * initial UnarySyncOrAsyncResolver|any
  *
  * reduce(foldable Promise|Foldable, reducer, initial?) -> result Promise|any

@@ -66,13 +66,13 @@ const _flatMap = function (value, flatMapper) {
  * ```coffeescript [specscript]
  * type Monad = Array|String|Set|Generator|AsyncGenerator|{ flatMap: string }|{ chain: string }|Object
  *
- * type FlatMapper = (
+ * type SyncOrAsyncFlatMapper = (
  *   element any,
  *   indexOrKey number|string|any,
  *   monad Monad
  * )=>Promise|Monad|any
  *
- * flatMapper FlatMapper
+ * flatMapper SyncOrAsyncFlatMapper
  *
  * flatMap(monad Promise|Monad, flatMapper) -> result Promise|Monad
  * flatMap(flatMapper)(monad Monad) -> result Promise|Monad

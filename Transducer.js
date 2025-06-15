@@ -24,12 +24,9 @@ const Transducer = {}
  * type SyncOrAsyncReducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
  * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer
  *
- * type Mapper = (
- *   element any,
- *   index number,
- * )=>(resultElement Promise|any)
+ * type UnarySyncOrAsyncMapper = (element any)=>(resultElement Promise|any)
  *
- * Transducer.map(mapper Mapper) -> mappingTransducer Transducer
+ * Transducer.map(mapper UnarySyncOrAsyncMapper) -> mappingTransducer Transducer
  * ```
  *
  * @description
