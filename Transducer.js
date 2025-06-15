@@ -179,7 +179,7 @@ Transducer.flatMap = function transducerFlatMap(flatMapper) {
  * ```
  *
  * @description
- * Executes a callback function for each element of a reducing operation, otherwise leaving the reducing operation unmodified. It is possible to use an asynchronous callback function, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
+ * Executes a callback function for each element of a reducing operation, leaving the reducing operation unmodified. It is possible to use an asynchronous callback function, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
  *
  * ```javascript [playground]
  * const numbers = [1, 2, 3, 4, 5]
