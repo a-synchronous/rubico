@@ -1,5 +1,5 @@
 /**
- * rubico v2.7.2
+ * rubico v2.7.3
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2025 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -2879,7 +2879,9 @@ const not = function (...args) {
     }
     return _not(args, predicateOrValue)
   }
-  return !predicateOrValue
+  return isPromise(predicateOrValue)
+    ? predicateOrValue.then(negate)
+    : !predicateOrValue
 }
 
 // argument resolver for curryArgs4
