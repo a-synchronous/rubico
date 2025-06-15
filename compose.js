@@ -10,9 +10,13 @@ const funcConcat = require('./_internal/funcConcat')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * funcs Array<function>
  * args Array<any>
  * argsOrPromises Array<Promise|any>
+ *
+ * type SyncOrAsyncFunction = (...args)=>Promise|any
+ * type UnarySyncOrAsyncFunction = any=>Promise|any
+ *
+ * funcs [SyncOrAsyncFunction, ...Array<UnarySyncOrAsyncFunction>]
  *
  * compose(funcs)(...args) -> result Promise|any
  * compose(...argsOrPromises, funcs) -> result Promise|any
@@ -20,7 +24,7 @@ const funcConcat = require('./_internal/funcConcat')
  * ```
  *
  * @description
- * Creates a function composition from multiple functions. Each function in the composition is evaluated starting from the last function in the composition in series, passing its return value as an argument to the previous function. The result of a composition execution is the return value of the first function in the composition. If any function in the composition is asynchronous, the result of the composition execution is a Promise.
+ * Creates a function composition from multiple functions. Each function in the composition is evaluated starting from the last function in the composition in series, passing its return value as an argument to the previous function. The result of a composition execution is the return value of the first function in the composition. All arguments provided to the composition are provided to the last function in the composition. If any function in the composition is asynchronous, the result of the composition execution is a Promise.
  *
  * ```javascript [playground]
  * const f = x => x * 2

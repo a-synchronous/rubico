@@ -10,17 +10,21 @@ const __ = require('./_internal/placeholder')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * funcs Array<function>
  * args Array<any>
  * argsOrPromises Array<Promise|any>
  *
+ * type SyncOrAsyncFunction = (...args)=>Promise|any
+ * type UnarySyncOrAsyncFunction = any=>Promise|any
+ *
+ * funcs [SyncOrAsyncFunction, ...Array<UnarySyncOrAsyncFunction>]
+ *
  * pipe(funcs)(...args) -> result Promise|any
- * pipe(...argsOrPromises, funcs Array<function>) -> result Promise|any
+ * pipe(...argsOrPromises, funcs) -> result Promise|any
  * pipe(...funcs)(...args) -> result Promise|any
  * ```
  *
  * @description
- * Creates a function pipeline from multiple functions. Each function in the pipeline is evaluated in series, passing its return value as an argument to the next function. The result of a pipeline execution is the return value of the last function in the pipeline. If any function in the pipeline is asynchronous, the result of the pipeline execution is a Promise.
+ * Creates a function pipeline from multiple functions. Each function in the pipeline is evaluated in series, passing its return value as an argument to the next function. The result of a pipeline execution is the return value of the last function in the pipeline. All arguments provided to the pipeline are provided to the first function in the pipeline. If any function in the pipeline is asynchronous, the result of the pipeline execution is a Promise.
  *
  * ```javascript [playground]
  * const syncAdd123 = pipe([
@@ -49,16 +53,6 @@ const __ = require('./_internal/placeholder')
  * const appendBC = pipe(appendB, appendC)
  *
  * console.log(appendBC('a')) // 'abc'
- * ```
- *
- * When passed any amount of arguments before the array of functions, `pipe` executes eagerly; the array of functions is immediately invoked with the supplied arguments.
- *
- * ```javascript [playground]
- * pipe(1, 2, 3, [
- *   Array.of,
- *   map(number => number * 3),
- *   console.log, // [3, 6, 9]
- * ])
  * ```
  *
  * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
