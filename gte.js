@@ -9,12 +9,12 @@ const greaterThanOrEqual = require('./_internal/greaterThanOrEqual')
  * args Array<any>
  * argsOrPromises Array<Promise|any>
  *
- * type Resolver = (...args)=>Promise|boolean
+ * type SyncOrAsyncResolver = (...args)=>Promise|any
  *
  * leftValue Promise|any
  * rightValue Promise|any
- * leftResolver Resolver
- * rightResolver Resolver
+ * leftResolver SyncOrAsyncResolver
+ * rightResolver SyncOrAsyncResolver
  *
  * gte(leftValue, rightValue) -> Promise|boolean
  * gte(...argsOrPromises, leftResolver, rightValue) -> Promise|boolean

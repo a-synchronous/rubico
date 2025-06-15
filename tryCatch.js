@@ -25,8 +25,14 @@ const _tryCatch = function (tryer, catcher, args) {
  * args Array<any>
  * argsOrPromises Array<Promise|any>
  *
- * tryCatch(tryer function, catcher function)(...args) -> Promise|any
- * tryCatch(...argsOrPromises, tryer function, catcher function) -> Promise|any
+ * type SyncOrAsyncFunction = (...args)=>Promise|any
+ * type SyncOrAsyncCatcher = (error Error|any, ...args)=>Promise|any
+ *
+ * tryer SyncOrAsyncFunction
+ * catcher SyncOrAsyncCatcher
+ *
+ * tryCatch(tryer, catcher)(...args) -> Promise|any
+ * tryCatch(...argsOrPromises, tryer, catcher) -> Promise|any
  * ```
  *
  * @description

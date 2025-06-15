@@ -30,10 +30,10 @@ const _reduce = function (collection, reducer, initial) {
  *   foldable Foldable
  * )=>(nextAccumulator Promise|any)
  *
- * type Resolver = (foldable Foldable)=>Promise|any
+ * type UnarySyncOrAsyncResolver = any=>Promise|any
  *
  * reducer Reducer
- * initial Resolver|any
+ * initial UnarySyncOrAsyncResolver|any
  *
  * reduce(foldable Promise|Foldable, reducer, initial?) -> result Promise|any
  * reduce(reducer, initial?)(foldable Foldable) -> result Promise|any

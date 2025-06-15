@@ -53,9 +53,11 @@ const _forEach = function (collection, callback) {
  *   iter Iterable
  * )=>Promise|undefined
  *
- * forEach(iter Iterable, cb Callback) -> iter Promise|Iterable
+ * iterable Iterable
+ * cb Callback
  *
- * forEach(cb Callback)(iter Iterable) -> iter Promise|Iterable
+ * forEach(iterable, cb) -> unmodifiedIterable Promise|Iterable
+ * forEach(cb)(iterable) -> unmodifiedIterable Promise|Iterable
  * ```
  *
  * @description
@@ -206,9 +208,11 @@ const _forEachSeries = function (collection, callback) {
  *   iter Iterable
  * )=>Promise|undefined
  *
- * forEach(iter Iterable, cb Callback) -> iter Promise|Iterable
+ * iterable Iterable
+ * cb Callback
  *
- * forEach(cb Callback)(iter Iterable) -> iter Promise|Iterable
+ * forEach(iterable, cb) -> unmodifiedIterable Promise|Iterable
+ * forEach(cb)(iterable) -> unmodifiedIterable Promise|Iterable
  * ```
  *
  * @description

@@ -99,7 +99,10 @@ const areAnyPredicatesTruthy = function (args, predicates) {
  * ```coffeescript [specscript]
  * args Array<any>
  * argsOrPromises Array<Promise|any>
- * predicatesOrValues Array<function|boolean|any>
+ *
+ * type SyncOrAsyncPredicate = (...args)=>Promise|boolean|any
+ *
+ * predicatesOrValues Array<SyncOrAsyncPredicate|boolean|any>
  *
  * or(values Array<boolean|any>) -> result boolean
  * or(...argsOrPromises, predicatesOrValues) -> Promise|boolean

@@ -41,9 +41,12 @@ const _some = function (collection, predicate) {
  * @synopsis
  * ```coffeescript [specscript]
  * type Foldable = Array|Set|Map|Generator|AsyncGenerator|{ reduce: function }|Object
+ * type UnarySyncOrAsyncPredicate = any=>Promise|boolean
  *
- * some(foldable Foldable, predicate function) -> Promise|boolean
- * some(predicate function)(foldable Foldable) -> Promise|boolean
+ * predicate UnarySyncOrAsyncPredicate
+ *
+ * some(foldable Foldable, predicate) -> Promise|boolean
+ * some(predicate)(foldable Foldable) -> Promise|boolean
  * ```
  *
  * @description

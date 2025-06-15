@@ -20,9 +20,9 @@ const _assign = function (object, funcs) {
  * ```coffeescript [specscript]
  * args Array<any>
  *
- * type Resolver = (...args)=>Promise|any
+ * type UnarySyncOrAsyncResolver = any=>Promise|any
  *
- * objectResolversOrPromisesOrValues Object<Resolver|Promise|any>
+ * objectResolversOrPromisesOrValues Object<UnarySyncOrAsyncResolver|Promise|any>
  *
  * assign(argumentObject Promise|Object, objectResolversOrPromisesOrValues) -> resultObject
  * assign(objectResolversOrPromisesOrValues)(argumentObject Object) -> resultObject

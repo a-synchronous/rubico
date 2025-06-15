@@ -39,10 +39,10 @@ const _allValues = function (values) {
  * args Array<any>
  * argsOrPromises Array<Promise|any>
  *
- * type Resolver = (...args)=>Promise|any
+ * type SyncOrAsyncResolver = (...args)=>Promise|any
  *
- * arrayResolversOrPromisesOrValues Array<Resolver|Promise|any>
- * objectResolversOrPromisesOrValues Object<Resolver|Promise|any>
+ * arrayResolversOrPromisesOrValues Array<SyncOrAsyncResolver|Promise|any>
+ * objectResolversOrPromisesOrValues Object<SyncOrAsyncResolver|Promise|any>
  *
  * all(arrayValues Promise|Array<Promise|any>) -> arrayResult Promise|Array
  * all(...argsOrPromises, arrayResolversOrPromisesOrValues) -> arrayResult Promise|Array

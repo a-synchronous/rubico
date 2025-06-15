@@ -86,7 +86,7 @@ When you import this library, you obtain the freedom that comes from having thos
 
 # Introduction
 
-rubico is a library for async-enabled functional programming in JavaScript. The library supports a simple and composable functional style in asynchronous environments.
+rubico is a library for [A]synchronous Functional Programming in JavaScript. The library supports a simple and composable functional style in asynchronous environments.
 
 ```javascript
 const {
@@ -119,7 +119,7 @@ const {
 } = rubico
 ```
 
-With async-enabled, or [a]synchronous, functional programming, functions provided to the rubico operators may be asynchronous and return a Promise. Any promises in argument position are also resolved before continuing with the operation.
+With [A]synchronous Functional Programming, any function may be asynchronous and return a promise. All promises are resolved for their values before continuing with the operation.
 
 ```javascript [playground]
 const helloPromise = Promise.resolve('hello')
@@ -133,7 +133,7 @@ pipe(helloPromise, [ // helloPromise is resolved for 'hello'
 ])
 ```
 
-All rubico operators support both an eager and a lazy API. The eager API takes all required arguments and executes at once, while its lazy API takes only the non-data arguments and executes lazily, returning a function that expects the data arguments. This dual API supports a natural and composable code style.
+All rubico operators support both eager and lazy APIs. The eager API takes all required arguments and executes at once, while the lazy API takes only the setup arguments and returns a function that executes later. This dual API supports a natural and composable code style.
 
 ```javascript [playground]
 const myObj = { a: 1, b: 2, c: 3 }
@@ -203,7 +203,7 @@ pipe(todoIDs, [
 ])
 ```
 
-rubico offers transducers in its `Transducer` module. You can consume these transducers with the `transform` and `compose` operators. You should use `compose` over `pipe` to chain a left-to-right composition of transducers.
+rubico offers transducers through its `Transducer` module. You can consume these transducers with rubico's `transform` and `compose` operators. You can use `compose` to chain a left-to-right composition of transducers.
 
 ```javascript [playground]
 const isOdd = number => number % 2 == 1
@@ -219,18 +219,18 @@ const generateNumbers = function* () {
 }
 
 pipe(generateNumbers(), [
-  transform(compose([
+  transform(compose(
     Transducer.filter(isOdd),
     Transducer.map(asyncSquare),
-  ]), []),
+  ), []),
   console.log, // [1, 9, 25]
 ])
 ```
 
-For advanced asynchronous use cases, some of the operators have property functions that have different asynchronous behavior, e.g.
- * `map` - apply a mapper function concurrently
- * `map.pool` - apply a mapper function concurrently with a concurrency limit
- * `map.series` - apply a mapper function serially
+For advanced asynchronous use cases, some of the rubico operators have property functions that have various asynchronous behavior, e.g.
+ * `map` - applies a mapper function concurrently
+ * `map.pool` - applies a mapper function concurrently with a concurrency limit
+ * `map.series` - applies a mapper function serially
 
 For more functions beyond the core operators, please visit `rubico/x`. You can find the full documentation at [rubico.land/docs](https://rubico.land/docs).
 
@@ -241,7 +241,7 @@ npm run bench
 ```
 
 # Contributing
-Your feedback and contributions are welcome. If you have a suggestion, please raise an issue. Prior to that, please search through the issues first in case your suggestion has been made already. If you decide to work on an issue, or feel like taking initiative and contributing anything at all, feel free to create a pull request and I will get back to you shortly.
+Your feedback and contributions are welcome. If you have a suggestion, please raise an issue. Prior to that, please search through the issues first in case your suggestion has been made already. If you decide to work on an issue, please create a pull request.
 
 Pull requests should provide some basic context and link the relevant issue. Here is an [example pull request](https://github.com/a-synchronous/rubico/pull/12). If you are interested in contributing, the [help wanted](https://github.com/a-synchronous/rubico/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) tag is a good place to start.
 

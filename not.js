@@ -22,9 +22,9 @@ const _not = function (args, predicate) {
  * args Array<any>
  * argsOrPromises Array<Promise|any>
  *
- * type Predicate = (...args)=>Promise|boolean
+ * type SyncOrAsyncPredicate = (...args)=>Promise|boolean
  *
- * predicate Predicate
+ * predicate SyncOrAsyncPredicate
  *
  * not(value Promise|boolean|any) -> negated Promise|boolean
  * not(...argsOrPromises, predicate) -> negated Promise|boolean

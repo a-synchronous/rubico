@@ -9,12 +9,12 @@ const lessThanOrEqual = require('./_internal/lessThanOrEqual')
  * args Array<any>
  * argsOrPromises Array<Promise|any>
  *
- * type Resolver = (...args)=>Promise|boolean
+ * type SyncOrAsyncResolver = (...args)=>Promise|any
  *
  * leftValue Promise|any
  * rightValue Promise|any
- * leftResolver Resolver
- * rightResolver Resolver
+ * leftResolver SyncOrAsyncResolver
+ * rightResolver SyncOrAsyncResolver
  *
  * lte(leftValue, rightValue) -> Promise|boolean
  * lte(...argsOrPromises, leftResolver, rightValue) -> Promise|boolean

@@ -33,10 +33,10 @@ const _transform = function (collection, transducer, initialValue) {
  * type Semigroup =
  *   Array|String|Set|TypedArray|{ concat: function }|{ write: function }|Object
  *
- * type SemigroupResolver = (foldable Foldable)=>Promise|Semigroup
+ * type UnarySyncOrAsyncSemigroupResolver = any=>Promise|Semigroup
  *
  * transducer Transducer
- * initial Semigroup|SemigroupResolver
+ * initial UnarySyncOrAsyncSemigroupResolver|Semigroup
  *
  * transform(foldable Promise|Foldable, transducer, initial?) -> result Promise|Semigroup
  * transform(transducer, initial?)(foldable Foldable) -> result Promise|Semigroup

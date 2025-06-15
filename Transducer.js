@@ -86,16 +86,13 @@ Transducer.map = function transducerMap(mapper) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Reducer = (
- *   accumulator any,
- *   value any,
- * )=>(nextAccumulator Promise|any)
+ * type SyncOrAsyncReducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
+ * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer // TODO
+ * type UnarySyncOrAsyncPredicate = any=>Promise|boolean|any
  *
- * type Transducer = Reducer=>Reducer
+ * predicate UnarySyncOrAsyncPredicate
  *
- * type Predicate = (value any)=>(condition Promise|boolean)
- *
- * Transducer.filter(predicate Predicate) -> filteringTransducer Transducer
+ * Transducer.filter(predicate) -> filteringTransducer Transducer
  * ```
  *
  * @description

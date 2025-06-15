@@ -25,8 +25,12 @@ const _tap = function (args, f) {
  * args Array<any>
  * argsOrPromises Array<Promise|any>
  *
- * tap(...argsOrPromises, f function) -> Promise|args[0]
- * tap(f function)(...args) -> Promise|args[0]
+ * type SyncOrAsyncFunction = (...args)=>Promise|any
+ *
+ * f SyncOrAsyncFunction
+ *
+ * tap(...argsOrPromises, f) -> Promise|args[0]
+ * tap(f)(...args) -> Promise|args[0]
  * ```
  *
  * @description
@@ -107,8 +111,14 @@ const _tapIf = function (predicate, f, args) {
  * args Array<any>
  * argsOrPromises Array<Promise|any>
  *
- * tap.if(...argsOrPromises, predicate function, f function) -> Promise|args[0]
- * tap.if(predicate function, f function)(...args) -> Promise|args[0]
+ * type SyncOrAsyncPredicate = (...args)=>Promise|boolean|any
+ * type SyncOrAsyncFunction = (...args)=>Promise|any
+ *
+ * predicate SyncOrAsyncPredicate
+ * f SyncOrAsyncFunction
+ *
+ * tap.if(...argsOrPromises, predicate, f) -> Promise|args[0]
+ * tap.if(predicate, f)(...args) -> Promise|args[0]
  * ```
  *
  * @description
