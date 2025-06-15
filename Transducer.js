@@ -173,9 +173,9 @@ Transducer.flatMap = function transducerFlatMap(flatMapper) {
  * ```coffeescript [specscript]
  * type SyncOrAsyncReducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
  * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer
- * type SyncOrAsyncCallback = (element any)=>Promise|undefined
+ * type UnarySyncOrAsyncCallback = (element any)=>Promise|undefined
  *
- * Transducer.forEach(callback SyncOrAsyncCallback) -> forEachTransducer Transducer
+ * Transducer.forEach(callback UnarySyncOrAsyncCallback) -> forEachTransducer Transducer
  * ```
  *
  * @description
