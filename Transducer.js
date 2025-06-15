@@ -106,11 +106,15 @@ Transducer.map = function transducerMap(mapper) {
  *
  * const concat = (array, item) => array.concat(item)
  *
- * const concatOddNumbers = filter(isOdd)(concat)
+ * const concatOddNumbers = Transducer.filter(isOdd)(concat)
  *
- * console.log(
- *   [1, 2, 3, 4, 5].reduce(concatOddNumbers, []),
- * ) // [1, 3, 5]
+ * const array = [1, 2, 3, 4, 5]
+ *
+ * const oddNumbers1 = array.reduce(concatOddNumbers, [])
+ * console.log(oddNumbers1) // [1, 3, 5]
+ *
+ * const oddNumbers2 = transform(array, Transducer.filter(isOdd), [])
+ * console.log(oddNumbers2) // [1, 3, 5]
  * ```
  *
  * Read more on [transducers](/blog/transducers-crash-course-rubico-v2).
