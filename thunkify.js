@@ -9,6 +9,8 @@ const funcApply = require('./_internal/funcApply')
  *
  * @synopsis
  * ```coffeescript [specscript]
+ * args Array<any>
+ *
  * thunkify(func function, ...args) -> thunk ()=>func(...args)
  * ```
  *

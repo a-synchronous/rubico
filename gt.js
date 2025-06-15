@@ -6,20 +6,27 @@ const greaterThan = require('./_internal/greaterThan')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * gt(leftValue Promise|any, rightValue Promise|any) -> boolean
+ * args Array<any>
+ * argsOrPromises Array<Promise|any>
  *
- * gt(leftValue Promise|any, right function)(...args) -> Promise|boolean
- * gt(...args, leftValue Promise|any, right function) -> Promise|boolean
+ * type Resolver = (...args)=>Promise|boolean
  *
- * gt(left function, rightValue Promise|any)(...args) -> Promise|boolean
- * gt(...args, left function, rightValue Promise|any) -> Promise|boolean
+ * leftValue Promise|any
+ * rightValue Promise|any
+ * leftResolver Resolver
+ * rightResolver Resolver
  *
- * gt(left function, right function)(...args) -> Promise|boolean
- * gt(...args, left function, right function) -> Promise|boolean
+ * gt(leftValue, rightValue) -> Promise|boolean
+ * gt(...argsOrPromises, leftResolver, rightValue) -> Promise|boolean
+ * gt(...argsOrPromises, leftValue, rightResolver) -> Promise|boolean
+ * gt(...argsOrPromises, leftResolver, rightResolver) -> Promise|boolean
+ * gt(leftResolver, rightValue)(...args) -> Promise|boolean
+ * gt(leftValue, rightResolver)(...args) -> Promise|boolean
+ * gt(leftResolver, rightResolver)(...args) -> Promise|boolean
  * ```
  *
  * @description
- * Test if a value is greater than (`>`) another value.
+ * Functional equivalent of the [Greater than (>)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Greater_than) operator. Tests if a value is greater than (`>`) another value.
  *
  * ```javascript [playground]
  * const age = 40
@@ -29,14 +36,24 @@ const greaterThan = require('./_internal/greaterThan')
  * console.log(isAgeGreaterThan21) // true
  * ```
  *
- * If either of the two values are resolver functions, `gt` returns a function that resolves the values to compare from its arguments.
+ * If either of the two values are resolver functions, `gt` returns a function that resolves the value(s) to compare.
  *
  * ```javascript [playground]
- * const isOfLegalAge = gt(21, get('age'))
+ * const isOfLegalAge = gt(get('age'), 21)
  *
  * const juvenile = { age: 16 }
  *
  * console.log(isOfLegalAge(juvenile)) // false
+ * ```
+ *
+ * If either of the resolver functions is asynchronous, `gt` returns an asynchronous function.
+ *
+ * ```javascript [playground]
+ * const asyncIsOfLegalAge = gt(async person => person.age, 21)
+ *
+ * const juvenile = { age: 16 }
+ *
+ * asyncIsOfLegalAge(juvenile).then(console.log) // false
  * ```
  *
  * `gt` supports a lazy API for composability.

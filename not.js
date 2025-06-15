@@ -26,13 +26,13 @@ const _not = function (args, predicate) {
  *
  * predicate Predicate
  *
- * not(value boolean) -> negated boolean
+ * not(value Promise|boolean|any) -> negated Promise|boolean
  * not(...argsOrPromises, predicate) -> negated Promise|boolean
  * not(predicate)(...args) -> negated Promise|boolean
  * ```
  *
  * @description
- * Negate a value like the [logical NOT (`!`)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Logical_NOT) operator.
+ * Function equivalent to the [Logical NOT (`!`)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Logical_NOT) operator. Negates a value.
  *
  * ```javascript [playground]
  * const myObj = { a: 1 }
@@ -46,9 +46,17 @@ const _not = function (args, predicate) {
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
  *
- * console.log(
- *   not(isOdd)(3),
- * ) // false
+ * const isNotOdd = not(isOdd)
+ *
+ * console.log(isNotOdd(3)) // false
+ * ```
+ *
+ * `not` negates the resolved value of a promise.
+ *
+ * ```javascript [playground]
+ * const promise = Promise.resolve(false)
+ *
+ * not(promise).then(console.log) // true
  * ```
  *
  * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.

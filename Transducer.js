@@ -28,7 +28,12 @@ const Transducer = {}
  *
  * type Transducer = Reducer=>Reducer
  *
- * Transducer.map(mapperFunc function) -> mappingTransducer Transducer
+ * type Mapper = (
+ *   item any,
+ *   index number,
+ * )=>(resultItem Promise|any)
+ *
+ * Transducer.map(mapper Mapper) -> mappingTransducer Transducer
  * ```
  *
  * @description
@@ -88,7 +93,9 @@ Transducer.map = function transducerMap(mapper) {
  *
  * type Transducer = Reducer=>Reducer
  *
- * Transducer.filter(predicate function) -> filteringTransducer Transducer
+ * type Predicate = (value any)=>(condition Promise|boolean)
+ *
+ * Transducer.filter(predicate Predicate) -> filteringTransducer Transducer
  * ```
  *
  * @description
@@ -133,7 +140,11 @@ Transducer.filter = function transducerFilter(predicate) {
  *
  * type Transducer = Reducer=>Reducer
  *
- * Transducer.flatMap(flatMapper) -> flatMappingTransducer Transducer
+ * type Monad = Array|String|Set|Generator|AsyncGenerator|{ flatMap: string }|{ chain: string }|Object
+ *
+ * type FlatMapper = (item any)=>(monad Promise|Monad|any)
+ *
+ * Transducer.flatMap(flatMapper FlatMapper) -> flatMappingTransducer Transducer
  * ```
  *
  * @description
@@ -176,7 +187,9 @@ Transducer.flatMap = function transducerFlatMap(flatMapper) {
  *
  * type Transducer = Reducer=>Reducer
  *
- * Transducer.forEach(func function) -> forEachTransducer Transducer
+ * type Callback = (item any)=>Promise|undefined
+ *
+ * Transducer.forEach(callback Callback) -> forEachTransducer Transducer
  * ```
  *
  * @description
@@ -217,7 +230,7 @@ Transducer.forEach = function transducerForEach(func) {
  *
  * type Transducer = Reducer=>Reducer
  *
- * Transducer.passthrough(func function) -> passthroughTransducer Transducer
+ * Transducer.passthrough Transducer
  * ```
  *
  * @description
@@ -263,10 +276,10 @@ Transducer.passthrough = function transducerPassthrough(reducer) {
  *
  * type Transducer = Reducer=>Reducer
  *
- * Transducer.tryCatch(
- *   transducerTryer Transducer,
- *   catcher (error Error, item any)=>Promise|any,
- * ) -> tryCatchTransducer Transducer
+ * transducerTryer Transducer
+ * catcher (error Error, item any)=>Promise|any
+ *
+ * Transducer.tryCatch(transducerTryer, catcher) -> tryCatchTransducer Transducer
  * ```
  *
  * @description

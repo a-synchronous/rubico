@@ -96,7 +96,7 @@ const _filter = function (value, predicate) {
  *   value any,
  *   indexOrKey number|string|any,
  *   filterable Filterable,
- * )=>boolean
+ * )=>(condition Promise|boolean)
  *
  * filter(filterable Promise|Filterable, predicate Predicate) -> result Promise|Filterable
  * filter(predicate Predicate)(filterable Filterable) -> result Promise|Filterable

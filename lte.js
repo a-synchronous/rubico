@@ -6,20 +6,27 @@ const lessThanOrEqual = require('./_internal/lessThanOrEqual')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * lte(leftValue Promise|any, rightValue Promise|any) -> boolean
+ * args Array<any>
+ * argsOrPromises Array<Promise|any>
  *
- * lte(leftValue Promise|any, right function)(...args) -> Promise|boolean
- * lte(...args, leftValue Promise|any, right function) -> Promise|boolean
+ * type Resolver = (...args)=>Promise|boolean
  *
- * lte(left function, rightValue Promise|any)(...args) -> Promise|boolean
- * lte(...args, left function, rightValue Promise|any) -> Promise|boolean
+ * leftValue Promise|any
+ * rightValue Promise|any
+ * leftResolver Resolver
+ * rightResolver Resolver
  *
- * lte(left function, right function)(...args) -> Promise|boolean
- * lte(...args, left function, right function) -> Promise|boolean
+ * lte(leftValue, rightValue) -> Promise|boolean
+ * lte(...argsOrPromises, leftResolver, rightValue) -> Promise|boolean
+ * lte(...argsOrPromises, leftValue, rightResolver) -> Promise|boolean
+ * lte(...argsOrPromises, leftResolver, rightResolver) -> Promise|boolean
+ * lte(leftResolver, rightValue)(...args) -> Promise|boolean
+ * lte(leftValue, rightResolver)(...args) -> Promise|boolean
+ * lte(leftResolver, rightResolver)(...args) -> Promise|boolean
  * ```
  *
  * @description
- * Test if a value is less than or equal (`<=`) to another value.
+ * Functional equivalent of the [Less than or equal (>=)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Less_than_or_equal) operator. Tests if a value is less than or equal (`<=`) to another value.
  *
  * ```javascript [playground]
  * console.log(lte(1, 3)) // true
@@ -27,16 +34,28 @@ const lessThanOrEqual = require('./_internal/lessThanOrEqual')
  * console.log(lte(4, 3)) // false
  * ```
  *
- * If either of the two values are resolver functions, `lte` returns a function that resolves the values to compare from its arguments.
+ * If either of the two values are resolver functions, `lte` returns a function that resolves the value(s) to compare.
  *
  * ```javascript [playground]
  * const identity = value => value
  *
  * const isLessThanOrEqualTo3 = lte(identity, 3)
  *
- * console.log(isLessThanOrEqualTo3(1), true)
- * console.log(isLessThanOrEqualTo3(3), true)
- * console.log(isLessThanOrEqualTo3(5), false)
+ * console.log(isLessThanOrEqualTo3(1)) // true
+ * console.log(isLessThanOrEqualTo3(3)) // true
+ * console.log(isLessThanOrEqualTo3(5)) // false
+ * ```
+ *
+ * If either of the two resolver functions is asynchronous, `lte` returns an asynchronous function.
+ *
+ * ```javascript [playground]
+ * const asyncIdentity = async value => value
+ *
+ * const asyncIsLessThanOrEqualTo3 = lte(asyncIdentity, 3)
+ *
+ * asyncIsLessThanOrEqualTo3(1).then(console.log) // true
+ * asyncIsLessThanOrEqualTo3(3).then(console.log) // true
+ * asyncIsLessThanOrEqualTo3(5).then(console.log) // false
  * ```
  *
  * `lte` supports a lazy API for composability.

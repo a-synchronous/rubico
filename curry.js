@@ -5,17 +5,14 @@ const curryArity = require('./_internal/curryArity')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type __ = Symbol(placeholder)
+ * __ Symbol(placeholder)
+ *
  * type ArgsWithPlaceholder = Array<__|any>
  *
  * args ArgsWithPlaceholder
  * moreArgs ArgsWithPlaceholder
  *
- * curry(
- *   func function,
- *   ...args
- * ) -> curriedFuncOrResult function|any
- *
+ * curry(func function, ...args) -> curriedFuncOrResult function|any
  * curriedFuncOrResult(...moreArgs) -> anotherCurriedFuncOrResult function|any
  * ```
  *
@@ -55,15 +52,11 @@ const curry = (func, ...args) => curryArity(func.length, func, args)
  * type __ = Symbol(placeholder)
  * type ArgsWithPlaceholder = Array<__|any>
  *
+ * n number
  * args ArgsWithPlaceholder
  * moreArgs ArgsWithPlaceholder
  *
- * curry.arity(
- *   arity number,
- *   func function,
- *   ...args
- * ) -> curriedFuncOrResult function|any
- *
+ * curry.arity(n number, func function, ...args) -> curriedFuncOrResult function|any
  * curriedFuncOrResult(...moreArgs) -> anotherCurriedFuncOrResult function|any
  * ```
  *

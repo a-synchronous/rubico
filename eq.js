@@ -6,20 +6,28 @@ const equals = require('./_internal/equals')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * eq(leftValue Promise|any, rightValue Promise|any) -> boolean
+ * args Array<any>
+ * argsOrPromises Array<Promise|any>
  *
- * eq(leftValue Promise|any, right function)(...args) -> Promise|boolean
- * eq(...args, leftValue Promise|any, right function) -> Promise|boolean
+ * type Resolver = (...args)=>Promise|boolean
  *
- * eq(left function, rightValue Promise|any)(...args) -> Promise|boolean
- * eq(...args, left function, rightValue Promise|any) -> Promise|boolean
+ * leftValue Promise|any
+ * rightValue Promise|any
+ * leftResolver Resolver
+ * rightResolver Resolver
  *
- * eq(left function, right function)(...args) -> Promise|boolean
- * eq(...args, left function, right function) -> Promise|boolean
+ * eq(leftValue, rightValue) -> Promise|boolean
+ * eq(...argsOrPromises, leftResolver, rightValue) -> Promise|boolean
+ * eq(...argsOrPromises, leftValue, rightResolver) -> Promise|boolean
+ * eq(...argsOrPromises, leftResolver, rightResolver) -> Promise|boolean
+ * eq(leftResolver, rightValue)(...args) -> Promise|boolean
+ * eq(leftValue, rightResolver)(...args) -> Promise|boolean
+ * eq(leftResolver, rightResolver)(...args) -> Promise|boolean
+ *
  * ```
  *
  * @description
- * Test for [equality (`==`)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Equality) between two values.
+ * Function equivalent to the [Equality (==)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Equality) operator. Tests for equality (`==`) between two values.
  *
  * ```javascript [playground]
  * const areNamesEqual = eq('Ted', 'John')
@@ -27,7 +35,7 @@ const equals = require('./_internal/equals')
  * console.log(areNamesEqual) // false
  * ```
  *
- * If either of the two values are resolver functions, `eq` returns a function that resolves the values to compare from its arguments.
+ * If either of the two values are resolver functions, `eq` returns a function that resolves the value(s) to compare.
  *
  * ```javascript [playground]
  * const personIsJohn = eq(get('name'), 'John')
@@ -35,8 +43,22 @@ const equals = require('./_internal/equals')
  * const person = { name: 'John', likes: 'bananas' }
  *
  * if (personIsJohn(person)) {
- *   console.log('The person is george')
+ *   console.log('The person is John')
  * }
+ * ```
+ *
+ * If either of the two resolver functions is asynchronous, `eq` returns an asynchronous function.
+ *
+ * ```javascript [playground]
+ * const asyncPersonIsJohn = eq(async person => person.name, 'John')
+ *
+ * const person = { name: 'John', likes: 'bananas' }
+ *
+ * asyncPersonIsJohn(person).then(condition => {
+ *   if (condition) {
+ *     console.log('The person is John')
+ *   }
+ * })
  * ```
  *
  * `eq` supports a lazy API for composability.

@@ -107,7 +107,7 @@ const areAnyPredicatesTruthy = function (args, predicates) {
  * ```
  *
  * @description
- * Function equivalent to the [logical OR](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Logical_OR) operator. Tests arrays of predicate functions, promises, values, or a mix thereof.
+ * Function equivalent to the [Logical OR](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Logical_OR) operator. Tests arrays of predicate functions, promises, values, or a mix thereof.
  *
  * If provided an array of boolean values, `or` returns true if any boolean values are truthy.
  *
