@@ -272,22 +272,25 @@ Transducer.passthrough = function transducerPassthrough(reducer) {
  *
  * const userIds = ['a', 'b', 'c', 'd', 'e']
  *
- * transform(userIds, Transducer.tryCatch(compose(
- *   Transducer.map(async userId => {
- *     if (db.has(userId)) {
- *       return db.get(userId)
- *     }
- *     throw new Error(`user ${userId} not found`)
- *   }),
+ * transform(userIds, Transducer.tryCatch(
+ *   compose(
+ *     Transducer.map(async userId => {
+ *       if (db.has(userId)) {
+ *         return db.get(userId)
+ *       }
+ *       throw new Error(`user ${userId} not found`)
+ *     }),
  *
- *   Transducer.forEach(user => {
- *     console.log('Found', user.name)
- *   })
- * ), (error, userId) => {
- *   console.error(error)
- *   console.log('userId in catcher:', userId)
- *   // original userId for which the error was thrown is provided
- * }), null)
+ *     Transducer.forEach(user => {
+ *       console.log('Found', user.name)
+ *     })
+ *   ),
+ *   (error, userId) => {
+ *     console.error(error)
+ *     console.log('userId in catcher:', userId)
+ *     // original userId for which the error was thrown is provided
+ *   }
+ * ), null)
  * ```
  *
  * Read more on [transducers](/blog/transducers-crash-course-rubico-v2).
