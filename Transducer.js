@@ -33,7 +33,7 @@ const Transducer = {}
  * ```
  *
  * @description
- * Creates a mapping transducer. Elements in the final reducing operation are transformed by the mapper function. It is possible to use an asynchronous mapper, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
+ * Creates a mapping transducer. Elements of the transducer's reducing operation are transformed by the mapper function. It is possible to use an asynchronous mapper, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
  *
  * ```javascript [playground]
  * const square = number => number ** 2
@@ -92,7 +92,7 @@ Transducer.map = function transducerMap(mapper) {
  * ```
  *
  * @description
- * Creates a filtering transducer. A filtering reducer skips element of reducing operation if they test falsy by the predicate. It is possible to use an asynchronous predicate, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
+ * Creates a filtering transducer. A filtering transducer filters out elements of its reducing operation if they test false by the predicate. It is possible to use an asynchronous predicate, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -139,7 +139,7 @@ Transducer.filter = function transducerFilter(predicate) {
  * ```
  *
  * @description
- * Creates a flatMapping transducer. A flatMapping transducer applies the flatMapping function to each element of the reducing operation, concatenating the results of the flatMapper execution into the final result. It is possible to use an asynchronous flatMapper, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
+ * Creates a flatMapping transducer. A flatMapping transducer applies the flatMapper function to each element of its reducing operation, concatenating the results of the flatMapper execution onto the accumulator. It is possible to use an asynchronous flatMapper, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
  *
  * ```javascript [playground]
  * const powers = number => [number, number ** 2, number ** 3]
@@ -179,14 +179,14 @@ Transducer.flatMap = function transducerFlatMap(flatMapper) {
  * ```
  *
  * @description
- * Creates an effectful pasthrough transducer. The effectful passthrough transducer applies the effectful function to each element of the reducing operation, leaving the reducing operation unchanged. It is possible to use an asynchronous effectful function, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
+ * Executes a callback function for each element of a reducing operation, otherwise leaving the reducing operation unmodified. It is possible to use an asynchronous callback function, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
  *
  * ```javascript [playground]
  * const numbers = [1, 2, 3, 4, 5]
- * transform(numbers, compose([
+ * transform(numbers, compose(
  *   Transducer.map(number => number ** 2),
  *   Transducer.forEach(console.log), // 1 4 9 16 25
- * ]), null)
+ * ), null)
  * ```
  *
  * Read more on [transducers](/blog/transducers-crash-course-rubico-v2).
@@ -216,7 +216,7 @@ Transducer.forEach = function transducerForEach(func) {
  * ```
  *
  * @description
- * Creates a pasthrough transducer. The passthrough transducer passes each element of the reducing operation through, leaving the reducing operation unchanged.
+ * Creates a pasthrough transducer. The passthrough transducer simply passes each element of the reducing operation through to the next downstream operation, leaving the reducing operation unmodified.
  *
  * ```javascript [playground]
  * const createAsyncNumbers = async function* () {
@@ -261,7 +261,7 @@ Transducer.passthrough = function transducerPassthrough(reducer) {
  * ```
  *
  * @description
- * Creates an error handling transducer. The error handling transducer wraps a transducer and catches any errors thrown by the transducer with the catcher function. The catcher function is provided the error as well as the original element (before any processing by the transducer) for which the error was thrown. It is possible for either the transducer or the catcher to be asynchronous, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
+ * Creates an error handling transducer. The error handling transducer wraps a transducer and catches any errors thrown by the transducer with the catcher function. The catcher function is provided the error as well as the element for which the error was thrown. It is possible for either the transducer or the catcher to be asynchronous, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
  *
  * ```javascript [playground]
  * const db = new Map()
@@ -272,7 +272,7 @@ Transducer.passthrough = function transducerPassthrough(reducer) {
  *
  * const userIds = ['a', 'b', 'c', 'd', 'e']
  *
- * transform(userIds, Transducer.tryCatch(compose([
+ * transform(userIds, Transducer.tryCatch(compose(
  *   Transducer.map(async userId => {
  *     if (db.has(userId)) {
  *       return db.get(userId)
@@ -283,7 +283,7 @@ Transducer.passthrough = function transducerPassthrough(reducer) {
  *   Transducer.forEach(user => {
  *     console.log('Found', user.name)
  *   })
- * ]), (error, userId) => {
+ * ), (error, userId) => {
  *   console.error(error)
  *   console.log('userId in catcher:', userId)
  *   // original userId for which the error was thrown is provided
