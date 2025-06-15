@@ -21,28 +21,24 @@ const Transducer = {}
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Reducer = (
- *   accumulator any,
- *   value any,
- * )=>(nextAccumulator Promise|any)
- *
- * type Transducer = Reducer=>Reducer
+ * type SyncOrAsyncReducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
+ * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer
  *
  * type Mapper = (
- *   item any,
+ *   element any,
  *   index number,
- * )=>(resultItem Promise|any)
+ * )=>(resultElement Promise|any)
  *
  * Transducer.map(mapper Mapper) -> mappingTransducer Transducer
  * ```
  *
  * @description
- * Creates a mapping transducer. Items in the final reducing operation are transformed by the mapper function. It is possible to use an asynchronous mapper, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
+ * Creates a mapping transducer. Elements in the final reducing operation are transformed by the mapper function. It is possible to use an asynchronous mapper, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
  *
  * ```javascript [playground]
  * const square = number => number ** 2
  *
- * const concat = (array, item) => array.concat(item)
+ * const concat = (array, element) => array.concat(element)
  *
  * const mapSquare = Transducer.map(square)
  * // mapSquare is a transducer
@@ -87,7 +83,7 @@ Transducer.map = function transducerMap(mapper) {
  * @synopsis
  * ```coffeescript [specscript]
  * type SyncOrAsyncReducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
- * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer // TODO
+ * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer
  * type UnarySyncOrAsyncPredicate = any=>Promise|boolean|any
  *
  * predicate UnarySyncOrAsyncPredicate
@@ -96,12 +92,12 @@ Transducer.map = function transducerMap(mapper) {
  * ```
  *
  * @description
- * Creates a filtering transducer. A filtering reducer skips items of reducing operation if they test falsy by the predicate. It is possible to use an asynchronous predicate, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
+ * Creates a filtering transducer. A filtering reducer skips element of reducing operation if they test falsy by the predicate. It is possible to use an asynchronous predicate, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
  *
- * const concat = (array, item) => array.concat(item)
+ * const concat = (array, element) => array.concat(element)
  *
  * const concatOddNumbers = Transducer.filter(isOdd)(concat)
  *
@@ -134,22 +130,16 @@ Transducer.filter = function transducerFilter(predicate) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Reducer = (
- *   accumulator any,
- *   value any,
- * )=>(nextAccumulator Promise|any)
- *
- * type Transducer = Reducer=>Reducer
- *
+ * type SyncOrAsyncReducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
+ * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer
  * type Monad = Array|String|Set|Generator|AsyncGenerator|{ flatMap: string }|{ chain: string }|Object
- *
- * type FlatMapper = (item any)=>(monad Promise|Monad|any)
+ * type FlatMapper = (element any)=>(monad Promise|Monad|any)
  *
  * Transducer.flatMap(flatMapper FlatMapper) -> flatMappingTransducer Transducer
  * ```
  *
  * @description
- * Creates a flatMapping transducer. A flatMapping transducer applies the flatMapping function to each item of the reducing operation, concatenating the results of the flatMapper execution into the final result. It is possible to use an asynchronous flatMapper, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
+ * Creates a flatMapping transducer. A flatMapping transducer applies the flatMapping function to each element of the reducing operation, concatenating the results of the flatMapper execution into the final result. It is possible to use an asynchronous flatMapper, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
  *
  * ```javascript [playground]
  * const powers = number => [number, number ** 2, number ** 3]
@@ -181,20 +171,15 @@ Transducer.flatMap = function transducerFlatMap(flatMapper) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Reducer = (
- *   accumulator any,
- *   value any,
- * )=>(nextAccumulator Promise|any)
- *
- * type Transducer = Reducer=>Reducer
- *
- * type Callback = (item any)=>Promise|undefined
+ * type SyncOrAsyncReducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
+ * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer
+ * type Callback = (element any)=>Promise|undefined
  *
  * Transducer.forEach(callback Callback) -> forEachTransducer Transducer
  * ```
  *
  * @description
- * Creates an effectful pasthrough transducer. The effectful passthrough transducer applies the effectful function to each item of the reducing operation, leaving the reducing operation unchanged. It is possible to use an asynchronous effectful function, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
+ * Creates an effectful pasthrough transducer. The effectful passthrough transducer applies the effectful function to each element of the reducing operation, leaving the reducing operation unchanged. It is possible to use an asynchronous effectful function, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
  *
  * ```javascript [playground]
  * const numbers = [1, 2, 3, 4, 5]
@@ -224,18 +209,14 @@ Transducer.forEach = function transducerForEach(func) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Reducer = (
- *   accumulator any,
- *   value any,
- * )=>(nextAccumulator Promise|any)
- *
- * type Transducer = Reducer=>Reducer
+ * type SyncOrAsyncReducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
+ * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer
  *
  * Transducer.passthrough Transducer
  * ```
  *
  * @description
- * Creates a pasthrough transducer. The passthrough transducer passes each item of the reducing operation through, leaving the reducing operation unchanged.
+ * Creates a pasthrough transducer. The passthrough transducer passes each element of the reducing operation through, leaving the reducing operation unchanged.
  *
  * ```javascript [playground]
  * const createAsyncNumbers = async function* () {
@@ -270,21 +251,17 @@ Transducer.passthrough = function transducerPassthrough(reducer) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Reducer = (
- *   accumulator any,
- *   item any,
- * )=>(nextAccumulator Promise|any)
- *
- * type Transducer = Reducer=>Reducer
+ * type SyncOrAsyncReducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
+ * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer
  *
  * transducerTryer Transducer
- * catcher (error Error, item any)=>Promise|any
+ * catcher (error Error, element any)=>Promise|any
  *
  * Transducer.tryCatch(transducerTryer, catcher) -> tryCatchTransducer Transducer
  * ```
  *
  * @description
- * Creates an error handling transducer. The error handling transducer wraps a transducer and catches any errors thrown by the transducer with the catcher function. The catcher function is provided the error as well as the original item (before any processing by the transducer) for which the error was thrown. It is possible for either the transducer or the catcher to be asynchronous, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
+ * Creates an error handling transducer. The error handling transducer wraps a transducer and catches any errors thrown by the transducer with the catcher function. The catcher function is provided the error as well as the original element (before any processing by the transducer) for which the error was thrown. It is possible for either the transducer or the catcher to be asynchronous, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
  *
  * ```javascript [playground]
  * const db = new Map()

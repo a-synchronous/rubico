@@ -22,13 +22,8 @@ const _transform = function (collection, transducer, initialValue) {
  * @synopsis
  * ```coffeescript [specscript]
  * type Foldable = Array|Set|Map|Generator|AsyncGenerator|{ reduce: function }|Object
- *
- * type Reducer = (
- *   accumulator any,
- *   value any,
- * )=>(nextAccumulator Promise|any)
- *
- * type Transducer = Reducer=>Reducer
+ * type SyncOrAsyncReducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
+ * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer
  *
  * type Semigroup =
  *   Array|String|Set|TypedArray|{ concat: function }|{ write: function }|Object
@@ -57,12 +52,8 @@ const _transform = function (collection, transducer, initialValue) {
  * Transducers, due to their lazy nature, don't have knowledge of the foldable they are transforming. As such, the transducer signature for all foldables is the same:
  *
  * ```coffeescript [specscript]
- * type Reducer = (
- *   accumulator any,
- *   value any,
- * )=>(nextAccumulator Promise|any)
- *
- * type Transducer = Reducer=>Reducer
+ * type SyncOrAsyncReducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
+ * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer
  * ```
  *
  * The following data types are considered to be semigroups:
