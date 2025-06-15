@@ -202,14 +202,14 @@ const _forEachSeries = function (collection, callback) {
  * ```coffeescript [specscript]
  * type Iterable = Array|Set|Map|Generator|AsyncGenerator|{ forEach: function }|Object
  *
- * type Callback = (
+ * type SyncOrAsyncCallback = (
  *   element any,
  *   indexOrKey number|string|any,
  *   iter Iterable
  * )=>Promise|undefined
  *
  * iterable Iterable
- * cb Callback
+ * cb SyncOrAsyncCallback
  *
  * forEach(iterable, cb) -> unmodifiedIterable Promise|Iterable
  * forEach(cb)(iterable) -> unmodifiedIterable Promise|Iterable
