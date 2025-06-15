@@ -19,11 +19,16 @@ const _not = function (args, predicate) {
  *
  * @synopsis
  * ```coffeescript [specscript]
+ * args Array<any>
+ * argsOrPromises Array<Promise|any>
+ *
+ * type Predicate = (...args)=>Promise|boolean
+ *
+ * predicate Predicate
+ *
  * not(value boolean) -> negated boolean
- *
- * not(...args, predicate function) -> negated boolean
- *
- * not(predicate function)(...args) -> negated boolean
+ * not(...argsOrPromises, predicate) -> negated Promise|boolean
+ * not(predicate)(...args) -> negated Promise|boolean
  * ```
  *
  * @description
@@ -73,7 +78,9 @@ const not = function (...args) {
     }
     return _not(args, predicateOrValue)
   }
-  return !predicateOrValue
+  return isPromise(predicateOrValue)
+    ? predicateOrValue.then(negate)
+    : !predicateOrValue
 }
 
 module.exports = not
