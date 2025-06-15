@@ -12,12 +12,10 @@ const __ = require('./_internal/placeholder')
  * ```coffeescript [specscript]
  * funcs Array<function>
  * args Array<any>
- * argsWithPromises Array<Promise|any>
+ * argsOrPromises Array<Promise|any>
  *
  * pipe(funcs)(...args) -> result Promise|any
- *
- * pipe(...argsWithPromises, funcs Array<function>) -> result Promise|any
- *
+ * pipe(...argsOrPromises, funcs Array<function>) -> result Promise|any
  * pipe(...funcs)(...args) -> result Promise|any
  * ```
  *

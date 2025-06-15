@@ -22,7 +22,10 @@ const _tap = function (args, f) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * tap(...args, f function) -> Promise|args[0]
+ * args Array<any>
+ * argsOrPromises Array<Promise|any>
+ *
+ * tap(...argsOrPromises, f function) -> Promise|args[0]
  * tap(f function)(...args) -> Promise|args[0]
  * ```
  *
@@ -101,7 +104,10 @@ const _tapIf = function (predicate, f, args) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * tap.if(...args, predicate function, f function) -> Promise|args[0]
+ * args Array<any>
+ * argsOrPromises Array<Promise|any>
+ *
+ * tap.if(...argsOrPromises, predicate function, f function) -> Promise|args[0]
  * tap.if(predicate function, f function)(...args) -> Promise|args[0]
  * ```
  *

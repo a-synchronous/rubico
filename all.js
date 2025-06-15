@@ -36,30 +36,27 @@ const _allValues = function (values) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * all(values Promise|Array<Promise|any>) -> result Promise|Array
- * all(values Promise|Object<Promise|any>) -> result Promise|Object
+ * args Array<any>
+ * argsOrPromises Array<Promise|any>
  *
- * all(
- *   ...args,
- *   resolversOrValues Array<function|Promise|any>
- * ) -> result Promise|Array
+ * type Resolver = (...args)=>Promise|any
  *
- * all(
- *   resolversOrValues Array<function|Promise|any>
- * )(...args) -> result Promise|Array
+ * arrayResolversOrPromisesOrValues Array<Resolver|Promise|any>
+ * objectResolversOrPromisesOrValues Object<Resolver|Promise|any>
  *
- * all(
- *   ...args,
- *   resolversOrValues Object<function|Promise|any>
- * ) -> result Promise|Object
+ * all(arrayValues Promise|Array<Promise|any>) -> arrayResult Promise|Array
+ * all(...argsOrPromises, arrayResolversOrPromisesOrValues) -> arrayResult Promise|Array
+ * all(arrayResolversOrPromisesOrValues)(...args) -> arrayResult Promise|Array
  *
- * all(
- *   resolversOrValues Object<function|Promise|any>
- * )(...args) -> result Promise|Object
+ * all(objectValues Promise|Object<Promise|any>) -> objectResult Promise|Object
+ * all(...argsOrPromises, objectResolversOrPromisesOrValues) -> objectResult Promise|Object
+ * all(objectResolversOrPromisesOrValues)(...args) -> objectResult Promise|Object
  * ```
  *
  * @description
- * Calls an array or object of resolver functions or values `resolversOrValues` with provided arguments.
+ * Constructs an array if provided an array of resolvers, promises, values, or a mix thereof. Constructs an object if provided an object of resolvers, promises, values, or a mix thereof. If provided any resolvers, `all` returns a function that constructs the array or object. Otherwise, if none of the provided values in the array or object are functions, `all` returns the constructed array or object directly.
+ *
+ * `all` constructs an array from resolvers.
  *
  * ```javascript [playground]
  * const createArrayOfGreetingsFor = all([
@@ -74,23 +71,25 @@ const _allValues = function (values) {
  * // ['Hi 1', 'Hey 1', 'Hello 1']
  * ```
  *
- * If provided only values for `resolversOrValues`, returns an array or object with the same shape as `resolversOrValues` with any Promises resolved.
+ * If any provided values are promises, `all` returns a promise.
  *
  * ```javascript [playground]
- * all([
+ * const promise1 = all([
  *   Promise.resolve(1),
  *   Promise.resolve(2),
  *   3,
- * ]).then(console.log) // [1, 2, 3]
+ * ])
+ * promise1.then(console.log) // [1, 2, 3]
  *
- * all({
- *   a: Promise.resolve(1),
+ * const promise2 = all({
+ *   a: 1,
  *   b: Promise.resolve(2),
- *   c: 3,
- * }).then(console.log) // { a: 1, b: 2, c: 3 }
+ *   c: Promise.resolve(3),
+ * })
+ * promise2.then(console.log) // { a: 1, b: 2, c: 3 }
  * ```
  *
- * `all` can be used in a pipeline to compose and manpulate data.
+ * If any provided resolvers are asynchronous, `all` returns a promise. `all` can be used in a pipeline to compose and manpulate data.
  *
  * ```javascript [playground]
  * const identity = value => value
@@ -113,7 +112,7 @@ const _allValues = function (values) {
  * getAndLogUserById('1') // Got user {"_id":1,"name":"John"} by id 1
  * ```
  *
- * Values may be provided along with functions, in which case they are set on the result object or array directly. If any of these values are promises, they are resolved for their values before being set on the result object or array.
+ * Provided no resolvers, `all` returns the constructed array or object.
  *
  * ```javascript [playground]
  * all({}, {

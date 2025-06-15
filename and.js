@@ -97,38 +97,49 @@ const areAllPredicatesTruthy = function (args, predicates) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * and(values Array<boolean>) -> result boolean
+ * args Array<any>
+ * argsOrPromises Array<Promise|any>
+ * predicatesOrValues Array<function|boolean|any>
  *
- * and(...args, predicatesOrValues Array<function|boolean>) -> Promise|boolean
- *
- * and(predicatesOrValues Array<function|boolean>)(...args) -> Promise|boolean
+ * and(values Array<boolean|any>) -> result boolean
+ * and(...argsOrPromises, predicatesOrValues) -> Promise|boolean
+ * and(predicatesOrValues)(...args) -> Promise|boolean
  * ```
  *
  * @description
- * Tests an array of boolean values, returning true if all boolean values are truthy.
+ * Function equivalent to the [logical AND](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Logical_AND) operator. Tests an array of predicate functions, promises, values, or a mix thereof.
+ *
+ * If provided an array of boolean values, `and` returns true if all boolean values are true.
  *
  * ```javascript [playground]
  * const oneIsLessThanThree = 1 < 3
  * const twoIsGreaterThanOne = 2 > 1
  * const threeIsEqualToThree = 3 === 3
  *
- * console.log(
- *   and([oneIsLessThanThree, twoIsGreaterThanOne, threeIsEqualToThree]),
- * ) // true
+ * const condition = and([
+ *   oneIsLessThanThree,
+ *   twoIsGreaterThanOne,
+ *   threeIsEqualToThree
+ * ])
+ * console.log(condition) // true
  * ```
  *
- * If any values in the array are synchronous or asynchronous predicate functions, `and` takes another argument to test concurrently against the predicate functions, returning true if all array values and resolved values from the predicates are truthy.
+ * If any predicate functions are provided in the array, `and` returns an aggregate predicate function that returns true for a given set of arguments if all provided predicate functions test true. If any provided predicate functions are asynchronous, the aggregate predicate function becomes asynchronous.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
- *
  * const isPositive = number => number > 0
+ * const asyncIsLessThan3 = async number => number < 3
  *
- * const isLessThan3 = number => number < 3
+ * const aggregatePredicate = and([
+ *   true,
+ *   isOdd,
+ *   isPositive,
+ *   asyncIsLessThan3,
+ * ])
  *
- * console.log(
- *   and([isOdd, isPositive, isLessThan3])(1),
- * ) // true
+ * const condition = await aggregatePredicate(1)
+ * console.log(condition) // true
  * ```
  *
  * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.

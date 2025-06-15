@@ -20,9 +20,8 @@ const _omit = function (source, paths) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * omit(paths Array<string>)(source Object) -> omitted Object
- *
- * omit(source Object, paths Array<string>) -> omitted Object
+ * omit(source Promise|Object, paths Array<string>) -> result Object
+ * omit(paths Array<string>)(source Object) -> result Object
  * ```
  *
  * @description

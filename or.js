@@ -97,36 +97,49 @@ const areAnyPredicatesTruthy = function (args, predicates) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * or(values Array<boolean>) -> result boolean
+ * args Array<any>
+ * argsOrPromises Array<Promise|any>
+ * predicatesOrValues Array<function|boolean|any>
  *
- * or(...args, predicatesOrValues Array<function|boolean>) -> Promise|boolean
- *
- * or(predicatesOrValues Array<function|boolean>)(...args) -> Promise|boolean
+ * or(values Array<boolean|any>) -> result boolean
+ * or(...argsOrPromises, predicatesOrValues) -> Promise|boolean
+ * or(predicatesOrValues)(...args) -> Promise|boolean
  * ```
  *
  * @description
- * Tests an array of boolean values, returning true if any boolean values are truthy.
+ * Function equivalent to the [logical OR](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Logical_OR) operator. Tests arrays of predicate functions, promises, values, or a mix thereof.
+ *
+ * If provided an array of boolean values, `or` returns true if any boolean values are truthy.
  *
  * ```javascript [playground]
  * const oneIsLessThanZero = 1 < 0
  * const oneIsGreaterThanTwo = 1 > 2
  * const threeIsNotEqualToThree = 3 !== 3
  *
- * console.log(
- *   or([oneIsLessThanZero, oneIsGreaterThanTwo, threeIsNotEqualToThree]),
- * ) // false
+ * const condition = or([
+ *   oneIsLessThanZero,
+ *   oneIsGreaterThanTwo,
+ *   threeIsNotEqualToThree
+ * ])
+ * console.log(condition) // false
  * ```
  *
- * If any values in the array are synchronous or asynchronous predicate functions, `or` takes another argument to test concurrently against the predicate functions, returning true if any array values or resolved values from the predicates are truthy.
+ * If any predicate functions are provided in the array, `or` returns an aggregate predicate function that returns true for a given set of arguments if any provided predicate functions test true. If any provided predicate functions are asynchronous, the aggregate predicate function becomes asynchronous.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
+ * const isNegative = number => number < 0
+ * const asyncIsGreaterThan3 = async number => number > 3
  *
- * const isEven = number => number % 2 == 0
+ * const aggregatePredicate = or([
+ *   false,
+ *   isOdd,
+ *   isNegative,
+ *   asyncIsGreaterThan3,
+ * ])
  *
- * console.log(
- *   or([isOdd, isEven])(0),
- * ) // true
+ * const condition = await aggregatePredicate(2)
+ * console.log(condition) // false
  * ```
  *
  * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.

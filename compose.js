@@ -12,12 +12,10 @@ const funcConcat = require('./_internal/funcConcat')
  * ```coffeescript [specscript]
  * funcs Array<function>
  * args Array<any>
- * argsWithPromises Array<Promise|any>
+ * argsOrPromises Array<Promise|any>
  *
  * compose(funcs)(...args) -> result Promise|any
- *
- * compose(...argsWithPromises, funcs) -> result Promise|any
- *
+ * compose(...argsOrPromises, funcs) -> result Promise|any
  * compose(...funcs)(...args) -> result Promise|any
  * ```
  *

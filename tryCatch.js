@@ -22,13 +22,15 @@ const _tryCatch = function (tryer, catcher, args) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * tryCatch(tryer function, catcher function)(...args) -> Promise|any
+ * args Array<any>
+ * argsOrPromises Array<Promise|any>
  *
- * tryCatch(...args, tryer function, catcher function) -> Promise|any
+ * tryCatch(tryer function, catcher function)(...args) -> Promise|any
+ * tryCatch(...argsOrPromises, tryer function, catcher function) -> Promise|any
  * ```
  *
  * @description
- * Handles errors with a `tryer` and a `catcher` function. Calls the `tryer` function with the provided arguments and catches any errors thrown by the `tryer` function with the `catcher` function. If the `tryer` function is asynchronous and returns a rejected promise, the `catcher` function will execute with the value of the rejected promise. The `catcher` function is called with the error and all arguments supplied to the `tryer` function.
+ * Function equivalent to the [try...catch](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch) statement. Accepts two functions: a `tryer` function and a `catcher` function. Calls the `tryer` function and catches any errors thrown by the `tryer` function with the `catcher` function.
  *
  * ```javascript [playground]
  * const throwsIfOdd = number => {
@@ -38,18 +40,43 @@ const _tryCatch = function (tryer, catcher, args) {
  *   console.log('did not throw for', number)
  * }
  *
- * const errorHandler = tryCatch(throwsIfOdd, (error, number) => {
+ * const errorHandler = (error, number) => {
  *   console.log('caught error from number', number)
  *   console.log(error)
- * })
+ * }
  *
- * errorHandler(2) // did not throw for 2
- * errorHandler(3) // caught error from number 3
+ * const handler = tryCatch(throwsIfOdd, errorHandler)
+ *
+ * handler(2) // did not throw for 2
+ * handler(3) // caught error from number 3
+ *            // Error: 3 is odd
+ *
+ * ```
+ *
+ * If the `tryer` function is asynchronous and throws an error, the `catcher` function will catch the rejected promise.
+ *
+ * ```javascript [playground]
+ * const rejectsIfOdd = async number => {
+ *   if (number % 2 == 1) {
+ *     throw new Error(`${number} is odd`)
+ *   }
+ *   console.log('did not throw for', number)
+ * }
+ *
+ * const errorHandler = (error, number) => {
+ *   console.log('caught error from number', number)
+ *   console.log(error)
+ * }
+ *
+ * const asyncHandler = tryCatch(rejectsIfOdd, errorHandler)
+ *
+ * asyncHandler(2) // did not throw for 2
+ * asyncHandler(3) // caught error from number 3
  *                 // Error: 3 is odd
  *
  * ```
  *
- * `tryCatch` behaves eagerly (executes immediately with a single call and not with multiple calls like a higher order function) when passed any amount of nonfunction (primitive or object) arguments before the `tryer` and `catcher` functions.
+ * When provided any number of arguments before the tryer and catcher functions, `tryCatch` executes immediately.
  *
  * ```javascript [playground]
  * const add = (a, b) => a + b
