@@ -26,7 +26,9 @@ const Transducer = {}
  *
  * type UnarySyncOrAsyncMapper = (element any)=>(resultElement Promise|any)
  *
- * Transducer.map(mapper UnarySyncOrAsyncMapper) -> mappingTransducer Transducer
+ * mapper UnarySyncOrAsyncMapper
+ *
+ * Transducer.map(mapper) -> mappingTransducer Transducer
  * ```
  *
  * @description
@@ -130,9 +132,11 @@ Transducer.filter = function transducerFilter(predicate) {
  * type SyncOrAsyncReducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
  * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer
  * type Monad = Array|String|Set|Generator|AsyncGenerator|{ flatMap: string }|{ chain: string }|Object
- * type FlatMapper = (element any)=>(monad Promise|Monad|any)
+ * type UnarySyncOrAsyncFlatMapper = (element any)=>(monad Promise|Monad|any)
  *
- * Transducer.flatMap(flatMapper FlatMapper) -> flatMappingTransducer Transducer
+ * flatMapper UnarySyncOrAsyncFlatMapper
+ *
+ * Transducer.flatMap(flatMapper) -> flatMappingTransducer Transducer
  * ```
  *
  * @description
@@ -172,7 +176,9 @@ Transducer.flatMap = function transducerFlatMap(flatMapper) {
  * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer
  * type UnarySyncOrAsyncCallback = (element any)=>Promise|undefined
  *
- * Transducer.forEach(callback UnarySyncOrAsyncCallback) -> forEachTransducer Transducer
+ * callback UnarySyncOrAsyncCallback
+ *
+ * Transducer.forEach(callback) -> forEachTransducer Transducer
  * ```
  *
  * @description
