@@ -23,7 +23,6 @@ const Transducer = {}
  * ```coffeescript [specscript]
  * type SyncOrAsyncReducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
  * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer
- *
  * type UnarySyncOrAsyncMapper = (element any)=>(resultElement Promise|any)
  *
  * mapper UnarySyncOrAsyncMapper
