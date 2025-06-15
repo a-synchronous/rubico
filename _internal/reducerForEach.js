@@ -15,16 +15,16 @@ const thunkify2 = require('./thunkify2')
  * ```
  *
  * @description
- * Create a reducer that additionally executes a callback for each item of its reducing operation.
+ * Create a reducer that additionally executes a callback for each element of its reducing operation.
  */
 const reducerForEach = (
   reducer, callback,
-) => function executingForEach(result, item) {
-  const operation = callback(item)
+) => function executingForEach(result, element) {
+  const operation = callback(element)
   if (isPromise(operation)) {
-    return operation.then(thunkify2(reducer, result, item))
+    return operation.then(thunkify2(reducer, result, element))
   }
-  return reducer(result, item)
+  return reducer(result, element)
 }
 
 module.exports = reducerForEach

@@ -5,7 +5,7 @@ export = append;
  * @synopsis
  * ```coffeescript [specscript]
  * append(
- *   item string|Array,
+ *   element string|Array,
  * )(value string|Array) -> string|array
  * ```
  *
@@ -35,4 +35,4 @@ export = append;
  *
  * @since 1.7.3
  */
-declare function append(item: any): (value: any) => string | any[];
+declare function append(element: any): (value: any) => string | any[];

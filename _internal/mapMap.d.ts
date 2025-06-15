@@ -6,7 +6,7 @@ export = mapMap;
  * ```coffeescript [specscript]
  * mapMap(
  *   value Map,
- *   mapper (item any, key any, value)=>Promise|any
+ *   mapper (element any, key any, value)=>Promise|any
  * ) -> Promise|Map<any=>any>
  * ```
  *

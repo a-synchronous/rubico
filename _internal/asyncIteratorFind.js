@@ -13,13 +13,13 @@ const isPromise = require('./isPromise')
 const asyncIteratorFind = async function (asyncIterator, predicate) {
   let iteration = await asyncIterator.next()
   while (!iteration.done) {
-    const item = iteration.value
-    let predication = predicate(item)
+    const element = iteration.value
+    let predication = predicate(element)
     if (isPromise(predication)) {
       predication = await predication
     }
     if (predication) {
-      return item
+      return element
     }
     iteration = await asyncIterator.next()
   }

@@ -25,7 +25,7 @@ const _reduce = function (collection, reducer, initial) {
  *
  * type Reducer = (
  *   accumulator any,
- *   item any,
+ *   element any,
  *   indexOrKey number|string|any,
  *   foldable Foldable
  * )=>(nextAccumulator Promise|any)
@@ -51,11 +51,11 @@ const _reduce = function (collection, reducer, initial) {
  *  * `object with .reduce method`
  *  * `object`
  *
- * The reducing operation is dictated by a provided reducer function, which defines a transformation between the accumulator and a given item of the foldable.
+ * The reducing operation is dictated by a provided reducer function, which defines a transformation between the accumulator and a given element of the foldable.
  *
  * ```javascript
- * const reducer = function (accumulator, item) {
- *   // nextAccumulator is the result of some operation between accumulator and item
+ * const reducer = function (accumulator, element) {
+ *   // nextAccumulator is the result of some operation between accumulator and element
  *   // and becomes the accumulator for the next iteration and invocation of the reducer
  *   return nextAccumulator
  * }
@@ -67,7 +67,7 @@ const _reduce = function (collection, reducer, initial) {
  * ```coffeescript [specscript]
  * reducer(
  *   accumulator any,
- *   item any,
+ *   element any,
  *   index number,
  *   fold Array
  * ) -> nextAccumulator Promise|any
@@ -77,7 +77,7 @@ const _reduce = function (collection, reducer, initial) {
  * ```coffeescript [specscript]
  * reducer(
  *   accumulator any,
- *   item any
+ *   element any
  * ) -> nextAccumulator Promise|any
  * ```
  *
@@ -85,7 +85,7 @@ const _reduce = function (collection, reducer, initial) {
  * ```coffeescript [specscript]
  * reducer(
  *   accumulator any,
- *   item any,
+ *   element any,
  *   key any,
  *   fold Map
  * ) -> nextAccumulator Promise|any
@@ -95,7 +95,7 @@ const _reduce = function (collection, reducer, initial) {
  * ```coffeescript [specscript]
  * reducer(
  *   accumulator any,
- *   item any
+ *   element any
  * ) -> nextAccumulator Promise|any
  * ```
  *
@@ -103,7 +103,7 @@ const _reduce = function (collection, reducer, initial) {
  * ```coffeescript [specscript]
  * reducer(
  *   accumulator any,
- *   item any
+ *   element any
  * ) -> nextAccumulator Promise|any
  * ```
  *
@@ -113,13 +113,13 @@ const _reduce = function (collection, reducer, initial) {
  * ```coffeescript [specscript]
  * reducer(
  *   accumulator any,
- *   item any,
+ *   element any,
  *   key string,
  *   fold Object
  * ) -> nextAccumulator Promise|any
  * ```
  *
- * `reduce` executes a reducer function for each item of the array in order. If no initial value is provided, `reduce` uses the first item of the foldable as the initial value and starts iterating from the second item of the foldable.
+ * `reduce` executes a reducer function for each element of the array in order. If no initial value is provided, `reduce` uses the first element of the foldable as the initial value and starts iterating from the second element of the foldable.
  *
  * ```javascript [playground]
  * const max = (a, b) => a > b ? a : b
@@ -128,7 +128,7 @@ const _reduce = function (collection, reducer, initial) {
  * console.log(result) // 5
  * ```
  *
- * If an initial value is provided, the accumulator starts as the initial value rather than the first item of the foldable.
+ * If an initial value is provided, the accumulator starts as the initial value rather than the first element of the foldable.
  *
  * ```javascript [playground]
  * const add = (a, b) => a + b

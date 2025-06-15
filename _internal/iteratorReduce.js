@@ -16,7 +16,7 @@ const isPromise = require('./isPromise')
  * ```
  *
  * @description
- * Execute a reducer for each item of an iterator or async iterator, returning a promise of a single value.
+ * Execute a reducer for each element of an iterator or async iterator, returning a promise of a single value.
  */
 const iteratorReduceAsync = async function (
   iterator, reducer, result,
@@ -50,7 +50,7 @@ const iteratorReduceAsync = async function (
  * ```
  *
  * @description
- * Execute a reducer for each item of an iterator, returning a single value.
+ * Execute a reducer for each element of an iterator, returning a single value.
  */
 const iteratorReduce = function (iterator, reducer, result) {
   let iteration = iterator.next()

@@ -2,7 +2,7 @@ const assert = require('assert')
 const last = require('./last')
 
 describe('last', () => {
-  it('gets the last item of an array', async () => {
+  it('gets the last element of an array', async () => {
     assert.strictEqual(last([1, 2, 3]), 3)
     assert.strictEqual(last([]), undefined)
   })

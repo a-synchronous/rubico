@@ -101,7 +101,7 @@ describe('unionWith', () => {
       const result = await p
       assert.deepEqual(result, new Set([1, 2, 3]))
     })
-    it('predicate item => item.name; values Set<[{...}, {...}, {...}]>; result Promise|<Set<[{...}, {...}]>>', async () => {
+    it('predicate element => element.name; values Set<[{...}, {...}, {...}]>; result Promise|<Set<[{...}, {...}]>>', async () => {
       const people = new Set([{ name: 'John' }, { name: 'John' }, { name: 'Jim' }])
       const result = unionWith((personA, personB) => personA.name === personB.name)(people)
       assert.deepEqual(result, new Set([{ name: 'John' }, { name: 'Jim' }]))
@@ -190,7 +190,7 @@ describe('unionWith', () => {
       {
         const subject = unionWith(() => Promise.resolve(false))(gen)
         const arr = []
-        for await (const item of subject) arr.push(item)
+        for await (const element of subject) arr.push(element)
         assert.deepEqual(arr, [1, 2, 3, 1, 2, 3, 5, 5, 5])
       }
       {
@@ -206,12 +206,12 @@ describe('unionWith', () => {
       const gen = async function*() { yield numbersAsyncGeneratorFunc; yield numbersGeneratorFunc; yield* [5, 5, 5] }
       const subject = unionWith(() => false)(gen)
       const arr = []
-      for await (const item of subject) arr.push(item)
+      for await (const element of subject) arr.push(element)
       assert.deepEqual(arr, [1, 2, 3, 1, 2, 3, 5, 5, 5])
       {
         const subject = unionWith(async () => true)(gen)
         const arr = []
-        for await (const item of subject) arr.push(item)
+        for await (const element of subject) arr.push(element)
         assert.deepEqual(arr, [1])
       }
     })
@@ -219,7 +219,7 @@ describe('unionWith', () => {
       const gen = async function*() {}
       const subject = unionWith(() => false)(gen)
       const arr = []
-      for await (const item of subject) arr.push(item)
+      for await (const element of subject) arr.push(element)
       assert.deepEqual(arr, [])
     })
   })

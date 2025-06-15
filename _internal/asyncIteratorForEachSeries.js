@@ -13,11 +13,11 @@ const isPromise = require('./isPromise')
  * ```
  *
  * @description
- * Execute a callback function for each item of an async iterator in series.
+ * Execute a callback function for each element of an async iterator in series.
  */
 const asyncIteratorForEachSeries = async function (asyncIterator, callback) {
-  for await (const item of asyncIterator) {
-    const operation = callback(item)
+  for await (const element of asyncIterator) {
+    const operation = callback(element)
     if (isPromise(operation)) {
       await operation
     }

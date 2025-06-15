@@ -10,14 +10,14 @@ export = map;
  *   value any,
  *   indexOrKey number|string,
  *   collection Mappable
- * )=>(mappedItem Promise|any)
+ * )=>(mappedElement Promise|any)
  *
  * map(value Mappable, mapper Mapper) -> result Promise|Mappable
  * map(mapper Mapper)(value Mappable) -> result Promise|Mappable
  * ```
  *
  * @description
- * Applies a synchronous or asynchronous mapper function concurrently to each item of a collection, returning the results in a new collection of the same type. If order is implied by the collection, it is maintained in the result. `map` accepts the following collections:
+ * Applies a synchronous or asynchronous mapper function concurrently to each element of a collection, returning the results in a new collection of the same type. If order is implied by the collection, it is maintained in the result. `map` accepts the following collections:
  *
  *  * `Array`
  *  * `Object`
@@ -26,7 +26,7 @@ export = map;
  *  * `Iterator`/`Generator`
  *  * `AsyncIterator`/`AsyncGenerator`
  *
- * With arrays (type `Array`), `map` applies the mapper function to each item of the array, returning the transformed results in a new array ordered the same as the original array.
+ * With arrays (type `Array`), `map` applies the mapper function to each element of the array, returning the transformed results in a new array ordered the same as the original array.
  *
  * ```javascript [playground]
  * const square = number => number ** 2

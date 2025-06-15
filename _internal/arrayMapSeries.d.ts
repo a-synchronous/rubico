@@ -12,6 +12,6 @@ export = arrayMapSeries;
  * ```
  *
  * @description
- * Apply a mapper in series to each item of an array, returning an array of results.
+ * Apply a mapper in series to each element of an array, returning an array of results.
  */
 declare function arrayMapSeries(array: any, mapper: any): any;

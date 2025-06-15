@@ -16,7 +16,7 @@ const nested = [[1], 2, [[3]]]
 
 const muxConcatFlatten = arr => {
   const y = []
-  for (const item of muxConcat(arr)) y.push(item)
+  for (const element of muxConcat(arr)) y.push(element)
   return y
 }
 

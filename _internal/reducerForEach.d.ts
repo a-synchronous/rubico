@@ -13,6 +13,6 @@ export = reducerForEach;
  * ```
  *
  * @description
- * Create a reducer that additionally executes a callback for each item of its reducing operation.
+ * Create a reducer that additionally executes a callback for each element of its reducing operation.
  */
-declare function reducerForEach(reducer: any, callback: any): (result: any, item: any) => any;
+declare function reducerForEach(reducer: any, callback: any): (result: any, element: any) => any;

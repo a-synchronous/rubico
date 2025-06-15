@@ -37,44 +37,44 @@ const arrayFlatten = function (array) {
   let index = -1
 
   while (++index < length) {
-    const item = array[index]
-    if (isArray(item)) {
-      const itemLength = item.length
-      let itemIndex = -1
-      while (++itemIndex < itemLength) {
-        result.push(item[itemIndex])
+    const element = array[index]
+    if (isArray(element)) {
+      const elementLength = element.length
+      let elementIndex = -1
+      while (++elementIndex < elementLength) {
+        result.push(element[elementIndex])
       }
-    } else if (item == null) {
-      result.push(item)
-    } else if (typeof item.then == 'function') {
-      promises.push(item.then(curry2(arrayPush, result, __)))
-    } else if (typeof item[symbolIterator] == 'function') {
-      for (const subItem of item) {
-        result.push(subItem)
+    } else if (element == null) {
+      result.push(element)
+    } else if (typeof element.then == 'function') {
+      promises.push(element.then(curry2(arrayPush, result, __)))
+    } else if (typeof element[symbolIterator] == 'function') {
+      for (const subElement of element) {
+        result.push(subElement)
       }
-    } else if (typeof item[symbolAsyncIterator] == 'function') {
+    } else if (typeof element[symbolAsyncIterator] == 'function') {
       promises.push(asyncIteratorForEach(
-        item[symbolAsyncIterator](), curry2(arrayPush, result, __)))
-    } else if (typeof item.chain == 'function') {
-      const monadValue = item.chain(identity)
+        element[symbolAsyncIterator](), curry2(arrayPush, result, __)))
+    } else if (typeof element.chain == 'function') {
+      const monadValue = element.chain(identity)
       isPromise(monadValue)
         ? promises.push(monadValue.then(curry2(arrayPush, result, __)))
         : result.push(monadValue)
-    } else if (typeof item.flatMap == 'function') {
-      const monadValue = item.flatMap(identity)
+    } else if (typeof element.flatMap == 'function') {
+      const monadValue = element.flatMap(identity)
       isPromise(monadValue)
         ? promises.push(monadValue.then(curry2(arrayPush, result, __)))
         : result.push(monadValue)
-    } else if (typeof item.reduce == 'function') {
-      const folded = item.reduce(funcConcatSync(
+    } else if (typeof element.reduce == 'function') {
+      const folded = element.reduce(funcConcatSync(
         getArg1, curry2(arrayPush, result, __)), null)
       isPromise(folded) && promises.push(folded)
-    } else if (item.constructor == Object) {
-      for (const key in item) {
-        result.push(item[key])
+    } else if (element.constructor == Object) {
+      for (const key in element) {
+        result.push(element[key])
       }
     } else {
-      result.push(item)
+      result.push(element)
     }
   }
   return promises.length == 0

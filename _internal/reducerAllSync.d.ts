@@ -4,7 +4,7 @@ export = reducerAllSync;
  *
  * @synopsis
  * ```coffeescript [specscript]
- * reducerAllSync(predicate any=> boolean, result boolean, item any) -> boolean
+ * reducerAllSync(predicate any=> boolean, result boolean, element any) -> boolean
  * ```
  */
-declare function reducerAllSync(predicate: any, result: any, item: any): any;
+declare function reducerAllSync(predicate: any, result: any, element: any): any;

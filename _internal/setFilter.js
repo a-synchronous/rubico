@@ -19,19 +19,19 @@ const noop = require('./noop')
  * ```
  *
  * @description
- * Filter items of a Set concurrently by predicate. `predicate` may be asynchronous.
+ * Filter elements of a Set concurrently by predicate. `predicate` may be asynchronous.
  */
 const setFilter = function (value, predicate) {
   const result = new Set(),
     resultAdd = result.add.bind(result),
     promises = []
-  for (const item of value) {
-    const predication = predicate(item, item, value)
+  for (const element of value) {
+    const predication = predicate(element, element, value)
     if (isPromise(predication)) {
       promises.push(predication.then(curry3(
-        thunkConditional, __, thunkify1(resultAdd, item), noop)))
+        thunkConditional, __, thunkify1(resultAdd, element), noop)))
     } else if (predication) {
-      result.add(item)
+      result.add(element)
     }
   }
   return promises.length == 0

@@ -11,6 +11,6 @@ export = setFilter;
  * ```
  *
  * @description
- * Filter items of a Set concurrently by predicate. `predicate` may be asynchronous.
+ * Filter elements of a Set concurrently by predicate. `predicate` may be asynchronous.
  */
 declare function setFilter(value: any, predicate: any): any;

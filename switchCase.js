@@ -70,7 +70,7 @@ const curryArgs3 = require('./_internal/curryArgs3')
  * ])(false).then(console.log) // default
  * ```
  *
- * If every item in the conditional array is a nonfunction value, `switchCase` executes eagerly.
+ * If every element in the conditional array is a nonfunction value, `switchCase` executes eagerly.
  *
  * ```javascript [playground]
  * const age = 26

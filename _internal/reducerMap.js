@@ -21,11 +21,11 @@ const curry2 = require('./curry2')
  */
 const reducerMap = (
   reducer, mapper,
-) => function mappingReducer(result, reducerItem) {
-  const mappingReducerItem = mapper(reducerItem)
-  return isPromise(mappingReducerItem)
-    ? mappingReducerItem.then(curry2(reducer, result, __))
-    : reducer(result, mappingReducerItem)
+) => function mappingReducer(result, reducerElement) {
+  const mappingReducerElement = mapper(reducerElement)
+  return isPromise(mappingReducerElement)
+    ? mappingReducerElement.then(curry2(reducer, result, __))
+    : reducer(result, mappingReducerElement)
 }
 
 module.exports = reducerMap

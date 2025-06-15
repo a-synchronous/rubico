@@ -15,12 +15,12 @@ const always = require('./always')
  * ```
  *
  * @description
- * Execute a callback function for each item of an async iterator
+ * Execute a callback function for each element of an async iterator
  */
 const asyncIteratorForEach = async function (asyncIterator, callback) {
   const promises = []
-  for await (const item of asyncIterator) {
-    const operation = callback(item)
+  for await (const element of asyncIterator) {
+    const operation = callback(element)
     if (isPromise(operation)) {
       promises.push(operation)
     }

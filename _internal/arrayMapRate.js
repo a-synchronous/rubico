@@ -28,14 +28,14 @@ const arrayMapRate = async function (array, rate, f) {
       await sleep(minPeriodMs - lastExecutionTime)
     }
     const start = performance.now()
-    let resultItem = f(array[index], index, array)
-    if (isPromise(resultItem)) {
-      resultItem = await resultItem
+    let resultElement = f(array[index], index, array)
+    if (isPromise(resultElement)) {
+      resultElement = await resultElement
     }
     const end = performance.now()
     const executionTime = end - start
     lastExecutionTime = executionTime
-    result[index] = resultItem
+    result[index] = resultElement
   }
   const totalEnd = performance.now()
   return result

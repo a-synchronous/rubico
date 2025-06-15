@@ -2,7 +2,7 @@ const assert = require('assert')
 const find = require('./find')
 
 describe('find', () => {
-  it('gets the first item that passes test', async () => {
+  it('gets the first element that passes test', async () => {
     assert.strictEqual(
       find(x => x > 2)([1, 2, 3]),
       3,
@@ -33,7 +33,7 @@ describe('find', () => {
     )
   })
 
-  it('returns undefined for no items passing', async () => {
+  it('returns undefined for no elements passing', async () => {
     assert.strictEqual(
       find(x => x > 3)([1, 2, 3]),
       undefined,

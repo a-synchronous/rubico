@@ -19,7 +19,7 @@ const iteratorReduce = require('./iteratorReduce')
  * ```
  *
  * @description
- * Execute a reducer for each item of a generator function, returning a single value.
+ * Execute a reducer for each element of a generator function, returning a single value.
  */
 const generatorFunctionReduce = (
   generatorFunction, reducer, result,

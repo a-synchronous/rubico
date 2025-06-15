@@ -9,8 +9,8 @@
  */
 const reducerConcatSync = (
   reducerA, reducerB,
-) => function pipedReducer(result, item) {
-  return reducerB(reducerA(result, item), item)
+) => function pipedReducer(result, element) {
+  return reducerB(reducerA(result, element), element)
 }
 
 module.exports = reducerConcatSync

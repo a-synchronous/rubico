@@ -26,49 +26,49 @@ const symbolAsyncIterator = require('./symbolAsyncIterator')
  *
  * streamFlatExtend<T>(
  *   stream Stream<T>,
- *   item <Monad<T>|Foldable<T>|T>
+ *   element <Monad<T>|Foldable<T>|T>
  * ) -> stream
  * ```
  */
-const streamFlatExtend = async function (stream, item) {
+const streamFlatExtend = async function (stream, element) {
   const resultStreamWrite = curry2(streamWrite, stream, __),
-    // resultStreamWriteReducer = (_, subItem) => stream.write(subItem),
+    // resultStreamWriteReducer = (_, subElement) => stream.write(subElement),
     resultStreamWriteReducer = funcConcatSync(getArg1, resultStreamWrite),
     promises = []
-  if (isArray(item)) {
-    const itemLength = item.length
-    let itemIndex = -1
-    while (++itemIndex < itemLength) {
-      stream.write(item[itemIndex])
+  if (isArray(element)) {
+    const elementLength = element.length
+    let elementIndex = -1
+    while (++elementIndex < elementLength) {
+      stream.write(element[elementIndex])
     }
-  } else if (item == null) {
-    stream.write(item)
-  } else if (typeof item[symbolIterator] == 'function') {
-    for (const subItem of item) {
-      stream.write(subItem)
+  } else if (element == null) {
+    stream.write(element)
+  } else if (typeof element[symbolIterator] == 'function') {
+    for (const subElement of element) {
+      stream.write(subElement)
     }
-  } else if (typeof item[symbolAsyncIterator] == 'function') {
+  } else if (typeof element[symbolAsyncIterator] == 'function') {
     promises.push(
-      asyncIteratorForEach(item[symbolAsyncIterator](), resultStreamWrite))
-  } else if (typeof item.chain == 'function') {
-    const monadValue = item.chain(identity)
+      asyncIteratorForEach(element[symbolAsyncIterator](), resultStreamWrite))
+  } else if (typeof element.chain == 'function') {
+    const monadValue = element.chain(identity)
     isPromise(monadValue)
       ? promises.push(monadValue.then(resultStreamWrite))
       : stream.write(monadValue)
-  } else if (typeof item.flatMap == 'function') {
-    const monadValue = item.flatMap(identity)
+  } else if (typeof element.flatMap == 'function') {
+    const monadValue = element.flatMap(identity)
     isPromise(monadValue)
       ? promises.push(monadValue.then(resultStreamWrite))
       : stream.write(monadValue)
-  } else if (typeof item.reduce == 'function') {
-    const folded = item.reduce(resultStreamWriteReducer, null)
+  } else if (typeof element.reduce == 'function') {
+    const folded = element.reduce(resultStreamWriteReducer, null)
     isPromise(folded) && promises.push(folded)
-  } else if (item.constructor == Object) {
-    for (const key in item) {
-      stream.write(item[key])
+  } else if (element.constructor == Object) {
+    for (const key in element) {
+      stream.write(element[key])
     }
   } else {
-    stream.write(item)
+    stream.write(element)
   }
   return promises.length == 0
     ? stream

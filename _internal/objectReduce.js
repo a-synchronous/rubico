@@ -10,7 +10,7 @@ const objectKeys = require('./objectKeys')
  * ```coffeescript [specscript]
  * objectReduceAsync(
  *   object Object,
- *   reducer (any, item any, key string, object)=>Promise|any,
+ *   reducer (any, element any, key string, object)=>Promise|any,
  *   result any,
  * ) -> Promise<result>
  * ```
@@ -34,7 +34,7 @@ const objectReduceAsync = async function (object, reducer, result, keys, index) 
  * ```coffeescript [specscript]
  * objectReduce(
  *   object Object,
- *   reducer (any, item any, key string, object)=>Promise|any,
+ *   reducer (any, element any, key string, object)=>Promise|any,
  *   result any,
  * ) -> Promise|result
  * ```

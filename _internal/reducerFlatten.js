@@ -18,15 +18,15 @@ const genericReduce = require('./genericReduce')
  * ```
  *
  * @description
- * Create a flattening reducer - a reducer that flattens all items of a reducing operation into the result.
+ * Create a flattening reducer - a reducer that flattens all elements of a reducing operation into the result.
  *
  * @previously
  * flatteningTransducer
  */
 const reducerFlatten = reducer => function flatteningReducer(
-  result, reducerItem,
+  result, reducerElement,
 ) {
-  return genericReduce(reducerItem, reducer, result)
+  return genericReduce(reducerElement, reducer, result)
 }
 
 module.exports = reducerFlatten

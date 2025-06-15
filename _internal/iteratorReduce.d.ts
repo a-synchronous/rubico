@@ -13,6 +13,6 @@ export = iteratorReduce;
  * ```
  *
  * @description
- * Execute a reducer for each item of an iterator, returning a single value.
+ * Execute a reducer for each element of an iterator, returning a single value.
  */
 declare function iteratorReduce(iterator: any, reducer: any, result: any): any;

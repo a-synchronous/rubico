@@ -16,4 +16,4 @@ export = reducerMap;
  *
  * Note: If the mapper is asynchronous, the implementation of reduce that consumes the mapping reducer must resolve promises
  */
-declare function reducerMap(reducer: any, mapper: any): (result: any, reducerItem: any) => any;
+declare function reducerMap(reducer: any, mapper: any): (result: any, reducerElement: any) => any;

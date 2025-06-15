@@ -12,14 +12,14 @@ const curry2 = require('./curry2')
  *   reducer function,
  *   error Error,
  *   accum any,
- *   item any,
+ *   element any,
  * ) -> Promise|any
  * ```
  */
 const _reducerTryCatchErrorHandler = function (
-  catcher, reducer, error, accum, item,
+  catcher, reducer, error, accum, element,
 ) {
-  const c = catcher(error, item)
+  const c = catcher(error, element)
   return isPromise(c) ? c.then(curry2(reducer, accum, __)) : reducer(accum, c)
 }
 
@@ -28,7 +28,7 @@ const _reducerTryCatchErrorHandler = function (
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Reducer = (accum any, item any)=>(nextAccumulator Promise|any)
+ * type Reducer = (accum any, element any)=>(nextAccumulator Promise|any)
  *
  * reducerTryCatch(
  *   reducer function,
@@ -38,15 +38,15 @@ const _reducerTryCatchErrorHandler = function (
  */
 const reducerTryCatch = function (reducer, transducerTryer, catcher) {
   const finalReducer = transducerTryer(reducer)
-  return function errorHandlingReducer(accum, item) {
+  return function errorHandlingReducer(accum, element) {
     try {
-      const ret = finalReducer(accum, item)
+      const ret = finalReducer(accum, element)
       return isPromise(ret) ? ret.catch(curry5(
-        _reducerTryCatchErrorHandler, catcher, reducer, __, accum, item,
+        _reducerTryCatchErrorHandler, catcher, reducer, __, accum, element,
       )) : ret
     } catch (error) {
       return _reducerTryCatchErrorHandler(
-        catcher, reducer, error, accum, item,
+        catcher, reducer, error, accum, element,
       )
     }
   }

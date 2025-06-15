@@ -32,13 +32,13 @@ const differenceWithArrayAsync = async function (
 ) {
   const allValuesLength = allValues.length
   while (++index < allValuesLength) {
-    const item = allValues[index]
-    let doesItemExistByComparator = arraySome(array, curry2(comparator, item, __))
-    if (isPromise(doesItemExistByComparator)) {
-      doesItemExistByComparator = await doesItemExistByComparator
+    const element = allValues[index]
+    let doesElementExistByComparator = arraySome(array, curry2(comparator, element, __))
+    if (isPromise(doesElementExistByComparator)) {
+      doesElementExistByComparator = await doesElementExistByComparator
     }
-    if (!doesItemExistByComparator) {
-      result.push(item)
+    if (!doesElementExistByComparator) {
+      result.push(element)
     }
   }
   return result
@@ -61,14 +61,14 @@ const differenceWithArray = function (comparator, allValues, array) {
     result = []
   let index = -1
   while (++index < allValuesLength) {
-    const item = allValues[index],
-      doesItemExistByComparator = arraySome(array, curry2(comparator, item, __))
-    if (isPromise(doesItemExistByComparator)) {
-      return doesItemExistByComparator.then(funcConcatSync(
-        curry3(thunkConditional, __, noop, thunkify2(arrayPush, result, item)),
+    const element = allValues[index],
+      doesElementExistByComparator = arraySome(array, curry2(comparator, element, __))
+    if (isPromise(doesElementExistByComparator)) {
+      return doesElementExistByComparator.then(funcConcatSync(
+        curry3(thunkConditional, __, noop, thunkify2(arrayPush, result, element)),
         thunkify5(differenceWithArrayAsync, comparator, allValues, array, result, index)))
-    } else if (!doesItemExistByComparator) {
-      result.push(item)
+    } else if (!doesElementExistByComparator) {
+      result.push(element)
     }
   }
   return result

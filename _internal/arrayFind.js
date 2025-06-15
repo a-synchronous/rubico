@@ -21,13 +21,13 @@ const always = require('./always')
 const arrayFindAsync = async function (array, predicate, index) {
   const length = array.length
   while (++index < length) {
-    const item = array[index]
-    let predication = predicate(item)
+    const element = array[index]
+    let predication = predicate(element)
     if (isPromise(predication)) {
       predication = await predication
     }
     if (predication) {
-      return item
+      return element
     }
   }
   return undefined
@@ -50,16 +50,16 @@ const arrayFind = function (array, predicate) {
   const length = array.length
   let index = -1
   while (++index < length) {
-    const item = array[index],
-      predication = predicate(item)
+    const element = array[index],
+      predication = predicate(element)
     if (isPromise(predication)) {
       return predication.then(curry3(
         thunkConditional,
         __,
-        always(item),
+        always(element),
         thunkify3(arrayFindAsync, array, predicate, index)))
     } else if (predication) {
-      return item
+      return element
     }
   }
   return undefined

@@ -27,16 +27,16 @@ const _mapMapPoolAsync = async function (
       await promiseRace(promises)
     }
     const key = iteration.value[0]
-    const resultItem = f(iteration.value[1], key, m)
-    if (isPromise(resultItem)) {
-      result.set(key, resultItem)
-      const selfDeletingPromise = resultItem.then(resolvedValue => {
+    const resultElement = f(iteration.value[1], key, m)
+    if (isPromise(resultElement)) {
+      result.set(key, resultElement)
+      const selfDeletingPromise = resultElement.then(resolvedValue => {
         promises.delete(selfDeletingPromise)
         result.set(key, resolvedValue)
       })
       promises.add(selfDeletingPromise)
     } else {
-      result.set(key, resultItem)
+      result.set(key, resultElement)
     }
     iteration = iterator.next()
   }
@@ -60,18 +60,18 @@ const mapMapPool = function (m, concurrency, f) {
   let iteration = iterator.next()
   while (!iteration.done) {
     const key = iteration.value[0]
-    const resultItem = f(iteration.value[1], key, m)
-    if (isPromise(resultItem)) {
+    const resultElement = f(iteration.value[1], key, m)
+    if (isPromise(resultElement)) {
       const promises = new Set()
-      result.set(key, resultItem)
-      const selfDeletingPromise = resultItem.then(resolvedValue => {
+      result.set(key, resultElement)
+      const selfDeletingPromise = resultElement.then(resolvedValue => {
         promises.delete(selfDeletingPromise)
         result.set(key, resolvedValue)
       })
       promises.add(selfDeletingPromise)
       return _mapMapPoolAsync(m, iterator, concurrency, f, result, promises)
     }
-    result.set(key, resultItem)
+    result.set(key, resultElement)
     iteration = iterator.next()
   }
   return result

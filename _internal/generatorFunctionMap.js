@@ -12,15 +12,15 @@
  * ```
  *
  * @description
- * Create a mapping generator function from a generator function and a mapper. A mapping generator function produces mapping generators that apply the mapper to each item of the original generator.
+ * Create a mapping generator function from a generator function and a mapper. A mapping generator function produces mapping generators that apply the mapper to each element of the original generator.
  *
  * @TODO playground example
  */
 const generatorFunctionMap = (
   generatorFunc, mapper,
 ) => function* mappingGeneratorFunc(...args) {
-  for (const item of generatorFunc(...args)) {
-    yield mapper(item)
+  for (const element of generatorFunc(...args)) {
+    yield mapper(element)
   }
 }
 

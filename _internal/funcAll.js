@@ -16,11 +16,11 @@ const funcAll = funcs => function allFuncs(...args) {
     result = Array(funcsLength)
   let funcsIndex = -1, isAsync = false
   while (++funcsIndex < funcsLength) {
-    const resultItem = funcs[funcsIndex](...args)
-    if (isPromise(resultItem)) {
+    const resultElement = funcs[funcsIndex](...args)
+    if (isPromise(resultElement)) {
       isAsync = true
     }
-    result[funcsIndex] = resultItem
+    result[funcsIndex] = resultElement
   }
   return isAsync ? promiseAll(result) : result
 }

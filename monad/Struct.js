@@ -106,7 +106,7 @@ Struct.values = x => isObject(x) ? objectValuesGenerator(x) : x.values()
  * <A any, B any>Struct.get(x Map<A, B>, index A) -> B|undefined
  *
  * @catchphrase
- * Get an item by index
+ * Get an element by index
  */
 Struct.get = (x, index) => {
   if (typeof x.get == 'function') return x.get(index)
@@ -179,7 +179,7 @@ Struct.size.objectKeys = x => {
  */
 const copySet = x => {
   const y = new Set()
-  for (const item of x) y.add(item)
+  for (const element of x) y.add(element)
   return y
 }
 

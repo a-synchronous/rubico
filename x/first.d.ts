@@ -10,7 +10,7 @@ export = first;
  * ```
  *
  * @description
- * Get the first item of a collection
+ * Get the first element of a collection
  *
  * ```javascript [playground]
  * import first from 'https://unpkg.com/rubico/dist/x/first.es.js'

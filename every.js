@@ -51,7 +51,7 @@ const _every = function (collection, predicate) {
  * ```
  *
  * @description
- * Test a predicate concurrently across all items of a foldable, returning true if all executions return true.
+ * Test a predicate concurrently across all elements of a foldable, returning true if all executions return true.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1

@@ -14,7 +14,7 @@ export = MappingIterator;
  * ```
  *
  * @description
- * Creates a mapping iterator, i.e. an iterator that applies a mapper to each item of a source iterator.
+ * Creates a mapping iterator, i.e. an iterator that applies a mapper to each element of a source iterator.
  *
  * Note: consuming the mapping iterator also consumes the source iterator.
  */

@@ -17,7 +17,7 @@ export = filter;
  * ```
  *
  * @description
- * Filter out items from a collection based on the results of their concurrent executions with a synchronous or asynchronous predicate function. `filter` accepts the following collections:
+ * Filter out elements from a collection based on the results of their concurrent executions with a synchronous or asynchronous predicate function. `filter` accepts the following collections:
  *
  *  * `Array`
  *  * `Object`
@@ -26,7 +26,7 @@ export = filter;
  *  * `Iterator`/`Generator`
  *  * `AsyncIterator`/`AsyncGenerator`
  *
- * For arrays (type `Array`), `filter` applies the predicate function to each item of the array, returning a new array containing only the items that tested truthy by the predicate. The order of the items is preserved. On each iteration, the predicate is passed the item, the index of the item, and a reference to the array.
+ * For arrays (type `Array`), `filter` applies the predicate function to each element of the array, returning a new array containing only the elements that tested truthy by the predicate. The order of the elements is preserved. On each iteration, the predicate is passed the element, the index of the element, and a reference to the array.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -48,7 +48,7 @@ export = filter;
  * console.log(filter(obj, isOdd)) // { a: 1, c: 3, e: 5 }
  * ```
  *
- * For sets (type `Set`), `filter` applies the predicate function to each item in the set, returning a new set containing only the items that tested truthy by the predicate. On each iteration, the predicate is passed the item, the same item as the key argument, and a reference to the set.
+ * For sets (type `Set`), `filter` applies the predicate function to each element in the set, returning a new set containing only the elements that tested truthy by the predicate. On each iteration, the predicate is passed the element, the same element as the key argument, and a reference to the set.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1

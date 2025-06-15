@@ -14,8 +14,8 @@ const isPromise = require('./isPromise')
  * ```
  */
 const iteratorSome = function (iterator, predicate) {
-  for (const item of iterator) {
-    const predication = predicate(item)
+  for (const element of iterator) {
+    const predication = predicate(element)
     if (isPromise(predication)) {
       return asyncIteratorSome(
         iterator, predicate, new Set([SelfReferencingPromise(predication)]))

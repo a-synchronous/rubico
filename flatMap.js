@@ -20,7 +20,7 @@ const __ = require('./_internal/placeholder')
  *
  * _flatMap(
  *   m Monad,
- *   flatMapper (item any)=>Promise|Iterable,
+ *   flatMapper (element any)=>Promise|Iterable,
  * ) -> result Promise|Monad
  * ```
  */
@@ -67,7 +67,7 @@ const _flatMap = function (value, flatMapper) {
  * type Monad = Array|String|Set|Generator|AsyncGenerator|{ flatMap: string }|{ chain: string }|Object
  *
  * type FlatMapper = (
- *   item any,
+ *   element any,
  *   indexOrKey number|string|any,
  *   monad Monad
  * )=>Promise|Monad|any
@@ -79,9 +79,9 @@ const _flatMap = function (value, flatMapper) {
  * ```
  *
  * @description
- * Applies a flatMapper function to each item of a monad, returning a monad of the same type.
+ * Applies a flatMapper function to each element of a monad, returning a monad of the same type.
  *
- * A flatMapping operation iterates through each item of a monad and applies the flatMapper function to each item, flattening the result of the execution into the returned monad.
+ * A flatMapping operation iterates through each element of a monad and applies the flatMapper function to each element, flattening the result of the execution into the returned monad.
  *
  * If the flatMapper is asynchronous, it is executed concurrently. The execution result may be asynchronously iterable, in which case it is muxed into the returned monad.
  *
@@ -111,7 +111,7 @@ const _flatMap = function (value, flatMapper) {
  * // [1, 1, 2, 3, 3, 5, 5, 8, 7, 7]
  * ```
  *
- * Values from async generators are muxed. Muxing, or asynchronously "mixing", is the process of combining multiple asynchronous sources into one source, with order determined by the asynchronous resolution of the individual items.
+ * Values from async generators are muxed. Muxing, or asynchronously "mixing", is the process of combining multiple asynchronous sources into one source, with order determined by the asynchronous resolution of the individual elements.
  *
  * ```javascript [playground]
  * const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
@@ -137,7 +137,7 @@ const _flatMap = function (value, flatMapper) {
  * // ['foo', 'bar', 'baz', 'foo', 'bar', 'baz', 'foo', 'bar', 'baz']
  * ```
  *
- * `flatMap` applies the flatMapper function to each item of an array, flattening the results into a new array.
+ * `flatMap` applies the flatMapper function to each element of an array, flattening the results into a new array.
  *
  * ```javascript [playground]
  * const duplicate = value => [value, value]
@@ -179,7 +179,7 @@ const _flatMap = function (value, flatMapper) {
  * @archive
  *  * For typed arrays (type [`TypedArray`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray#typedarray_objects)) and Node.js buffers (type [`Buffer`](https://nodejs.org/api/buffer.html)), `flatMap` applies a flatMapper function to each value of the typed array/buffer, joining the result of each execution with `.set` into the resulting typed array
  *
- *  * For Node.js duplex streams (type [Stream](https://nodejs.org/api/stream.html#class-streamduplex)), `flatMap` applies a flatMapper function to each item of the stream, writing (`.write`) each item of each execution into the duplex stream
+ *  * For Node.js duplex streams (type [Stream](https://nodejs.org/api/stream.html#class-streamduplex)), `flatMap` applies a flatMapper function to each element of the stream, writing (`.write`) each element of each execution into the duplex stream
  */
 const flatMap = (arg0, arg1) => {
   if (typeof arg0 == 'function') {

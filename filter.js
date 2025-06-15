@@ -103,7 +103,7 @@ const _filter = function (value, predicate) {
  * ```
  *
  * @description
- * Filters out items from a filterable. Returns a filterable of the same type. The order of the items in the filterable is preserved.
+ * Filters out elements from a filterable. Returns a filterable of the same type. The order of the elements in the filterable is preserved.
  *
  * The following data types are considered to be filterables:
  *  * `array`
@@ -114,11 +114,11 @@ const _filter = function (value, predicate) {
  *  * `object with .filter method`
  *  * `object`
  *
- * The filtering operation is defined by a given predicate function. The predicate function dictates whether a given item from the filterable should be included in the returned filterable.
+ * The filtering operation is defined by a given predicate function. The predicate function dictates whether a given element from the filterable should be included in the returned filterable.
  *
  * ```javascript
- * const predicate = function (item) {
- *   // condition is the boolean result of the predicate test on item
+ * const predicate = function (element) {
+ *   // condition is the boolean result of the predicate test on element
  *   return condition
  * }
  * ```
@@ -127,34 +127,34 @@ const _filter = function (value, predicate) {
  *
  * If the filterable is an array:
  * ```coffeescript [specscript]
- * predicate(item any, index number, filt Array) -> condition Promise|boolean|any
+ * predicate(element any, index number, filt Array) -> condition Promise|boolean|any
  * ```
  *
  * If the filterable is a set:
  * ```coffeescript [specscript]
- * predicate(item any, item any, filt Set) -> condition Promise|boolean|any
+ * predicate(element any, element any, filt Set) -> condition Promise|boolean|any
  * ```
  *
  * If the filterable is a map:
  * ```coffeescript [specscript]
- * predicate(item any, key any, filt Map) -> condition Promise|boolean|any
+ * predicate(element any, key any, filt Map) -> condition Promise|boolean|any
  * ```
  *
  * If the filterable is a generator:
  * ```coffeescript [specscript]
- * predicate(item any) -> condition Promise|boolean|any
+ * predicate(element any) -> condition Promise|boolean|any
  * ```
  *
  * If the filterable is an async generator:
  * ```coffeescript [specscript]
- * predicate(item any) -> condition Promise|boolean|any
+ * predicate(element any) -> condition Promise|boolean|any
  * ```
  *
  * If the filterable is an object with a `.filter` method, the predicate function signature is defined externally.
  *
  * If the filterable is a plain object:
  * ```coffeescript [specscript]
- * predicate(item any, key string, filt Object) -> condition Promise|boolean|any
+ * predicate(element any, key string, filt Object) -> condition Promise|boolean|any
  * ```
  *
  * `filter` works for arrays.

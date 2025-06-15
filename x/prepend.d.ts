@@ -5,7 +5,7 @@ export = prepend;
  * @synopsis
  * ```coffeescript [specscript]
  * prepend(
- *   item string|Array,
+ *   element string|Array,
  * )(value string|Array) -> string|array
  * ```
  *
@@ -35,4 +35,4 @@ export = prepend;
  *
  * @since 1.7.3
  */
-declare function prepend(item: any): (value: any) => string | any[];
+declare function prepend(element: any): (value: any) => string | any[];

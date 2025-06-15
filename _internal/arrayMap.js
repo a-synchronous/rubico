@@ -8,12 +8,12 @@ const promiseAll = require('./promiseAll')
  * ```coffeescript [specscript]
  * arrayMap(
  *   array Array,
- *   mapper (item any, index number, array Array)=>Promise|any,
+ *   mapper (element any, index number, array Array)=>Promise|any,
  * ) -> Promise|Array
  * ```
  *
  * @description
- * Apply a mapper to each item of an array, returning an array. Mapper may be asynchronous.
+ * Apply a mapper to each element of an array, returning an array. Mapper may be asynchronous.
  */
 const arrayMap = function (array, mapper) {
   const arrayLength = array.length,
@@ -22,11 +22,11 @@ const arrayMap = function (array, mapper) {
     isAsync = false
 
   while (++index < arrayLength) {
-    const resultItem = mapper(array[index], index, array)
-    if (isPromise(resultItem)) {
+    const resultElement = mapper(array[index], index, array)
+    if (isPromise(resultElement)) {
       isAsync = true
     }
-    result[index] = resultItem
+    result[index] = resultElement
   }
   return isAsync ? promiseAll(result) : result
 }

@@ -9,7 +9,7 @@
  * ```
  *
  * @description
- * Get the last item of a collection
+ * Get the last element of a collection
  *
  * ```javascript [playground]
  * import last from 'https://unpkg.com/rubico/dist/x/last.es.js'

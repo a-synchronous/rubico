@@ -19,7 +19,7 @@ export = objectFlatMap;
  * ```
  *
  * @description
- * Apply a flatMapper to each value of an object, assigning all items of all results into a new object.
+ * Apply a flatMapper to each value of an object, assigning all elements of all results into a new object.
  *
  * @TODO "deeply copies" after objectFlatten changes to deep assignment
  */

@@ -193,8 +193,8 @@ const arrayToObjectReadableStream = function (array) {
   return new Readable({
     objectMode: true,
     read() {
-      for (const item of array) {
-        this.push(item)
+      for (const element of array) {
+        this.push(element)
       }
       this.push(null)
     },
@@ -237,8 +237,8 @@ const MockDuplexStream = function (values) {
 MockDuplexStream.prototype = {
   ...MockWritable.prototype,
   async* [symbolAsyncIterator]() {
-    for (const item of this.values) {
-      yield item
+    for (const element of this.values) {
+      yield element
     }
   },
 }
@@ -305,13 +305,13 @@ describe('rubico', () => {
         yield 1; yield 2; yield 3; yield 4; yield 5
       }
       const isOddGen = function* (iter) {
-        for (const item of iter) {
-          if (item % 2 == 1) yield item
+        for (const element of iter) {
+          if (element % 2 == 1) yield element
         }
       }
       const squareGen = function* (iter) {
-        for (const item of iter) {
-          yield item ** 2
+        for (const element of iter) {
+          yield element ** 2
         }
       }
       const iter = pipe([isOddGen, squareGen])(numbersGen())
@@ -323,18 +323,18 @@ describe('rubico', () => {
         yield 1; yield 2; yield 3; yield 4; yield 5
       }
       const isOddGen = async function* (iter) {
-        for await (const item of iter) {
-          if (item % 2 == 1) yield item
+        for await (const element of iter) {
+          if (element % 2 == 1) yield element
         }
       }
       const squareGen = async function* (iter) {
-        for await (const item of iter) {
-          yield item ** 2
+        for await (const element of iter) {
+          yield element ** 2
         }
       }
       const iter = pipe([isOddGen, squareGen])(asyncNumbersGen())
       const arr = []
-      for await (const item of iter) arr.push(item)
+      for await (const element of iter) arr.push(element)
       assert.deepEqual(arr, [1, 9, 25])
     })
     it('throws a TypeError if passed less than one function', async () => {
@@ -1038,7 +1038,7 @@ describe('rubico', () => {
     it('acts as identity for a single case', async () => {
       assert.strictEqual(switchCase([() => false])(), false)
     })
-    it('even number of array items default returns undefined', async () => {
+    it('even number of array elements default returns undefined', async () => {
       assert.strictEqual(switchCase([() => true, () => 'hey'])(), 'hey')
       assert.strictEqual(switchCase([() => false, () => 'hey'])(), undefined)
       assert.strictEqual(switchCase([
@@ -2358,7 +2358,7 @@ transform(
             transform(Transducer.map(square), [])([1, 2, 3, 4, 5][Symbol.iterator]()),
             [1, 4, 9, 16, 25],
           )
-          const duplicate = item => [item, item]
+          const duplicate = element => [element, element]
           assert.deepEqual(
             transform(Transducer.map(duplicate), [])([1, 2, 3, 4, 5]),
             [1, 1, 2, 2, 3, 3, 4, 4, 5, 5],
@@ -2754,11 +2754,11 @@ type Iterable = Iterable|AsyncIterable|Object<value any>
 
 flatMap(
   value FlatMappable,
-  flatMapper (item any)=>Promise|Iterable,
+  flatMapper (element any)=>Promise|Iterable,
 ) -> result Promise|FlatMappable
 
 flatMap(
-  flatMapper (item any)=>Promise|Iterable,
+  flatMapper (element any)=>Promise|Iterable,
 )(value FlatMappable) -> result Promise|FlatMappable
     `, () => {
 
@@ -3038,89 +3038,89 @@ flatMap(
 
         [asyncNumbersGeneratorFunction(), identity, numbersArray, async function (expected, actual) {
           const actualArray = []
-          for await (const item of actual) actualArray.push(item)
+          for await (const element of actual) actualArray.push(element)
           assert.deepEqual(actualArray, expected)
         }],
         [asyncNumbersGeneratorFunction(), duplicateArray, numbersDuplicates, async function (expected, actual) {
           const actualArray = []
-          for await (const item of actual) actualArray.push(item)
+          for await (const element of actual) actualArray.push(element)
           assert.deepEqual(actualArray, expected)
         }],
         [asyncNumbersGeneratorFunction(), async(duplicateArray), numbersDuplicates, async function (expected, actual) {
           const actualArray = []
-          for await (const item of actual) actualArray.push(item)
+          for await (const element of actual) actualArray.push(element)
           assert.deepEqual(actualArray, expected)
         }],
 
         [asyncNumbersGeneratorFunction(), DuplicateArray.of, numbersArray.map(duplicateArray), async function (expected, actual) {
           const actualArray = []
-          for await (const item of actual) actualArray.push(item)
+          for await (const element of actual) actualArray.push(element)
           assert.deepEqual(actualArray, expected)
         }],
 
         [asyncNumbersGeneratorFunction(), async(DuplicateArray.of), numbersArray.map(duplicateArray), async function (expected, actual) {
           const actualArray = []
-          for await (const item of actual) actualArray.push(item)
+          for await (const element of actual) actualArray.push(element)
           assert.deepEqual(actualArray, expected)
         }],
         [asyncNumbersGeneratorFunction(), duplicateMockFoldable, numbersDuplicates, async function (expected, actual) {
           const actualArray = []
-          for await (const item of actual) actualArray.push(item)
+          for await (const element of actual) actualArray.push(element)
           assert.deepEqual(actualArray, expected)
         }],
         [asyncNumbersGeneratorFunction(), async(duplicateMockFoldable), numbersDuplicates, async function (expected, actual) {
           const actualArray = []
-          for await (const item of actual) actualArray.push(item)
+          for await (const element of actual) actualArray.push(element)
           assert.deepEqual(actualArray, expected)
         }],
         [asyncNumbersGeneratorFunction(), duplicateObject, numbersDuplicates, async function (expected, actual) {
           const actualArray = []
-          for await (const item of actual) actualArray.push(item)
+          for await (const element of actual) actualArray.push(element)
           assert.deepEqual(actualArray, expected)
         }],
         [asyncNumbersGeneratorFunction(), async(duplicateObject), numbersDuplicates, async function (expected, actual) {
           const actualArray = []
-          for await (const item of actual) actualArray.push(item)
+          for await (const element of actual) actualArray.push(element)
           assert.deepEqual(actualArray, expected)
         }],
         [asyncNumbersGeneratorFunction(), duplicateString, numbersDuplicates, async function (expected, actual) {
           const actualArray = []
-          for await (const item of actual) actualArray.push(item)
+          for await (const element of actual) actualArray.push(element)
           assert.deepEqual(actualArray, expected)
         }],
         [asyncNumbersGeneratorFunction(), async(duplicateString), numbersDuplicates, async function (expected, actual) {
           const actualArray = []
-          for await (const item of actual) actualArray.push(item)
+          for await (const element of actual) actualArray.push(element)
           assert.deepEqual(actualArray, expected)
         }],
         [asyncNumbersGeneratorFunction(), duplicateBuffer, numbersDuplicates, async function (expected, actual) {
           const actualArray = []
-          for await (const item of actual) actualArray.push(item)
+          for await (const element of actual) actualArray.push(element)
           assert.deepEqual(actualArray, expected)
         }],
         [asyncNumbersGeneratorFunction(), async(duplicateBuffer), numbersDuplicates, async function (expected, actual) {
           const actualArray = []
-          for await (const item of actual) actualArray.push(item)
+          for await (const element of actual) actualArray.push(element)
           assert.deepEqual(actualArray, expected)
         }],
         [asyncNumbersGeneratorFunction(), duplicateUint8Array, numbersDuplicates, async function (expected, actual) {
           const actualArray = []
-          for await (const item of actual) actualArray.push(item)
+          for await (const element of actual) actualArray.push(element)
           assert.deepEqual(actualArray, expected)
         }],
         [asyncNumbersGeneratorFunction(), async(duplicateUint8Array), numbersDuplicates, async function (expected, actual) {
           const actualArray = []
-          for await (const item of actual) actualArray.push(item)
+          for await (const element of actual) actualArray.push(element)
           assert.deepEqual(actualArray, expected)
         }],
         [asyncNumbersGeneratorFunction(), duplicateReadableStream, numbersArray.map(duplicateBuffer), async function (expected, actual) {
           const actualArray = []
-          for await (const item of actual) actualArray.push(item)
+          for await (const element of actual) actualArray.push(element)
           assert.deepEqual(actualArray, expected)
         }],
         [asyncNumbersGeneratorFunction(), async(duplicateReadableStream), numbersArray.map(duplicateBuffer), async function (expected, actual) {
           const actualArray = []
-          for await (const item of actual) actualArray.push(item)
+          for await (const element of actual) actualArray.push(element)
           assert.deepEqual(actualArray, expected)
         }],
 
@@ -3458,7 +3458,7 @@ flatMap(
         assert.strictEqual(forEach(noop)(), undefined)
       })
 
-      it('execute a function for each item of a collection, returning the collection', async () => {
+      it('execute a function for each element of a collection, returning the collection', async () => {
         let total = 0
         assert.deepEqual(
           forEach(number => total += number)([1, 2, 3]),
@@ -3473,24 +3473,24 @@ flatMap(
     it('arrays', async () => {
       const array = [100, 80, 60, 40, 20]
       const result = []
-      await forEach.series(array, async item => {
-        await sleep(item)
-        result.push(item)
+      await forEach.series(array, async element => {
+        await sleep(element)
+        result.push(element)
       })
 
       assert.deepEqual(result, [100, 80, 60, 40, 20])
 
       const result1 = []
-      await forEach.series(async item => {
-        await sleep(item)
-        result1.push(item)
+      await forEach.series(async element => {
+        await sleep(element)
+        result1.push(element)
       })(array)
 
       assert.deepEqual(result1, [100, 80, 60, 40, 20])
 
       const result2 = []
-      await forEach.series(array, item => {
-        result2.push(item)
+      await forEach.series(array, element => {
+        result2.push(element)
       })
       assert.deepEqual(result2, [100, 80, 60, 40, 20])
     }).timeout(60000)
@@ -3498,22 +3498,22 @@ flatMap(
     it('objects', async () => {
       const obj = { a: 100, b: 80, c: 60, d: 40, e: 20 }
       const result = []
-      await forEach.series(obj, async item => {
-        await sleep(item)
-        result.push(item)
+      await forEach.series(obj, async element => {
+        await sleep(element)
+        result.push(element)
       })
       assert.deepEqual(result, [100, 80, 60, 40, 20])
 
       const result1 = []
-      await forEach.series(async item => {
-        await sleep(item)
-        result1.push(item)
+      await forEach.series(async element => {
+        await sleep(element)
+        result1.push(element)
       })(obj)
       assert.deepEqual(result1, [100, 80, 60, 40, 20])
 
       const result2 = []
-      forEach.series(obj, item => {
-        result2.push(item)
+      forEach.series(obj, element => {
+        result2.push(element)
       })
       assert.deepEqual(result2, [100, 80, 60, 40, 20])
     }).timeout(60000)
@@ -3521,13 +3521,13 @@ flatMap(
     it('objects varying async', async () => {
       const obj = { a: 100, b: 80, c: 60, d: 40, e: 20 }
       const result = []
-      await forEach.series(obj, item => {
-        if (item < 50) {
-          return Promise.resolve(item).then(item => {
-            result.push(item)
+      await forEach.series(obj, element => {
+        if (element < 50) {
+          return Promise.resolve(element).then(element => {
+            result.push(element)
           })
         }
-        result.push(item)
+        result.push(element)
         return undefined
       })
       assert.equal(result.length, 5)
@@ -3539,17 +3539,17 @@ flatMap(
       }
 
       const result = []
-      await forEach.series(gen(), async item => {
-        await sleep(item)
-        result.push(item)
+      await forEach.series(gen(), async element => {
+        await sleep(element)
+        result.push(element)
       })
 
       assert.deepEqual(result, [100, 80, 60, 40, 20])
 
       const result1 = []
-      await forEach.series(async item => {
-        await sleep(item)
-        result1.push(item)
+      await forEach.series(async element => {
+        await sleep(element)
+        result1.push(element)
       })(gen())
 
       assert.deepEqual(result1, [100, 80, 60, 40, 20])
@@ -3561,17 +3561,17 @@ flatMap(
       }
 
       const result = []
-      await forEach.series(gen(), async item => {
-        await sleep(item)
-        result.push(item)
+      await forEach.series(gen(), async element => {
+        await sleep(element)
+        result.push(element)
       })
 
       assert.deepEqual(result, [100, 80, 60, 40, 20])
 
       const result1 = []
-      await forEach.series(async item => {
-        await sleep(item)
-        result1.push(item)
+      await forEach.series(async element => {
+        await sleep(element)
+        result1.push(element)
       })(gen())
 
       assert.deepEqual(result1, [100, 80, 60, 40, 20])
@@ -3899,7 +3899,7 @@ flatMap(
   describe('some - v1.5.15 regression', () => {
     const numbers = [1, 2, 3, 4, 5]
     const numbersObject = { a: 1, b: 2, c: 3, d: 4, e: 5 }
-    it('[sync] tests fn against all items of iterable, true if any evaluation is truthy', async () => {
+    it('[sync] tests fn against all elements of iterable, true if any evaluation is truthy', async () => {
       ase(some(x => x > 5)(numbers), false)
       ase(some(x => x > 0)(numbers), true)
       ase(some(x => x > 5)(new Set(numbers)), false)
@@ -3907,7 +3907,7 @@ flatMap(
       ase(some(x => x > 5)(numbersObject), false)
       ase(some(x => x > 0)(numbersObject), true)
     })
-    it('[async] tests fn against all items of iterable, true if any evaluation is truthy', async () => {
+    it('[async] tests fn against all elements of iterable, true if any evaluation is truthy', async () => {
       aok(some(async x => x > 5)(numbers) instanceof Promise)
       ase(await some(async x => x > 5)(numbers), false)
       ase(await some(async x => x > 0)(numbers), true)
@@ -4033,7 +4033,7 @@ flatMap(
   describe('every - v1.5.15 regression', () => {
     const numbers = [1, 2, 3, 4, 5]
     const numbersObject = { a: 1, b: 2, c: 3, d: 4, e: 5 }
-    it('syncly evaluates fn against all items in iterable, true if all evaluations are truthy', async () => {
+    it('syncly evaluates fn against all elements in iterable, true if all evaluations are truthy', async () => {
       ase(every(x => x > 5)(numbers), false)
       ase(every(x => x > 0)(numbers), true)
       ase(every(x => x > 5)(new Set(numbers)), false)
@@ -4041,7 +4041,7 @@ flatMap(
       ase(every(x => x > 5)(numbersObject), false)
       ase(every(x => x > 0)(numbersObject), true)
     })
-    it('asyncly evaluates fn against all items in iterable, true if all evaluations are truthy', async () => {
+    it('asyncly evaluates fn against all elements in iterable, true if all evaluations are truthy', async () => {
       aok(every(async x => x > 5)(numbers) instanceof Promise)
       ase(await every(async x => x > 5)(numbers), false)
       ase(await every(async x => x > 0)(numbers), true)

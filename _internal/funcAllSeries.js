@@ -23,8 +23,8 @@ const objectSet = require('./objectSet')
 const asyncFuncAllSeries = async function (funcs, args, result, funcsIndex) {
   const funcsLength = funcs.length
   while (++funcsIndex < funcsLength) {
-    const resultItem = funcs[funcsIndex](...args)
-    result[funcsIndex] = isPromise(resultItem) ? await resultItem : resultItem
+    const resultElement = funcs[funcsIndex](...args)
+    result[funcsIndex] = isPromise(resultElement) ? await resultElement : resultElement
   }
   return result
 }
@@ -43,13 +43,13 @@ const funcAllSeries = funcs => function allFuncsSeries(...args) {
   const funcsLength = funcs.length, result = []
   let funcsIndex = -1
   while (++funcsIndex < funcsLength) {
-    const resultItem = funcs[funcsIndex](...args)
-    if (isPromise(resultItem)) {
-      return resultItem.then(funcConcat(
+    const resultElement = funcs[funcsIndex](...args)
+    if (isPromise(resultElement)) {
+      return resultElement.then(funcConcat(
         curry3(objectSet, result, funcsIndex, __),
         curry4(asyncFuncAllSeries, funcs, args, __, funcsIndex)))
     }
-    result[funcsIndex] = resultItem
+    result[funcsIndex] = resultElement
   }
   return result
 }

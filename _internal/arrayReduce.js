@@ -16,7 +16,7 @@ const curry4 = require('./curry4')
  * ```
  *
  * @description
- * Execute a reducer for each item of an array, returning a Promise of a single value.
+ * Execute a reducer for each element of an array, returning a Promise of a single value.
  */
 const arrayReduceAsync = async function (
   array, reducer, result, index,

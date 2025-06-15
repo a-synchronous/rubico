@@ -35,7 +35,7 @@ export = groupBy;
  * // }
  * ```
  *
- * Additionally, pass a resolver in property position to resolve a value for group membership for each item.
+ * Additionally, pass a resolver in property position to resolve a value for group membership for each element.
  *
  * ```javascript [playground]
  * import groupBy from 'https://unpkg.com/rubico/dist/x/groupBy.es.js'

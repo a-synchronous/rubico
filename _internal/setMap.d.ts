@@ -12,6 +12,6 @@ export = setMap;
  * ```
  *
  * @description
- * Apply a mapper concurrently to each item of a set, returning a set of results.
+ * Apply a mapper concurrently to each element of a set, returning a set of results.
  */
 declare function setMap(set: any, mapper: any): any;

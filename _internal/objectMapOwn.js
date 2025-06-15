@@ -23,11 +23,11 @@ const objectMapOwn = function (object, mapper) {
   let isAsync = false
   for (const key in object) {
     if (hasOwn(object, key)) {
-      const resultItem = mapper(object[key])
-      if (isPromise(resultItem)) {
+      const resultElement = mapper(object[key])
+      if (isPromise(resultElement)) {
         isAsync = true
       }
-      result[key] = resultItem
+      result[key] = resultElement
     }
   }
   return isAsync ? promiseObjectAll(result) : result

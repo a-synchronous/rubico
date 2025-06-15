@@ -12,6 +12,6 @@ export = asyncIteratorForEach;
  * ```
  *
  * @description
- * Execute a callback function for each item of an async iterator
+ * Execute a callback function for each element of an async iterator
  */
 declare function asyncIteratorForEach(asyncIterator: any, callback: any): Promise<any>;

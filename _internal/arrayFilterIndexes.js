@@ -24,17 +24,17 @@ const arrayFilterIndexes = function (predicate, array) {
   let index = -1,
     resultIndex = -1
   while (++index < arrayLength) {
-    const item = array[index],
-      shouldIncludeItem = predicate(index)
-    if (isPromise(shouldIncludeItem)) {
-      const predicationPromises = [shouldIncludeItem]
+    const element = array[index],
+      shouldIncludeElement = predicate(index)
+    if (isPromise(shouldIncludeElement)) {
+      const predicationPromises = [shouldIncludeElement]
       return promiseAll(
         arrayExtendMapIndexes(
-          [shouldIncludeItem], array, predicate, index)).then(
+          [shouldIncludeElement], array, predicate, index)).then(
             curry4(arrayFilterByConditions, array, result, index - 1, __))
     }
-    if (shouldIncludeItem) {
-      result[++resultIndex] = item
+    if (shouldIncludeElement) {
+      result[++resultIndex] = element
     }
   }
   return result

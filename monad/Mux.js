@@ -240,13 +240,13 @@ const muxZipAsync = async function*(x) {
  * Create rows from disparate Sequences
  *
  * @description
- * Mux.zip takes a Sequence of items or Sequences of items and outputs either an Iterator or an AsyncIterator that yields an Array of items of each supplied Sequence for a given iteration. If any Sequence supplied to Mux.zip is AsyncIterable or an AsyncGeneratorFunction, Mux.zip outputs an AsyncIterator. The Iterator or AsyncIterator will iterate as long as the longest iterator of the supplied Sequences; shorter iterators will yield undefined until the longest iterator is consumed.
+ * Mux.zip takes a Sequence of elements or Sequences of elements and outputs either an Iterator or an AsyncIterator that yields an Array of elements of each supplied Sequence for a given iteration. If any Sequence supplied to Mux.zip is AsyncIterable or an AsyncGeneratorFunction, Mux.zip outputs an AsyncIterator. The Iterator or AsyncIterator will iterate as long as the longest iterator of the supplied Sequences; shorter iterators will yield undefined until the longest iterator is consumed.
  *
  * @example
  * const iterator = Mux.zip([[1, 2, 3], ['a', 'b', 'c']])
  *
- * for (const item of iterator) {
- *   console.log(item) // [1, 'a']
+ * for (const element of iterator) {
+ *   console.log(element) // [1, 'a']
  *                     // [2, 'b']
  *                     // [3, 'c']
  * }
@@ -307,7 +307,7 @@ const muxConcatAsync = async function*(x) {
  * Concatenate Sequences into one
  *
  * @description
- * Mux.concat takes a Sequence of items or Sequences of items and outputs either an Iterator or an AsyncIterator that yields each item individually. The first of these items is the first item of the first Sequence, the next is the second item of the first Sequence, and so on until all Sequences have been iterated in order. Non-Sequence Items in the top-level Sequence are yielded as they are.
+ * Mux.concat takes a Sequence of elements or Sequences of elements and outputs either an Iterator or an AsyncIterator that yields each element individually. The first of these elements is the first element of the first Sequence, the next is the second element of the first Sequence, and so on until all Sequences have been iterated in order. Non-Sequence Elements in the top-level Sequence are yielded as they are.
  *
  * @example
  * const iter = Mux.concat([
@@ -396,7 +396,7 @@ const muxSwitchAsync = async function*(x) {
  * Interleave Sequences into one
  *
  * @description
- * Mux.switch takes a Sequence of items or Sequences of items and outputs either an Iterator or an AsyncIterator that yields each item individually. The first of these items is the first item of the first Sequence, the next is the first item of the second Sequence, and so on until all Sequences have yielded their first item. Then, the first Sequence yields its second item, the second Sequence yields its second item, and so on until all Sequences have finished iterating. Non-Sequence Items in the top-level Sequence are yielded as they are. When a shorter Sequence finishes iterating, the remaining Sequences will switch yielding amongst themselves.
+ * Mux.switch takes a Sequence of elements or Sequences of elements and outputs either an Iterator or an AsyncIterator that yields each element individually. The first of these elements is the first element of the first Sequence, the next is the first element of the second Sequence, and so on until all Sequences have yielded their first element. Then, the first Sequence yields its second element, the second Sequence yields its second element, and so on until all Sequences have finished iterating. Non-Sequence Elements in the top-level Sequence are yielded as they are. When a shorter Sequence finishes iterating, the remaining Sequences will switch yielding amongst themselves.
  *
  * @example
  * const iter = Mux.switch([
@@ -457,7 +457,7 @@ const muxRaceAsync = async function*(x) {
  * Asynchronously Race Sequences into one
  *
  * @description
- * Mux.race takes a Sequence of items or Sequences of items and outputs either an Iterator or an AsyncIterator that yields each item individually. The first of these items are the synchronous items of the top level Sequence, followed by the asynchronous items of any asynchronous sub Sequences. If any sub Sequences are asynchronous, the order of these asynchronous items in the final returned AsyncIterator is determined by the serial asynchronous resolution of the individual asynchronous sub Sequences. If all Sequences are synchronous, Mux.race behaves just as Mux.concat.
+ * Mux.race takes a Sequence of elements or Sequences of elements and outputs either an Iterator or an AsyncIterator that yields each element individually. The first of these elements are the synchronous elements of the top level Sequence, followed by the asynchronous elements of any asynchronous sub Sequences. If any sub Sequences are asynchronous, the order of these asynchronous elements in the final returned AsyncIterator is determined by the serial asynchronous resolution of the individual asynchronous sub Sequences. If all Sequences are synchronous, Mux.race behaves just as Mux.concat.
  *
  * @example
  * const f = async function*() { await delay(5); yield 10; yield 20 }

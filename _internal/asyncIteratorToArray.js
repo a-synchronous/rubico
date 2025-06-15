@@ -16,8 +16,8 @@
  */
 const asyncIteratorToArray = async function (asyncIterator) {
   const result = []
-  for await (const item of asyncIterator) {
-    result.push(item)
+  for await (const element of asyncIterator) {
+    result.push(element)
   }
   return result
 }

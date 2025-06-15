@@ -50,7 +50,7 @@ const _some = function (collection, predicate) {
  * ```
  *
  * @description
- * Test a predicate concurrently across all items of a foldable, returning true if any executions return true.
+ * Test a predicate concurrently across all elements of a foldable, returning true if any executions return true.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1

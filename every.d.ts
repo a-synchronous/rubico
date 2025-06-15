@@ -12,7 +12,7 @@ export = every;
  * ```
  *
  * @description
- * Test a predicate concurrently across all items of a collection, returning true if all predications are truthy.
+ * Test a predicate concurrently across all elements of a collection, returning true if all predications are truthy.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1

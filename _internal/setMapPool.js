@@ -26,15 +26,15 @@ const _setMapPoolAsync = async function (
     if (promises.size >= concurrency) {
       await promiseRace(promises)
     }
-    const resultItem = f(iteration.value, iteration.value, s)
-    if (isPromise(resultItem)) {
-      const selfDeletingPromise = resultItem.then(resolvedValue => {
+    const resultElement = f(iteration.value, iteration.value, s)
+    if (isPromise(resultElement)) {
+      const selfDeletingPromise = resultElement.then(resolvedValue => {
         promises.delete(selfDeletingPromise)
         result.add(resolvedValue)
       })
       promises.add(selfDeletingPromise)
     } else {
-      result.add(resultItem)
+      result.add(resultElement)
     }
     iteration = iterator.next()
   }
@@ -53,24 +53,24 @@ const _setMapPoolAsync = async function (
  * ```
  *
  * @description
- * Apply a function `f` with limited concurrency to each item of a set `s`, returning an array of results.
+ * Apply a function `f` with limited concurrency to each element of a set `s`, returning an array of results.
  */
 const setMapPool = function (s, concurrency, f) {
   const result = new Set()
   const iterator = s[symbolIterator]()
   let iteration = iterator.next()
   while (!iteration.done) {
-    const resultItem = f(iteration.value, iteration.value, s)
-    if (isPromise(resultItem)) {
+    const resultElement = f(iteration.value, iteration.value, s)
+    if (isPromise(resultElement)) {
       const promises = new Set()
-      const selfDeletingPromise = resultItem.then(resolvedValue => {
+      const selfDeletingPromise = resultElement.then(resolvedValue => {
         promises.delete(selfDeletingPromise)
         result.add(resolvedValue)
       })
       promises.add(selfDeletingPromise)
       return _setMapPoolAsync(s, iterator, concurrency, f, result, promises)
     }
-    result.add(resultItem)
+    result.add(resultElement)
     iteration = iterator.next()
   }
   return result

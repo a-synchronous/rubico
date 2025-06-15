@@ -24,8 +24,8 @@ const promiseAll = require('./promiseAll')
  */
 const streamFlatMap = async function (stream, flatMapper) {
   const promises = new Set()
-  for await (const item of stream) {
-    const monad = flatMapper(item)
+  for await (const element of stream) {
+    const monad = flatMapper(element)
     if (isPromise(monad)) {
       const selfDeletingPromise = monad.then(
         curry2(streamFlatExtend, stream, __)).then(

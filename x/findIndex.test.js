@@ -2,7 +2,7 @@ const assert = require('assert')
 const findIndex = require('./findIndex')
 
 describe('findIndex', function () {
-  it('finds the index in an array of the first item matching a predicate function', async function () {
+  it('finds the index in an array of the first element matching a predicate function', async function () {
     const startsWithAAA = string => string.startsWith('AAA')
     {
       const foundIndex = findIndex(startsWithAAA)([

@@ -18,17 +18,17 @@ const callPropUnary = require('./callPropUnary')
  * ```
  *
  * @description
- * Apply a mapper concurrently to each item of a set, returning a set of results.
+ * Apply a mapper concurrently to each element of a set, returning a set of results.
  */
 const setMap = function (set, mapper) {
   const result = new Set(),
     promises = []
-  for (const item of set) {
-    const resultItem = mapper(item, item, set)
-    if (isPromise(resultItem)) {
-      promises.push(resultItem.then(curry3(callPropUnary, result, 'add', __)))
+  for (const element of set) {
+    const resultElement = mapper(element, element, set)
+    if (isPromise(resultElement)) {
+      promises.push(resultElement.then(curry3(callPropUnary, result, 'add', __)))
     } else {
-      result.add(resultItem)
+      result.add(resultElement)
     }
   }
   return promises.length == 0

@@ -4,13 +4,13 @@ const isArray = require('./isArray')
 const objectCopyDeep = function (object) {
   const result = {}
   for (const key in object) {
-    const item = object[key]
-    if (isArray(item)) {
-      result[key] = arrayCopyDeep(item)
-    } else if (item != null && item.constructor == Object) {
-      result[key] = objectCopyDeep(item)
+    const element = object[key]
+    if (isArray(element)) {
+      result[key] = arrayCopyDeep(element)
+    } else if (element != null && element.constructor == Object) {
+      result[key] = objectCopyDeep(element)
     } else {
-      result[key] = item
+      result[key] = element
     }
   }
   return result
@@ -22,13 +22,13 @@ const arrayCopyDeep = function (array) {
     result = []
   let index = -1
   while (++index < length) {
-    const item = array[index]
-    if (isArray(item)) {
-      result[index] = arrayCopyDeep(item)
-    } else if (item != null && item.constructor == Object) {
-      result[index] = objectCopyDeep(item)
+    const element = array[index]
+    if (isArray(element)) {
+      result[index] = arrayCopyDeep(element)
+    } else if (element != null && element.constructor == Object) {
+      result[index] = objectCopyDeep(element)
     } else {
-      result[index] = item
+      result[index] = element
     }
   }
   return result

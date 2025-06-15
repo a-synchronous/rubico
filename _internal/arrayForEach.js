@@ -15,7 +15,7 @@ const always = require('./always')
  * ```
  *
  * @description
- * Call a callback for each item of an iterator. Return a promise if any executions are asynchronous.
+ * Call a callback for each element of an iterator. Return a promise if any executions are asynchronous.
  *
  * Note: iterator is consumed
  */

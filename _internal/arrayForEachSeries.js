@@ -30,7 +30,7 @@ const _arrayForEachSeriesAsync = async function (array, callback, index) {
  * ```
  *
  * @description
- * Call a callback for each item of an array in series. Return a promise if any executions are asynchronous.
+ * Call a callback for each element of an array in series. Return a promise if any executions are asynchronous.
  */
 const arrayForEachSeries = function (array, callback) {
   const length = array.length

@@ -20,13 +20,13 @@ const objectFilter = function (object, predicate) {
   const result = {},
     promises = []
   for (const key in object) {
-    const item = object[key],
-      shouldIncludeItem = predicate(item, key, object)
-    if (isPromise(shouldIncludeItem)) {
-      promises.push(shouldIncludeItem.then(
+    const element = object[key],
+      shouldIncludeElement = predicate(element, key, object)
+    if (isPromise(shouldIncludeElement)) {
+      promises.push(shouldIncludeElement.then(
         curry4(objectSetIf, result, key, object[key], __)))
-    } else if (shouldIncludeItem) {
-      result[key] = item
+    } else if (shouldIncludeElement) {
+      result[key] = element
     }
   }
   return promises.length == 0

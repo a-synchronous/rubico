@@ -15,11 +15,11 @@ const functionArrayAll = function (funcs, args) {
   let funcsIndex = -1, isAsync = false
   while (++funcsIndex < funcsLength) {
     const f = funcs[funcsIndex]
-    const resultItem = typeof f == 'function' ? f(...args) : f
-    if (isPromise(resultItem)) {
+    const resultElement = typeof f == 'function' ? f(...args) : f
+    if (isPromise(resultElement)) {
       isAsync = true
     }
-    result[funcsIndex] = resultItem
+    result[funcsIndex] = resultElement
   }
   return isAsync ? promiseAll(result) : result
 }

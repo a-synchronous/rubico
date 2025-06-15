@@ -20,7 +20,7 @@ const promiseRace = require('./promiseRace')
  * ```
  *
  * @description
- * Apply a function `f` with limited concurrency to each item of an array, returning a Promise of an array of results.
+ * Apply a function `f` with limited concurrency to each element of an array, returning a Promise of an array of results.
  */
 const arrayMapPoolAsync = async function (
   array, f, concurrencyLimit, result, index, promises,
@@ -30,14 +30,14 @@ const arrayMapPoolAsync = async function (
     if (promises.size >= concurrencyLimit) {
       await promiseRace(promises)
     }
-    const resultItem = f(array[index])
-    if (isPromise(resultItem)) {
-      const selfDeletingPromise = resultItem.then(
+    const resultElement = f(array[index])
+    if (isPromise(resultElement)) {
+      const selfDeletingPromise = resultElement.then(
         tapSync(() => promises.delete(selfDeletingPromise)))
       promises.add(selfDeletingPromise)
       result[index] = selfDeletingPromise
     } else {
-      result[index] = resultItem
+      result[index] = resultElement
     }
   }
   return promiseAll(result)
@@ -52,24 +52,24 @@ const arrayMapPoolAsync = async function (
  * ```
  *
  * @description
- * Apply a function `f` with limited concurrency to each item of an array, returning an array of results.
+ * Apply a function `f` with limited concurrency to each element of an array, returning an array of results.
  */
 const arrayMapPool = function (array, concurrency, f) {
   const arrayLength = array.length,
     result = Array(arrayLength)
   let index = -1
   while (++index < arrayLength) {
-    const resultItem = f(array[index])
-    if (isPromise(resultItem)) {
+    const resultElement = f(array[index])
+    if (isPromise(resultElement)) {
       const promises = new Set(),
-        selfDeletingPromise = resultItem.then(
+        selfDeletingPromise = resultElement.then(
           tapSync(() => promises.delete(selfDeletingPromise)))
       promises.add(selfDeletingPromise)
       result[index] = selfDeletingPromise
       return arrayMapPoolAsync(
         array, f, concurrency, result, index, promises)
     }
-    result[index] = resultItem
+    result[index] = resultElement
   }
   return result
 }

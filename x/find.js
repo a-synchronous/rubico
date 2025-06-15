@@ -22,7 +22,7 @@ const asyncIteratorFind = require('../_internal/asyncIteratorFind')
  * ```
  *
  * @description
- * Get the first item in a foldable collection that matches a predicate.
+ * Get the first element in a foldable collection that matches a predicate.
  *
  * ```javascript [playground]
  * import find from 'https://unpkg.com/rubico/dist/x/find.es.js'

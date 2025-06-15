@@ -28,7 +28,7 @@ export = reduce;
  * ```
  *
  * @description
- * Transforms a collection based on a reducer function and optional initial value. In a reducing operation, the result is defined in the beginning as either the initial value if supplied or the first item of the collection. The reducing operation then iterates through the remaining items in the collection, executing the reducer at each iteration to return the result to be used in the next iteration. The final result is the result of the execution of the reducer at the last item of the iteration. `reduce` accepts the following collections:
+ * Transforms a collection based on a reducer function and optional initial value. In a reducing operation, the result is defined in the beginning as either the initial value if supplied or the first element of the collection. The reducing operation then iterates through the remaining elements in the collection, executing the reducer at each iteration to return the result to be used in the next iteration. The final result is the result of the execution of the reducer at the last element of the iteration. `reduce` accepts the following collections:
  *
  *  * `Array`
  *  * `Object`
@@ -37,7 +37,7 @@ export = reduce;
  *  * `Iterator`/`Generator`
  *  * `AsyncIterator`/`AsyncGenerator`
  *
- * For arrays (type `Array`), `reduce` executes the reducer function for each item of the array in order, returning a new result at each execution to be used in the next execution. On each iteration, the reducer is passed the accumulator, the item of the iteration, the index of the item in the array, and a reference to the original array.
+ * For arrays (type `Array`), `reduce` executes the reducer function for each element of the array in order, returning a new result at each execution to be used in the next execution. On each iteration, the reducer is passed the accumulator, the element of the iteration, the index of the element in the array, and a reference to the original array.
  *
  * ```javascript [playground]
  * const max = (a, b) => a > b ? a : b
@@ -51,7 +51,7 @@ export = reduce;
  * ) // 5
  * ```
  *
- * If an optional initial value is provided, the result starts as the provided initial value rather than the first item of the collection.
+ * If an optional initial value is provided, the result starts as the provided initial value rather than the first element of the collection.
  *
  * ```javascript [playground]
  * const add = (a, b) => a + b
@@ -91,7 +91,7 @@ export = reduce;
  * ) // 15
  * ```
  *
- * For sets (type `Set`), `reduce` executes the reducer function for each item of the set. On each iteration, the reducer is passed the accumulator and item of the set.
+ * For sets (type `Set`), `reduce` executes the reducer function for each element of the set. On each iteration, the reducer is passed the accumulator and element of the set.
  *
  * ```javascript [playground]
  * const add = (a, b) => a + b
@@ -107,7 +107,7 @@ export = reduce;
  * ) // 15
  * ```
  *
- * For maps (type `Map`), `reduce` executes the reducer function for each value of each entry of the map. On each iteration, the reducer is passed the accumulator, the map item, the key of the map item, and a reference to the original map.
+ * For maps (type `Map`), `reduce` executes the reducer function for each value of each entry of the map. On each iteration, the reducer is passed the accumulator, the map element, the key of the map element, and a reference to the original map.
  *
  * ```javascript [playground]
  * const add = (a, b) => a + b
@@ -123,7 +123,7 @@ export = reduce;
  * ) // 15
  * ```
  *
- * For iterators (type `Iterator`) and generators (type `Generator`), `reduce` executes the reducer function for each value of the iterator/generator. On each iteration, the reducer is passed the accumulator and the item of the iteration. The iterator/generator is consumed in the process.
+ * For iterators (type `Iterator`) and generators (type `Generator`), `reduce` executes the reducer function for each value of the iterator/generator. On each iteration, the reducer is passed the accumulator and the element of the iteration. The iterator/generator is consumed in the process.
  *
  * ```javascript [playground]
  * const add = (a, b) => a + b
@@ -141,7 +141,7 @@ export = reduce;
  * ) // 15
  * ```
  *
- * For asyncIterators (type `AsyncIterator`) and asyncGenerators (type `AsyncGenerator`), `reduce` executes the reducer function for each value of the asyncIterator/asyncGenerator. On each iteration, the reducer is passed the accumulator and the item of the async iteration. The asyncIterator/asyncGenerator is consumed in the process.
+ * For asyncIterators (type `AsyncIterator`) and asyncGenerators (type `AsyncGenerator`), `reduce` executes the reducer function for each value of the asyncIterator/asyncGenerator. On each iteration, the reducer is passed the accumulator and the element of the async iteration. The asyncIterator/asyncGenerator is consumed in the process.
  *
  * ```javascript [playground]
  * const asyncAdd = async (a, b) => a + b

@@ -30,15 +30,15 @@ const promiseAll = require('./promiseAll')
 const mapFilter = function (map, predicate) {
   const result = new Map(),
     promises = []
-  for (const [key, item] of map) {
-    const predication = predicate(item, key, map)
+  for (const [key, element] of map) {
+    const predication = predicate(element, key, map)
     if (isPromise(predication)) {
       promises.push(predication.then(curry3(thunkConditional,
         __,
-        thunkify4(callPropBinary, result, 'set', key, item),
+        thunkify4(callPropBinary, result, 'set', key, element),
         noop)))
     } else if (predication) {
-      result.set(key, item)
+      result.set(key, element)
     }
   }
   return promises.length == 0 ? result

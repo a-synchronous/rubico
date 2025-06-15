@@ -21,11 +21,11 @@ const objectSet = require('./objectSet')
 const funcObjectAll = funcs => function objectAllFuncs(...args) {
   const result = {}, promises = []
   for (const key in funcs) {
-    const resultItem = funcs[key](...args)
-    if (isPromise(resultItem)) {
-      promises.push(resultItem.then(curry3(objectSet, result, key, __)))
+    const resultElement = funcs[key](...args)
+    if (isPromise(resultElement)) {
+      promises.push(resultElement.then(curry3(objectSet, result, key, __)))
     } else {
-      result[key] = resultItem
+      result[key] = resultElement
     }
   }
   return promises.length == 0 ? result : promiseAll(promises).then(always(result))

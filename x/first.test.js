@@ -2,7 +2,7 @@ const assert = require('assert')
 const first = require('./first')
 
 describe('first', () => {
-  it('gets the first item of an array', async () => {
+  it('gets the first element of an array', async () => {
     assert.strictEqual(first([1, 2, 3]), 1)
     assert.strictEqual(first([]), undefined)
   })

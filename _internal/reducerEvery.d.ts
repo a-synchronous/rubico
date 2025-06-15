@@ -6,7 +6,7 @@ export = reducerEvery;
  * ```coffeescript [specscript]
  * reducerEvery(
  *   predicate any=>boolean,
- * ) -> reducer(result boolean, item any)=>boolean
+ * ) -> reducer(result boolean, element any)=>boolean
  * ```
  */
-declare function reducerEvery(predicate: any): (result: any, item: any) => any;
+declare function reducerEvery(predicate: any): (result: any, element: any) => any;

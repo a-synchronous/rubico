@@ -17,11 +17,11 @@ const _objectMapSeriesAsync = async function (object, f, result, doneKeys) {
     if (key in doneKeys) {
       continue
     }
-    let resultItem = f(object[key])
-    if (isPromise(resultItem)) {
-      resultItem = await resultItem
+    let resultElement = f(object[key])
+    if (isPromise(resultElement)) {
+      resultElement = await resultElement
     }
-    result[key] = resultItem
+    result[key] = resultElement
   }
   return result
 }
@@ -35,7 +35,7 @@ const _objectMapSeriesAsync = async function (object, f, result, doneKeys) {
  *   value any,
  *   key string,
  *   collection Object
- * )=>(resultItem Promise|any)
+ * )=>(resultElement Promise|any)
  *
  * objectMapSeries(object Object, f ObjectMapper) -> Promise|Object
  * ```
@@ -48,14 +48,14 @@ const objectMapSeries = function (object, f) {
   const doneKeys = {}
   for (const key in object) {
     doneKeys[key] = true
-    const resultItem = f(object[key], key, object)
-    if (isPromise(resultItem)) {
-      return resultItem.then(funcConcat(
+    const resultElement = f(object[key], key, object)
+    if (isPromise(resultElement)) {
+      return resultElement.then(funcConcat(
         curry3(objectSet, result, key, __),
         thunkify4(_objectMapSeriesAsync, object, f, result, doneKeys),
       ))
     }
-    result[key] = resultItem
+    result[key] = resultElement
   }
   return result
 }

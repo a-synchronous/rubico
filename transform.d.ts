@@ -40,7 +40,7 @@ export = transform;
  *  * `Set`; concatenation defined by `result.add(...values)`
  *  * `TypedArray`; concatenation defined by `result.set(prevResult); result.set(values, offset)`
  *  * `{ concat: function }`; concatenation defined by `result.concat(values)`
- *  * `{ write: function }`; concatenation defined by `result.write(item)`
+ *  * `{ write: function }`; concatenation defined by `result.write(element)`
  *  * `Object`; concatenation defined by `({ ...result, ...values })`
  *
  * `transform` can transform any of the above collections into any of the other above collections.

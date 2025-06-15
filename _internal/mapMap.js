@@ -12,7 +12,7 @@ const callPropBinary = require('./callPropBinary')
  * ```coffeescript [specscript]
  * mapMap(
  *   value Map,
- *   mapper (item any, key any, value)=>Promise|any
+ *   mapper (element any, key any, value)=>Promise|any
  * ) -> Promise|Map<any=>any>
  * ```
  *
@@ -22,13 +22,13 @@ const callPropBinary = require('./callPropBinary')
 const mapMap = function (value, mapper) {
   const result = new Map(),
     promises = []
-  for (const [key, item] of value) {
-    const resultItem = mapper(item, key, value)
-    if (isPromise(resultItem)) {
-      promises.push(resultItem.then(
+  for (const [key, element] of value) {
+    const resultElement = mapper(element, key, value)
+    if (isPromise(resultElement)) {
+      promises.push(resultElement.then(
         curry4(callPropBinary, result, 'set', key, __)))
     } else {
-      result.set(key, resultItem)
+      result.set(key, resultElement)
     }
   }
   return promises.length == 0

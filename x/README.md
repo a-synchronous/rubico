@@ -46,7 +46,7 @@ defaultsDeep({
 ```
 
 ### find
-get the first item in a collection that passes the test
+get the first element in a collection that passes the test
 ```javascript
 y = find(xi => boolean)(x)
 ```
@@ -86,20 +86,20 @@ flatten([[1], [2], [3]]), // > [1, 2, 3]
 
 `x` is a String or Array
 
-`y` is the last item of `x`
+`y` is the last element of `x`
 
 ```javascript
 first([1,2,3]) // 1
 ```
 
 ### forEach
-execute a function for each item of a collection, returning input
+execute a function for each element of a collection, returning input
 ```javascript
 y = forEach(f)(x)
 ```
 `f` is a function
 
-`f` is called for each item of `x`
+`f` is called for each element of `x`
 
 `x` is an Iterable, AsyncIterable, Object, or reducer function
 
@@ -232,14 +232,14 @@ y = last(x)
 
 `x` is a String or Array
 
-`y` is the last item of `x`
+`y` is the last element of `x`
 
 ```javascript
 last([1,2,3]) // 3
 ```
 
 ### pluck
-create a new collection by getting a path from every item of an old collection
+create a new collection by getting a path from every element of an old collection
 ```javascript
 y = pluck(path, defaultValue)(x)
 ```
@@ -312,13 +312,13 @@ create a flattened unique array with uniques given by a binary predicate
 ```javascript
 y = unionWith((a, b) => boolean)(x)
 ```
-`a` and `b` are items of items of `x`
+`a` and `b` are elements of elements of `x`
 
 `(a, b) => boolean` returns True if a and b are duplicates
 
 `x` is an Array of Arrays of anything
 
-`y` is a flattened Array of unique items of items of `x` determined by `(a, b) => boolean`
+`y` is a flattened Array of unique elements of elements of `x` determined by `(a, b) => boolean`
 
 `y` is a Promise if any of the following are true
  * `(a, b) => boolean` is asynchronous

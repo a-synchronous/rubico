@@ -13,7 +13,7 @@
  * ```
  *
  * @description
- * Create a mapping async generator function from an async generator function and a mapper. A mapping async generator function produces async mapping generators that apply the mapper to each item of the original async generator.
+ * Create a mapping async generator function from an async generator function and a mapper. A mapping async generator function produces async mapping generators that apply the mapper to each element of the original async generator.
  *
  * `mapper` may be asynchronous.
  *
@@ -21,8 +21,8 @@
  */
 const asyncGeneratorFunctionMap = function (asyncGeneratorFunc, mapper) {
   return async function* mappingAsyncGeneratorFunc(...args) {
-    for await (const item of asyncGeneratorFunc(...args)) {
-      yield mapper(item)
+    for await (const element of asyncGeneratorFunc(...args)) {
+      yield mapper(element)
     }
   }
 }

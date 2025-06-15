@@ -7,7 +7,7 @@ const isArray = require('../_internal/isArray')
  * @synopsis
  * ```coffeescript [specscript]
  * append(
- *   item string|Array,
+ *   element string|Array,
  * )(value string|Array) -> string|array
  * ```
  *
@@ -41,20 +41,20 @@ const isArray = require('../_internal/isArray')
  * @since 1.7.3
  */
 
-const append = item => function appendFunc(value) {
+const append = element => function appendFunc(value) {
 
     if (isArray(value)) {
-      if (isArray(item)){
-        return [...value, ...item]
+      if (isArray(element)){
+        return [...value, ...element]
       }
-      return [...value, item]
+      return [...value, element]
     }
 
     if (isString(value)){
-      if (!isString(item)){
-        throw new TypeError(`${item} is not a string`)
+      if (!isString(element)){
+        throw new TypeError(`${element} is not a string`)
       }
-      return `${value}${item}`
+      return `${value}${element}`
     }
 
     throw new TypeError(`${value} is not an Array or string`)

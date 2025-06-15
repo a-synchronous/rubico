@@ -7,7 +7,7 @@ const isArray = require('../_internal/isArray')
  * @synopsis
  * ```coffeescript [specscript]
  * prepend(
- *   item string|Array,
+ *   element string|Array,
  * )(value string|Array) -> string|array
  * ```
  *
@@ -38,20 +38,20 @@ const isArray = require('../_internal/isArray')
  * @since 1.7.3
  */
 
-const prepend = item => function prependFunc(value) {
+const prepend = element => function prependFunc(value) {
 
     if (isArray(value)) {
-      if (isArray(item)){
-        return [...item, ...value]
+      if (isArray(element)){
+        return [...element, ...value]
       }
-      return [item, ...value]
+      return [element, ...value]
     }
 
     if (isString(value)){
-      if (!isString(item)){
-        throw new TypeError(`${item} is not a string`)
+      if (!isString(element)){
+        throw new TypeError(`${element} is not a string`)
       }
-      return `${item}${value}`
+      return `${element}${value}`
     }
 
     throw new TypeError(`${value} is not an Array or string`)

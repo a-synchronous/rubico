@@ -33,7 +33,7 @@ const FlatMappingIterator = function (iterator, flatMapper) {
       const monadAsArray = genericReduce(
         flatMapper(iteration.value),
         arrayPush,
-        []) // this will always have at least one item
+        []) // this will always have at least one element
       if (monadAsArray.length > 1) {
         buffer = monadAsArray
         bufferIndex = 1

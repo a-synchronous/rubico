@@ -27,16 +27,16 @@ const _objectMapPoolAsync = async function (
     if (promises.size >= concurrency) {
       await promiseRace(promises)
     }
-    const resultItem = f(o[key], key, o)
-    if (isPromise(resultItem)) {
-      result[key] = resultItem
-      const selfDeletingPromise = resultItem.then(resolvedValue => {
+    const resultElement = f(o[key], key, o)
+    if (isPromise(resultElement)) {
+      result[key] = resultElement
+      const selfDeletingPromise = resultElement.then(resolvedValue => {
         promises.delete(selfDeletingPromise)
         result[key] = resolvedValue
       })
       promises.add(selfDeletingPromise)
     } else {
-      result[key] = resultItem
+      result[key] = resultElement
     }
   }
   if (promises.size > 0) {
@@ -58,18 +58,18 @@ const objectMapPool = function (o, concurrency, f) {
   const doneKeys = {}
   for (const key in o) {
     doneKeys[key] = true
-    const resultItem = f(o[key], key, o)
-    if (isPromise(resultItem)) {
+    const resultElement = f(o[key], key, o)
+    if (isPromise(resultElement)) {
       const promises = new Set()
-      result[key] = resultItem
-      const selfDeletingPromise = resultItem.then(resolvedValue => {
+      result[key] = resultElement
+      const selfDeletingPromise = resultElement.then(resolvedValue => {
         promises.delete(selfDeletingPromise)
         result[key] = resolvedValue
       })
       promises.add(selfDeletingPromise)
       return _objectMapPoolAsync(o, concurrency, f, result, doneKeys, promises)
     }
-    result[key] = resultItem
+    result[key] = resultElement
   }
   return result
 }

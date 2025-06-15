@@ -20,15 +20,15 @@ const objectSet = require('./objectSet')
  * ```
  *
  * @description
- * Apply a mapper in series to each item of an array, returning a Promise of an array of results. `mapper` can be asynchronous.
+ * Apply a mapper in series to each element of an array, returning a Promise of an array of results. `mapper` can be asynchronous.
  */
 const arrayMapSeriesAsync = async function (
   array, mapper, result, index,
 ) {
   const arrayLength = array.length
   while (++index < arrayLength) {
-    const resultItem = mapper(array[index], index)
-    result[index] = isPromise(resultItem) ? await resultItem : resultItem
+    const resultElement = mapper(array[index], index)
+    result[index] = isPromise(resultElement) ? await resultElement : resultElement
   }
   return result
 }
@@ -46,7 +46,7 @@ const arrayMapSeriesAsync = async function (
  * ```
  *
  * @description
- * Apply a mapper in series to each item of an array, returning an array of results.
+ * Apply a mapper in series to each element of an array, returning an array of results.
  */
 const arrayMapSeries = function (array, mapper) {
   const arrayLength = array.length,
@@ -54,13 +54,13 @@ const arrayMapSeries = function (array, mapper) {
   let index = -1
 
   while (++index < arrayLength) {
-    const resultItem = mapper(array[index], index)
-    if (isPromise(resultItem)) {
-      return resultItem.then(funcConcat(
+    const resultElement = mapper(array[index], index)
+    if (isPromise(resultElement)) {
+      return resultElement.then(funcConcat(
         curry3(objectSet, result, index, __),
         curry4(arrayMapSeriesAsync, array, mapper, __, index)))
     }
-    result[index] = resultItem
+    result[index] = resultElement
   }
   return result
 }

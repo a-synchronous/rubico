@@ -16,8 +16,8 @@ const callPropUnary = require('./callPropUnary')
  */
 const iteratorEvery = function (iterator, predicate) {
   const promises = []
-  for (const item of iterator) {
-    const predication = predicate(item)
+  for (const element of iterator) {
+    const predication = predicate(element)
     if (isPromise(predication)) {
       promises.push(predication)
     } else if (!predication) {

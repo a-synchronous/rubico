@@ -14,6 +14,6 @@ export = arrayMapPool;
  * ```
  *
  * @description
- * Apply a mapper with limited concurrency to each item of an array, returning an array of results.
+ * Apply a mapper with limited concurrency to each element of an array, returning an array of results.
  */
 declare function arrayMapPool(array: any, mapper: any, concurrentLimit: any): any[] | Promise<any>;

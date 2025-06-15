@@ -56,12 +56,12 @@ const arrayIncludesWith = function (array, value, comparator) {
 const arrayUniqWithAsync = async function (array, comparator, result, index) {
   const length = array.length
   while (++index < length) {
-    const item = array[index],
-      itemAlreadyExists = arrayIncludesWith(result, item, comparator)
+    const element = array[index],
+      elementAlreadyExists = arrayIncludesWith(result, element, comparator)
     if (!(
-      isPromise(itemAlreadyExists) ? await itemAlreadyExists : itemAlreadyExists
+      isPromise(elementAlreadyExists) ? await elementAlreadyExists : elementAlreadyExists
     )) {
-      result.push(item)
+      result.push(element)
     }
   }
   return result
@@ -86,14 +86,14 @@ const arrayUniqWith = function (array, comparator) {
     result = []
   let index = -1
   while (++index < length) {
-    const item = array[index],
-      itemAlreadyExists = arrayIncludesWith(result, item, comparator)
-    if (isPromise(itemAlreadyExists)) {
-      return itemAlreadyExists.then(funcConcatSync(
-        curry3(thunkConditional, __, noop, thunkify2(arrayPush, result, item)),
+    const element = array[index],
+      elementAlreadyExists = arrayIncludesWith(result, element, comparator)
+    if (isPromise(elementAlreadyExists)) {
+      return elementAlreadyExists.then(funcConcatSync(
+        curry3(thunkConditional, __, noop, thunkify2(arrayPush, result, element)),
         thunkify4(arrayUniqWithAsync, array, comparator, result, index)))
-    } else if (!itemAlreadyExists) {
-      result.push(item)
+    } else if (!elementAlreadyExists) {
+      result.push(element)
     }
   }
   return result

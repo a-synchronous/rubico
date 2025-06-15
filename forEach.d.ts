@@ -12,7 +12,7 @@ export = forEach;
  * ```
  *
  * @description
- * Execute a callback for each item of a collection, returning a Promise if the execution is asynchronous.
+ * Execute a callback for each element of a collection, returning a Promise if the execution is asynchronous.
  *
  * ```javascript [playground]
  * forEach([1, 2, 3, 4, 5l], console.log) // 1 2 3 4 5

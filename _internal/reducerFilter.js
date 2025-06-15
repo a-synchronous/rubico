@@ -18,21 +18,21 @@ const always = require('./always')
  * ```
  *
  * @description
- * Filter items from a reducer's operation by predicate. `predicate` may be asynchronous.
+ * Filter elements from a reducer's operation by predicate. `predicate` may be asynchronous.
  *
  * Note: If the predicate is asynchronous, the implementation of reduce that consumes the filtering reducer must resolve promises
  */
 const reducerFilter = (
   reducer, predicate,
-) => function filteringReducer(result, item) {
-  const shouldInclude = predicate(item)
+) => function filteringReducer(result, element) {
+  const shouldInclude = predicate(element)
   return isPromise(shouldInclude)
     ? shouldInclude.then(curry3(
       thunkConditional,
       __,
-      thunkify2(reducer, result, item),
+      thunkify2(reducer, result, element),
       always(result)))
-    : shouldInclude ? reducer(result, item) : result
+    : shouldInclude ? reducer(result, element) : result
 }
 
 module.exports = reducerFilter

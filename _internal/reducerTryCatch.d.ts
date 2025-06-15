@@ -4,7 +4,7 @@ export = reducerTryCatch;
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type Reducer = (accum any, item any)=>(nextAccumulator Promise|any)
+ * type Reducer = (accum any, element any)=>(nextAccumulator Promise|any)
  *
  * reducerTryCatch(
  *   reducer function,
@@ -12,4 +12,4 @@ export = reducerTryCatch;
  * ) -> errorHandlingReducer function
  * ```
  */
-declare function reducerTryCatch(reducer: any, transducerTryer: any, catcher: any): (accum: any, item: any) => any;
+declare function reducerTryCatch(reducer: any, transducerTryer: any, catcher: any): (accum: any, element: any) => any;

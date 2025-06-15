@@ -67,9 +67,9 @@ describe('Transducer', () => {
         throw new Error(number)
       }),
       Transducer.map(number => number * 10), // should never reach here
-    ]), (error, item) => {
+    ]), (error, element) => {
       caughtErrors.push(error)
-      return item
+      return element
     }), [])
     assert.equal(caughtErrors.length, 3)
     assert.deepEqual(result, [1, 3, 5])
@@ -86,9 +86,9 @@ describe('Transducer', () => {
         Transducer.map(number => {
           throw new Error(number)
         }),
-        (error, item) => {
+        (error, element) => {
           caughtErrors.push(error)
-          return item
+          return element
         },
       ),
       Transducer.map(number => number * 10), // should reach here with error handler

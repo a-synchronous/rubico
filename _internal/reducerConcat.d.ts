@@ -12,4 +12,4 @@ export = reducerConcat;
  * >(reducerA, reducerB) -> pipedReducer (any, T)=>Promise|any
  * ```
  */
-declare function reducerConcat(reducerA: any, reducerB: any): (result: any, item: any) => any;
+declare function reducerConcat(reducerA: any, reducerB: any): (result: any, element: any) => any;

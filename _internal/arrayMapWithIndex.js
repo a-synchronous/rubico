@@ -15,18 +15,18 @@ const promiseAll = require('./promiseAll')
  * ```
  *
  * @description
- * Apply an indexed mapper to each item of an array, returning an array of results.
+ * Apply an indexed mapper to each element of an array, returning an array of results.
  */
 const arrayMapWithIndex = function (array, mapper) {
   const arrayLength = array.length,
     result = Array(arrayLength)
   let index = -1, isAsync = false
   while (++index < arrayLength) {
-    const resultItem = mapper(array[index], index, array)
-    if (isPromise(resultItem)) {
+    const resultElement = mapper(array[index], index, array)
+    if (isPromise(resultElement)) {
       isAsync = true
     }
-    result[index] = resultItem
+    result[index] = resultElement
   }
   return isAsync ? promiseAll(result) : result
 }

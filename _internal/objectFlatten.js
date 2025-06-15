@@ -37,31 +37,31 @@ const objectFlatten = function (object) {
     getResult = () => result
 
   for (const key in object) {
-    const item = object[key]
-    if (item == null) {
+    const element = object[key]
+    if (element == null) {
       continue
-    } else if (typeof item[symbolIterator] == 'function') {
-      for (const monadItem of item) {
-        objectAssign(result, monadItem)
+    } else if (typeof element[symbolIterator] == 'function') {
+      for (const monadElement of element) {
+        objectAssign(result, monadElement)
       }
-    } else if (typeof item[symbolAsyncIterator] == 'function') {
+    } else if (typeof element[symbolAsyncIterator] == 'function') {
       promises.push(
-        asyncIteratorForEach(item[symbolAsyncIterator](), resultAssign))
-    } else if (typeof item.chain == 'function') {
-      const monadValue = item.chain(identity)
+        asyncIteratorForEach(element[symbolAsyncIterator](), resultAssign))
+    } else if (typeof element.chain == 'function') {
+      const monadValue = element.chain(identity)
       isPromise(monadValue)
         ? promises.push(monadValue.then(resultAssign))
         : objectAssign(result, monadValue)
-    } else if (typeof item.flatMap == 'function') {
-      const monadValue = item.flatMap(identity)
+    } else if (typeof element.flatMap == 'function') {
+      const monadValue = element.flatMap(identity)
       isPromise(monadValue)
         ? promises.push(monadValue.then(resultAssign))
         : resultAssign(monadValue)
-    } else if (typeof item.reduce == 'function') {
-      const folded = item.reduce(resultAssignReducer, null)
+    } else if (typeof element.reduce == 'function') {
+      const folded = element.reduce(resultAssignReducer, null)
       isPromise(folded) && promises.push(folded)
     } else {
-      objectAssign(result, item)
+      objectAssign(result, element)
     }
   }
   return promises.length == 0

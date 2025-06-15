@@ -4,33 +4,33 @@ const reduce = require('../reduce')
 const __ = require('../_internal/placeholder')
 const curry3 = require('../_internal/curry3')
 
-// (mapOfArrays Map<any=>Array>, key any, item any) => mapOfArrays
+// (mapOfArrays Map<any=>Array>, key any, element any) => mapOfArrays
 // TODO: benchmark vs mapOfArrays.has(key)
-const group = function (mapOfArrays, key, item) {
+const group = function (mapOfArrays, key, element) {
   const array = mapOfArrays.get(key)
   if (array == null) {
-    mapOfArrays.set(key, [item])
+    mapOfArrays.set(key, [element])
   } else {
-    array.push(item)
+    array.push(element)
   }
   return mapOfArrays
 }
 
-// property string => (mapOfArrays Map<any=>Array>, item any) => mapOfArrays
+// property string => (mapOfArrays Map<any=>Array>, element any) => mapOfArrays
 const groupByProperty = property => function groupByPropertyReducer(
-  mapOfArrays, item,
+  mapOfArrays, element,
 ) {
-  return group(mapOfArrays, item[property], item)
+  return group(mapOfArrays, element[property], element)
 }
 
-// resolver any=>any => (mapOfArrays Map<any=>Array>, item any) => mapOfArrays
+// resolver any=>any => (mapOfArrays Map<any=>Array>, element any) => mapOfArrays
 const groupByResolver = resolver => function groupByResolverReducer(
-  mapOfArrays, item,
+  mapOfArrays, element,
 ) {
-  const key = resolver(item)
+  const key = resolver(element)
   return isPromise(key)
-    ? key.then(curry3(group, mapOfArrays, __, item))
-    : group(mapOfArrays, key, item)
+    ? key.then(curry3(group, mapOfArrays, __, element))
+    : group(mapOfArrays, key, element)
 }
 
 
@@ -70,7 +70,7 @@ const groupByResolver = resolver => function groupByResolverReducer(
  * // }
  * ```
  *
- * Additionally, pass a resolver in property position to resolve a value for group membership for each item.
+ * Additionally, pass a resolver in property position to resolve a value for group membership for each element.
  *
  * ```javascript [playground]
  * import groupBy from 'https://unpkg.com/rubico/dist/x/groupBy.es.js'
