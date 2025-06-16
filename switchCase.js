@@ -61,13 +61,13 @@ const curryArgs3 = require('./_internal/curryArgs3')
  * Any function can be replaced with a nonfunction (object or primitive) value to be used directly in the operation.
  *
  * ```javascript [playground]
- * switchCase([
+ * switchCase(false, [
  *   async function asyncIdentity(value) {
  *     return value
  *   },
  *   'something',
  *   'default',
- * ])(false).then(console.log) // default
+ * ]).then(console.log) // default
  * ```
  *
  * If every element in the conditional array is a nonfunction value, `switchCase` executes eagerly.
