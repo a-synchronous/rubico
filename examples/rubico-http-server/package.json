@@ -1,7 +1,7 @@
 {
   "name": "rubico-http-server",
   "version": "0.0.0",
-  "description": "A rubico HTTP server",
+  "description": "The HTTP server with rubico switchCase and tryCatch from Handling HTTP",
   "author": "Richard Tong",
   "license": "MIT",
   "main": "index.js",
