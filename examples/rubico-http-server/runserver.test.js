@@ -27,7 +27,82 @@ describe('runserver-simple', () => {
 
     const userId = '100'
 
-    { // put user
+    { // put user bad request (id missing)
+      const response = await http.put(`/user/${userId}`, {
+        body: JSON.stringify({
+          // id: userId,
+          name: `User ${userId}`,
+          birthdate: '2020-01-01',
+          profilePictureUrl: 'https://rubico.land/assets/rubico-logo.png',
+          email: 'user@example.com',
+        }),
+      })
+
+      assert.equal(response.status, 400)
+      assert.deepEqual(await response.text(), 'Bad Request')
+    }
+
+    { // put user bad request (name missing)
+      const response = await http.put(`/user/${userId}`, {
+        body: JSON.stringify({
+          id: userId,
+          // name: `User ${userId}`,
+          birthdate: '2020-01-01',
+          profilePictureUrl: 'https://rubico.land/assets/rubico-logo.png',
+          email: 'user@example.com',
+        }),
+      })
+
+      assert.equal(response.status, 400)
+      assert.deepEqual(await response.text(), 'Bad Request')
+    }
+
+    { // put user bad request (birthdate missing)
+      const response = await http.put(`/user/${userId}`, {
+        body: JSON.stringify({
+          id: userId,
+          name: `User ${userId}`,
+          // birthdate: '2020-01-01',
+          profilePictureUrl: 'https://rubico.land/assets/rubico-logo.png',
+          email: 'user@example.com',
+        }),
+      })
+
+      assert.equal(response.status, 400)
+      assert.deepEqual(await response.text(), 'Bad Request')
+    }
+
+    { // put user bad request (profilePictureUrl missing)
+      const response = await http.put(`/user/${userId}`, {
+        body: JSON.stringify({
+          id: userId,
+          name: `User ${userId}`,
+          birthdate: '2020-01-01',
+          // profilePictureUrl: 'https://rubico.land/assets/rubico-logo.png',
+          email: 'user@example.com',
+        }),
+      })
+
+      assert.equal(response.status, 400)
+      assert.deepEqual(await response.text(), 'Bad Request')
+    }
+
+    { // put user bad request (email missing)
+      const response = await http.put(`/user/${userId}`, {
+        body: JSON.stringify({
+          id: userId,
+          name: `User ${userId}`,
+          birthdate: '2020-01-01',
+          profilePictureUrl: 'https://rubico.land/assets/rubico-logo.png',
+          // email: 'user@example.com',
+        }),
+      })
+
+      assert.equal(response.status, 400)
+      assert.deepEqual(await response.text(), 'Bad Request')
+    }
+
+    { // put user success
       const response = await http.put(`/user/${userId}`, {
         body: JSON.stringify({
           id: userId,
@@ -87,7 +162,82 @@ describe('runserver-complex', () => {
 
     const userId = '100'
 
-    { // put user
+    { // put user bad request (id missing)
+      const response = await http.put(`/user/${userId}`, {
+        body: JSON.stringify({
+          // id: userId,
+          name: `User ${userId}`,
+          birthdate: '2020-01-01',
+          profilePictureUrl: 'https://rubico.land/assets/rubico-logo.png',
+          email: 'user@example.com',
+        }),
+      })
+
+      assert.equal(response.status, 400)
+      assert.deepEqual(await response.text(), 'Bad Request')
+    }
+
+    { // put user bad request (name missing)
+      const response = await http.put(`/user/${userId}`, {
+        body: JSON.stringify({
+          id: userId,
+          // name: `User ${userId}`,
+          birthdate: '2020-01-01',
+          profilePictureUrl: 'https://rubico.land/assets/rubico-logo.png',
+          email: 'user@example.com',
+        }),
+      })
+
+      assert.equal(response.status, 400)
+      assert.deepEqual(await response.text(), 'Bad Request')
+    }
+
+    { // put user bad request (birthdate missing)
+      const response = await http.put(`/user/${userId}`, {
+        body: JSON.stringify({
+          id: userId,
+          name: `User ${userId}`,
+          // birthdate: '2020-01-01',
+          profilePictureUrl: 'https://rubico.land/assets/rubico-logo.png',
+          email: 'user@example.com',
+        }),
+      })
+
+      assert.equal(response.status, 400)
+      assert.deepEqual(await response.text(), 'Bad Request')
+    }
+
+    { // put user bad request (profilePictureUrl missing)
+      const response = await http.put(`/user/${userId}`, {
+        body: JSON.stringify({
+          id: userId,
+          name: `User ${userId}`,
+          birthdate: '2020-01-01',
+          // profilePictureUrl: 'https://rubico.land/assets/rubico-logo.png',
+          email: 'user@example.com',
+        }),
+      })
+
+      assert.equal(response.status, 400)
+      assert.deepEqual(await response.text(), 'Bad Request')
+    }
+
+    { // put user bad request (email missing)
+      const response = await http.put(`/user/${userId}`, {
+        body: JSON.stringify({
+          id: userId,
+          name: `User ${userId}`,
+          birthdate: '2020-01-01',
+          profilePictureUrl: 'https://rubico.land/assets/rubico-logo.png',
+          // email: 'user@example.com',
+        }),
+      })
+
+      assert.equal(response.status, 400)
+      assert.deepEqual(await response.text(), 'Bad Request')
+    }
+
+    { // put user success
       const response = await http.put(`/user/${userId}`, {
         body: JSON.stringify({
           id: userId,

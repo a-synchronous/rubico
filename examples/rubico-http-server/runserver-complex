@@ -134,6 +134,11 @@ function runserver(options = {}) {
           error.code = 400
           throw error
         }
+        if (typeof requestBodyJSON.email != 'string') {
+          const error = new Error('Bad Request')
+          error.code = 400
+          throw error
+        }
 
         const user = {
           id: requestBodyJSON.id,
