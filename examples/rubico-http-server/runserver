@@ -1,0 +1,132 @@
+#!/usr/bin/env node
+
+require('rubico/global')
+const http = require('http')
+
+/**
+ * @name runserver
+ *
+ * @synopsis
+ * ```coffeescript [specscript]
+ * module http
+ *
+ * runserver(options? {
+ *   port?: number,
+ * }) -> { server http.Server }
+ * ```
+ */
+function runserver(options = {}) {
+  const { port = 8080 } = options
+
+  const userTable = {
+    async getById(userId) {
+      return {
+        id: userId,
+        name: `User ${userId}`,
+        createTime: 1,
+        birthdate: '2020-01-01',
+        profilePictureUrl: 'https://rubico.land/assets/rubico-logo.png',
+      }
+    }
+  }
+
+  function healthCheckHandler(request, response) {
+    response.writeHead(200, {
+      'Content-Type': 'text/plain',
+    })
+    response.end('ok')
+  }
+
+  function optionsHandler(request, response) {
+    response.writeHead(204, {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': '*',
+      'Access-Control-Allow-Headers': '*',
+      'Access-Control-Max-Age': '86400',
+    })
+    response.end()
+  }
+
+  async function getUserHandler(request, response) {
+    const userId = request.url.match(/\d+/)[0]
+
+    // validate
+    if (isNaN(Number(userId))) {
+      const error = new Error('Bad Request')
+      error.code = 400
+      throw error
+    }
+
+    // userTable is a theoretical client for a database
+    const user = await userTable.getById(userId)
+
+    // handle not found
+    if (user == null) {
+      const error = new Error('Not Found')
+      error.code = 404
+      throw error
+    }
+
+    // ensure no private user information is exposed
+    const publicUser = {
+      id: user.id,
+      name: user.name,
+      birthdate: user.birthdate,
+      profilePictureUrl: user.profilePictureUrl,
+      createTime: user.createTime,
+    }
+
+    // send back the user resource in the response body
+    response.writeHead(200, {
+      'Access-Control-Allow-Origin': '*',
+      'Content-Type': 'application/json',
+    })
+    response.end(JSON.stringify({
+      user: publicUser,
+    }))
+  }
+
+  function notFoundHandler(request, response) {
+    response.writeHead(404, {
+      'Content-Type': 'text/plain',
+    })
+    response.end('Not Found')
+  }
+
+  function errorHandler(request, response) {
+    console.error(error)
+    if (typeof error.code != 'number') {
+      error.code = 500
+    }
+    response.writeHead(error.code, {
+      'Access-Control-Allow-Origin': '*',
+      'Content-Type': 'text/plain',
+    })
+    response.end(error.message)
+  }
+
+  const combinedHandler = tryCatch(
+    switchCase([
+      request => request.url.startsWith('/health'),
+      healthCheckHandler,
+
+      request => request.method == 'OPTIONS',
+      optionsHandler,
+
+      request => request.method == 'GET' && /^\/user\/\d+$/.test(request.url),
+      getUserHandler,
+
+      notFoundHandler,
+    ]),
+
+    errorHandler
+  )
+
+  const server = http.createServer(combinedHandler)
+
+  server.listen(port)
+
+  return { server }
+}
+
+module.exports = runserver

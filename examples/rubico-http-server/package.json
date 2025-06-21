@@ -1,0 +1,22 @@
+{
+  "name": "rubico-http-server",
+  "version": "0.0.0",
+  "description": "A rubico HTTP server",
+  "author": "Richard Tong",
+  "license": "MIT",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "github:a-synchronous/rubico",
+    "directory": "examples/rubico-http-server"
+  },
+  "scripts": {
+    "test": "node runserver.test.js"
+  },
+  "dependencies": {
+    "rubico": "^2.7.3"
+  },
+  "devDependencies": {
+    "thunk-test": "^1.3.1"
+  }
+}
