@@ -18,16 +18,15 @@ const http = require('http')
 function runserver(options = {}) {
   const { port = 8080 } = options
 
+  const userDb = new Map()
+
   const userTable = {
+    async put(userRecord) {
+      return userDb.set(userRecord.id, userRecord)
+    },
     async getById(userId) {
-      return {
-        id: userId,
-        name: `User ${userId}`,
-        createTime: 1,
-        birthdate: '2020-01-01',
-        profilePictureUrl: 'https://rubico.land/assets/rubico-logo.png',
-      }
-    }
+      return userDb.get(userId)
+    },
   }
 
   function healthCheckHandler(request, response) {
@@ -47,6 +46,8 @@ function runserver(options = {}) {
     response.end()
   }
 
+  // GET /user/:userId
+  // retrieves a user resource
   async function getUserHandler(request, response) {
     const userId = request.url.match(/\d+/)[0]
 
@@ -86,6 +87,71 @@ function runserver(options = {}) {
     }))
   }
 
+  // PUT /user/:userId
+  // creates or updates a user resource
+  async function putUserHandler(request, response) {
+    const userId = request.url.match(/\d+/)[0]
+
+    const requestBodyBuffer = await new Promise(resolve => {
+      const binaryArray = []
+      request.on('data', chunk => {
+        binaryArray.push(chunk)
+      })
+      request.on('end', () => {
+        resolve(Buffer.concat(binaryArray))
+      })
+    })
+    const requestBodyString = requestBodyBuffer.toString('utf8')
+    const requestBodyJSON = JSON.parse(requestBodyString)
+
+    // validate
+    if (isNaN(Number(userId))) {
+      const error = new Error('Bad Request')
+      error.code = 400
+      throw error
+    }
+    if (typeof requestBodyJSON.id != 'string') {
+      const error = new Error('Bad Request')
+      error.code = 400
+      throw error
+    }
+    if (typeof requestBodyJSON.name != 'string') {
+      const error = new Error('Bad Request')
+      error.code = 400
+      throw error
+    }
+    if (typeof requestBodyJSON.birthdate != 'string') {
+      const error = new Error('Bad Request')
+      error.code = 400
+      throw error
+    }
+    if (typeof requestBodyJSON.profilePictureUrl != 'string') {
+      const error = new Error('Bad Request')
+      error.code = 400
+      throw error
+    }
+
+    const user = {
+      id: requestBodyJSON.id,
+      name: requestBodyJSON.name,
+      birthdate: requestBodyJSON.birthdate,
+      profilePictureUrl: requestBodyJSON.profilePictureUrl,
+      createTime: Date.now(),
+    }
+
+    // save user record to the db
+    await userTable.put(user)
+
+    // send back a successful response
+    response.writeHead(200, {
+      'Access-Control-Allow-Origin': '*',
+      'Content-Type': 'application/json',
+    })
+    response.end(JSON.stringify({
+      message: 'success',
+    }))
+  }
+
   function notFoundHandler(request, response) {
     response.writeHead(404, {
       'Content-Type': 'text/plain',
@@ -93,7 +159,7 @@ function runserver(options = {}) {
     response.end('Not Found')
   }
 
-  function errorHandler(request, response) {
+  function errorHandler(error, request, response) {
     console.error(error)
     if (typeof error.code != 'number') {
       error.code = 500
@@ -115,6 +181,9 @@ function runserver(options = {}) {
 
       request => request.method == 'GET' && /^\/user\/\d+$/.test(request.url),
       getUserHandler,
+
+      request => request.method == 'PUT' && /^\/user\/\d+$/.test(request.url),
+      putUserHandler,
 
       notFoundHandler,
     ]),

@@ -1,0 +1,185 @@
+#!/usr/bin/env node
+
+const http = require('http')
+
+/**
+ * @name runserver
+ *
+ * @synopsis
+ * ```coffeescript [specscript]
+ * module http
+ *
+ * runserver(options? {
+ *   port?: number,
+ * }) -> { server http.Server }
+ * ```
+ */
+function runserver(options = {}) {
+  const { port = 8080 } = options
+
+  const userDb = new Map()
+
+  const userTable = {
+    async put(userRecord) {
+      return userDb.set(userRecord.id, userRecord)
+    },
+    async getById(userId) {
+      return userDb.get(userId)
+    },
+  }
+
+  const complexHandler = async function (request, response) {
+    try {
+      if (request.url.startsWith('/health')) {
+        // GET /health
+
+        response.writeHead(200, {
+          'Content-Type': 'text/plain',
+        })
+        response.end('ok')
+
+      } else if (request.method == 'OPTIONS') {
+        // OPTIONS
+
+        response.writeHead(204, {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': '*',
+          'Access-Control-Allow-Headers': '*',
+          'Access-Control-Max-Age': '86400',
+        })
+        response.end()
+
+      } else if (request.method == 'GET' && /^\/user\/\d+$/.test(request.url)) {
+        // GET /user/:userId
+        // retrieves a user resource
+
+        const userId = request.url.match(/\d+/)[0]
+
+        // validate
+        if (isNaN(Number(userId))) {
+          const error = new Error('Bad Request')
+          error.code = 400
+          throw error
+        }
+
+        // retrieve the user record from the db
+        const user = await userTable.getById(userId)
+
+        // handle not found
+        if (user == null) {
+          const error = new Error('Not Found')
+          error.code = 404
+          throw error
+        }
+
+        // ensure no private user information is exposed
+        const publicUser = {
+          id: user.id,
+          name: user.name,
+          birthdate: user.birthdate,
+          profilePictureUrl: user.profilePictureUrl,
+          createTime: user.createTime,
+        }
+
+        // send back the user resource in the response body
+        response.writeHead(200, {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'application/json',
+        })
+        response.end(JSON.stringify({
+          user: publicUser,
+        }))
+
+      } else if (request.method == 'PUT' && /^\/user\/\d+$/.test(request.url)) {
+        // PUT /user/:userId
+        // creates or updates a user resource
+
+        const userId = request.url.match(/\d+/)[0]
+
+        const requestBodyBuffer = await new Promise(resolve => {
+          const binaryArray = []
+          request.on('data', chunk => {
+            binaryArray.push(chunk)
+          })
+          request.on('end', () => {
+            resolve(Buffer.concat(binaryArray))
+          })
+        })
+        const requestBodyString = requestBodyBuffer.toString('utf8')
+        const requestBodyJSON = JSON.parse(requestBodyString)
+
+        // validate
+        if (isNaN(Number(userId))) {
+          const error = new Error('Bad Request')
+          error.code = 400
+          throw error
+        }
+        if (typeof requestBodyJSON.id != 'string') {
+          const error = new Error('Bad Request')
+          error.code = 400
+          throw error
+        }
+        if (typeof requestBodyJSON.name != 'string') {
+          const error = new Error('Bad Request')
+          error.code = 400
+          throw error
+        }
+        if (typeof requestBodyJSON.birthdate != 'string') {
+          const error = new Error('Bad Request')
+          error.code = 400
+          throw error
+        }
+        if (typeof requestBodyJSON.profilePictureUrl != 'string') {
+          const error = new Error('Bad Request')
+          error.code = 400
+          throw error
+        }
+
+        const user = {
+          id: requestBodyJSON.id,
+          name: requestBodyJSON.name,
+          birthdate: requestBodyJSON.birthdate,
+          profilePictureUrl: requestBodyJSON.profilePictureUrl,
+          createTime: Date.now(),
+        }
+
+        // save user record to the db
+        await userTable.put(user)
+
+        // send back a successful response
+        response.writeHead(200, {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'application/json',
+        })
+        response.end(JSON.stringify({
+          message: 'success',
+        }))
+
+      }
+      else { // not found
+        response.writeHead(404, {
+          'Content-Type': 'text/plain',
+        })
+        response.end('Not Found')
+      }
+    } catch (error) {
+      console.error(error)
+      if (typeof error.code != 'number') {
+        error.code = 500
+      }
+      response.writeHead(error.code, {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'text/plain',
+      })
+      response.end(error.message)
+    }
+  }
+
+  const server = http.createServer(complexHandler)
+
+  server.listen(port)
+
+  return { server }
+}
+
+module.exports = runserver
