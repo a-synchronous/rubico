@@ -125,6 +125,7 @@ describe('runserver-simple', () => {
       assert.equal(responseBodyJSON.user.name, `User ${userId}`)
       assert.equal(responseBodyJSON.user.birthdate, '2020-01-01')
       assert.equal(responseBodyJSON.user.profilePictureUrl, 'https://rubico.land/assets/rubico-logo.png')
+      assert.equal(responseBodyJSON.user.email, null)
       assert.equal(typeof responseBodyJSON.user.createTime, 'number')
     }
 
@@ -260,6 +261,7 @@ describe('runserver-complex', () => {
       assert.equal(responseBodyJSON.user.name, `User ${userId}`)
       assert.equal(responseBodyJSON.user.birthdate, '2020-01-01')
       assert.equal(responseBodyJSON.user.profilePictureUrl, 'https://rubico.land/assets/rubico-logo.png')
+      assert.equal(responseBodyJSON.user.email, null)
       assert.equal(typeof responseBodyJSON.user.createTime, 'number')
     }
 

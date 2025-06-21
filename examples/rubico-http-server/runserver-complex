@@ -145,6 +145,7 @@ function runserver(options = {}) {
           name: requestBodyJSON.name,
           birthdate: requestBodyJSON.birthdate,
           profilePictureUrl: requestBodyJSON.profilePictureUrl,
+          email: requestBodyJSON.email,
           createTime: Date.now(),
         }
 
