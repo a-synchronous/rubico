@@ -1,5 +1,5 @@
 /**
- * rubico v2.7.3
+ * rubico v2.7.4
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2025 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -127,11 +127,11 @@ const functionArrayAll = function (funcs, args) {
   let funcsIndex = -1, isAsync = false
   while (++funcsIndex < funcsLength) {
     const f = funcs[funcsIndex]
-    const resultItem = typeof f == 'function' ? f(...args) : f
-    if (isPromise(resultItem)) {
+    const resultElement = typeof f == 'function' ? f(...args) : f
+    if (isPromise(resultElement)) {
       isAsync = true
     }
-    result[funcsIndex] = resultItem
+    result[funcsIndex] = resultElement
   }
   return isAsync ? promiseAll(result) : result
 }
@@ -225,8 +225,8 @@ const objectSet = function (object, property, value) {
 const asyncFunctionArrayAllSeries = async function (funcs, args, result, funcsIndex) {
   const funcsLength = funcs.length
   while (++funcsIndex < funcsLength) {
-    const resultItem = funcs[funcsIndex](...args)
-    result[funcsIndex] = isPromise(resultItem) ? await resultItem : resultItem
+    const resultElement = funcs[funcsIndex](...args)
+    result[funcsIndex] = isPromise(resultElement) ? await resultElement : resultElement
   }
   return result
 }
@@ -235,13 +235,13 @@ const functionArrayAllSeries = function (funcs, args) {
   const funcsLength = funcs.length, result = []
   let funcsIndex = -1
   while (++funcsIndex < funcsLength) {
-    const resultItem = funcs[funcsIndex](...args)
-    if (isPromise(resultItem)) {
-      return resultItem.then(funcConcat(
+    const resultElement = funcs[funcsIndex](...args)
+    if (isPromise(resultElement)) {
+      return resultElement.then(funcConcat(
         curry3(objectSet, result, funcsIndex, __),
         curry4(asyncFunctionArrayAllSeries, funcs, args, __, funcsIndex)))
     }
-    result[funcsIndex] = resultItem
+    result[funcsIndex] = resultElement
   }
   return result
 }
@@ -252,11 +252,11 @@ const functionObjectAll = function (funcs, args) {
   const result = {}, promises = []
   for (const key in funcs) {
     const f = funcs[key]
-    const resultItem = typeof f == 'function' ? f(...args) : f
-    if (isPromise(resultItem)) {
-      promises.push(resultItem.then(curry3(objectSet, result, key, __)))
+    const resultElement = typeof f == 'function' ? f(...args) : f
+    if (isPromise(resultElement)) {
+      promises.push(resultElement.then(curry3(objectSet, result, key, __)))
     } else {
-      result[key] = resultItem
+      result[key] = resultElement
     }
   }
   return promises.length == 0 ? result : promiseAll(promises).then(always(result))

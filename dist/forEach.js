@@ -1,5 +1,5 @@
 /**
- * rubico v2.7.3
+ * rubico v2.7.4
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2025 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -81,8 +81,8 @@ const objectForEach = function (object, callback) {
 
 const iteratorForEach = function (iterator, callback) {
   const promises = []
-  for (const item of iterator) {
-    const operation = callback(item)
+  for (const element of iterator) {
+    const operation = callback(element)
     if (isPromise(operation)) {
       promises.push(operation)
     }
@@ -92,8 +92,8 @@ const iteratorForEach = function (iterator, callback) {
 
 const asyncIteratorForEach = async function (asyncIterator, callback) {
   const promises = []
-  for await (const item of asyncIterator) {
-    const operation = callback(item)
+  for await (const element of asyncIterator) {
+    const operation = callback(element)
     if (isPromise(operation)) {
       promises.push(operation)
     }
@@ -204,8 +204,8 @@ const iteratorForEachSeries = function (iterator, callback) {
 }
 
 const asyncIteratorForEachSeries = async function (asyncIterator, callback) {
-  for await (const item of asyncIterator) {
-    const operation = callback(item)
+  for await (const element of asyncIterator) {
+    const operation = callback(element)
     if (isPromise(operation)) {
       await operation
     }

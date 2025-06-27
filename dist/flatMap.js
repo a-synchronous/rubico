@@ -1,5 +1,5 @@
 /**
- * rubico v2.7.3
+ * rubico v2.7.4
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2025 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -357,11 +357,11 @@ const mapReduce = function (map, reducer, result) {
 
 const reducerConcat = (
   reducerA, reducerB,
-) => function pipedReducer(result, item) {
-  const intermediate = reducerA(result, item)
+) => function pipedReducer(result, element) {
+  const intermediate = reducerA(result, element)
   return isPromise(intermediate)
-    ? intermediate.then(curry2(reducerB, __, item))
-    : reducerB(intermediate, item)
+    ? intermediate.then(curry2(reducerB, __, element))
+    : reducerB(intermediate, element)
 }
 
 const genericReduce = function (collection, reducer, result) {
@@ -428,7 +428,7 @@ const FlatMappingIterator = function (iterator, flatMapper) {
       const monadAsArray = genericReduce(
         flatMapper(iteration.value),
         arrayPush,
-        []) // this will always have at least one item
+        []) // this will always have at least one element
       if (monadAsArray.length > 1) {
         buffer = monadAsArray
         bufferIndex = 1
@@ -513,8 +513,8 @@ const funcConcatSync = (
 
 const asyncIteratorForEach = async function (asyncIterator, callback) {
   const promises = []
-  for await (const item of asyncIterator) {
-    const operation = callback(item)
+  for await (const element of asyncIterator) {
+    const operation = callback(element)
     if (isPromise(operation)) {
       promises.push(operation)
     }
@@ -530,44 +530,44 @@ const arrayFlatten = function (array) {
   let index = -1
 
   while (++index < length) {
-    const item = array[index]
-    if (isArray(item)) {
-      const itemLength = item.length
-      let itemIndex = -1
-      while (++itemIndex < itemLength) {
-        result.push(item[itemIndex])
+    const element = array[index]
+    if (isArray(element)) {
+      const elementLength = element.length
+      let elementIndex = -1
+      while (++elementIndex < elementLength) {
+        result.push(element[elementIndex])
       }
-    } else if (item == null) {
-      result.push(item)
-    } else if (typeof item.then == 'function') {
-      promises.push(item.then(curry2(arrayPush, result, __)))
-    } else if (typeof item[symbolIterator] == 'function') {
-      for (const subItem of item) {
-        result.push(subItem)
+    } else if (element == null) {
+      result.push(element)
+    } else if (typeof element.then == 'function') {
+      promises.push(element.then(curry2(arrayPush, result, __)))
+    } else if (typeof element[symbolIterator] == 'function') {
+      for (const subElement of element) {
+        result.push(subElement)
       }
-    } else if (typeof item[symbolAsyncIterator] == 'function') {
+    } else if (typeof element[symbolAsyncIterator] == 'function') {
       promises.push(asyncIteratorForEach(
-        item[symbolAsyncIterator](), curry2(arrayPush, result, __)))
-    } else if (typeof item.chain == 'function') {
-      const monadValue = item.chain(identity)
+        element[symbolAsyncIterator](), curry2(arrayPush, result, __)))
+    } else if (typeof element.chain == 'function') {
+      const monadValue = element.chain(identity)
       isPromise(monadValue)
         ? promises.push(monadValue.then(curry2(arrayPush, result, __)))
         : result.push(monadValue)
-    } else if (typeof item.flatMap == 'function') {
-      const monadValue = item.flatMap(identity)
+    } else if (typeof element.flatMap == 'function') {
+      const monadValue = element.flatMap(identity)
       isPromise(monadValue)
         ? promises.push(monadValue.then(curry2(arrayPush, result, __)))
         : result.push(monadValue)
-    } else if (typeof item.reduce == 'function') {
-      const folded = item.reduce(funcConcatSync(
+    } else if (typeof element.reduce == 'function') {
+      const folded = element.reduce(funcConcatSync(
         getArg1, curry2(arrayPush, result, __)), null)
       isPromise(folded) && promises.push(folded)
-    } else if (item.constructor == Object) {
-      for (const key in item) {
-        result.push(item[key])
+    } else if (element.constructor == Object) {
+      for (const key in element) {
+        result.push(element[key])
       }
     } else {
-      result.push(item)
+      result.push(element)
     }
   }
   return promises.length == 0
@@ -582,11 +582,11 @@ const arrayMap = function (array, mapper) {
     isAsync = false
 
   while (++index < arrayLength) {
-    const resultItem = mapper(array[index], index, array)
-    if (isPromise(resultItem)) {
+    const resultElement = mapper(array[index], index, array)
+    if (isPromise(resultElement)) {
       isAsync = true
     }
-    result[index] = resultItem
+    result[index] = resultElement
   }
   return isAsync ? promiseAll(result) : result
 }
@@ -627,11 +627,11 @@ const objectMap = function (object, mapper) {
   const result = {}
   let isAsync = false
   for (const key in object) {
-    const resultItem = mapper(object[key], key, object)
-    if (isPromise(resultItem)) {
+    const resultElement = mapper(object[key], key, object)
+    if (isPromise(resultElement)) {
       isAsync = true
     }
-    result[key] = resultItem
+    result[key] = resultElement
   }
   return isAsync ? promiseObjectAll(result) : result
 }
@@ -646,31 +646,31 @@ const objectFlatten = function (object) {
     getResult = () => result
 
   for (const key in object) {
-    const item = object[key]
-    if (item == null) {
+    const element = object[key]
+    if (element == null) {
       continue
-    } else if (typeof item[symbolIterator] == 'function') {
-      for (const monadItem of item) {
-        objectAssign(result, monadItem)
+    } else if (typeof element[symbolIterator] == 'function') {
+      for (const monadElement of element) {
+        objectAssign(result, monadElement)
       }
-    } else if (typeof item[symbolAsyncIterator] == 'function') {
+    } else if (typeof element[symbolAsyncIterator] == 'function') {
       promises.push(
-        asyncIteratorForEach(item[symbolAsyncIterator](), resultAssign))
-    } else if (typeof item.chain == 'function') {
-      const monadValue = item.chain(identity)
+        asyncIteratorForEach(element[symbolAsyncIterator](), resultAssign))
+    } else if (typeof element.chain == 'function') {
+      const monadValue = element.chain(identity)
       isPromise(monadValue)
         ? promises.push(monadValue.then(resultAssign))
         : objectAssign(result, monadValue)
-    } else if (typeof item.flatMap == 'function') {
-      const monadValue = item.flatMap(identity)
+    } else if (typeof element.flatMap == 'function') {
+      const monadValue = element.flatMap(identity)
       isPromise(monadValue)
         ? promises.push(monadValue.then(resultAssign))
         : resultAssign(monadValue)
-    } else if (typeof item.reduce == 'function') {
-      const folded = item.reduce(resultAssignReducer, null)
+    } else if (typeof element.reduce == 'function') {
+      const folded = element.reduce(resultAssignReducer, null)
       isPromise(folded) && promises.push(folded)
     } else {
-      objectAssign(result, item)
+      objectAssign(result, element)
     }
   }
   return promises.length == 0
@@ -690,12 +690,12 @@ const callPropUnary = (value, property, arg0) => value[property](arg0)
 const setMap = function (set, mapper) {
   const result = new Set(),
     promises = []
-  for (const item of set) {
-    const resultItem = mapper(item, item, set)
-    if (isPromise(resultItem)) {
-      promises.push(resultItem.then(curry3(callPropUnary, result, 'add', __)))
+  for (const element of set) {
+    const resultElement = mapper(element, element, set)
+    if (isPromise(resultElement)) {
+      promises.push(resultElement.then(curry3(callPropUnary, result, 'add', __)))
     } else {
-      result.add(resultItem)
+      result.add(resultElement)
     }
   }
   return promises.length == 0
@@ -707,45 +707,45 @@ const setFlatten = function (set) {
   const size = set.size,
     promises = [],
     result = new Set(),
-    resultAddReducer = (_, subItem) => result.add(subItem),
+    resultAddReducer = (_, subElement) => result.add(subElement),
     resultAdd = curry3(callPropUnary, result, 'add', __),
     getResult = () => result
 
-  for (const item of set) {
-    if (isArray(item)) {
-      const itemLength = item.length
-      let itemIndex = -1
-      while (++itemIndex < itemLength) {
-        result.add(item[itemIndex])
+  for (const element of set) {
+    if (isArray(element)) {
+      const elementLength = element.length
+      let elementIndex = -1
+      while (++elementIndex < elementLength) {
+        result.add(element[elementIndex])
       }
-    } else if (item == null) {
-      result.add(item)
-    } else if (typeof item[symbolIterator] == 'function') {
-      for (const subItem of item) {
-        result.add(subItem)
+    } else if (element == null) {
+      result.add(element)
+    } else if (typeof element[symbolIterator] == 'function') {
+      for (const subElement of element) {
+        result.add(subElement)
       }
-    } else if (typeof item[symbolAsyncIterator] == 'function') {
+    } else if (typeof element[symbolAsyncIterator] == 'function') {
       promises.push(
-        asyncIteratorForEach(item[symbolAsyncIterator](), resultAdd))
-    } else if (typeof item.chain == 'function') {
-      const monadValue = item.chain(identity)
+        asyncIteratorForEach(element[symbolAsyncIterator](), resultAdd))
+    } else if (typeof element.chain == 'function') {
+      const monadValue = element.chain(identity)
       isPromise(monadValue)
         ? promises.push(monadValue.then(resultAdd))
         : result.add(monadValue)
-    } else if (typeof item.flatMap == 'function') {
-      const monadValue = item.flatMap(identity)
+    } else if (typeof element.flatMap == 'function') {
+      const monadValue = element.flatMap(identity)
       isPromise(monadValue)
         ? promises.push(monadValue.then(resultAdd))
         : result.add(monadValue)
-    } else if (typeof item.reduce == 'function') {
-      const folded = item.reduce(resultAddReducer, null)
+    } else if (typeof element.reduce == 'function') {
+      const folded = element.reduce(resultAddReducer, null)
       isPromise(folded) && promises.push(folded)
-    } else if (item.constructor == Object) {
-      for (const key in item) {
-        result.add(item[key])
+    } else if (element.constructor == Object) {
+      for (const key in element) {
+        result.add(element[key])
       }
     } else {
-      result.add(item)
+      result.add(element)
     }
   }
   return promises.length == 0 ? result : promiseAll(promises).then(getResult)

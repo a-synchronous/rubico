@@ -1,5 +1,5 @@
 /**
- * rubico v2.7.3
+ * rubico v2.7.4
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2025 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -131,11 +131,11 @@ const arrayMap = function (array, mapper) {
     isAsync = false
 
   while (++index < arrayLength) {
-    const resultItem = mapper(array[index], index, array)
-    if (isPromise(resultItem)) {
+    const resultElement = mapper(array[index], index, array)
+    if (isPromise(resultElement)) {
       isAsync = true
     }
-    result[index] = resultItem
+    result[index] = resultElement
   }
   return isAsync ? promiseAll(result) : result
 }
@@ -154,12 +154,12 @@ const always = value => function getter() { return value }
 const setMap = function (set, mapper) {
   const result = new Set(),
     promises = []
-  for (const item of set) {
-    const resultItem = mapper(item, item, set)
-    if (isPromise(resultItem)) {
-      promises.push(resultItem.then(curry3(callPropUnary, result, 'add', __)))
+  for (const element of set) {
+    const resultElement = mapper(element, element, set)
+    if (isPromise(resultElement)) {
+      promises.push(resultElement.then(curry3(callPropUnary, result, 'add', __)))
     } else {
-      result.add(resultItem)
+      result.add(resultElement)
     }
   }
   return promises.length == 0
@@ -213,13 +213,13 @@ const callPropBinary = (value, property, arg0, arg1) => value[property](arg0, ar
 const mapMap = function (value, mapper) {
   const result = new Map(),
     promises = []
-  for (const [key, item] of value) {
-    const resultItem = mapper(item, key, value)
-    if (isPromise(resultItem)) {
-      promises.push(resultItem.then(
+  for (const [key, element] of value) {
+    const resultElement = mapper(element, key, value)
+    if (isPromise(resultElement)) {
+      promises.push(resultElement.then(
         curry4(callPropBinary, result, 'set', key, __)))
     } else {
-      result.set(key, resultItem)
+      result.set(key, resultElement)
     }
   }
   return promises.length == 0
@@ -256,11 +256,11 @@ const objectMap = function (object, mapper) {
   const result = {}
   let isAsync = false
   for (const key in object) {
-    const resultItem = mapper(object[key], key, object)
-    if (isPromise(resultItem)) {
+    const resultElement = mapper(object[key], key, object)
+    if (isPromise(resultElement)) {
       isAsync = true
     }
-    result[key] = resultItem
+    result[key] = resultElement
   }
   return isAsync ? promiseObjectAll(result) : result
 }
@@ -275,8 +275,8 @@ const arrayMapSeriesAsync = async function (
 ) {
   const arrayLength = array.length
   while (++index < arrayLength) {
-    const resultItem = mapper(array[index], index)
-    result[index] = isPromise(resultItem) ? await resultItem : resultItem
+    const resultElement = mapper(array[index], index)
+    result[index] = isPromise(resultElement) ? await resultElement : resultElement
   }
   return result
 }
@@ -287,13 +287,13 @@ const arrayMapSeries = function (array, mapper) {
   let index = -1
 
   while (++index < arrayLength) {
-    const resultItem = mapper(array[index], index)
-    if (isPromise(resultItem)) {
-      return resultItem.then(funcConcat(
+    const resultElement = mapper(array[index], index)
+    if (isPromise(resultElement)) {
+      return resultElement.then(funcConcat(
         curry3(objectSet, result, index, __),
         curry4(arrayMapSeriesAsync, array, mapper, __, index)))
     }
-    result[index] = resultItem
+    result[index] = resultElement
   }
   return result
 }
@@ -320,11 +320,11 @@ const _objectMapSeriesAsync = async function (object, f, result, doneKeys) {
     if (key in doneKeys) {
       continue
     }
-    let resultItem = f(object[key])
-    if (isPromise(resultItem)) {
-      resultItem = await resultItem
+    let resultElement = f(object[key])
+    if (isPromise(resultElement)) {
+      resultElement = await resultElement
     }
-    result[key] = resultItem
+    result[key] = resultElement
   }
   return result
 }
@@ -334,14 +334,14 @@ const objectMapSeries = function (object, f) {
   const doneKeys = {}
   for (const key in object) {
     doneKeys[key] = true
-    const resultItem = f(object[key], key, object)
-    if (isPromise(resultItem)) {
-      return resultItem.then(funcConcat(
+    const resultElement = f(object[key], key, object)
+    if (isPromise(resultElement)) {
+      return resultElement.then(funcConcat(
         curry3(objectSet, result, key, __),
         thunkify4(_objectMapSeriesAsync, object, f, result, doneKeys),
       ))
     }
-    result[key] = resultItem
+    result[key] = resultElement
   }
   return result
 }
@@ -363,11 +363,11 @@ const setAdd = function (set, value) {
 const _setMapSeriesAsync = async function (iterator, f, result) {
   let iteration = iterator.next()
   while (!iteration.done) {
-    let resultItem = f(iteration.value)
-    if (isPromise(resultItem)) {
-      resultItem = await resultItem
+    let resultElement = f(iteration.value)
+    if (isPromise(resultElement)) {
+      resultElement = await resultElement
     }
-    result.add(resultItem)
+    result.add(resultElement)
     iteration = iterator.next()
   }
   return result
@@ -378,14 +378,14 @@ const setMapSeries = function (set, f) {
   const iterator = set[symbolIterator]()
   let iteration = iterator.next()
   while (!iteration.done) {
-    const resultItem = f(iteration.value)
-    if (isPromise(resultItem)) {
-      return resultItem.then(funcConcat(
+    const resultElement = f(iteration.value)
+    if (isPromise(resultElement)) {
+      return resultElement.then(funcConcat(
         curry2(setAdd, result, __),
         thunkify3(_setMapSeriesAsync, iterator, f, result),
       ))
     }
-    result.add(resultItem)
+    result.add(resultElement)
     iteration = iterator.next()
   }
   return result
@@ -403,11 +403,11 @@ const mapSet = function setting(source, key, value) {
 const _mapMapSeriesAsync = async function (iterator, f, result) {
   let iteration = iterator.next()
   while (!iteration.done) {
-    let resultItem = f(iteration.value[1])
-    if (isPromise(resultItem)) {
-      resultItem = await resultItem
+    let resultElement = f(iteration.value[1])
+    if (isPromise(resultElement)) {
+      resultElement = await resultElement
     }
-    result.set(iteration.value[0], resultItem)
+    result.set(iteration.value[0], resultElement)
     iteration = iterator.next()
   }
   return result
@@ -419,14 +419,14 @@ const mapMapSeries = function (map, f) {
   let iteration = iterator.next()
   while (!iteration.done) {
     const key = iteration.value[0]
-    const resultItem = f(iteration.value[1])
-    if (isPromise(resultItem)) {
-      return resultItem.then(funcConcat(
+    const resultElement = f(iteration.value[1])
+    if (isPromise(resultElement)) {
+      return resultElement.then(funcConcat(
         curry3(mapSet, result, key, __),
         thunkify3(_mapMapSeriesAsync, iterator, f, result),
       ))
     }
-    result.set(key, resultItem)
+    result.set(key, resultElement)
     iteration = iterator.next()
   }
   return result
@@ -447,14 +447,14 @@ const arrayMapPoolAsync = async function (
     if (promises.size >= concurrencyLimit) {
       await promiseRace(promises)
     }
-    const resultItem = f(array[index])
-    if (isPromise(resultItem)) {
-      const selfDeletingPromise = resultItem.then(
+    const resultElement = f(array[index])
+    if (isPromise(resultElement)) {
+      const selfDeletingPromise = resultElement.then(
         tapSync(() => promises.delete(selfDeletingPromise)))
       promises.add(selfDeletingPromise)
       result[index] = selfDeletingPromise
     } else {
-      result[index] = resultItem
+      result[index] = resultElement
     }
   }
   return promiseAll(result)
@@ -465,17 +465,17 @@ const arrayMapPool = function (array, concurrency, f) {
     result = Array(arrayLength)
   let index = -1
   while (++index < arrayLength) {
-    const resultItem = f(array[index])
-    if (isPromise(resultItem)) {
+    const resultElement = f(array[index])
+    if (isPromise(resultElement)) {
       const promises = new Set(),
-        selfDeletingPromise = resultItem.then(
+        selfDeletingPromise = resultElement.then(
           tapSync(() => promises.delete(selfDeletingPromise)))
       promises.add(selfDeletingPromise)
       result[index] = selfDeletingPromise
       return arrayMapPoolAsync(
         array, f, concurrency, result, index, promises)
     }
-    result[index] = resultItem
+    result[index] = resultElement
   }
   return result
 }
@@ -495,15 +495,15 @@ const _setMapPoolAsync = async function (
     if (promises.size >= concurrency) {
       await promiseRace(promises)
     }
-    const resultItem = f(iteration.value, iteration.value, s)
-    if (isPromise(resultItem)) {
-      const selfDeletingPromise = resultItem.then(resolvedValue => {
+    const resultElement = f(iteration.value, iteration.value, s)
+    if (isPromise(resultElement)) {
+      const selfDeletingPromise = resultElement.then(resolvedValue => {
         promises.delete(selfDeletingPromise)
         result.add(resolvedValue)
       })
       promises.add(selfDeletingPromise)
     } else {
-      result.add(resultItem)
+      result.add(resultElement)
     }
     iteration = iterator.next()
   }
@@ -518,17 +518,17 @@ const setMapPool = function (s, concurrency, f) {
   const iterator = s[symbolIterator]()
   let iteration = iterator.next()
   while (!iteration.done) {
-    const resultItem = f(iteration.value, iteration.value, s)
-    if (isPromise(resultItem)) {
+    const resultElement = f(iteration.value, iteration.value, s)
+    if (isPromise(resultElement)) {
       const promises = new Set()
-      const selfDeletingPromise = resultItem.then(resolvedValue => {
+      const selfDeletingPromise = resultElement.then(resolvedValue => {
         promises.delete(selfDeletingPromise)
         result.add(resolvedValue)
       })
       promises.add(selfDeletingPromise)
       return _setMapPoolAsync(s, iterator, concurrency, f, result, promises)
     }
-    result.add(resultItem)
+    result.add(resultElement)
     iteration = iterator.next()
   }
   return result
@@ -543,16 +543,16 @@ const _mapMapPoolAsync = async function (
       await promiseRace(promises)
     }
     const key = iteration.value[0]
-    const resultItem = f(iteration.value[1], key, m)
-    if (isPromise(resultItem)) {
-      result.set(key, resultItem)
-      const selfDeletingPromise = resultItem.then(resolvedValue => {
+    const resultElement = f(iteration.value[1], key, m)
+    if (isPromise(resultElement)) {
+      result.set(key, resultElement)
+      const selfDeletingPromise = resultElement.then(resolvedValue => {
         promises.delete(selfDeletingPromise)
         result.set(key, resolvedValue)
       })
       promises.add(selfDeletingPromise)
     } else {
-      result.set(key, resultItem)
+      result.set(key, resultElement)
     }
     iteration = iterator.next()
   }
@@ -568,18 +568,18 @@ const mapMapPool = function (m, concurrency, f) {
   let iteration = iterator.next()
   while (!iteration.done) {
     const key = iteration.value[0]
-    const resultItem = f(iteration.value[1], key, m)
-    if (isPromise(resultItem)) {
+    const resultElement = f(iteration.value[1], key, m)
+    if (isPromise(resultElement)) {
       const promises = new Set()
-      result.set(key, resultItem)
-      const selfDeletingPromise = resultItem.then(resolvedValue => {
+      result.set(key, resultElement)
+      const selfDeletingPromise = resultElement.then(resolvedValue => {
         promises.delete(selfDeletingPromise)
         result.set(key, resolvedValue)
       })
       promises.add(selfDeletingPromise)
       return _mapMapPoolAsync(m, iterator, concurrency, f, result, promises)
     }
-    result.set(key, resultItem)
+    result.set(key, resultElement)
     iteration = iterator.next()
   }
   return result
@@ -595,16 +595,16 @@ const _objectMapPoolAsync = async function (
     if (promises.size >= concurrency) {
       await promiseRace(promises)
     }
-    const resultItem = f(o[key], key, o)
-    if (isPromise(resultItem)) {
-      result[key] = resultItem
-      const selfDeletingPromise = resultItem.then(resolvedValue => {
+    const resultElement = f(o[key], key, o)
+    if (isPromise(resultElement)) {
+      result[key] = resultElement
+      const selfDeletingPromise = resultElement.then(resolvedValue => {
         promises.delete(selfDeletingPromise)
         result[key] = resolvedValue
       })
       promises.add(selfDeletingPromise)
     } else {
-      result[key] = resultItem
+      result[key] = resultElement
     }
   }
   if (promises.size > 0) {
@@ -618,18 +618,18 @@ const objectMapPool = function (o, concurrency, f) {
   const doneKeys = {}
   for (const key in o) {
     doneKeys[key] = true
-    const resultItem = f(o[key], key, o)
-    if (isPromise(resultItem)) {
+    const resultElement = f(o[key], key, o)
+    if (isPromise(resultElement)) {
       const promises = new Set()
-      result[key] = resultItem
-      const selfDeletingPromise = resultItem.then(resolvedValue => {
+      result[key] = resultElement
+      const selfDeletingPromise = resultElement.then(resolvedValue => {
         promises.delete(selfDeletingPromise)
         result[key] = resolvedValue
       })
       promises.add(selfDeletingPromise)
       return _objectMapPoolAsync(o, concurrency, f, result, doneKeys, promises)
     }
-    result[key] = resultItem
+    result[key] = resultElement
   }
   return result
 }

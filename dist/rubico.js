@@ -1,5 +1,5 @@
 /**
- * rubico v2.7.3
+ * rubico v2.7.4
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2025 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -305,11 +305,11 @@ const functionArrayAll = function (funcs, args) {
   let funcsIndex = -1, isAsync = false
   while (++funcsIndex < funcsLength) {
     const f = funcs[funcsIndex]
-    const resultItem = typeof f == 'function' ? f(...args) : f
-    if (isPromise(resultItem)) {
+    const resultElement = typeof f == 'function' ? f(...args) : f
+    if (isPromise(resultElement)) {
       isAsync = true
     }
-    result[funcsIndex] = resultItem
+    result[funcsIndex] = resultElement
   }
   return isAsync ? promiseAll(result) : result
 }
@@ -363,8 +363,8 @@ const objectSet = function (object, property, value) {
 const asyncFunctionArrayAllSeries = async function (funcs, args, result, funcsIndex) {
   const funcsLength = funcs.length
   while (++funcsIndex < funcsLength) {
-    const resultItem = funcs[funcsIndex](...args)
-    result[funcsIndex] = isPromise(resultItem) ? await resultItem : resultItem
+    const resultElement = funcs[funcsIndex](...args)
+    result[funcsIndex] = isPromise(resultElement) ? await resultElement : resultElement
   }
   return result
 }
@@ -373,13 +373,13 @@ const functionArrayAllSeries = function (funcs, args) {
   const funcsLength = funcs.length, result = []
   let funcsIndex = -1
   while (++funcsIndex < funcsLength) {
-    const resultItem = funcs[funcsIndex](...args)
-    if (isPromise(resultItem)) {
-      return resultItem.then(funcConcat(
+    const resultElement = funcs[funcsIndex](...args)
+    if (isPromise(resultElement)) {
+      return resultElement.then(funcConcat(
         curry3(objectSet, result, funcsIndex, __),
         curry4(asyncFunctionArrayAllSeries, funcs, args, __, funcsIndex)))
     }
-    result[funcsIndex] = resultItem
+    result[funcsIndex] = resultElement
   }
   return result
 }
@@ -388,11 +388,11 @@ const functionObjectAll = function (funcs, args) {
   const result = {}, promises = []
   for (const key in funcs) {
     const f = funcs[key]
-    const resultItem = typeof f == 'function' ? f(...args) : f
-    if (isPromise(resultItem)) {
-      promises.push(resultItem.then(curry3(objectSet, result, key, __)))
+    const resultElement = typeof f == 'function' ? f(...args) : f
+    if (isPromise(resultElement)) {
+      promises.push(resultElement.then(curry3(objectSet, result, key, __)))
     } else {
-      result[key] = resultItem
+      result[key] = resultElement
     }
   }
   return promises.length == 0 ? result : promiseAll(promises).then(always(result))
@@ -642,11 +642,11 @@ const arrayMap = function (array, mapper) {
     isAsync = false
 
   while (++index < arrayLength) {
-    const resultItem = mapper(array[index], index, array)
-    if (isPromise(resultItem)) {
+    const resultElement = mapper(array[index], index, array)
+    if (isPromise(resultElement)) {
       isAsync = true
     }
-    result[index] = resultItem
+    result[index] = resultElement
   }
   return isAsync ? promiseAll(result) : result
 }
@@ -663,12 +663,12 @@ const stringMap = function (string, mapper) {
 const setMap = function (set, mapper) {
   const result = new Set(),
     promises = []
-  for (const item of set) {
-    const resultItem = mapper(item, item, set)
-    if (isPromise(resultItem)) {
-      promises.push(resultItem.then(curry3(callPropUnary, result, 'add', __)))
+  for (const element of set) {
+    const resultElement = mapper(element, element, set)
+    if (isPromise(resultElement)) {
+      promises.push(resultElement.then(curry3(callPropUnary, result, 'add', __)))
     } else {
-      result.add(resultItem)
+      result.add(resultElement)
     }
   }
   return promises.length == 0
@@ -681,13 +681,13 @@ const callPropBinary = (value, property, arg0, arg1) => value[property](arg0, ar
 const mapMap = function (value, mapper) {
   const result = new Map(),
     promises = []
-  for (const [key, item] of value) {
-    const resultItem = mapper(item, key, value)
-    if (isPromise(resultItem)) {
-      promises.push(resultItem.then(
+  for (const [key, element] of value) {
+    const resultElement = mapper(element, key, value)
+    if (isPromise(resultElement)) {
+      promises.push(resultElement.then(
         curry4(callPropBinary, result, 'set', key, __)))
     } else {
-      result.set(key, resultItem)
+      result.set(key, resultElement)
     }
   }
   return promises.length == 0
@@ -699,11 +699,11 @@ const objectMap = function (object, mapper) {
   const result = {}
   let isAsync = false
   for (const key in object) {
-    const resultItem = mapper(object[key], key, object)
-    if (isPromise(resultItem)) {
+    const resultElement = mapper(object[key], key, object)
+    if (isPromise(resultElement)) {
       isAsync = true
     }
-    result[key] = resultItem
+    result[key] = resultElement
   }
   return isAsync ? promiseObjectAll(result) : result
 }
@@ -713,8 +713,8 @@ const arrayMapSeriesAsync = async function (
 ) {
   const arrayLength = array.length
   while (++index < arrayLength) {
-    const resultItem = mapper(array[index], index)
-    result[index] = isPromise(resultItem) ? await resultItem : resultItem
+    const resultElement = mapper(array[index], index)
+    result[index] = isPromise(resultElement) ? await resultElement : resultElement
   }
   return result
 }
@@ -725,13 +725,13 @@ const arrayMapSeries = function (array, mapper) {
   let index = -1
 
   while (++index < arrayLength) {
-    const resultItem = mapper(array[index], index)
-    if (isPromise(resultItem)) {
-      return resultItem.then(funcConcat(
+    const resultElement = mapper(array[index], index)
+    if (isPromise(resultElement)) {
+      return resultElement.then(funcConcat(
         curry3(objectSet, result, index, __),
         curry4(arrayMapSeriesAsync, array, mapper, __, index)))
     }
-    result[index] = resultItem
+    result[index] = resultElement
   }
   return result
 }
@@ -758,11 +758,11 @@ const _objectMapSeriesAsync = async function (object, f, result, doneKeys) {
     if (key in doneKeys) {
       continue
     }
-    let resultItem = f(object[key])
-    if (isPromise(resultItem)) {
-      resultItem = await resultItem
+    let resultElement = f(object[key])
+    if (isPromise(resultElement)) {
+      resultElement = await resultElement
     }
-    result[key] = resultItem
+    result[key] = resultElement
   }
   return result
 }
@@ -772,14 +772,14 @@ const objectMapSeries = function (object, f) {
   const doneKeys = {}
   for (const key in object) {
     doneKeys[key] = true
-    const resultItem = f(object[key], key, object)
-    if (isPromise(resultItem)) {
-      return resultItem.then(funcConcat(
+    const resultElement = f(object[key], key, object)
+    if (isPromise(resultElement)) {
+      return resultElement.then(funcConcat(
         curry3(objectSet, result, key, __),
         thunkify4(_objectMapSeriesAsync, object, f, result, doneKeys),
       ))
     }
-    result[key] = resultItem
+    result[key] = resultElement
   }
   return result
 }
@@ -797,11 +797,11 @@ const setAdd = function (set, value) {
 const _setMapSeriesAsync = async function (iterator, f, result) {
   let iteration = iterator.next()
   while (!iteration.done) {
-    let resultItem = f(iteration.value)
-    if (isPromise(resultItem)) {
-      resultItem = await resultItem
+    let resultElement = f(iteration.value)
+    if (isPromise(resultElement)) {
+      resultElement = await resultElement
     }
-    result.add(resultItem)
+    result.add(resultElement)
     iteration = iterator.next()
   }
   return result
@@ -812,14 +812,14 @@ const setMapSeries = function (set, f) {
   const iterator = set[symbolIterator]()
   let iteration = iterator.next()
   while (!iteration.done) {
-    const resultItem = f(iteration.value)
-    if (isPromise(resultItem)) {
-      return resultItem.then(funcConcat(
+    const resultElement = f(iteration.value)
+    if (isPromise(resultElement)) {
+      return resultElement.then(funcConcat(
         curry2(setAdd, result, __),
         thunkify3(_setMapSeriesAsync, iterator, f, result),
       ))
     }
-    result.add(resultItem)
+    result.add(resultElement)
     iteration = iterator.next()
   }
   return result
@@ -837,11 +837,11 @@ const mapSet = function setting(source, key, value) {
 const _mapMapSeriesAsync = async function (iterator, f, result) {
   let iteration = iterator.next()
   while (!iteration.done) {
-    let resultItem = f(iteration.value[1])
-    if (isPromise(resultItem)) {
-      resultItem = await resultItem
+    let resultElement = f(iteration.value[1])
+    if (isPromise(resultElement)) {
+      resultElement = await resultElement
     }
-    result.set(iteration.value[0], resultItem)
+    result.set(iteration.value[0], resultElement)
     iteration = iterator.next()
   }
   return result
@@ -853,14 +853,14 @@ const mapMapSeries = function (map, f) {
   let iteration = iterator.next()
   while (!iteration.done) {
     const key = iteration.value[0]
-    const resultItem = f(iteration.value[1])
-    if (isPromise(resultItem)) {
-      return resultItem.then(funcConcat(
+    const resultElement = f(iteration.value[1])
+    if (isPromise(resultElement)) {
+      return resultElement.then(funcConcat(
         curry3(mapSet, result, key, __),
         thunkify3(_mapMapSeriesAsync, iterator, f, result),
       ))
     }
-    result.set(key, resultItem)
+    result.set(key, resultElement)
     iteration = iterator.next()
   }
   return result
@@ -881,14 +881,14 @@ const arrayMapPoolAsync = async function (
     if (promises.size >= concurrencyLimit) {
       await promiseRace(promises)
     }
-    const resultItem = f(array[index])
-    if (isPromise(resultItem)) {
-      const selfDeletingPromise = resultItem.then(
+    const resultElement = f(array[index])
+    if (isPromise(resultElement)) {
+      const selfDeletingPromise = resultElement.then(
         tapSync(() => promises.delete(selfDeletingPromise)))
       promises.add(selfDeletingPromise)
       result[index] = selfDeletingPromise
     } else {
-      result[index] = resultItem
+      result[index] = resultElement
     }
   }
   return promiseAll(result)
@@ -899,17 +899,17 @@ const arrayMapPool = function (array, concurrency, f) {
     result = Array(arrayLength)
   let index = -1
   while (++index < arrayLength) {
-    const resultItem = f(array[index])
-    if (isPromise(resultItem)) {
+    const resultElement = f(array[index])
+    if (isPromise(resultElement)) {
       const promises = new Set(),
-        selfDeletingPromise = resultItem.then(
+        selfDeletingPromise = resultElement.then(
           tapSync(() => promises.delete(selfDeletingPromise)))
       promises.add(selfDeletingPromise)
       result[index] = selfDeletingPromise
       return arrayMapPoolAsync(
         array, f, concurrency, result, index, promises)
     }
-    result[index] = resultItem
+    result[index] = resultElement
   }
   return result
 }
@@ -929,15 +929,15 @@ const _setMapPoolAsync = async function (
     if (promises.size >= concurrency) {
       await promiseRace(promises)
     }
-    const resultItem = f(iteration.value, iteration.value, s)
-    if (isPromise(resultItem)) {
-      const selfDeletingPromise = resultItem.then(resolvedValue => {
+    const resultElement = f(iteration.value, iteration.value, s)
+    if (isPromise(resultElement)) {
+      const selfDeletingPromise = resultElement.then(resolvedValue => {
         promises.delete(selfDeletingPromise)
         result.add(resolvedValue)
       })
       promises.add(selfDeletingPromise)
     } else {
-      result.add(resultItem)
+      result.add(resultElement)
     }
     iteration = iterator.next()
   }
@@ -952,17 +952,17 @@ const setMapPool = function (s, concurrency, f) {
   const iterator = s[symbolIterator]()
   let iteration = iterator.next()
   while (!iteration.done) {
-    const resultItem = f(iteration.value, iteration.value, s)
-    if (isPromise(resultItem)) {
+    const resultElement = f(iteration.value, iteration.value, s)
+    if (isPromise(resultElement)) {
       const promises = new Set()
-      const selfDeletingPromise = resultItem.then(resolvedValue => {
+      const selfDeletingPromise = resultElement.then(resolvedValue => {
         promises.delete(selfDeletingPromise)
         result.add(resolvedValue)
       })
       promises.add(selfDeletingPromise)
       return _setMapPoolAsync(s, iterator, concurrency, f, result, promises)
     }
-    result.add(resultItem)
+    result.add(resultElement)
     iteration = iterator.next()
   }
   return result
@@ -977,16 +977,16 @@ const _mapMapPoolAsync = async function (
       await promiseRace(promises)
     }
     const key = iteration.value[0]
-    const resultItem = f(iteration.value[1], key, m)
-    if (isPromise(resultItem)) {
-      result.set(key, resultItem)
-      const selfDeletingPromise = resultItem.then(resolvedValue => {
+    const resultElement = f(iteration.value[1], key, m)
+    if (isPromise(resultElement)) {
+      result.set(key, resultElement)
+      const selfDeletingPromise = resultElement.then(resolvedValue => {
         promises.delete(selfDeletingPromise)
         result.set(key, resolvedValue)
       })
       promises.add(selfDeletingPromise)
     } else {
-      result.set(key, resultItem)
+      result.set(key, resultElement)
     }
     iteration = iterator.next()
   }
@@ -1002,18 +1002,18 @@ const mapMapPool = function (m, concurrency, f) {
   let iteration = iterator.next()
   while (!iteration.done) {
     const key = iteration.value[0]
-    const resultItem = f(iteration.value[1], key, m)
-    if (isPromise(resultItem)) {
+    const resultElement = f(iteration.value[1], key, m)
+    if (isPromise(resultElement)) {
       const promises = new Set()
-      result.set(key, resultItem)
-      const selfDeletingPromise = resultItem.then(resolvedValue => {
+      result.set(key, resultElement)
+      const selfDeletingPromise = resultElement.then(resolvedValue => {
         promises.delete(selfDeletingPromise)
         result.set(key, resolvedValue)
       })
       promises.add(selfDeletingPromise)
       return _mapMapPoolAsync(m, iterator, concurrency, f, result, promises)
     }
-    result.set(key, resultItem)
+    result.set(key, resultElement)
     iteration = iterator.next()
   }
   return result
@@ -1029,16 +1029,16 @@ const _objectMapPoolAsync = async function (
     if (promises.size >= concurrency) {
       await promiseRace(promises)
     }
-    const resultItem = f(o[key], key, o)
-    if (isPromise(resultItem)) {
-      result[key] = resultItem
-      const selfDeletingPromise = resultItem.then(resolvedValue => {
+    const resultElement = f(o[key], key, o)
+    if (isPromise(resultElement)) {
+      result[key] = resultElement
+      const selfDeletingPromise = resultElement.then(resolvedValue => {
         promises.delete(selfDeletingPromise)
         result[key] = resolvedValue
       })
       promises.add(selfDeletingPromise)
     } else {
-      result[key] = resultItem
+      result[key] = resultElement
     }
   }
   if (promises.size > 0) {
@@ -1052,18 +1052,18 @@ const objectMapPool = function (o, concurrency, f) {
   const doneKeys = {}
   for (const key in o) {
     doneKeys[key] = true
-    const resultItem = f(o[key], key, o)
-    if (isPromise(resultItem)) {
+    const resultElement = f(o[key], key, o)
+    if (isPromise(resultElement)) {
       const promises = new Set()
-      result[key] = resultItem
-      const selfDeletingPromise = resultItem.then(resolvedValue => {
+      result[key] = resultElement
+      const selfDeletingPromise = resultElement.then(resolvedValue => {
         promises.delete(selfDeletingPromise)
         result[key] = resolvedValue
       })
       promises.add(selfDeletingPromise)
       return _objectMapPoolAsync(o, concurrency, f, result, doneKeys, promises)
     }
-    result[key] = resultItem
+    result[key] = resultElement
   }
   return result
 }
@@ -1365,15 +1365,15 @@ const arrayFilter = function (array, predicate) {
   let index = -1,
     resultIndex = -1
   while (++index < arrayLength) {
-    const item = array[index],
-      shouldIncludeItem = predicate(item, index, array)
-    if (isPromise(shouldIncludeItem)) {
+    const element = array[index],
+      shouldIncludeElement = predicate(element, index, array)
+    if (isPromise(shouldIncludeElement)) {
       return promiseAll(
-        arrayExtendMap([shouldIncludeItem], array, predicate, index)
+        arrayExtendMap([shouldIncludeElement], array, predicate, index)
       ).then(curry4(arrayFilterByConditions, array, result, index - 1, __))
     }
-    if (shouldIncludeItem) {
-      result[++resultIndex] = item
+    if (shouldIncludeElement) {
+      result[++resultIndex] = element
     }
   }
   return result
@@ -1396,13 +1396,13 @@ const setFilter = function (value, predicate) {
   const result = new Set(),
     resultAdd = result.add.bind(result),
     promises = []
-  for (const item of value) {
-    const predication = predicate(item, item, value)
+  for (const element of value) {
+    const predication = predicate(element, element, value)
     if (isPromise(predication)) {
       promises.push(predication.then(curry3(
-        thunkConditional, __, thunkify1(resultAdd, item), noop)))
+        thunkConditional, __, thunkify1(resultAdd, element), noop)))
     } else if (predication) {
-      result.add(item)
+      result.add(element)
     }
   }
   return promises.length == 0
@@ -1413,15 +1413,15 @@ const setFilter = function (value, predicate) {
 const mapFilter = function (map, predicate) {
   const result = new Map(),
     promises = []
-  for (const [key, item] of map) {
-    const predication = predicate(item, key, map)
+  for (const [key, element] of map) {
+    const predication = predicate(element, key, map)
     if (isPromise(predication)) {
       promises.push(predication.then(curry3(thunkConditional,
         __,
-        thunkify4(callPropBinary, result, 'set', key, item),
+        thunkify4(callPropBinary, result, 'set', key, element),
         noop)))
     } else if (predication) {
-      result.set(key, item)
+      result.set(key, element)
     }
   }
   return promises.length == 0 ? result
@@ -1440,13 +1440,13 @@ const objectFilter = function (object, predicate) {
   const result = {},
     promises = []
   for (const key in object) {
-    const item = object[key],
-      shouldIncludeItem = predicate(item, key, object)
-    if (isPromise(shouldIncludeItem)) {
-      promises.push(shouldIncludeItem.then(
+    const element = object[key],
+      shouldIncludeElement = predicate(element, key, object)
+    if (isPromise(shouldIncludeElement)) {
+      promises.push(shouldIncludeElement.then(
         curry4(objectSetIf, result, key, object[key], __)))
-    } else if (shouldIncludeItem) {
-      result[key] = item
+    } else if (shouldIncludeElement) {
+      result[key] = element
     }
   }
   return promises.length == 0
@@ -1708,11 +1708,11 @@ const mapReduce = function (map, reducer, result) {
 
 const reducerConcat = (
   reducerA, reducerB,
-) => function pipedReducer(result, item) {
-  const intermediate = reducerA(result, item)
+) => function pipedReducer(result, element) {
+  const intermediate = reducerA(result, element)
   return isPromise(intermediate)
-    ? intermediate.then(curry2(reducerB, __, item))
-    : reducerB(intermediate, item)
+    ? intermediate.then(curry2(reducerB, __, element))
+    : reducerB(intermediate, element)
 }
 
 const genericReduce = function (collection, reducer, result) {
@@ -1952,7 +1952,7 @@ const FlatMappingIterator = function (iterator, flatMapper) {
       const monadAsArray = genericReduce(
         flatMapper(iteration.value),
         arrayPush,
-        []) // this will always have at least one item
+        []) // this will always have at least one element
       if (monadAsArray.length > 1) {
         buffer = monadAsArray
         bufferIndex = 1
@@ -2031,8 +2031,8 @@ const funcConcatSync = (
 
 const asyncIteratorForEach = async function (asyncIterator, callback) {
   const promises = []
-  for await (const item of asyncIterator) {
-    const operation = callback(item)
+  for await (const element of asyncIterator) {
+    const operation = callback(element)
     if (isPromise(operation)) {
       promises.push(operation)
     }
@@ -2048,44 +2048,44 @@ const arrayFlatten = function (array) {
   let index = -1
 
   while (++index < length) {
-    const item = array[index]
-    if (isArray(item)) {
-      const itemLength = item.length
-      let itemIndex = -1
-      while (++itemIndex < itemLength) {
-        result.push(item[itemIndex])
+    const element = array[index]
+    if (isArray(element)) {
+      const elementLength = element.length
+      let elementIndex = -1
+      while (++elementIndex < elementLength) {
+        result.push(element[elementIndex])
       }
-    } else if (item == null) {
-      result.push(item)
-    } else if (typeof item.then == 'function') {
-      promises.push(item.then(curry2(arrayPush, result, __)))
-    } else if (typeof item[symbolIterator] == 'function') {
-      for (const subItem of item) {
-        result.push(subItem)
+    } else if (element == null) {
+      result.push(element)
+    } else if (typeof element.then == 'function') {
+      promises.push(element.then(curry2(arrayPush, result, __)))
+    } else if (typeof element[symbolIterator] == 'function') {
+      for (const subElement of element) {
+        result.push(subElement)
       }
-    } else if (typeof item[symbolAsyncIterator] == 'function') {
+    } else if (typeof element[symbolAsyncIterator] == 'function') {
       promises.push(asyncIteratorForEach(
-        item[symbolAsyncIterator](), curry2(arrayPush, result, __)))
-    } else if (typeof item.chain == 'function') {
-      const monadValue = item.chain(identity)
+        element[symbolAsyncIterator](), curry2(arrayPush, result, __)))
+    } else if (typeof element.chain == 'function') {
+      const monadValue = element.chain(identity)
       isPromise(monadValue)
         ? promises.push(monadValue.then(curry2(arrayPush, result, __)))
         : result.push(monadValue)
-    } else if (typeof item.flatMap == 'function') {
-      const monadValue = item.flatMap(identity)
+    } else if (typeof element.flatMap == 'function') {
+      const monadValue = element.flatMap(identity)
       isPromise(monadValue)
         ? promises.push(monadValue.then(curry2(arrayPush, result, __)))
         : result.push(monadValue)
-    } else if (typeof item.reduce == 'function') {
-      const folded = item.reduce(funcConcatSync(
+    } else if (typeof element.reduce == 'function') {
+      const folded = element.reduce(funcConcatSync(
         getArg1, curry2(arrayPush, result, __)), null)
       isPromise(folded) && promises.push(folded)
-    } else if (item.constructor == Object) {
-      for (const key in item) {
-        result.push(item[key])
+    } else if (element.constructor == Object) {
+      for (const key in element) {
+        result.push(element[key])
       }
     } else {
-      result.push(item)
+      result.push(element)
     }
   }
   return promises.length == 0
@@ -2108,31 +2108,31 @@ const objectFlatten = function (object) {
     getResult = () => result
 
   for (const key in object) {
-    const item = object[key]
-    if (item == null) {
+    const element = object[key]
+    if (element == null) {
       continue
-    } else if (typeof item[symbolIterator] == 'function') {
-      for (const monadItem of item) {
-        objectAssign(result, monadItem)
+    } else if (typeof element[symbolIterator] == 'function') {
+      for (const monadElement of element) {
+        objectAssign(result, monadElement)
       }
-    } else if (typeof item[symbolAsyncIterator] == 'function') {
+    } else if (typeof element[symbolAsyncIterator] == 'function') {
       promises.push(
-        asyncIteratorForEach(item[symbolAsyncIterator](), resultAssign))
-    } else if (typeof item.chain == 'function') {
-      const monadValue = item.chain(identity)
+        asyncIteratorForEach(element[symbolAsyncIterator](), resultAssign))
+    } else if (typeof element.chain == 'function') {
+      const monadValue = element.chain(identity)
       isPromise(monadValue)
         ? promises.push(monadValue.then(resultAssign))
         : objectAssign(result, monadValue)
-    } else if (typeof item.flatMap == 'function') {
-      const monadValue = item.flatMap(identity)
+    } else if (typeof element.flatMap == 'function') {
+      const monadValue = element.flatMap(identity)
       isPromise(monadValue)
         ? promises.push(monadValue.then(resultAssign))
         : resultAssign(monadValue)
-    } else if (typeof item.reduce == 'function') {
-      const folded = item.reduce(resultAssignReducer, null)
+    } else if (typeof element.reduce == 'function') {
+      const folded = element.reduce(resultAssignReducer, null)
       isPromise(folded) && promises.push(folded)
     } else {
-      objectAssign(result, item)
+      objectAssign(result, element)
     }
   }
   return promises.length == 0
@@ -2151,45 +2151,45 @@ const setFlatten = function (set) {
   const size = set.size,
     promises = [],
     result = new Set(),
-    resultAddReducer = (_, subItem) => result.add(subItem),
+    resultAddReducer = (_, subElement) => result.add(subElement),
     resultAdd = curry3(callPropUnary, result, 'add', __),
     getResult = () => result
 
-  for (const item of set) {
-    if (isArray(item)) {
-      const itemLength = item.length
-      let itemIndex = -1
-      while (++itemIndex < itemLength) {
-        result.add(item[itemIndex])
+  for (const element of set) {
+    if (isArray(element)) {
+      const elementLength = element.length
+      let elementIndex = -1
+      while (++elementIndex < elementLength) {
+        result.add(element[elementIndex])
       }
-    } else if (item == null) {
-      result.add(item)
-    } else if (typeof item[symbolIterator] == 'function') {
-      for (const subItem of item) {
-        result.add(subItem)
+    } else if (element == null) {
+      result.add(element)
+    } else if (typeof element[symbolIterator] == 'function') {
+      for (const subElement of element) {
+        result.add(subElement)
       }
-    } else if (typeof item[symbolAsyncIterator] == 'function') {
+    } else if (typeof element[symbolAsyncIterator] == 'function') {
       promises.push(
-        asyncIteratorForEach(item[symbolAsyncIterator](), resultAdd))
-    } else if (typeof item.chain == 'function') {
-      const monadValue = item.chain(identity)
+        asyncIteratorForEach(element[symbolAsyncIterator](), resultAdd))
+    } else if (typeof element.chain == 'function') {
+      const monadValue = element.chain(identity)
       isPromise(monadValue)
         ? promises.push(monadValue.then(resultAdd))
         : result.add(monadValue)
-    } else if (typeof item.flatMap == 'function') {
-      const monadValue = item.flatMap(identity)
+    } else if (typeof element.flatMap == 'function') {
+      const monadValue = element.flatMap(identity)
       isPromise(monadValue)
         ? promises.push(monadValue.then(resultAdd))
         : result.add(monadValue)
-    } else if (typeof item.reduce == 'function') {
-      const folded = item.reduce(resultAddReducer, null)
+    } else if (typeof element.reduce == 'function') {
+      const folded = element.reduce(resultAddReducer, null)
       isPromise(folded) && promises.push(folded)
-    } else if (item.constructor == Object) {
-      for (const key in item) {
-        result.add(item[key])
+    } else if (element.constructor == Object) {
+      for (const key in element) {
+        result.add(element[key])
       }
     } else {
-      result.add(item)
+      result.add(element)
     }
   }
   return promises.length == 0 ? result : promiseAll(promises).then(getResult)
@@ -2285,8 +2285,8 @@ const objectForEach = function (object, callback) {
 
 const iteratorForEach = function (iterator, callback) {
   const promises = []
-  for (const item of iterator) {
-    const operation = callback(item)
+  for (const element of iterator) {
+    const operation = callback(element)
     if (isPromise(operation)) {
       promises.push(operation)
     }
@@ -2384,8 +2384,8 @@ const iteratorForEachSeries = function (iterator, callback) {
 }
 
 const asyncIteratorForEachSeries = async function (asyncIterator, callback) {
-  for await (const item of asyncIterator) {
-    const operation = callback(item)
+  for await (const element of asyncIterator) {
+    const operation = callback(element)
     if (isPromise(operation)) {
       await operation
     }
@@ -2537,8 +2537,8 @@ const asyncIteratorSome = async function (
 }
 
 const iteratorSome = function (iterator, predicate) {
-  for (const item of iterator) {
-    const predication = predicate(item)
+  for (const element of iterator) {
+    const predication = predicate(element)
     if (isPromise(predication)) {
       return asyncIteratorSome(
         iterator, predicate, new Set([SelfReferencingPromise(predication)]))
@@ -2550,14 +2550,14 @@ const iteratorSome = function (iterator, predicate) {
   return false
 }
 
-const reducerAnySync = predicate => function anyReducer(result, item) {
-  return result ? true : predicate(item)
+const reducerAnySync = predicate => function anyReducer(result, element) {
+  return result ? true : predicate(element)
 }
 
-const reducerSome = predicate => function anyReducer(result, item) {
+const reducerSome = predicate => function anyReducer(result, element) {
   return result === true ? result
-    : isPromise(result) ? result.then(curry2(reducerAnySync(predicate), __, item))
-    : result ? true : predicate(item)
+    : isPromise(result) ? result.then(curry2(reducerAnySync(predicate), __, element))
+    : result ? true : predicate(element)
 }
 
 // _some(collection Array|Iterable|AsyncIterable|{ reduce: function }|Object, predicate function) -> Promise|boolean
@@ -2613,8 +2613,8 @@ const arrayEvery = function (array, predicate) {
 
 const iteratorEvery = function (iterator, predicate) {
   const promises = []
-  for (const item of iterator) {
-    const predication = predicate(item)
+  for (const element of iterator) {
+    const predication = predicate(element)
     if (isPromise(predication)) {
       promises.push(predication)
     } else if (!predication) {
@@ -2657,13 +2657,13 @@ const asyncIteratorEvery = async function (
   return true
 }
 
-const reducerAllSync = (predicate, result, item) => result ? predicate(item) : false
+const reducerAllSync = (predicate, result, element) => result ? predicate(element) : false
 
-const reducerEvery = predicate => function allReducer(result, item) {
+const reducerEvery = predicate => function allReducer(result, element) {
   return result === false ? false
     : isPromise(result) ? result.then(
-      curry3(reducerAllSync, predicate, __, item))
-    : result ? predicate(item) : false
+      curry3(reducerAllSync, predicate, __, element))
+    : result ? predicate(element) : false
 }
 
 // _every(collection Array|Iterable|AsyncIterable|{ reduce: function }|Object, predicate function) -> Promise|boolean
@@ -3220,13 +3220,13 @@ const deleteByPath = function (object, path) {
 const objectCopyDeep = function (object) {
   const result = {}
   for (const key in object) {
-    const item = object[key]
-    if (isArray(item)) {
-      result[key] = arrayCopyDeep(item)
-    } else if (item != null && item.constructor == Object) {
-      result[key] = objectCopyDeep(item)
+    const element = object[key]
+    if (isArray(element)) {
+      result[key] = arrayCopyDeep(element)
+    } else if (element != null && element.constructor == Object) {
+      result[key] = objectCopyDeep(element)
     } else {
-      result[key] = item
+      result[key] = element
     }
   }
   return result
@@ -3238,13 +3238,13 @@ const arrayCopyDeep = function (array) {
     result = []
   let index = -1
   while (++index < length) {
-    const item = array[index]
-    if (isArray(item)) {
-      result[index] = arrayCopyDeep(item)
-    } else if (item != null && item.constructor == Object) {
-      result[index] = objectCopyDeep(item)
+    const element = array[index]
+    if (isArray(element)) {
+      result[index] = arrayCopyDeep(element)
+    } else if (element != null && element.constructor == Object) {
+      result[index] = objectCopyDeep(element)
     } else {
-      result[index] = item
+      result[index] = element
     }
   }
   return result

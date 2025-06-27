@@ -1,5 +1,5 @@
 /**
- * rubico v2.7.3
+ * rubico v2.7.4
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2025 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -351,11 +351,11 @@ const mapReduce = function (map, reducer, result) {
 
 const reducerConcat = (
   reducerA, reducerB,
-) => function pipedReducer(result, item) {
-  const intermediate = reducerA(result, item)
+) => function pipedReducer(result, element) {
+  const intermediate = reducerA(result, element)
   return isPromise(intermediate)
-    ? intermediate.then(curry2(reducerB, __, item))
-    : reducerB(intermediate, item)
+    ? intermediate.then(curry2(reducerB, __, element))
+    : reducerB(intermediate, element)
 }
 
 const genericReduce = function (collection, reducer, result) {

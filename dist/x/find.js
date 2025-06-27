@@ -1,5 +1,5 @@
 /**
- * rubico v2.7.3
+ * rubico v2.7.4
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2025 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -67,13 +67,13 @@ const always = value => function getter() { return value }
 const arrayFindAsync = async function (array, predicate, index) {
   const length = array.length
   while (++index < length) {
-    const item = array[index]
-    let predication = predicate(item)
+    const element = array[index]
+    let predication = predicate(element)
     if (isPromise(predication)) {
       predication = await predication
     }
     if (predication) {
-      return item
+      return element
     }
   }
   return undefined
@@ -83,16 +83,16 @@ const arrayFind = function (array, predicate) {
   const length = array.length
   let index = -1
   while (++index < length) {
-    const item = array[index],
-      predication = predicate(item)
+    const element = array[index],
+      predication = predicate(element)
     if (isPromise(predication)) {
       return predication.then(curry3(
         thunkConditional,
         __,
-        always(item),
+        always(element),
         thunkify3(arrayFindAsync, array, predicate, index)))
     } else if (predication) {
-      return item
+      return element
     }
   }
   return undefined
@@ -105,13 +105,13 @@ const thunkify2 = (func, arg0, arg1) => function thunk() {
 const iteratorFindAsync = async function (iterator, predicate) {
   let iteration = iterator.next()
   while (!iteration.done) {
-    const item = iteration.value
-    let predication = predicate(item)
+    const element = iteration.value
+    let predication = predicate(element)
     if (isPromise(predication)) {
       predication = await predication
     }
     if (predication) {
-      return item
+      return element
     }
     iteration = iterator.next()
   }
@@ -121,16 +121,16 @@ const iteratorFindAsync = async function (iterator, predicate) {
 const iteratorFind = function (iterator, predicate) {
   let iteration = iterator.next()
   while (!iteration.done) {
-    const item = iteration.value,
-      predication = predicate(item)
+    const element = iteration.value,
+      predication = predicate(element)
     if (isPromise(predication)) {
       return predication.then(curry3(
         thunkConditional,
         __,
-        always(item),
+        always(element),
         thunkify2(iteratorFindAsync, iterator, predicate)))
     } else if (predication) {
-      return item
+      return element
     }
     iteration = iterator.next()
   }
@@ -140,13 +140,13 @@ const iteratorFind = function (iterator, predicate) {
 const asyncIteratorFind = async function (asyncIterator, predicate) {
   let iteration = await asyncIterator.next()
   while (!iteration.done) {
-    const item = iteration.value
-    let predication = predicate(item)
+    const element = iteration.value
+    let predication = predicate(element)
     if (isPromise(predication)) {
       predication = await predication
     }
     if (predication) {
-      return item
+      return element
     }
     iteration = await asyncIterator.next()
   }

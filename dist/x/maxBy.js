@@ -1,5 +1,5 @@
 /**
- * rubico v2.7.3
+ * rubico v2.7.4
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2025 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -157,14 +157,14 @@ const _maxBy = function (array, path) {
   const length = array.length
   const getter = get(path)
   let index = 0
-  let maxItem = array[index]
+  let maxElement = array[index]
   while (++index < length) {
-    const item = array[index]
-    if (getter(item) > getter(maxItem)) {
-      maxItem = item
+    const element = array[index]
+    if (getter(element) > getter(maxElement)) {
+      maxElement = element
     }
   }
-  return maxItem
+  return maxElement
 }
 
 const maxBy = function (...args) {

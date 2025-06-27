@@ -1,5 +1,5 @@
 /**
- * rubico v2.7.3
+ * rubico v2.7.4
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2025 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -12,20 +12,20 @@ const isString = function (value) {
 
 const isArray = Array.isArray
 
-const append = item => function appendFunc(value) {
+const append = element => function appendFunc(value) {
 
     if (isArray(value)) {
-      if (isArray(item)){
-        return [...value, ...item]
+      if (isArray(element)){
+        return [...value, ...element]
       }
-      return [...value, item]
+      return [...value, element]
     }
 
     if (isString(value)){
-      if (!isString(item)){
-        throw new TypeError(`${item} is not a string`)
+      if (!isString(element)){
+        throw new TypeError(`${element} is not a string`)
       }
-      return `${value}${item}`
+      return `${value}${element}`
     }
 
     throw new TypeError(`${value} is not an Array or string`)

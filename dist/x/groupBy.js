@@ -1,5 +1,5 @@
 /**
- * rubico v2.7.3
+ * rubico v2.7.4
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2025 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -359,11 +359,11 @@ const mapReduce = function (map, reducer, result) {
 
 const reducerConcat = (
   reducerA, reducerB,
-) => function pipedReducer(result, item) {
-  const intermediate = reducerA(result, item)
+) => function pipedReducer(result, element) {
+  const intermediate = reducerA(result, element)
   return isPromise(intermediate)
-    ? intermediate.then(curry2(reducerB, __, item))
-    : reducerB(intermediate, item)
+    ? intermediate.then(curry2(reducerB, __, element))
+    : reducerB(intermediate, element)
 }
 
 const genericReduce = function (collection, reducer, result) {
@@ -427,33 +427,33 @@ const reduce = function (...args) {
   return _reduce(args[0], args[1], args[2])
 }
 
-// (mapOfArrays Map<any=>Array>, key any, item any) => mapOfArrays
+// (mapOfArrays Map<any=>Array>, key any, element any) => mapOfArrays
 // TODO: benchmark vs mapOfArrays.has(key)
-const group = function (mapOfArrays, key, item) {
+const group = function (mapOfArrays, key, element) {
   const array = mapOfArrays.get(key)
   if (array == null) {
-    mapOfArrays.set(key, [item])
+    mapOfArrays.set(key, [element])
   } else {
-    array.push(item)
+    array.push(element)
   }
   return mapOfArrays
 }
 
-// property string => (mapOfArrays Map<any=>Array>, item any) => mapOfArrays
+// property string => (mapOfArrays Map<any=>Array>, element any) => mapOfArrays
 const groupByProperty = property => function groupByPropertyReducer(
-  mapOfArrays, item,
+  mapOfArrays, element,
 ) {
-  return group(mapOfArrays, item[property], item)
+  return group(mapOfArrays, element[property], element)
 }
 
-// resolver any=>any => (mapOfArrays Map<any=>Array>, item any) => mapOfArrays
+// resolver any=>any => (mapOfArrays Map<any=>Array>, element any) => mapOfArrays
 const groupByResolver = resolver => function groupByResolverReducer(
-  mapOfArrays, item,
+  mapOfArrays, element,
 ) {
-  const key = resolver(item)
+  const key = resolver(element)
   return isPromise(key)
-    ? key.then(curry3(group, mapOfArrays, __, item))
-    : group(mapOfArrays, key, item)
+    ? key.then(curry3(group, mapOfArrays, __, element))
+    : group(mapOfArrays, key, element)
 }
 
 const groupBy = propertyOrResolver => typeof propertyOrResolver == 'function'

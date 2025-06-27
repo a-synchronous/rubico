@@ -1,5 +1,5 @@
 /**
- * rubico v2.7.3
+ * rubico v2.7.4
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2025 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -151,15 +151,15 @@ const arrayFilter = function (array, predicate) {
   let index = -1,
     resultIndex = -1
   while (++index < arrayLength) {
-    const item = array[index],
-      shouldIncludeItem = predicate(item, index, array)
-    if (isPromise(shouldIncludeItem)) {
+    const element = array[index],
+      shouldIncludeElement = predicate(element, index, array)
+    if (isPromise(shouldIncludeElement)) {
       return promiseAll(
-        arrayExtendMap([shouldIncludeItem], array, predicate, index)
+        arrayExtendMap([shouldIncludeElement], array, predicate, index)
       ).then(curry4(arrayFilterByConditions, array, result, index - 1, __))
     }
-    if (shouldIncludeItem) {
-      result[++resultIndex] = item
+    if (shouldIncludeElement) {
+      result[++resultIndex] = element
     }
   }
   return result
@@ -221,13 +221,13 @@ const setFilter = function (value, predicate) {
   const result = new Set(),
     resultAdd = result.add.bind(result),
     promises = []
-  for (const item of value) {
-    const predication = predicate(item, item, value)
+  for (const element of value) {
+    const predication = predicate(element, element, value)
     if (isPromise(predication)) {
       promises.push(predication.then(curry3(
-        thunkConditional, __, thunkify1(resultAdd, item), noop)))
+        thunkConditional, __, thunkify1(resultAdd, element), noop)))
     } else if (predication) {
-      result.add(item)
+      result.add(element)
     }
   }
   return promises.length == 0
@@ -244,15 +244,15 @@ const callPropBinary = (value, property, arg0, arg1) => value[property](arg0, ar
 const mapFilter = function (map, predicate) {
   const result = new Map(),
     promises = []
-  for (const [key, item] of map) {
-    const predication = predicate(item, key, map)
+  for (const [key, element] of map) {
+    const predication = predicate(element, key, map)
     if (isPromise(predication)) {
       promises.push(predication.then(curry3(thunkConditional,
         __,
-        thunkify4(callPropBinary, result, 'set', key, item),
+        thunkify4(callPropBinary, result, 'set', key, element),
         noop)))
     } else if (predication) {
-      result.set(key, item)
+      result.set(key, element)
     }
   }
   return promises.length == 0 ? result
@@ -271,13 +271,13 @@ const objectFilter = function (object, predicate) {
   const result = {},
     promises = []
   for (const key in object) {
-    const item = object[key],
-      shouldIncludeItem = predicate(item, key, object)
-    if (isPromise(shouldIncludeItem)) {
-      promises.push(shouldIncludeItem.then(
+    const element = object[key],
+      shouldIncludeElement = predicate(element, key, object)
+    if (isPromise(shouldIncludeElement)) {
+      promises.push(shouldIncludeElement.then(
         curry4(objectSetIf, result, key, object[key], __)))
-    } else if (shouldIncludeItem) {
-      result[key] = item
+    } else if (shouldIncludeElement) {
+      result[key] = element
     }
   }
   return promises.length == 0

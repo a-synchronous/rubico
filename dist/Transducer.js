@@ -1,5 +1,5 @@
 /**
- * rubico v2.7.3
+ * rubico v2.7.4
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2025 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -46,11 +46,11 @@ const curry2 = function (baseFunc, arg0, arg1) {
 
 const reducerMap = (
   reducer, mapper,
-) => function mappingReducer(result, reducerItem) {
-  const mappingReducerItem = mapper(reducerItem)
-  return isPromise(mappingReducerItem)
-    ? mappingReducerItem.then(curry2(reducer, result, __))
-    : reducer(result, mappingReducerItem)
+) => function mappingReducer(result, reducerElement) {
+  const mappingReducerElement = mapper(reducerElement)
+  return isPromise(mappingReducerElement)
+    ? mappingReducerElement.then(curry2(reducer, result, __))
+    : reducer(result, mappingReducerElement)
 }
 
 // argument resolver for curry3
@@ -96,15 +96,15 @@ const always = value => function getter() { return value }
 
 const reducerFilter = (
   reducer, predicate,
-) => function filteringReducer(result, item) {
-  const shouldInclude = predicate(item)
+) => function filteringReducer(result, element) {
+  const shouldInclude = predicate(element)
   return isPromise(shouldInclude)
     ? shouldInclude.then(curry3(
       thunkConditional,
       __,
-      thunkify2(reducer, result, item),
+      thunkify2(reducer, result, element),
       always(result)))
-    : shouldInclude ? reducer(result, item) : result
+    : shouldInclude ? reducer(result, element) : result
 }
 
 const isArray = Array.isArray
@@ -398,11 +398,11 @@ const mapReduce = function (map, reducer, result) {
 
 const reducerConcat = (
   reducerA, reducerB,
-) => function pipedReducer(result, item) {
-  const intermediate = reducerA(result, item)
+) => function pipedReducer(result, element) {
+  const intermediate = reducerA(result, element)
   return isPromise(intermediate)
-    ? intermediate.then(curry2(reducerB, __, item))
-    : reducerB(intermediate, item)
+    ? intermediate.then(curry2(reducerB, __, element))
+    : reducerB(intermediate, element)
 }
 
 const genericReduce = function (collection, reducer, result) {
@@ -454,32 +454,32 @@ const reducerFlatMap = (
 
 const reducerForEach = (
   reducer, callback,
-) => function executingForEach(result, item) {
-  const operation = callback(item)
+) => function executingForEach(result, element) {
+  const operation = callback(element)
   if (isPromise(operation)) {
-    return operation.then(thunkify2(reducer, result, item))
+    return operation.then(thunkify2(reducer, result, element))
   }
-  return reducer(result, item)
+  return reducer(result, element)
 }
 
 const _reducerTryCatchErrorHandler = function (
-  catcher, reducer, error, accum, item,
+  catcher, reducer, error, accum, element,
 ) {
-  const c = catcher(error, item)
+  const c = catcher(error, element)
   return isPromise(c) ? c.then(curry2(reducer, accum, __)) : reducer(accum, c)
 }
 
 const reducerTryCatch = function (reducer, transducerTryer, catcher) {
   const finalReducer = transducerTryer(reducer)
-  return function errorHandlingReducer(accum, item) {
+  return function errorHandlingReducer(accum, element) {
     try {
-      const ret = finalReducer(accum, item)
+      const ret = finalReducer(accum, element)
       return isPromise(ret) ? ret.catch(curry5(
-        _reducerTryCatchErrorHandler, catcher, reducer, __, accum, item,
+        _reducerTryCatchErrorHandler, catcher, reducer, __, accum, element,
       )) : ret
     } catch (error) {
       return _reducerTryCatchErrorHandler(
-        catcher, reducer, error, accum, item,
+        catcher, reducer, error, accum, element,
       )
     }
   }

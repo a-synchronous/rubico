@@ -1,5 +1,5 @@
 /**
- * rubico v2.7.3
+ * rubico v2.7.4
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2025 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -91,8 +91,8 @@ const arrayEvery = function (array, predicate) {
 
 const iteratorEvery = function (iterator, predicate) {
   const promises = []
-  for (const item of iterator) {
-    const predication = predicate(item)
+  for (const element of iterator) {
+    const predication = predicate(element)
     if (isPromise(predication)) {
       promises.push(predication)
     } else if (!predication) {
@@ -144,13 +144,13 @@ const asyncIteratorEvery = async function (
 
 const objectValues = Object.values
 
-const reducerAllSync = (predicate, result, item) => result ? predicate(item) : false
+const reducerAllSync = (predicate, result, element) => result ? predicate(element) : false
 
-const reducerEvery = predicate => function allReducer(result, item) {
+const reducerEvery = predicate => function allReducer(result, element) {
   return result === false ? false
     : isPromise(result) ? result.then(
-      curry3(reducerAllSync, predicate, __, item))
-    : result ? predicate(item) : false
+      curry3(reducerAllSync, predicate, __, element))
+    : result ? predicate(element) : false
 }
 
 const symbolIterator = Symbol.iterator

@@ -1,5 +1,5 @@
 /**
- * rubico v2.7.3
+ * rubico v2.7.4
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2025 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -81,11 +81,11 @@ const functionObjectAll = function (funcs, args) {
   const result = {}, promises = []
   for (const key in funcs) {
     const f = funcs[key]
-    const resultItem = typeof f == 'function' ? f(...args) : f
-    if (isPromise(resultItem)) {
-      promises.push(resultItem.then(curry3(objectSet, result, key, __)))
+    const resultElement = typeof f == 'function' ? f(...args) : f
+    if (isPromise(resultElement)) {
+      promises.push(resultElement.then(curry3(objectSet, result, key, __)))
     } else {
-      result[key] = resultItem
+      result[key] = resultElement
     }
   }
   return promises.length == 0 ? result : promiseAll(promises).then(always(result))

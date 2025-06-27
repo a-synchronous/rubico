@@ -1,5 +1,5 @@
 /**
- * rubico v2.7.3
+ * rubico v2.7.4
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2025 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -7,59 +7,91 @@
 
 const isArray = Array.isArray
 
-const arrayDefaultsDeepFromArray = function (array, defaultArray) {
-  const defaultArrayLength = defaultArray.length,
-    result = array.slice()
+const __ = Symbol.for('placeholder')
+
+// argument resolver for curry2
+const curry2ResolveArg0 = (
+  baseFunc, arg1,
+) => function arg0Resolver(arg0) {
+  return baseFunc(arg0, arg1)
+}
+
+// argument resolver for curry2
+const curry2ResolveArg1 = (
+  baseFunc, arg0,
+) => function arg1Resolver(arg1) {
+  return baseFunc(arg0, arg1)
+}
+
+const curry2 = function (baseFunc, arg0, arg1) {
+  return arg0 == __
+    ? curry2ResolveArg0(baseFunc, arg1)
+    : curry2ResolveArg1(baseFunc, arg0)
+}
+
+function arrayDefaultsDeepFromArray(data, defaults) {
+  const defaultArrayLength = defaults.length,
+    result = data.slice()
   let index = -1
   while (++index < defaultArrayLength) {
-    const item = array[index],
-      defaultItem = defaultArray[index]
-    if (isArray(item) && isArray(defaultItem)) {
-      result[index] = arrayDefaultsDeepFromArray(item, defaultItem)
-    } else if (item == null) {
-      result[index] = defaultItem
-    } else if (defaultItem == null) {
-      result[index] = item
-    } else if (item.constructor == Object && defaultItem.constructor == Object) {
-      result[index] = objectDefaultsDeepFromObject(item, defaultItem)
+    const element = data[index],
+      defaultElement = defaults[index]
+    if (isArray(element) && isArray(defaultElement)) {
+      result[index] = arrayDefaultsDeepFromArray(element, defaultElement)
+    } else if (element == null) {
+      result[index] = defaultElement
+    } else if (defaultElement == null) {
+      result[index] = element
+    } else if (element.constructor == Object && defaultElement.constructor == Object) {
+      result[index] = objectDefaultsDeepFromObject(element, defaultElement)
     } else {
-      result[index] = item
+      result[index] = element
     }
   }
   return result
 }
 
-const objectDefaultsDeepFromObject = function (object, defaultObject) {
-  const result = { ...object }
-  for (const key in defaultObject) {
-    const item = object[key],
-      defaultItem = defaultObject[key]
-    if (isArray(item) && isArray(defaultItem)) {
-      result[key] = arrayDefaultsDeepFromArray(item, defaultItem)
-    } else if (item == null) {
-      result[key] = defaultItem
-    } else if (defaultItem == null) {
-      result[key] = item
-    } else if (item.constructor == Object && defaultItem.constructor == Object) {
-      result[key] = objectDefaultsDeepFromObject(item, defaultItem)
+function objectDefaultsDeepFromObject(data, defaults) {
+  const result = { ...data }
+  for (const key in defaults) {
+    const element = data[key],
+      defaultElement = defaults[key]
+    if (isArray(element) && isArray(defaultElement)) {
+      result[key] = arrayDefaultsDeepFromArray(element, defaultElement)
+    } else if (element == null) {
+      result[key] = defaultElement
+    } else if (defaultElement == null) {
+      result[key] = element
+    } else if (element.constructor == Object && defaultElement.constructor == Object) {
+      result[key] = objectDefaultsDeepFromObject(element, defaultElement)
     } else {
-      result[key] = item
+      result[key] = element
     }
   }
   return result
 }
 
-const defaultsDeep = defaultCollection => function defaulting(value) {
-  if (isArray(value) && isArray(defaultCollection)) {
-    return arrayDefaultsDeepFromArray(value, defaultCollection)
+function _defaultsDeep(data, defaults) {
+  if (isArray(data) && isArray(defaults)) {
+    return arrayDefaultsDeepFromArray(data, defaults)
   }
-  if (value == null || defaultCollection == null) {
-    return value
+  if (data == null || defaults == null) {
+    return data
   }
-  if (value.constructor == Object && defaultCollection.constructor == Object) {
-    return objectDefaultsDeepFromObject(value, defaultCollection)
+  if (data.constructor == Object && defaults.constructor == Object) {
+    return objectDefaultsDeepFromObject(data, defaults)
   }
-  return value
+  return data
+}
+
+function defaultsDeep(...args) {
+  if (args.length == 1) {
+    return curry2(_defaultsDeep, __, args[0])
+  }
+  if (args.length == 2) {
+    return _defaultsDeep(...args)
+  }
+  throw new TypeError('Invalid number of arguments')
 }
 
 export default defaultsDeep

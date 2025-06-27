@@ -1,5 +1,5 @@
 /**
- * rubico v2.7.3
+ * rubico v2.7.4
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2025 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -123,8 +123,8 @@ const asyncIteratorSome = async function (
 }
 
 const iteratorSome = function (iterator, predicate) {
-  for (const item of iterator) {
-    const predication = predicate(item)
+  for (const element of iterator) {
+    const predication = predicate(element)
     if (isPromise(predication)) {
       return asyncIteratorSome(
         iterator, predicate, new Set([SelfReferencingPromise(predication)]))
@@ -136,14 +136,14 @@ const iteratorSome = function (iterator, predicate) {
   return false
 }
 
-const reducerAnySync = predicate => function anyReducer(result, item) {
-  return result ? true : predicate(item)
+const reducerAnySync = predicate => function anyReducer(result, element) {
+  return result ? true : predicate(element)
 }
 
-const reducerSome = predicate => function anyReducer(result, item) {
+const reducerSome = predicate => function anyReducer(result, element) {
   return result === true ? result
-    : isPromise(result) ? result.then(curry2(reducerAnySync(predicate), __, item))
-    : result ? true : predicate(item)
+    : isPromise(result) ? result.then(curry2(reducerAnySync(predicate), __, element))
+    : result ? true : predicate(element)
 }
 
 const symbolIterator = Symbol.iterator
