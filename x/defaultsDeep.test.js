@@ -2,6 +2,29 @@ const assert = require('assert')
 const defaultsDeep = require('./defaultsDeep')
 
 describe('defaultsDeep', () => {
+  it('eager API', async () => {
+    assert.deepEqual(
+      defaultsDeep([3], [1, 2, 3]),
+      [3, 2, 3],
+    )
+    assert.deepEqual(
+      defaultsDeep([[]], [[1], 2, 3]),
+      [[1], 2, 3],
+    )
+  })
+
+  it('Invalid number of arguments', async () => {
+    assert.throws(
+      () => defaultsDeep(),
+      new TypeError('Invalid number of arguments'),
+    )
+
+    assert.throws(
+      () => defaultsDeep(1, 2, 3),
+      new TypeError('Invalid number of arguments'),
+    )
+  })
+
   it('default array', async () => {
     assert.deepEqual(
       defaultsDeep([1, 2, 3])([3]),

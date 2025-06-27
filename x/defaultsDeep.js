@@ -1,23 +1,25 @@
 const isArray = require('../_internal/isArray')
+const curry2 = require('../_internal/curry2')
+const __ = require('../_internal/placeholder')
 
 /**
  * @name arrayDefaultsDeepFromArray
  *
  * @synopsis
  * ```coffeescript [specscript]
- * var array Array<Array|Object|any>,
- *   defaultArray Array<Array|Object|any>,
- *
- * arrayDefaultsDeepFromArray(array, defaultArray) -> Array
+ * arrayDefaultsDeepFromArray(
+ *   data Array<Array|Object|any>,
+ *   defaults Array<Array|Object|any>
+ * ) -> Object
  * ```
  */
-const arrayDefaultsDeepFromArray = function (array, defaultArray) {
-  const defaultArrayLength = defaultArray.length,
-    result = array.slice()
+function arrayDefaultsDeepFromArray(data, defaults) {
+  const defaultArrayLength = defaults.length,
+    result = data.slice()
   let index = -1
   while (++index < defaultArrayLength) {
-    const element = array[index],
-      defaultElement = defaultArray[index]
+    const element = data[index],
+      defaultElement = defaults[index]
     if (isArray(element) && isArray(defaultElement)) {
       result[index] = arrayDefaultsDeepFromArray(element, defaultElement)
     } else if (element == null) {
@@ -38,17 +40,17 @@ const arrayDefaultsDeepFromArray = function (array, defaultArray) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * var object Object<Array|Object|any>,
- *   defaultObject Object<Array|Object|any>
- *
- * objectDefaultsDeepFromObject(object, defaultObject) -> Object
+ * objectDefaultsDeepFromObject(
+ *   data Object<Array|Object|any>,
+ *   defaults Object<Array|Object|any>
+ * ) -> Object
  * ```
  */
-const objectDefaultsDeepFromObject = function (object, defaultObject) {
-  const result = { ...object }
-  for (const key in defaultObject) {
-    const element = object[key],
-      defaultElement = defaultObject[key]
+function objectDefaultsDeepFromObject(data, defaults) {
+  const result = { ...data }
+  for (const key in defaults) {
+    const element = data[key],
+      defaultElement = defaults[key]
     if (isArray(element) && isArray(defaultElement)) {
       result[key] = arrayDefaultsDeepFromArray(element, defaultElement)
     } else if (element == null) {
@@ -65,35 +67,62 @@ const objectDefaultsDeepFromObject = function (object, defaultObject) {
 }
 
 /**
+ * @name _defaultsDeep
+ *
+ * @synopsis
+ * ```coffeescript [specscript]
+ * _defaultsDeep(
+ *   data Object<Array|Object|any>,
+ *   defaults (Object|Array)<Array|Object|any>
+ * ) -> result Object
+ * ```
+ */
+function _defaultsDeep(data, defaults) {
+  if (isArray(data) && isArray(defaults)) {
+    return arrayDefaultsDeepFromArray(data, defaults)
+  }
+  if (data == null || defaults == null) {
+    return data
+  }
+  if (data.constructor == Object && defaults.constructor == Object) {
+    return objectDefaultsDeepFromObject(data, defaults)
+  }
+  return data
+}
+
+/**
  * @name defaultsDeep
  *
  * @synopsis
  * ```coffeescript [specscript]
- * var defaultCollection Array|Object,
- *   value Array|Object
+ * data (Object|Array)<Array|Object|any>
+ * defaults (Object|Array)<Array|Object|any>
  *
- * defaultsDeep(defaultCollection)(value) -> Array|Object
+ * defaultsDeep(data, defaults) -> result Object
+ * defaultsDeep(defaults)(data) -> result Object
  * ```
  *
  * @description
- * Deeply assign default values to an array or object by an array or object of possibly nested default values.
+ * Deeply assign default values to an object or array `data` using an array or object of default values `defaults`. The keys or indices of each element of `defaults` are used to extend `data` where there is no existing value. Both `data` and `defaults` may have nested arrays or objects.
  *
  * ```javascript [playground]
  * import defaultsDeep from 'https://unpkg.com/rubico/dist/x/defaultsDeep.es.js'
  *
- * const defaultUser = defaultsDeep({
+ * const user = {
+ *   name: 'John',
+ *   images: [{ url: 'https://placehold.co/600x400' }],
+ * }
+ *
+ * const userWithDefaults = defaultsDeep(user, {
  *   name: 'placeholder',
  *   images: [
- *     { url: 'https://via.placeholder.com/150' },
- *     { url: 'https://via.placeholder.com/150' },
- *     { url: 'https://via.placeholder.com/150' },
+ *     { url: 'https://placehold.co/150' },
+ *     { url: 'https://placehold.co/150' },
+ *     { url: 'https://placehold.co/150' },
  *   ],
  * })
  *
- * console.log(defaultUser({
- *   name: 'John',
- *   images: [{ url: 'https://via.placeholder.com/150/0000FF/808080%20?Text=Digital.com' }],
- * }))
+ * console.log(userWithDefaults)
  * // {
  * //   name: 'John',
  * //   images: [
@@ -104,22 +133,30 @@ const objectDefaultsDeepFromObject = function (object, defaultObject) {
  * // }
  * ```
  *
+ * The `defaults` array or object may be provided to `defaultsDeep` without `data` to create a lazy version of `defaultsDeep` that accepts `data` as a single argument. This "lazy" API can be used for function pipelines and function compositions.
+ *
+ * ```javascript [playground]
+ * pipe({ a: 1 }, [
+ *   defaultsDeep({ b: 2, c: 3, g: [1, 2, 3] }),
+ *   console.log, // { a: 1, b: 2, c: 3, g: [1, 2, 3] }
+ * ])
+ * ```
+ *
  * See also:
+ *  * [pipe](/docs/pipe)
+ *  * [compose](/docs/compose)
  *  * [callProp](/docs/callProp)
  *  * [differenceWith](/docs/differenceWith)
  *
  */
-const defaultsDeep = defaultCollection => function defaulting(value) {
-  if (isArray(value) && isArray(defaultCollection)) {
-    return arrayDefaultsDeepFromArray(value, defaultCollection)
+function defaultsDeep(...args) {
+  if (args.length == 1) {
+    return curry2(_defaultsDeep, __, args[0])
   }
-  if (value == null || defaultCollection == null) {
-    return value
+  if (args.length == 2) {
+    return _defaultsDeep(...args)
   }
-  if (value.constructor == Object && defaultCollection.constructor == Object) {
-    return objectDefaultsDeepFromObject(value, defaultCollection)
-  }
-  return value
+  throw new TypeError('Invalid number of arguments')
 }
 
 module.exports = defaultsDeep
