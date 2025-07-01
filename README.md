@@ -25,7 +25,7 @@ pipe(numbers, [
 ])
 ```
 
-# Installation
+## Installation
 [Core build](https://unpkg.com/rubico/index.js) ([~7.7 kB minified and gzipped](https://unpkg.com/rubico/dist/rubico.min.js))
 
 [Transducer module](https://unpkg.com/rubico/dist/Transducer.js) ([~1.5kb minified and gzipped](https://unpkg.com/rubico/dist/Transducer.min.js))
@@ -74,7 +74,7 @@ import `rubico` in the browser.
 <script src="https://unpkg.com/rubico/dist/Transducer.min.js"></script>
 ```
 
-# Motivation
+## Motivation
 
 A note from the author
 > At a certain point in my career, I grew frustrated with the entanglement of my own code. While looking for something better, I found functional programming. I was excited by the idea of functional composition, but disillusioned by the redundancy of effectful types. I started rubico to capitalize on the prior while rebuking the latter. Many iterations since then, the library has grown into something I personally enjoy using, and continue to use to this day.
@@ -86,7 +86,7 @@ rubico is founded on the following principles:
 
 When you import this library, you obtain the freedom that comes from having those three points fulfilled. The result is something you may enjoy.
 
-# Introduction
+## Introduction
 
 rubico is a library for [A]synchronous Functional Programming in JavaScript. The library supports a simple and composable functional style in asynchronous environments.
 
@@ -236,32 +236,32 @@ For advanced asynchronous use cases, some of the rubico operators have property 
 
 For more functions beyond the core operators, please visit `rubico/x`. You can find the full documentation at [rubico.land/docs](https://rubico.land/docs).
 
-# Benchmarks
+## Benchmarks
 Please find the published benchmark output inside the [benchmark-output](https://github.com/a-synchronous/rubico/tree/master/benchmark-output) folder. You can run the benchmarks on your own system with the following command:
 ```
 npm run bench
 ```
 
-# Contributing
+## Contributing
 Your feedback and contributions are welcome. If you have a suggestion, please raise an issue. Prior to that, please search through the issues first in case your suggestion has been made already. If you decide to work on an issue, please create a pull request.
 
 Pull requests should provide some basic context and link the relevant issue. Here is an [example pull request](https://github.com/a-synchronous/rubico/pull/12). If you are interested in contributing, the [help wanted](https://github.com/a-synchronous/rubico/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) tag is a good place to start.
 
 For more information please see [CONTRIBUTING.md](/CONTRIBUTING.md)
 
-# License
+## License
 rubico is [MIT Licensed](https://github.com/a-synchronous/rubico/blob/master/LICENSE).
 
-# Support
+## Support
  * minimum Node.js version: 16
  * minimum Chrome version: 63
  * minimum Firefox version: 57
  * minimum Edge version: 79
  * minimum Safari version: 11.1
 
-# Awesome Resources
+## Awesome Resources
 [rubico simplifies asynchronous code](https://dev.to/richytong/rubico-a-synchrnous-functional-syntax-motivation-20hf)
 <br>
 
-# Blog
+## Blog
 Check out the rubico blog at [https://rubico.land/blog](https://rubico.land/blog)
