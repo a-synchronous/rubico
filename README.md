@@ -7,7 +7,7 @@
 [![npm version](https://img.shields.io/npm/v/rubico.svg?style=flat)](https://www.npmjs.com/package/rubico)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-### [a]synchronous functional programming
+## [a]synchronous functional programming
 
 ```javascript [playground]
 const { pipe, map, filter } = rubico
