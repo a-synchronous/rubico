@@ -30,7 +30,7 @@ pipe(numbers, [
 
 [Transducer module](https://unpkg.com/rubico/dist/Transducer.js) ([~1.5kb minified and gzipped](https://unpkg.com/rubico/dist/Transducer.min.js))
 
-with `npm`
+with [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
 ```bash
 npm i rubico
 ```
