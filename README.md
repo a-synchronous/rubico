@@ -33,7 +33,7 @@ with [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
 npm i rubico
 ```
 
-require `rubico` in CommonJS.
+require `rubico` in [CommonJS](https://nodejs.org/docs/latest/api/modules.html#modules-commonjs-modules).
 ```javascript
 // import rubico core globally
 require('rubico/global')
