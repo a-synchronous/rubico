@@ -28,12 +28,12 @@ pipe(numbers, [
 ## Installation
 [Core build](https://unpkg.com/rubico/index.js) ([~7.7 kB minified and gzipped](https://unpkg.com/rubico/dist/rubico.min.js)) [Transducer module](https://unpkg.com/rubico/dist/Transducer.js) ([~1.5kb minified and gzipped](https://unpkg.com/rubico/dist/Transducer.min.js))
 
-with [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
+with [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm):
 ```bash
 npm i rubico
 ```
 
-require `rubico` in [CommonJS](https://nodejs.org/docs/latest/api/modules.html#modules-commonjs-modules).
+require `rubico` in [CommonJS](https://nodejs.org/docs/latest/api/modules.html#modules-commonjs-modules):
 ```javascript
 // import rubico core globally
 require('rubico/global')
@@ -54,7 +54,7 @@ const defaultsDeep = require('rubico/x/defaultsDeep')
 const Transducer = require('rubico/Transducer')
 ```
 
-import `rubico` in the browser.
+import `rubico` in the browser:
 ```html [htmlmixed]
 <!-- import rubico core globally -->
 <script src="https://unpkg.com/rubico/dist/global.min.js"></script>
