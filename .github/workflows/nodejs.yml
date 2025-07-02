@@ -24,4 +24,9 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: npm i && npx nyc --reporter=lcovonly npm test && npx codecov --token=8e8f60d5-69ac-4012-af67-66ad00f1a73c --file=coverage/lcov.info
+    - run: npm i && npx nyc --reporter=lcovonly npm test && npx codecov --file=coverage/lcov.info
+
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
