@@ -16,7 +16,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x, 20.x, 22.x]
+        node-version: [16.x, 18.x, 20.x, 22.x, 23.x]
 
     steps:
     - uses: actions/checkout@v2
@@ -24,9 +24,5 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: npm i && npx nyc --reporter=lcov npm test && npx nyc report --reporter=text-lcov > coverage.lcov && npx codecov
+    - run: npm i && npx nyc --reporter=lcovonly npm test && npx codecov --token=8e8f60d5-69ac-4012-af67-66ad00f1a73c --file=coverage/lcov.info
 
-    - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v5
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
