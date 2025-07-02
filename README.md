@@ -33,6 +33,7 @@ with [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm):
 npm i rubico
 ```
 
+
 require `rubico` in [CommonJS](https://nodejs.org/docs/latest/api/modules.html#modules-commonjs-modules):
 ```javascript
 // import rubico core globally
@@ -53,6 +54,7 @@ const defaultsDeep = require('rubico/x/defaultsDeep')
 // import rubico's Transducer module
 const Transducer = require('rubico/Transducer')
 ```
+
 
 import `rubico` in the browser:
 ```html [htmlmixed]
