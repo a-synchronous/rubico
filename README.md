@@ -258,10 +258,3 @@ rubico is [MIT Licensed](https://github.com/a-synchronous/rubico/blob/master/LIC
  * minimum Firefox version: 57
  * minimum Edge version: 79
  * minimum Safari version: 11.1
-
-## Awesome Resources
-[rubico simplifies asynchronous code](https://dev.to/richytong/rubico-a-synchrnous-functional-syntax-motivation-20hf)
-<br>
-
-## Blog
-Check out the rubico blog at [https://rubico.land/blog](https://rubico.land/blog)
