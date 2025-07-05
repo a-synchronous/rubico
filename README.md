@@ -260,4 +260,4 @@ rubico is [MIT Licensed](https://github.com/a-synchronous/rubico/blob/master/LIC
  * minimum Safari version: 11.1
 
 ## Blog
-Learn more about rubico and [A]synchronous Functional Programming at [https://rubico.land/blog](https://rubico.land/blog)
+Learn more about rubico and [A]synchronous Functional Programming at [https://rubico.land/blog](https://rubico.land/blog).
