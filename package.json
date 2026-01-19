@@ -76,15 +76,10 @@
     "operator"
   ],
   "devDependencies": {
-    "async": "latest",
-    "bluebird": "latest",
     "codecov": "^3.7.1",
-    "fantasy-land": "latest",
-    "lodash": "latest",
     "mocha": "^11.1.0",
     "node-fetch": "^2.6.1",
     "nyc": "^15.1.0",
-    "ramda": "latest",
     "terser": "^5.39.0",
     "thunk-test": "latest",
     "typescript": "latest"
