@@ -111,7 +111,7 @@ const _flatMap = function (value, flatMapper) {
  * // [1, 1, 2, 3, 3, 5, 5, 8, 7, 7]
  * ```
  *
- * Values from async generators are muxed. Muxing, or asynchronously "mixing", is the process of combining multiple asynchronous sources into one source, with order determined by the asynchronous resolution of the individual elements.
+ * Values from async generators are muxed. Muxing, or asynchronously "mixing", is the process of combining multiple asynchronous sources into one source, with order determined by the asynchronous resolution of the individual promise elements.
  *
  * ```javascript [playground]
  * const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
