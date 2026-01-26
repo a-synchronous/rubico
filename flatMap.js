@@ -79,13 +79,13 @@ const _flatMap = function (value, flatMapper) {
  * ```
  *
  * @description
- * Applies a flatMapper function to each element of a monad, returning a monad of the same type.
+ * Applies a flatMapper function to each element of a relative monad, returning a relative monad of the same type.
  *
- * A flatMapping operation iterates through each element of a monad and applies the flatMapper function to each element, flattening the result of the execution into the returned monad.
+ * A flatMapping operation iterates through each element of a relative monad and applies the flatMapper function to each element, flattening the result of the execution into the returned relative monad.
  *
- * If the flatMapper is asynchronous, it is executed concurrently. The execution result may be asynchronously iterable, in which case it is muxed into the returned monad.
+ * If the flatMapper is asynchronous, it is executed concurrently. The execution result may be asynchronously iterable, in which case it is muxed into the returned relative monad.
  *
- * The following data types are considered to be monads, all are flattenable into other monads:
+ * The following data types are considered to be relative monads, all are flattenable into other relative monads:
  *  * `array`
  *  * `string`
  *  * `set`
