@@ -1,20 +1,9 @@
-const Bluebird = require('bluebird')
-const _ = require('lodash')
-const _fp = require('lodash/fp')
-const R = require('ramda')
 const TimeInLoopSuite = require('../../_internal/TimeInLoopSuite')
 
-const suite = new TimeInLoopSuite()
-
-const isPromise = value => value != null && typeof value.then == 'function'
+const suite = new TimeInLoopSuite({ loopCount: 1e5 })
 
 suite.add('vanilla Promise', async () => {
   const p = Promise.resolve('hello')
-  await p
-})
-
-suite.add('Bluebird Promise', async () => {
-  const p = Bluebird.resolve('hello')
   await p
 })
 

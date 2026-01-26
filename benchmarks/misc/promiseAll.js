@@ -1,4 +1,3 @@
-const Bluebird = require('bluebird')
 const TimeInLoopSuite = require('../../_internal/TimeInLoopSuite')
 const promiseAll = require('../../_internal/promiseAll')
 
@@ -14,14 +13,6 @@ suite.add('rubico promiseAll', async () => {
 
 suite.add('vanilla Promise.all', async () => {
   await Promise.all([
-    Promise.resolve(1),
-    Promise.resolve(1),
-    Promise.resolve(1),
-  ])
-})
-
-suite.add('Bluebird Promise.all', async () => {
-  await Bluebird.all([
     Promise.resolve(1),
     Promise.resolve(1),
     Promise.resolve(1),

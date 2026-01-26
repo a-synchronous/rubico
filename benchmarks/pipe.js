@@ -1,10 +1,6 @@
-const _fp = require('lodash/fp')
-const R = require('ramda')
 const TimeInLoopSuite = require('../_internal/TimeInLoopSuite')
 const pipe = require('../pipe')
 
-const lodashFpPipe = _fp.pipe
-const ramdaPipe = R.pipe
 const suite = new TimeInLoopSuite()
 
 suite.add('rubico pipe', () => {
@@ -17,22 +13,6 @@ suite.add('rubico pipe', () => {
 
 suite.add('rubico pipe lazy', () => {
   pipe([
-    number => number + 1,
-    number => number + 2,
-    number => number + 3,
-  ])(1)
-})
-
-suite.add('ramda pipe', () => {
-  ramdaPipe(
-    number => number + 1,
-    number => number + 2,
-    number => number + 3,
-  )(1)
-})
-
-suite.add('lodash/fp pipe', () => {
-  lodashFpPipe([
     number => number + 1,
     number => number + 2,
     number => number + 3,

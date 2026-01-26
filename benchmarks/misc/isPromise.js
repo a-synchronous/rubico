@@ -1,14 +1,6 @@
-const Bluebird = require('bluebird')
-const _ = require('lodash')
-const _fp = require('lodash/fp')
-const R = require('ramda')
 const TimeInLoopSuite = require('../../_internal/TimeInLoopSuite')
 const isPromise = require('../../_internal/isPromise')
 const map = require('../map')
-
-const lodashMap = _.map
-const lodashFpMap = _fp.map
-const ramdaMap = R.map
 
 const suite = new TimeInLoopSuite({ loopCount: 1e5 })
 
