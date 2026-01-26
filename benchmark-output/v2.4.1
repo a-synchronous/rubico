@@ -1,0 +1,153 @@
+OS 6.12.1-arch1-1
+NodeJS v20.17.0
+rubico v2.4.1
+ramda v0.30.1
+lodash/fp v4.17.21
+async v3.2.6
+
+benchmarks/all.async.js
+rubico async array all: 1e+5: 107.717ms
+rubico async array all lazy: 1e+5: 213.554ms
+rubico async object all: 1e+5: 199.986ms
+rubico async object all lazy: 1e+5: 213.833ms
+
+benchmarks/all.js
+rubico array all: 1e+6: 174.864ms
+rubico array all lazy: 1e+6: 1.095s
+rubico object all: 1e+6: 285.110ms
+rubico object all lazy: 1e+6: 423.601ms
+
+benchmarks/always.js
+rubico always: 1e+7: 9.822ms
+
+benchmarks/and.async.js
+rubico and: 1e+5: 87.062ms
+rubico and lazy: 1e+5: 85.954ms
+
+benchmarks/and.js
+rubico and: 1e+6: 133.998ms
+rubico and lazy: 1e+6: 170.040ms
+
+benchmarks/assign.async.js
+rubico assign: 1e+5: 241.144ms
+rubico assign lazy: 1e+5: 256.553ms
+
+benchmarks/assign.js
+rubico assign: 1e+6: 343.022ms
+rubico assign lazy: 1e+6: 389.465ms
+
+benchmarks/curry.js
+rubico curry: 1e+6: 133.730ms
+rubico curry lazy: 1e+6: 214.242ms
+lodash/fp curry: 1e+6: 4.456s
+ramda curry: 1e+6: 515.816ms
+
+benchmarks/eq.async.js
+rubico eq Promises: 1e+5: 96.521ms
+rubico eq left value right resolver: 1e+5: 103.023ms
+rubico eq left resolver right resolver: 1e+5: 121.219ms
+
+benchmarks/eq.js
+rubico eq primitive: 1e+6: 31.083ms
+rubico eq left value right resolver: 1e+6: 86.553ms
+rubico eq left resolver right resolver: 1e+6: 171.342ms
+
+benchmarks/every.async.js
+rubico every: 1e+5: 116.662ms
+rubico every lazy: 1e+5: 111.306ms
+
+benchmarks/every.js
+rubico every: 1e+6: 9.457ms
+rubico every lazy: 1e+6: 76.068ms
+
+benchmarks/filter.async.js
+rubico filter: 1e+5: 211.213ms
+rubico filter lazy: 1e+5: 223.322ms
+async filter: 1e+5: 189.938ms
+Bluebird filter: 1e+5: 1.048s
+
+benchmarks/filter.js
+rubico filter: 1e+6: 44.412ms
+rubico filter lazy: 1e+6: 128.635ms
+lodash filter: 1e+6: 125.828ms
+lodash/fp filter: 1e+6: 3.589s
+ramda filter: 1e+6: 296.769ms
+
+benchmarks/flatMap.async.js
+rubico flatMap: 1e+5: 135.332ms
+rubico flatMap lazy: 1e+5: 142.555ms
+async flatMap: 1e+5: 356.269ms
+
+benchmarks/flatMap.js
+rubico flatMap: 1e+6: 166.874ms
+rubico flatMap lazy: 1e+6: 255.971ms
+lodash flatMap: 1e+6: 225.337ms
+lodash/fp flatMap: 1e+6: 3.103s
+ramda flatMap: 1e+6: 1.351s
+
+benchmarks/forEach.js
+rubico forEach: 1e+6: 18.062ms
+rubico forEach.series: 1e+6: 23.540ms
+rubico forEach lazy: 1e+6: 97.510ms
+ramda forEach: 1e+6: 24.805ms
+lodash/fp forEach: 1e+6: 254.426ms
+
+benchmarks/get.async.js
+rubico get: 1e+5: 28.528ms
+rubico get lazy: 1e+5: 34.307ms
+
+benchmarks/get.js
+rubico get: 1e+6: 22.087ms
+rubico get lazy: 1e+6: 45.909ms
+lodash get: 1e+6: 44.661ms
+lodash/fp get: 1e+6: 3.173s
+ramda get: 1e+6: 247.661ms
+
+benchmarks/gt.async.js
+rubico gt Promises: 1e+5: 180.648ms
+rubico gt left value right resolver: 1e+5: 117.400ms
+rubico gt left resolver right resolver: 1e+5: 104.376ms
+
+benchmarks/gt.js
+rubico gt primitive: 1e+6: 30.178ms
+rubico gt left value right resolver: 1e+6: 82.818ms
+rubico gt left resolver right resolver: 1e+6: 141.929ms
+
+benchmarks/gte.async.js
+rubico gte Promises: 1e+5: 96.331ms
+rubico gte left value right resolver: 1e+5: 103.192ms
+rubico gte left resolver right resolver: 1e+5: 102.490ms
+
+benchmarks/gte.js
+rubico gte primitive: 1e+6: 37.086ms
+rubico gte left value right resolver: 1e+6: 83.787ms
+rubico gte left resolver right resolver: 1e+6: 143.459ms
+
+benchmarks/lt.async.js
+rubico lt Promises: 1e+5: 96.265ms
+rubico lt left value right resolver: 1e+5: 102.731ms
+rubico lt left resolver right resolver: 1e+5: 103.424ms
+
+benchmarks/lt.js
+rubico lt primitive: 1e+6: 29.035ms
+rubico lt left value right resolver: 1e+6: 83.642ms
+rubico lt left resolver right resolver: 1e+6: 144.641ms
+
+benchmarks/lte.async.js
+rubico lte Promises: 1e+5: 96.244ms
+rubico lte left value right resolver: 1e+5: 102.237ms
+rubico lte left resolver right resolver: 1e+5: 103.358ms
+
+benchmarks/lte.js
+rubico lte primitive: 1e+6: 29.772ms
+rubico lte left value right resolver: 1e+6: 81.996ms
+rubico lte left resolver right resolver: 1e+6: 142.350ms
+
+benchmarks/map.async.js
+rubico map: 1e+5: 100.490ms
+rubico map lazy: 1e+5: 109.648ms
+async map: 1e+5: 169.418ms
+bluebird map: 1e+5: 875.709ms
+vanilla map and Promise.all: 1e+5: 97.990ms
+
+benchmarks/map.js

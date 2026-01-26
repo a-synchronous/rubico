@@ -1,0 +1,73 @@
+#!/usr/bin/env node
+
+const fs = require('fs')
+const os = require('os')
+const { fork, spawn } = require('child_process')
+const File = require('./_internal/File')
+const findAllFilePaths = require('./_internal/findAllFilePaths')
+const package = require('./package.json')
+const ramdaPackage = require('./node_modules/ramda/package.json')
+const lodashPackage = require('./node_modules/lodash/package.json')
+const asyncPackage = require('./node_modules/async/package.json')
+
+// sortBenchmarkFilePaths(paths Array<string>) -> sorted Array<string>
+const sortBenchmarkFilePaths = function (paths) {
+  const miscPaths = paths.filter(p => p.includes('/misc/'))
+  const corePaths = paths.filter(p => !p.includes('/misc/'))
+  corePaths.sort()
+  miscPaths.sort()
+  return corePaths.concat(miscPaths)
+}
+
+const outputFile = new File(`${__dirname}/benchmark-output/v${package.version}`)
+
+const write = function (str) {
+  process.stdout.write(str)
+  outputFile.write(str)
+}
+
+// bench(options?: { bestOf?: number }) -> Promise<>
+const bench = async function (options = {}) {
+  const systemInfo = [
+    `OS ${os.release()}`,
+    `NodeJS ${process.version}`,
+    `rubico v${package.version}`,
+    `ramda v${ramdaPackage.version}`,
+    `lodash/fp v${lodashPackage.version}`,
+    `async v${asyncPackage.version}`,
+  ].join('\n')
+  write(systemInfo + '\n\n')
+
+  const { bestOf = 5 } = options
+  const paths = await
+    findAllFilePaths(`${__dirname}/benchmarks`)
+    .then(sortBenchmarkFilePaths)
+
+  const outputMap = new Map()
+
+  for (const path of paths) {
+    const fileName = path.replace(`${__dirname}/`, '')
+    write(fileName + '\n')
+
+    const lines = []
+    const proc = spawn('node', [path])
+    proc.stdout.on('data', data => {
+      lines.push(data.toString())
+    })
+    await new Promise(resolve => {
+      proc.on('close', () => {
+        for (const line of lines) {
+          write(line)
+        }
+        write('\n')
+        resolve()
+      })
+    })
+  }
+}
+
+if (process.argv[1] == __filename) {
+  bench()
+}
+
+module.exports = bench
