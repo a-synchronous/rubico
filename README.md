@@ -34,7 +34,7 @@ npm i rubico
 ```
 
 
-require rubico in [CommonJS](https://nodejs.org/docs/latest/api/modules.html#modules-commonjs-modules):
+require Rubico in [CommonJS](https://nodejs.org/docs/latest/api/modules.html#modules-commonjs-modules):
 ```javascript
 // import rubico core globally
 require('rubico/global')
@@ -56,7 +56,7 @@ const Transducer = require('rubico/Transducer')
 ```
 
 
-import rubico in the browser:
+import Rubico in the browser:
 ```html [htmlmixed]
 <!-- import rubico core globally -->
 <script src="https://unpkg.com/rubico/dist/global.min.js"></script>
@@ -77,9 +77,9 @@ import rubico in the browser:
 ## Motivation
 
 A note from the author
-> At a certain point in my career, I grew frustrated with the entanglement of my own code. While looking for something better, I found functional programming. I was excited by the idea of functional composition, but disillusioned by the redundancy of effectful types. I started rubico to capitalize on the prior while rebuking the latter. Many iterations since then, the library has grown into something I personally enjoy using, and continue to use to this day.
+> At a certain point in my career, I grew frustrated with the entanglement of my own code. While looking for something better, I found functional programming. I was excited by the idea of functional composition, but disillusioned by the redundancy of effectful types. I started Rubico to capitalize on the prior while rebuking the latter. Many iterations since then, the library has grown into something I personally enjoy using, and continue to use to this day.
 
-rubico is founded on the following principles:
+Rubico is founded on the following principles:
  * asynchronous code should be simple
  * functional style should not care about async
  * functional transformations should be composable, performant, and simple to express
@@ -88,7 +88,7 @@ When you import this library, you obtain the freedom that comes from having thos
 
 ## Introduction
 
-rubico is a library for [A]synchronous Functional Programming in JavaScript. The library supports a simple and composable functional style in asynchronous environments.
+Rubico is a library for [A]synchronous Functional Programming in JavaScript. The library supports a simple and composable functional style in asynchronous environments.
 
 ```javascript
 const {
@@ -135,7 +135,7 @@ pipe(helloPromise, [ // helloPromise is resolved for 'hello'
 ])
 ```
 
-All rubico operators support both eager and lazy APIs. The eager API takes all required arguments and executes at once, while the lazy API takes only the setup arguments and returns a function that executes later. This dual API supports a natural and composable code style.
+All Rubico operators support both eager and lazy APIs. The eager API takes all required arguments and executes at once, while the lazy API takes only the setup arguments and returns a function that executes later. This dual API supports a natural and composable code style.
 
 ```javascript [playground]
 const myObj = { a: 1, b: 2, c: 3 }
@@ -152,7 +152,7 @@ console.log(myDuplicatedSquaredObject)
 // { a: [1, 1], b: [4, 4], c: [9, 9] }
 ```
 
-The rubico operators are versatile and act on a wide range of vanilla JavaScript types to create declarative, extensible, and async-enabled function compositions. The same operator `map` can act on an array and also a `Map` data structure.
+The Rubico operators are versatile and act on a wide range of vanilla JavaScript types to create declarative, extensible, and async-enabled function compositions. The same operator `map` can act on an array and also a `Map` data structure.
 
 ```javascript [playground]
 const { pipe, tap, map, filter } = rubico
@@ -205,7 +205,7 @@ pipe(todoIDs, [
 ])
 ```
 
-rubico offers transducers through its `Transducer` module. You can consume these transducers with rubico's `transform` and `compose` operators. You can use `compose` to chain a left-to-right composition of transducers.
+Rubico offers transducers through its `Transducer` module. You can consume these transducers with Rubico's `transform` and `compose` operators. You can use `compose` to chain a left-to-right composition of transducers.
 
 ```javascript [playground]
 const isOdd = number => number % 2 == 1
@@ -229,7 +229,7 @@ pipe(generateNumbers(), [
 ])
 ```
 
-For advanced asynchronous use cases, some of the rubico operators have property functions that have various asynchronous behavior, e.g.
+For advanced asynchronous use cases, some of the Rubico operators have property functions that have various asynchronous behavior, e.g.
  * `map` - applies a mapper function concurrently
  * `map.pool` - applies a mapper function concurrently with a concurrency limit
  * `map.series` - applies a mapper function serially
@@ -250,7 +250,7 @@ Pull requests should provide some basic context and link the relevant issue. Her
 For more information please see [CONTRIBUTING.md](/CONTRIBUTING.md)
 
 ## License
-rubico is [MIT Licensed](https://github.com/a-synchronous/rubico/blob/master/LICENSE).
+Rubico is [MIT Licensed](https://github.com/a-synchronous/rubico/blob/master/LICENSE).
 
 ## Support
  * minimum Node.js version: 16
@@ -260,4 +260,4 @@ rubico is [MIT Licensed](https://github.com/a-synchronous/rubico/blob/master/LIC
  * minimum Safari version: 11.1
 
 ## Blog
-Learn more about rubico and [A]synchronous Functional Programming at [https://rubico.land/blog](https://rubico.land/blog).
+Learn more about Rubico and [A]synchronous Functional Programming at [https://rubico.land/blog](https://rubico.land/blog).
