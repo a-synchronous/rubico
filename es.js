@@ -2258,7 +2258,7 @@ const arrayForEach = function (array, callback) {
     promises = []
   let index = -1
   while (++index < length) {
-    const operation = callback(array[index])
+    const operation = callback(array[index], index, array)
     if (isPromise(operation)) {
       promises.push(operation)
     }
@@ -2269,7 +2269,7 @@ const arrayForEach = function (array, callback) {
 const objectForEach = function (object, callback) {
   const promises = []
   for (const key in object) {
-    const operation = callback(object[key])
+    const operation = callback(object[key], key, object)
     if (isPromise(operation)) {
       promises.push(operation)
     }
@@ -2308,7 +2308,7 @@ const arrayForEachSeries = function (array, callback) {
   const length = array.length
   let index = -1
   while (++index < length) {
-    const operation = callback(array[index])
+    const operation = callback(array[index], index, array)
     if (isPromise(operation)) {
       return operation
         .then(thunkify3(_arrayForEachSeriesAsync, array, callback, index))
@@ -2339,7 +2339,7 @@ const objectForEachSeries = function (object, callback) {
   const doneKeys = {}
   for (const key in object) {
     doneKeys[key] = true
-    const operation = callback(object[key])
+    const operation = callback(object[key], key, object)
     if (isPromise(operation)) {
       return operation
         .then(thunkify3(_objectForEachSeriesAsync, object, callback, doneKeys))
