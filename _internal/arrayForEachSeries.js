@@ -36,7 +36,7 @@ const arrayForEachSeries = function (array, callback) {
   const length = array.length
   let index = -1
   while (++index < length) {
-    const operation = callback(array[index])
+    const operation = callback(array[index], index, array)
     if (isPromise(operation)) {
       return operation
         .then(thunkify3(_arrayForEachSeriesAsync, array, callback, index))

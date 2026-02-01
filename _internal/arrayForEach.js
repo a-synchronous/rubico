@@ -24,7 +24,7 @@ const arrayForEach = function (array, callback) {
     promises = []
   let index = -1
   while (++index < length) {
-    const operation = callback(array[index])
+    const operation = callback(array[index], index, array)
     if (isPromise(operation)) {
       promises.push(operation)
     }

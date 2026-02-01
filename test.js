@@ -3343,6 +3343,33 @@ flatMap(
         })
         assert.equal(sum2, 15)
       })
+      it('provides index/key and reference to original collection to the callback function', async () => {
+        {
+          const variables = []
+          forEach([1, 2, 3, 4, 5], (value, index, array) => {
+            variables.push([value, index, array])
+          })
+          assert.deepEqual(variables, [
+            [1, 0, [1, 2, 3, 4, 5]],
+            [2, 1, [1, 2, 3, 4, 5]],
+            [3, 2, [1, 2, 3, 4, 5]],
+            [4, 3, [1, 2, 3, 4, 5]],
+            [5, 4, [1, 2, 3, 4, 5]],
+          ])
+        }
+
+        {
+          const variables = []
+          forEach({ a: 1, b: 2, c: 3 }, (value, key, object) => {
+            variables.push([value, key, object])
+          })
+          assert.deepEqual(variables, [
+            [1, 'a', { a: 1, b: 2, c: 3 }],
+            [2, 'b', { a: 1, b: 2, c: 3 }],
+            [3, 'c', { a: 1, b: 2, c: 3 }],
+          ])
+        }
+      })
       it('collection Array testing promises', async () => {
         let total = 0
         const addTotal = number => (total += number),
@@ -3493,6 +3520,18 @@ flatMap(
         result2.push(element)
       })
       assert.deepEqual(result2, [100, 80, 60, 40, 20])
+
+      const result3 = []
+      await forEach.series([1, 2, 3, 4, 5], (element, index, array) => {
+        result3.push([element, index, array])
+      })
+      assert.deepEqual(result3, [
+        [1, 0, [1, 2, 3, 4, 5]],
+        [2, 1, [1, 2, 3, 4, 5]],
+        [3, 2, [1, 2, 3, 4, 5]],
+        [4, 3, [1, 2, 3, 4, 5]],
+        [5, 4, [1, 2, 3, 4, 5]],
+      ])
     }).timeout(60000)
 
     it('objects', async () => {
@@ -3516,6 +3555,16 @@ flatMap(
         result2.push(element)
       })
       assert.deepEqual(result2, [100, 80, 60, 40, 20])
+
+      const result3 = []
+      forEach.series({ a: 1, b: 2, c: 3 }, (element, key, object) => {
+        result3.push([element, key, object])
+      })
+      assert.deepEqual(result3, [
+        [1, 'a', { a: 1, b: 2, c: 3 }],
+        [2, 'b', { a: 1, b: 2, c: 3 }],
+        [3, 'c', { a: 1, b: 2, c: 3 }],
+      ])
     }).timeout(60000)
 
     it('objects varying async', async () => {

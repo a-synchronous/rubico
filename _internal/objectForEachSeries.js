@@ -34,7 +34,7 @@ const objectForEachSeries = function (object, callback) {
   const doneKeys = {}
   for (const key in object) {
     doneKeys[key] = true
-    const operation = callback(object[key])
+    const operation = callback(object[key], key, object)
     if (isPromise(operation)) {
       return operation
         .then(thunkify3(_objectForEachSeriesAsync, object, callback, doneKeys))

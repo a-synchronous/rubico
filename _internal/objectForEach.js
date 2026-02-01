@@ -20,7 +20,7 @@ const always = require('./always')
 const objectForEach = function (object, callback) {
   const promises = []
   for (const key in object) {
-    const operation = callback(object[key])
+    const operation = callback(object[key], key, object)
     if (isPromise(operation)) {
       promises.push(operation)
     }
