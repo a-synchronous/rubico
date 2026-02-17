@@ -11,26 +11,26 @@ const promiseRace = require('./promiseRace')
  *   array Array,
  *   predicate any=>Promise|boolean,
  *   index number,
- *   promisesInFlight Set<Promise>,
+ *   promises Set<Promise>,
  * ) -> boolean
  * ```
  */
 const asyncArraySome = async function (
-  array, predicate, index, promisesInFlight,
+  array, predicate, index, promises,
 ) {
   const length = array.length
 
   while (++index < length) {
     const predication = predicate(array[index])
     if (isPromise(predication)) {
-      promisesInFlight.add(SelfReferencingPromise(predication))
+      promises.add(SelfReferencingPromise(predication))
     } else if (predication) {
       return true
     }
   }
-  while (promisesInFlight.size > 0) {
-    const [predication, promise] = await promiseRace(promisesInFlight)
-    promisesInFlight.delete(promise)
+  while (promises.size > 0) {
+    const [predication, promise] = await promiseRace(promises)
+    promises.delete(promise)
     if (predication) {
       return true
     }

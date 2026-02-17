@@ -9,21 +9,21 @@ const promiseRace = require('./promiseRace')
  * var T any,
  *   asyncIterator AsyncIterator<T>,
  *   predicate T=>Promise|boolean,
- *   promisesInFlight Set<Promise<[T, Promise]>>,
+ *   promises Set<Promise<[T, Promise]>>,
  *   maxConcurrency number
  *
  * asyncIteratorEvery(
- *   asyncIterator, predicate, promisesInFlight, maxConcurrency,
+ *   asyncIterator, predicate, promises, maxConcurrency,
  * ) -> Promise<boolean>
  */
 const asyncIteratorEvery = async function (
-  asyncIterator, predicate, promisesInFlight, maxConcurrency = 20,
+  asyncIterator, predicate, promises, maxConcurrency = 20,
 ) {
   let iteration = await asyncIterator.next()
   while (!iteration.done) {
-    if (promisesInFlight.size >= maxConcurrency) {
-      const [predication, promise] = await promiseRace(promisesInFlight)
-      promisesInFlight.delete(promise)
+    if (promises.size >= maxConcurrency) {
+      const [predication, promise] = await promiseRace(promises)
+      promises.delete(promise)
       if (!predication) {
         return false
       }
@@ -31,15 +31,15 @@ const asyncIteratorEvery = async function (
 
     const predication = predicate(iteration.value)
     if (isPromise(predication)) {
-      promisesInFlight.add(SelfReferencingPromise(predication))
+      promises.add(SelfReferencingPromise(predication))
     } else if (!predication) {
       return false
     }
     iteration = await asyncIterator.next()
   }
-  while (promisesInFlight.size > 0) {
-    const [predication, promise] = await promiseRace(promisesInFlight)
-    promisesInFlight.delete(promise)
+  while (promises.size > 0) {
+    const [predication, promise] = await promiseRace(promises)
+    promises.delete(promise)
     if (!predication) {
       return false
     }

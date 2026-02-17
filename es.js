@@ -2455,21 +2455,21 @@ const SelfReferencingPromise = function (basePromise) {
 }
 
 const asyncArraySome = async function (
-  array, predicate, index, promisesInFlight,
+  array, predicate, index, promises,
 ) {
   const length = array.length
 
   while (++index < length) {
     const predication = predicate(array[index])
     if (isPromise(predication)) {
-      promisesInFlight.add(SelfReferencingPromise(predication))
+      promises.add(SelfReferencingPromise(predication))
     } else if (predication) {
       return true
     }
   }
-  while (promisesInFlight.size > 0) {
-    const [predication, promise] = await promiseRace(promisesInFlight)
-    promisesInFlight.delete(promise)
+  while (promises.size > 0) {
+    const [predication, promise] = await promiseRace(promises)
+    promises.delete(promise)
     if (predication) {
       return true
     }
@@ -2494,7 +2494,7 @@ const arraySome = function (array, predicate) {
 }
 
 const asyncIteratorSome = async function (
-  iterator, predicate, promisesInFlight, maxConcurrency = 20,
+  iterator, predicate, promises, maxConcurrency = 20,
 ) {
   let iteration = iterator.next()
   if (isPromise(iteration)) {
@@ -2502,16 +2502,16 @@ const asyncIteratorSome = async function (
   }
 
   while (!iteration.done) {
-    if (promisesInFlight.size >= maxConcurrency) {
-      const [predication, promise] = await promiseRace(promisesInFlight)
-      promisesInFlight.delete(promise)
+    if (promises.size >= maxConcurrency) {
+      const [predication, promise] = await promiseRace(promises)
+      promises.delete(promise)
       if (predication) {
         return true
       }
     }
     const predication = predicate(iteration.value)
     if (isPromise(predication)) {
-      promisesInFlight.add(SelfReferencingPromise(predication))
+      promises.add(SelfReferencingPromise(predication))
     } else if (predication) {
       return true
     }
@@ -2520,9 +2520,9 @@ const asyncIteratorSome = async function (
       iteration = await iteration
     }
   }
-  while (promisesInFlight.size > 0) {
-    const [predication, promise] = await promiseRace(promisesInFlight)
-    promisesInFlight.delete(promise)
+  while (promises.size > 0) {
+    const [predication, promise] = await promiseRace(promises)
+    promises.delete(promise)
     if (predication) {
       return true
     }
@@ -2621,13 +2621,13 @@ const iteratorEvery = function (iterator, predicate) {
 }
 
 const asyncIteratorEvery = async function (
-  asyncIterator, predicate, promisesInFlight, maxConcurrency = 20,
+  asyncIterator, predicate, promises, maxConcurrency = 20,
 ) {
   let iteration = await asyncIterator.next()
   while (!iteration.done) {
-    if (promisesInFlight.size >= maxConcurrency) {
-      const [predication, promise] = await promiseRace(promisesInFlight)
-      promisesInFlight.delete(promise)
+    if (promises.size >= maxConcurrency) {
+      const [predication, promise] = await promiseRace(promises)
+      promises.delete(promise)
       if (!predication) {
         return false
       }
@@ -2635,15 +2635,15 @@ const asyncIteratorEvery = async function (
 
     const predication = predicate(iteration.value)
     if (isPromise(predication)) {
-      promisesInFlight.add(SelfReferencingPromise(predication))
+      promises.add(SelfReferencingPromise(predication))
     } else if (!predication) {
       return false
     }
     iteration = await asyncIterator.next()
   }
-  while (promisesInFlight.size > 0) {
-    const [predication, promise] = await promiseRace(promisesInFlight)
-    promisesInFlight.delete(promise)
+  while (promises.size > 0) {
+    const [predication, promise] = await promiseRace(promises)
+    promises.delete(promise)
     if (!predication) {
       return false
     }
