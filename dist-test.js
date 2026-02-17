@@ -1,12 +1,15 @@
 const assert = require('assert')
-const findAllFilePaths = require('./_internal/findAllFilePaths')
+const walk = require('./walk')
 
 const distTest = async function main() {
-  const filePaths = await findAllFilePaths(`${__dirname}/dist`)
-  filePaths.push(`${__dirname}/index.js`)
-  filePaths.push(`${__dirname}/es.js`)
+  const filepaths = []
+  for await (const filepath of walk(`${__dirname}/dist`)) {
+    filepaths.push(filepath)
+  }
+  filepaths.push(`${__dirname}/index.js`)
+  filepaths.push(`${__dirname}/es.js`)
 
-  for (const path of filePaths) {
+  for (const path of filepaths) {
     if (
       path.includes('.es')
       || path.endsWith('.mjs')
@@ -16,6 +19,7 @@ const distTest = async function main() {
     }
     else {
       const required = require(path)
+      console.log('Successfully required', path)
 
       if (
         path.includes('rubico.js')

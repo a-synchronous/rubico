@@ -85,6 +85,7 @@
   },
   "scripts": {
     "test": "mocha test.js *.test.js */**.test.js",
+    "dist-test": "node dist-test.js && node dist-test.mjs",
     "test-coverage": "nyc mocha test.js x/*.test.js monad/*.test.js",
     "build": "npm run dts && ./build",
     "bench": "./bench"
