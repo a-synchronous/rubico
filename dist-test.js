@@ -15,7 +15,7 @@ const distTest = async function main() {
       || path.endsWith('.mjs')
       || path.includes('es.js')
     ) {
-      // TODO
+      // test in dist-test.mjs
     }
     else {
       const required = require(path)
