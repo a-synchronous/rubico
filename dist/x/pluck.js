@@ -1,5 +1,5 @@
 /**
- * rubico v2.7.10
+ * rubico v2.8.0
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2026 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -634,7 +634,7 @@ const objectMapPool = function (o, concurrency, f) {
   return result
 }
 
-const _curryArity = (arity, func, args) => function curried(...curriedArgs) {
+const _curryArity = (arity, func, context, args) => function curried(...curriedArgs) {
   const argsLength = args.length,
     curriedArgsLength = curriedArgs.length,
     nextArgs = []
@@ -655,8 +655,8 @@ const _curryArity = (arity, func, args) => function curried(...curriedArgs) {
     }
     if (nextArgs.length == arity) {
       return numCurriedPlaceholders == 0
-        ? func(...nextArgs)
-        : curryArity(arity, func, nextArgs)
+        ? func.apply(context, nextArgs)
+        : curryArity(arity, func, context, nextArgs)
     }
   }
 
@@ -668,26 +668,26 @@ const _curryArity = (arity, func, args) => function curried(...curriedArgs) {
     nextArgs.push(curriedArg)
     if (nextArgs.length == arity) {
       return numCurriedPlaceholders == 0
-        ? func(...nextArgs)
-        : curryArity(arity, func, nextArgs)
+        ? func.apply(context, nextArgs)
+        : curryArity(arity, func, context, nextArgs)
     }
   }
-  return curryArity(arity, func, nextArgs)
+  return curryArity(arity, func, context, nextArgs)
 }
 
-const curryArity = function (arity, func, args) {
+const curryArity = function (arity, func, context, args) {
   const argsLength = args.length
   if (argsLength < arity) {
-    return _curryArity(arity, func, args)
+    return _curryArity(arity, func, context, args)
   }
   let argsIndex = -1
   while (++argsIndex < argsLength) {
     const arg = args[argsIndex]
     if (arg == __) {
-      return _curryArity(arity, func, args)
+      return _curryArity(arity, func, context, args)
     }
   }
-  return func(...args)
+  return func.apply(context, args)
 }
 
 const spread2 = func => function spreading2([arg0, arg1]) {
@@ -702,7 +702,7 @@ const objectMapEntries = function (object, mapper) {
       mapping = mapper([key, value])
     if (isPromise(mapping)) {
       promises.push(mapping.then(
-        spread2(curryArity(3, objectSet, [result]))))
+        spread2(curryArity(3, objectSet, this, [result]))))
     } else {
       result[mapping[0]] = mapping[1]
     }
@@ -718,7 +718,7 @@ const mapMapEntriesForEachCallback = (
 ) => function callback(value, key) {
   const mapping = mapper([key, value])
   if (isPromise(mapping)) {
-    promises.push(mapping.then(spread2(curryArity(3, mapSet, [result]))))
+    promises.push(mapping.then(spread2(curryArity(3, mapSet, this, [result]))))
   } else {
     result.set(mapping[0], mapping[1])
   }

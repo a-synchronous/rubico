@@ -1,5 +1,5 @@
 /**
- * rubico v2.7.10
+ * rubico v2.8.0
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2026 Richard Tong
  * rubico may be freely distributed under the MIT license.
