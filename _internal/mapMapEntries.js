@@ -11,7 +11,7 @@ const mapMapEntriesForEachCallback = (
 ) => function callback(value, key) {
   const mapping = mapper([key, value])
   if (isPromise(mapping)) {
-    promises.push(mapping.then(spread2(curryArity(3, mapSet, [result]))))
+    promises.push(mapping.then(spread2(curryArity(3, mapSet, this, [result]))))
   } else {
     result.set(mapping[0], mapping[1])
   }

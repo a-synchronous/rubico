@@ -4630,6 +4630,27 @@ flatMap(
     })
   })
 
+  describe('curry.call', () => {
+     class Point {
+       constructor(x, y) {
+         this.x = x
+         this.y = y
+       }
+
+       toString() {
+         return `(${this.x}, ${this.y})`
+       }
+     }
+
+    const point = new Point(100, 100)
+    const box = { x: 5, y: 10 }
+
+    it('Curries with a specified context', async () => {
+      assert.equal(curry.call(point.toString, point), '(100, 100)')
+      assert.equal(curry.call(point.toString, box), '(5, 10)')
+    })
+  })
+
   describe('__', () => {
     it('is Symbol(placeholder)', async () => {
       assert.strictEqual(typeof __, 'symbol')

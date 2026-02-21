@@ -24,7 +24,7 @@ const objectMapEntries = function (object, mapper) {
       mapping = mapper([key, value])
     if (isPromise(mapping)) {
       promises.push(mapping.then(
-        spread2(curryArity(3, objectSet, [result]))))
+        spread2(curryArity(3, objectSet, this, [result]))))
     } else {
       result[mapping[0]] = mapping[1]
     }

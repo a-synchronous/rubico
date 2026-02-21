@@ -9,13 +9,14 @@ const __ = require('./placeholder')
  *
  * var arity number,
  *   func function,
+ *   context object,
  *   args Array<__|any>,
  *   curried function
  *
- * _curryArity(arity, func, args) -> curried|any
+ * _curryArity(context, arity, func, args) -> curried|any
  * ```
  */
-const _curryArity = (arity, func, args) => function curried(...curriedArgs) {
+const _curryArity = (arity, func, context, args) => function curried(...curriedArgs) {
   const argsLength = args.length,
     curriedArgsLength = curriedArgs.length,
     nextArgs = []
@@ -36,8 +37,8 @@ const _curryArity = (arity, func, args) => function curried(...curriedArgs) {
     }
     if (nextArgs.length == arity) {
       return numCurriedPlaceholders == 0
-        ? func(...nextArgs)
-        : curryArity(arity, func, nextArgs)
+        ? func.apply(context, nextArgs)
+        : curryArity(arity, func, context, nextArgs)
     }
   }
 
@@ -49,11 +50,11 @@ const _curryArity = (arity, func, args) => function curried(...curriedArgs) {
     nextArgs.push(curriedArg)
     if (nextArgs.length == arity) {
       return numCurriedPlaceholders == 0
-        ? func(...nextArgs)
-        : curryArity(arity, func, nextArgs)
+        ? func.apply(context, nextArgs)
+        : curryArity(arity, func, context, nextArgs)
     }
   }
-  return curryArity(arity, func, nextArgs)
+  return curryArity(arity, func, context, nextArgs)
 }
 
 /**
@@ -65,29 +66,30 @@ const _curryArity = (arity, func, args) => function curried(...curriedArgs) {
  *
  * var arity number,
  *   func function,
+ *   context object,
  *   args Array<__|any>,
  *   curried function
  *
- * curryArity(arity, func, args) -> curried|any
+ * curryArity(arity, func, context, args) -> curried|any
  * ```
  *
  * @description
  * Create a curried version of a function with specified arity.
  */
 
-const curryArity = function (arity, func, args) {
+const curryArity = function (arity, func, context, args) {
   const argsLength = args.length
   if (argsLength < arity) {
-    return _curryArity(arity, func, args)
+    return _curryArity(arity, func, context, args)
   }
   let argsIndex = -1
   while (++argsIndex < argsLength) {
     const arg = args[argsIndex]
     if (arg == __) {
-      return _curryArity(arity, func, args)
+      return _curryArity(arity, func, context, args)
     }
   }
-  return func(...args)
+  return func.apply(context, args)
 }
 
 module.exports = curryArity
