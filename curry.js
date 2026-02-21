@@ -62,7 +62,7 @@ const curry = (func, ...args) => curryArity(func.length, func, this, args)
  * ```
  *
  * @description
- * `curry` with specified arity (number of arguments taken by the function) as the first parameter.
+ * [curry](/docs/curry) with specified arity (number of arguments taken by the function) as the first parameter.
  *
  * ```javascript [playground]
  * const add = (a, b, c = 0) => a + b + c
@@ -101,7 +101,7 @@ curry.arity = function curryArity_(arity, func, ...args) {
  * ```
  *
  * @description
- * `curry` with specified context.
+ * [curry](/docs/curry) with specified context.
  *
  * ```javascript [playground]
  * class Point {
