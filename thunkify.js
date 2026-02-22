@@ -65,6 +65,7 @@ const thunkify = function thunkify(func, ...args) {
  * thunkify.call(func function, context object, ...args) -> thunk ()=>func(...args)
  * ```
  *
+ * @description
  * Creates a thunk that calls a function with the specified context and arguments.
  *
  * ```javascript [playground]
