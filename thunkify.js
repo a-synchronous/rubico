@@ -75,12 +75,17 @@ const thunkify = function thunkify(func, ...args) {
  *     this.y = y
  *   }
  *
- *   toString() {
- *     return `(${this.x}, ${this.y})`
+ *   distanceTo() {
+ *     const x2 = (point.x - this.x) ** 2
+ *     const y2 = (point.y - this.y) ** 2
+ *     return (x2 + y2) ** 0.5
  *   }
  * }
  *
- * const thunk = thunkify.call(toString, point)
+ * const point0 = new Point(0, 0)
+ * const point = new Point(3, 4)
+ *
+ * const thunk = thunkify.call(point0.distanceTo, point0, point)
  *
  * console.log(thunk())
  * ```
