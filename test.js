@@ -4550,10 +4550,11 @@ flatMap(
       assert.strictEqual(thunkAdd212(), 3)
     })
 
-    const asyncThunkAdd212 = thunkify(add2, Promise.resolve(1), 2)
     it('creates a thunk that resolves any promise arguments', async () => {
+      const asyncThunkAdd212Promise = thunkify(add2, Promise.resolve(1), 2)
+      const asyncThunkAdd212 = await asyncThunkAdd212Promise
       assert.strictEqual(asyncThunkAdd212.length, 0)
-      assert.strictEqual(await asyncThunkAdd212(), 3)
+      assert.strictEqual(asyncThunkAdd212(), 3)
     })
   })
 
@@ -4580,8 +4581,8 @@ flatMap(
     })
 
     it('resolves promises in argument position', async () => {
-      const thunk = thunkify.call(distanceTo, point0, Promise.resolve(point1))
-      assert.equal(await thunk(), 5)
+      const thunk = await thunkify.call(distanceTo, point0, Promise.resolve(point1))
+      assert.equal(thunk(), 5)
     })
   })
 

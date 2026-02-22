@@ -5,6 +5,20 @@ const __ = require('./_internal/placeholder')
 const funcApply2 = require('./_internal/funcApply2')
 
 /**
+ * @name _thunkifyArgs
+ *
+ * @synopsis
+ * ```coffeescript [specscript]
+ * _thunkifyArgs(func function, context object, args Array) -> thunk
+ * ```
+ */
+function _thunkifyArgs(func, context, args) {
+  return function thunk() {
+    return func.apply(context, args)
+  }
+}
+
+/**
  * @name thunkify
  *
  * @synopsis
@@ -34,11 +48,11 @@ const funcApply2 = require('./_internal/funcApply2')
  *  * [Transducer.map](/docs/Transducer.map)
  *
  */
-const thunkify = (func, ...args) => function thunk() {
+const thunkify = function thunkify(func, ...args) {
   if (areAnyValuesPromises(args)) {
-    return promiseAll(args).then(curry3(funcApply2, func, this, __))
+    return promiseAll(args).then(curry3(_thunkifyArgs, func, this, __))
   }
-  return func.apply(this, args)
+  return _thunkifyArgs(func, this, args)
 }
 
 /**
@@ -80,12 +94,10 @@ const thunkify = (func, ...args) => function thunk() {
  *
  */
 thunkify.call = function thunkifyCall(func, context, ...args) {
-  return function thunk() {
-    if (areAnyValuesPromises(args)) {
-      return promiseAll(args).then(curry3(funcApply2, func, context, __))
-    }
-    return func.apply(context, args)
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args).then(curry3(_thunkifyArgs, func, context, __))
   }
+  return _thunkifyArgs(func, context, args)
 }
 
 module.exports = thunkify
