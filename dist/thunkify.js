@@ -1,5 +1,5 @@
 /**
- * rubico v2.8.0
+ * rubico v2.8.1
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2026 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -41,33 +41,57 @@ const promiseAll = Promise.all.bind(Promise)
 
 const __ = Symbol.for('placeholder')
 
-// argument resolver for curry2
-const curry2ResolveArg0 = (
-  baseFunc, arg1,
+// argument resolver for curry3
+const curry3ResolveArg0 = (
+  baseFunc, arg1, arg2,
 ) => function arg0Resolver(arg0) {
-  return baseFunc(arg0, arg1)
+  return baseFunc(arg0, arg1, arg2)
 }
 
-// argument resolver for curry2
-const curry2ResolveArg1 = (
-  baseFunc, arg0,
+// argument resolver for curry3
+const curry3ResolveArg1 = (
+  baseFunc, arg0, arg2,
 ) => function arg1Resolver(arg1) {
-  return baseFunc(arg0, arg1)
+  return baseFunc(arg0, arg1, arg2)
 }
 
-const curry2 = function (baseFunc, arg0, arg1) {
-  return arg0 == __
-    ? curry2ResolveArg0(baseFunc, arg1)
-    : curry2ResolveArg1(baseFunc, arg0)
+// argument resolver for curry3
+const curry3ResolveArg2 = (
+  baseFunc, arg0, arg1,
+) => function arg2Resolver(arg2) {
+  return baseFunc(arg0, arg1, arg2)
 }
 
-const funcApply = (func, args) => func(...args)
-
-const thunkify = (func, ...args) => function thunk() {
-  if (areAnyValuesPromises(args)) {
-    return promiseAll(args).then(curry2(funcApply, func, __))
+const curry3 = function (baseFunc, arg0, arg1, arg2) {
+  if (arg0 == __) {
+    return curry3ResolveArg0(baseFunc, arg1, arg2)
   }
-  return func(...args)
+  if (arg1 == __) {
+    return curry3ResolveArg1(baseFunc, arg0, arg2)
+  }
+  return curry3ResolveArg2(baseFunc, arg0, arg1)
+}
+
+const funcApply2 = (func, context, args) => func.apply(context, args)
+
+function _thunkifyArgs(func, context, args) {
+  return function thunk() {
+    return func.apply(context, args)
+  }
+}
+
+const thunkify = function thunkify(func, ...args) {
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args).then(curry3(_thunkifyArgs, func, this, __))
+  }
+  return _thunkifyArgs(func, this, args)
+}
+
+thunkify.call = function thunkifyCall(func, context, ...args) {
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args).then(curry3(_thunkifyArgs, func, context, __))
+  }
+  return _thunkifyArgs(func, context, args)
 }
 
 return thunkify

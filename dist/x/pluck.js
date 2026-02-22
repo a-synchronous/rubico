@@ -1,5 +1,5 @@
 /**
- * rubico v2.8.0
+ * rubico v2.8.1
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2026 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -634,6 +634,30 @@ const objectMapPool = function (o, concurrency, f) {
   return result
 }
 
+const areAnyValuesPromises = function (values) {
+  if (isArray(values)) {
+    const length = values.length
+    let index = -1
+    while (++index < length) {
+      const value = values[index]
+      if (isPromise(value)) {
+        return true
+      }
+    }
+    return false
+  }
+
+  for (const key in values) {
+    const value = values[key]
+    if (isPromise(value)) {
+      return true
+    }
+  }
+  return false
+}
+
+const funcApply2 = (func, context, args) => func.apply(context, args)
+
 const _curryArity = (arity, func, context, args) => function curried(...curriedArgs) {
   const argsLength = args.length,
     curriedArgsLength = curriedArgs.length,
@@ -653,7 +677,13 @@ const _curryArity = (arity, func, context, args) => function curried(...curriedA
     } else {
       nextArgs.push(arg)
     }
+
     if (nextArgs.length == arity) {
+      if (areAnyValuesPromises(nextArgs)) {
+        return numCurriedPlaceholders == 0
+          ? promiseAll(nextArgs).then(curry3(funcApply2, func, context, __))
+          : promiseAll(nextArgs).then(curry4(curryArity, arity, func, context, __))
+      }
       return numCurriedPlaceholders == 0
         ? func.apply(context, nextArgs)
         : curryArity(arity, func, context, nextArgs)
@@ -666,13 +696,22 @@ const _curryArity = (arity, func, context, args) => function curried(...curriedA
       numCurriedPlaceholders += 1
     }
     nextArgs.push(curriedArg)
+
     if (nextArgs.length == arity) {
+      if (areAnyValuesPromises(nextArgs)) {
+        return numCurriedPlaceholders == 0
+          ? promiseAll(nextArgs).then(curry3(funcApply2, func, context, __))
+          : promiseAll(nextArgs).then(curry4(curryArity, arity, func, context, __))
+      }
       return numCurriedPlaceholders == 0
         ? func.apply(context, nextArgs)
         : curryArity(arity, func, context, nextArgs)
     }
   }
-  return curryArity(arity, func, context, nextArgs)
+
+  return areAnyValuesPromises(nextArgs)
+    ? promiseAll(nextArgs).then(curry4(curryArity, arity, func, context, __))
+    : curryArity(arity, func, context, nextArgs)
 }
 
 const curryArity = function (arity, func, context, args) {

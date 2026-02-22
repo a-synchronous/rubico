@@ -1,5 +1,5 @@
 /**
- * rubico v2.8.0
+ * rubico v2.8.1
  * https://github.com/a-synchronous/rubico
  * (c) 2019-2026 Richard Tong
  * rubico may be freely distributed under the MIT license.
@@ -1068,6 +1068,8 @@ const objectMapPool = function (o, concurrency, f) {
   return result
 }
 
+const funcApply2 = (func, context, args) => func.apply(context, args)
+
 const _curryArity = (arity, func, context, args) => function curried(...curriedArgs) {
   const argsLength = args.length,
     curriedArgsLength = curriedArgs.length,
@@ -1087,7 +1089,13 @@ const _curryArity = (arity, func, context, args) => function curried(...curriedA
     } else {
       nextArgs.push(arg)
     }
+
     if (nextArgs.length == arity) {
+      if (areAnyValuesPromises(nextArgs)) {
+        return numCurriedPlaceholders == 0
+          ? promiseAll(nextArgs).then(curry3(funcApply2, func, context, __))
+          : promiseAll(nextArgs).then(curry4(curryArity, arity, func, context, __))
+      }
       return numCurriedPlaceholders == 0
         ? func.apply(context, nextArgs)
         : curryArity(arity, func, context, nextArgs)
@@ -1100,13 +1108,22 @@ const _curryArity = (arity, func, context, args) => function curried(...curriedA
       numCurriedPlaceholders += 1
     }
     nextArgs.push(curriedArg)
+
     if (nextArgs.length == arity) {
+      if (areAnyValuesPromises(nextArgs)) {
+        return numCurriedPlaceholders == 0
+          ? promiseAll(nextArgs).then(curry3(funcApply2, func, context, __))
+          : promiseAll(nextArgs).then(curry4(curryArity, arity, func, context, __))
+      }
       return numCurriedPlaceholders == 0
         ? func.apply(context, nextArgs)
         : curryArity(arity, func, context, nextArgs)
     }
   }
-  return curryArity(arity, func, context, nextArgs)
+
+  return areAnyValuesPromises(nextArgs)
+    ? promiseAll(nextArgs).then(curry4(curryArity, arity, func, context, __))
+    : curryArity(arity, func, context, nextArgs)
 }
 
 const curryArity = function (arity, func, context, args) {
@@ -3284,20 +3301,44 @@ const omit = function (arg0, arg1) {
   return _omit(arg0, arg1)
 }
 
-const thunkify = (func, ...args) => function thunk() {
-  if (areAnyValuesPromises(args)) {
-    return promiseAll(args).then(curry2(funcApply, func, __))
+function _thunkifyArgs(func, context, args) {
+  return function thunk() {
+    return func.apply(context, args)
   }
-  return func(...args)
 }
 
-const curry = (func, ...args) => curryArity(func.length, func, this, args)
+const thunkify = function thunkify(func, ...args) {
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args).then(curry3(_thunkifyArgs, func, this, __))
+  }
+  return _thunkifyArgs(func, this, args)
+}
+
+thunkify.call = function thunkifyCall(func, context, ...args) {
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args).then(curry3(_thunkifyArgs, func, context, __))
+  }
+  return _thunkifyArgs(func, context, args)
+}
+
+const curry = (func, ...args) => {
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args).then(curry4(curryArity, func.length, func, this, __))
+  }
+  return curryArity(func.length, func, this, args)
+}
 
 curry.arity = function curryArity_(arity, func, ...args) {
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args).then(curry4(curryArity, arity, func, this, __))
+  }
   return curryArity(arity, func, this, args)
 }
 
 curry.call = function call(func, context, ...args) {
+  if (areAnyValuesPromises(args)) {
+    return promiseAll(args).then(curry4(curryArity, func.length, func, context, __))
+  }
   return curryArity(func.length, func, context, args)
 }
 
