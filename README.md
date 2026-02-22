@@ -121,7 +121,7 @@ const {
 } = rubico
 ```
 
-With [A]synchronous Functional Programming, any function may be asynchronous and return a promise. All promises are resolved for their values before continuing with the operation.
+With [A]synchronous Functional Programming, any function may be asynchronous and return a promise, and arguments may be promises as well. If a promise is provided to a Rubico operator in argument position, it is resolved for its value before continuing with the operation.
 
 ```javascript [playground]
 const helloPromise = Promise.resolve('hello')
