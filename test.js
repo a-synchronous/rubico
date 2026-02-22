@@ -4624,6 +4624,46 @@ flatMap(
       assert.strictEqual(curry(add3)(__)(__)(__)('a', 'b', __)('c'), 'abc')
       assert.strictEqual(curry(add3)(__)(__)(__)('a')('b')(__)('c'), 'abc')
     })
+
+    it('promises 1', async () => {
+      const add = (a, b, c) => a + b + c
+      let curriedPromise = curry(add, __, __, Promise.resolve('c'))
+      assert.equal(typeof curriedPromise.then, 'function')
+      let curried = await curriedPromise
+      curriedPromise = curried(__, Promise.resolve('b'))
+      assert.equal(typeof curriedPromise.then, 'function')
+      curried = await curriedPromise
+      assert.equal(curried('a'), 'abc')
+
+      const promise = curried(Promise.resolve('a'))
+      assert.equal(typeof promise.then, 'function')
+      assert.equal(await promise, 'abc')
+    })
+
+    it('promises 2', async () => {
+      const add = (a, b, c) => a + b + c
+      const curriedPromise = curry(add)(__)(Promise.resolve('a'), Promise.resolve('b'), __)
+      assert.equal(typeof curriedPromise.then, 'function')
+      const curried = await curriedPromise
+
+      const promise = curried(Promise.resolve('c'))
+      assert.equal(typeof promise.then, 'function')
+      assert.equal(await promise, 'abc')
+    })
+
+    it('promises 3', async () => {
+      const add = (a, b, c) => a + b + c
+      const promise = curry(add)(__)(Promise.resolve('a'), Promise.resolve('b'), Promise.resolve('c'))
+      assert.equal(typeof promise.then, 'function')
+      assert.equal(await promise, 'abc')
+    })
+
+    it('promises 3', async () => {
+      const add = (a, b, c) => a + b + c
+      const promise = curry(add)(__, Promise.resolve('b')).then(curried => curried(Promise.resolve('a'), Promise.resolve('c')))
+      assert.equal(typeof promise.then, 'function')
+      assert.equal(await promise, 'abc')
+    })
   })
 
   describe('curry.arity', () => {
@@ -4657,6 +4697,21 @@ flatMap(
       assert.strictEqual(curry.arity(3, add3)(__)(__)(__)('a', 'b', __)('c'), 'abc')
       assert.strictEqual(curry.arity(3, add3)(__)(__)(__)('a')('b')(__)('c'), 'abc')
     })
+
+    it('promises', async () => {
+      const add = (a, b, c) => a + b + c
+      let curriedPromise = curry.arity(3, add, __, __, Promise.resolve('c'))
+      assert.equal(typeof curriedPromise.then, 'function')
+      let curried = await curriedPromise
+      curriedPromise = curried(__, Promise.resolve('b'))
+      assert.equal(typeof curriedPromise.then, 'function')
+      curried = await curriedPromise
+      assert.equal(curried('a'), 'abc')
+
+      const promise = curried(Promise.resolve('a'))
+      assert.equal(typeof promise.then, 'function')
+      assert.equal(await promise, 'abc')
+    })
   })
 
   describe('curry.call', () => {
@@ -4669,14 +4724,28 @@ flatMap(
        toString() {
          return `(${this.x}, ${this.y})`
        }
+
+       distanceTo() {
+         const x2 = (point.x - this.x) ** 2
+         const y2 = (point.y - this.y) ** 2
+         return (x2 + y2) ** 0.5
+       }
      }
 
-    const point = new Point(100, 100)
+    const point0 = new Point(0, 0)
+    const point = new Point(3, 4)
     const box = { x: 5, y: 10 }
 
     it('Curries with a specified context', async () => {
-      assert.equal(curry.call(point.toString, point), '(100, 100)')
+      assert.equal(curry.call(point.toString, point), '(3, 4)')
       assert.equal(curry.call(point.toString, box), '(5, 10)')
+      assert.equal(curry.call(point.distanceTo, point0, point), 5)
+    })
+
+    it('promises', async () => {
+      promise = curry.call(point.distanceTo, point0, Promise.resolve(point))
+      assert.equal(typeof promise.then, 'function')
+      assert.equal(await promise, 5)
     })
   })
 

@@ -1,4 +1,9 @@
+const areAnyValuesPromises = require('./areAnyValuesPromises')
+const promiseAll = require('./promiseAll')
 const __ = require('./placeholder')
+const curry4 = require('./curry4')
+const curry3 = require('./curry3')
+const funcApply2 = require('./funcApply2')
 
 /**
  * @name _curryArity
@@ -35,7 +40,13 @@ const _curryArity = (arity, func, context, args) => function curried(...curriedA
     } else {
       nextArgs.push(arg)
     }
+
     if (nextArgs.length == arity) {
+      if (areAnyValuesPromises(nextArgs)) {
+        return numCurriedPlaceholders == 0
+          ? promiseAll(nextArgs).then(curry3(funcApply2, func, context, __))
+          : promiseAll(nextArgs).then(curry4(curryArity, arity, func, context, __))
+      }
       return numCurriedPlaceholders == 0
         ? func.apply(context, nextArgs)
         : curryArity(arity, func, context, nextArgs)
@@ -48,13 +59,22 @@ const _curryArity = (arity, func, context, args) => function curried(...curriedA
       numCurriedPlaceholders += 1
     }
     nextArgs.push(curriedArg)
+
     if (nextArgs.length == arity) {
+      if (areAnyValuesPromises(nextArgs)) {
+        return numCurriedPlaceholders == 0
+          ? promiseAll(nextArgs).then(curry3(funcApply2, func, context, __))
+          : promiseAll(nextArgs).then(curry4(curryArity, arity, func, context, __))
+      }
       return numCurriedPlaceholders == 0
         ? func.apply(context, nextArgs)
         : curryArity(arity, func, context, nextArgs)
     }
   }
-  return curryArity(arity, func, context, nextArgs)
+
+  return areAnyValuesPromises(nextArgs)
+    ? promiseAll(nextArgs).then(curry4(curryArity, arity, func, context, __))
+    : curryArity(arity, func, context, nextArgs)
 }
 
 /**
