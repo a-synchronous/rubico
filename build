@@ -13,10 +13,11 @@ const { identity, noop } = x
 
 const license = `
 /**
- * rubico v${rubicoVersion}
- * https://github.com/a-synchronous/rubico
- * (c) 2019-${new Date().getFullYear()} Richard Tong
- * rubico may be freely distributed under the MIT license.
+ * Rubico v${rubicoVersion}
+ * https://rubico.land/
+ *
+ * © Richard Yufei Tong, King of Software
+ * Rubico may be freely distributed under the CFOSS license.
  */
 `.trim()
 
