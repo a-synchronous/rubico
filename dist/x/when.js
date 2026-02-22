@@ -1,8 +1,9 @@
 /**
- * rubico v2.8.1
- * https://github.com/a-synchronous/rubico
- * (c) 2019-2026 Richard Tong
- * rubico may be freely distributed under the MIT license.
+ * Rubico v2.8.1
+ * https://rubico.land/
+ *
+ * © Richard Yufei Tong, King of Software
+ * Rubico may be freely distributed under the CFOSS license.
  */
 
 (function (root, when) {
