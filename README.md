@@ -121,7 +121,7 @@ const {
 } = rubico
 ```
 
-With [A]synchronous Functional Programming, any function may be asynchronous and return a promise, and arguments may be promises as well. If a promise is provided to a Rubico operator in argument position, it is resolved for its value before continuing with the operation.
+With [A]synchronous Functional Programming, any function may be asynchronous and return a promise, and arguments may be promises as well. If a promise is provided to a Rubico operator in argument position, the Rubico operator will resolve the promise.
 
 ```javascript [playground]
 const helloPromise = Promise.resolve('hello')
@@ -135,7 +135,7 @@ pipe(helloPromise, [ // helloPromise is resolved for 'hello'
 ])
 ```
 
-All Rubico operators support both eager and lazy APIs. The eager API takes all required arguments and executes at once, while the lazy API takes only the setup arguments and returns a function that executes later. This dual API supports a natural and composable code style.
+All Rubico operators support both eager and lazy APIs. The eager API takes all required arguments and executes at once, while the lazy API takes only the setup arguments and returns a function that only expects the data arguments. This dual API supports a natural and composable code style.
 
 ```javascript [playground]
 const myObj = { a: 1, b: 2, c: 3 }
@@ -205,7 +205,7 @@ pipe(todoIDs, [
 ])
 ```
 
-Rubico offers transducers through its `Transducer` module. You can consume these transducers with Rubico's `transform` and `compose` operators. You can use `compose` to chain a left-to-right composition of transducers.
+Rubico offers transducers via the `Transducer` module, which can be used with Rubico's `transform` and `compose` operators. Use `compose` to chain a left-to-right composition of transducers.
 
 ```javascript [playground]
 const isOdd = number => number % 2 == 1
@@ -229,7 +229,7 @@ pipe(generateNumbers(), [
 ])
 ```
 
-For advanced asynchronous use cases, some of the Rubico operators have property functions that have various asynchronous behavior, e.g.
+For advanced asynchronous use cases, some of Rubico's operators have property operators that support varied asynchronous behavior, e.g.
  * `map` - applies a mapper function concurrently
  * `map.pool` - applies a mapper function concurrently with a concurrency limit
  * `map.series` - applies a mapper function serially
