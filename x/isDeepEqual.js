@@ -127,7 +127,7 @@ const areValuesDeepEqual = function (left, right) {
  * Check two values for deep [SameValueZero](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero) equality.
  *
  * ```javascript [playground]
- * import isDeepEqual from 'https://unpkg.com/rubico/dist/x/isDeepEqual.es.js'
+ * import isDeepEqual from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/isDeepEqual.es.js'
  *
  * console.log(
  *   isDeepEqual({ a: 1, b: 2, c: [3] }, { a: 1, b: 2, c: [3] }),
@@ -141,7 +141,7 @@ const areValuesDeepEqual = function (left, right) {
  * When passed a resolver function as the left or right argument or resolvers as both arguments, returns a function that resolves the value by the resolver before performing the deep equal comparison.
  *
  * ```javascript [playground]
- * import isDeepEqual from 'https://unpkg.com/rubico/dist/x/isDeepEqual.es.js'
+ * import isDeepEqual from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/isDeepEqual.es.js'
  *
  * const isPropADeepEqualTo123Array = isDeepEqual(object => object.a, [1, 2, 3])
  *

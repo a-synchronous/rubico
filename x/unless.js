@@ -20,7 +20,7 @@ const thunkConditional = require('../_internal/thunkConditional')
  * Execute a function and return the result unless a condition is true, otherwise return the original value.
  *
  * ```javascript [playground]
- * import unless from 'https://unpkg.com/rubico/dist/x/unless.es.js'
+ * import unless from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/unless.es.js'
  *
  * const isEven = num => num % 2 === 0
  * const doubleIfOdd = unless(isEven, num => num * 2)

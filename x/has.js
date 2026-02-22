@@ -15,7 +15,7 @@ const objectHas = function (object, key) {
  * Check if a collection has a key.
  *
  * ```javascript [playground]
- * import has from 'https://unpkg.com/rubico/dist/x/has.es.js'
+ * import has from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/has.es.js'
  *
  * console.log(
  *   has('a')({ a: 1, b: 2, c: 3 }),

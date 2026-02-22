@@ -15,7 +15,7 @@ const isArray = require('../_internal/isArray')
  * Get an array of unique values from an array.
  *
  * ```javascript [playground]
- * import uniq from 'https://unpkg.com/rubico/dist/x/uniq.es.js'
+ * import uniq from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/uniq.es.js'
  *
  * console.log(
  *   uniq([1, 2, 2, 3]),

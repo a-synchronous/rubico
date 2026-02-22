@@ -12,7 +12,7 @@
  * Get the first element of a collection
  *
  * ```javascript [playground]
- * import first from 'https://unpkg.com/rubico/dist/x/first.es.js'
+ * import first from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/first.es.js'
  *
  * console.log(first([1, 2, 3])) // 1
  * console.log(first('abc')) // 'a'

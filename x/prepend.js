@@ -15,7 +15,7 @@ const isArray = require('../_internal/isArray')
  * Prepend a string or an array.
  *
  * ```javascript [playground]
- * import prepend from 'https://unpkg.com/rubico/dist/x/prepend.es.js'
+ * import prepend from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/prepend.es.js'
  *
  * const myArray = ['orange', 'apple']
  *

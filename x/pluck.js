@@ -22,7 +22,7 @@ const get = require('../get')
  *  * an array of keys or indices - `['a', 0, 'value']`
  *
  * ```javascript [playground]
- * import pluck from 'https://unpkg.com/rubico/dist/x/pluck.es.js'
+ * import pluck from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/pluck.es.js'
  *
  * const users = [
  *   { name: 'John', age: 33 },

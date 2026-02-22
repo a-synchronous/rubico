@@ -25,7 +25,7 @@ const asyncIteratorFind = require('../_internal/asyncIteratorFind')
  * Get the first element in a foldable collection that matches a predicate.
  *
  * ```javascript [playground]
- * import find from 'https://unpkg.com/rubico/dist/x/find.es.js'
+ * import find from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/find.es.js'
  *
  * const users = [
  *   { name: 'John', age: 16 },

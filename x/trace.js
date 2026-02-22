@@ -22,7 +22,7 @@ const consoleLog = console.log
  * Log a value out to the console, returning the value. If the value is a function, treat it as a resolver.
  *
  * ```javascript [playground]
- * import trace from 'https://unpkg.com/rubico/dist/x/trace.es.js'
+ * import trace from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/trace.es.js'
  *
  * pipe([
  *   trace,

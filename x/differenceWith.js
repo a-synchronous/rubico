@@ -89,8 +89,8 @@ const differenceWithArray = function (comparator, allValues, array) {
  * Create an array of all the values in an array that are not in another array as dictated by a comparator.
  *
  * ```javascript [playground]
- * import differenceWith from 'https://unpkg.com/rubico/dist/x/differenceWith.es.js'
- * import isDeepEqual from 'https://unpkg.com/rubico/dist/x/isDeepEqual.es.js'
+ * import differenceWith from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/differenceWith.es.js'
+ * import isDeepEqual from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/isDeepEqual.es.js'
  *
  * console.log(
  *   differenceWith(isDeepEqual, [{ a: 1 }, { b: 2 }, { c: 3 }])([{ b: 2 }]),

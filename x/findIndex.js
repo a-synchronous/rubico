@@ -44,7 +44,7 @@ const findIndexAsync = async function (predicate, array, index) {
  * Returns the index of the first element in an array that satisfies the predicate. Returns -1 if no element satisfies the predicate.
  *
  * ```javascript [playground]
- * import findIndex from 'https://unpkg.com/rubico/dist/x/findIndex.es.js'
+ * import findIndex from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/findIndex.es.js'
  *
  * const oddNumberIndex = findIndex(function isOdd(number) {
  *   return number % 2 == 1

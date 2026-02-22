@@ -15,7 +15,7 @@ const isArray = require('../_internal/isArray')
  * Append a string or an array.
  *
  * ```javascript [playground]
- * import append from 'https://unpkg.com/rubico/dist/x/append.es.js'
+ * import append from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/append.es.js'
  *
  * const myArray = ['orange', 'apple']
  *

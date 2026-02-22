@@ -106,7 +106,7 @@ function _defaultsDeep(data, defaults) {
  * Deeply assign default values to an object or array `data` using an array or object of default values `defaults`. The keys or indices of each element of `defaults` are used to extend `data` where there is no existing value. Both `data` and `defaults` may have nested arrays or objects.
  *
  * ```javascript [playground]
- * import defaultsDeep from 'https://unpkg.com/rubico/dist/x/defaultsDeep.es.js'
+ * import defaultsDeep from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/defaultsDeep.es.js'
  *
  * const user = {
  *   name: 'John',

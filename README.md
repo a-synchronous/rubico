@@ -26,7 +26,7 @@ pipe(numbers, [
 ```
 
 ## Installation
-[Core build](https://unpkg.com/rubico/index.js) ([~7.7 kB minified and gzipped](https://unpkg.com/rubico/dist/rubico.min.js)) [Transducer module](https://unpkg.com/rubico/dist/Transducer.js) ([~1.5kb minified and gzipped](https://unpkg.com/rubico/dist/Transducer.min.js))
+[Core build](https://cdn.jsdelivr.net/npm/rubico/index.js) ([~7.7 kB minified and gzipped](https://cdn.jsdelivr.net/npm/rubico/dist/rubico.min.js)) [Transducer module](https://cdn.jsdelivr.net/npm/rubico/dist/Transducer.js) ([~1.5kb minified and gzipped](https://cdn.jsdelivr.net/npm/rubico/dist/Transducer.min.js))
 
 with [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm):
 ```bash
@@ -59,19 +59,19 @@ const Transducer = require('rubico/Transducer')
 import Rubico in the browser:
 ```html [htmlmixed]
 <!-- import rubico core globally -->
-<script src="https://unpkg.com/rubico/dist/global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/rubico/dist/global.min.js"></script>
 
 <!-- import rubico core as rubico -->
-<script src="https://unpkg.com/rubico/dist/rubico.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/rubico/dist/rubico.min.js"></script>
 
 <!-- import an operator from rubico core -->
-<script src="https://unpkg.com/rubico/dist/pipe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/rubico/dist/pipe.min.js"></script>
 
 <!-- import an operator from rubico/x -->
-<script src="https://unpkg.com/rubico/dist/x/defaultsDeep.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/rubico/dist/x/defaultsDeep.min.js"></script>
 
 <!-- import rubico's Transducer module -->
-<script src="https://unpkg.com/rubico/dist/Transducer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/rubico/dist/Transducer.min.js"></script>
 ```
 
 ## Motivation

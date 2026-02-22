@@ -10,7 +10,7 @@
  * Doesn't do anything.
  *
  * ```javascript [playground]
- * import noop from 'https://unpkg.com/rubico/dist/x/noop.es.js'
+ * import noop from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/noop.es.js'
  *
  * console.log(
  *   noop(),

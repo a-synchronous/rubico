@@ -20,7 +20,7 @@ const thunkConditional = require('../_internal/thunkConditional')
  * Execute a function and return the result when a condition is true, otherwise return the original value.
  *
  * ```javascript [playground]
- * import when from 'https://unpkg.com/rubico/dist/x/when.es.js'
+ * import when from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/when.es.js'
  *
  * const isEven = num => num % 2 === 0
  * const doubleIfEven = when(isEven, num => num * 2)

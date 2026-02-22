@@ -10,7 +10,7 @@
  * Calls a property on an object with arguments.
  *
  * ```javascript [playground]
- * import callProp from 'https://unpkg.com/rubico/dist/x/callProp.es.js'
+ * import callProp from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/callProp.es.js'
  *
  * const priceRoundedDown = callProp('toFixed', 2)(5.992)
  * console.log('priceRoundedDown:', priceRoundedDown) // '5.99'

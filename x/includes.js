@@ -23,7 +23,7 @@ const objectIncludes = function (object, value) {
  * Check if a collection includes another value by [SameValueZero](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero).
  *
  * ```javascript [playground]
- * import includes from 'https://unpkg.com/rubico/dist/x/includes.es.js'
+ * import includes from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/includes.es.js'
  *
  * console.log(
  *   includes(5)([1, 2, 3, 4, 5])

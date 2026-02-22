@@ -12,7 +12,7 @@
  * Get the last element of a collection
  *
  * ```javascript [playground]
- * import last from 'https://unpkg.com/rubico/dist/x/last.es.js'
+ * import last from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/last.es.js'
  *
  * console.log(last([1, 2, 3])) // 3
  * console.log(last([])) // undefined

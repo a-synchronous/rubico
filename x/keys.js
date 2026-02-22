@@ -12,7 +12,7 @@ const objectKeys = require('../_internal/objectKeys')
  * Get an array of keys from an instance.
  *
  * ```javascript [playground]
- * import keys from 'https://unpkg.com/rubico/dist/x/keys.es.js'
+ * import keys from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/keys.es.js'
  *
  * console.log(keys({ a: 1, b: 2, c: 3 })) // ['a', 'b', 'c']
  * console.log(keys(['hello', 'world'])) // [0, 1]

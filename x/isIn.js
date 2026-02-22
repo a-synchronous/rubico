@@ -14,7 +14,7 @@ const __ = require('../_internal/placeholder')
  * Counterpart to includes. Check if a collection includes another value.
  *
  * ```javascript [playground]
- * import isIn from 'https://unpkg.com/rubico/dist/x/isIn.es.js'
+ * import isIn from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/isIn.es.js'
  *
  * console.log(
  *   isIn(1, [1, 2, 3])
@@ -88,7 +88,7 @@ const _isIn = function (value, container) {
  * Counterpart to includes. Check if a collection includes another value.
  *
  * ```javascript [playground]
- * import isIn from 'https://unpkg.com/rubico/dist/x/isIn.es.js'
+ * import isIn from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/isIn.es.js'
  *
  * console.log(
  *   isIn([1, 2, 3](1)

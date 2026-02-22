@@ -14,7 +14,7 @@ const objectValues = require('../_internal/objectValues')
  * Get an array of values from an instance.
  *
  * ```javascript [playground]
- * import values from 'https://unpkg.com/rubico/dist/x/values.es.js'
+ * import values from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/values.es.js'
  *
  * console.log(values({ a: 1, b: 2, c: 3 })) // [1, 2, 3]
  * console.log(values('abc')) // ['a', 'b', 'c']

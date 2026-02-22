@@ -37,7 +37,7 @@ const flatMap = require('../flatMap')
  * Flatten a collection. Works in transducer position.
  *
  * ```javascript [playground]
- * import flatten from 'https://unpkg.com/rubico/dist/x/flatten.es.js'
+ * import flatten from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/flatten.es.js'
  *
  * flatten([
  *   [1, 1],

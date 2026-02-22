@@ -10,7 +10,7 @@
  * Determine whether a value is a function.
  *
  * ```javascript [playground]
- * import isFunction from 'https://unpkg.com/rubico/dist/x/isFunction.es.js'
+ * import isFunction from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/isFunction.es.js'
  *
  * const add = (a, b) => a + b
  *

@@ -12,7 +12,7 @@ const objectKeysLength = require('../_internal/objectKeysLength')
  * Check if a value is empty.
  *
  * ```javascript [playground]
- * import isEmpty from 'https://unpkg.com/rubico/dist/x/isEmpty.es.js'
+ * import isEmpty from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/isEmpty.es.js'
  *
  * console.log('', isEmpty('')) // true
  * console.log([], isEmpty([])) // true

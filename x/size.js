@@ -12,7 +12,7 @@ const objectKeysLength = require('../_internal/objectKeysLength')
  * Get the count of elements in a value.
  *
  * ```javascript [playground]
- * import size from 'https://unpkg.com/rubico/dist/x/size.es.js'
+ * import size from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/size.es.js'
  *
  * console.log(size([1, 2, 3])) // 3
  * console.log(size('hey')) // 3

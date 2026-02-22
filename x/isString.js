@@ -10,7 +10,7 @@
  * Determine whether a value is a string.
  *
  * ```javascript [playground]
- * import isString from 'https://unpkg.com/rubico/dist/x/isString.es.js'
+ * import isString from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/isString.es.js'
  *
  * console.log(
  *   isString('hey'),
