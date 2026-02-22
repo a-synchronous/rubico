@@ -4557,6 +4557,34 @@ flatMap(
     })
   })
 
+  describe('thunkify.call', () => {
+    class Point {
+      constructor(x, y) {
+        this.x = x
+        this.y = y
+      }
+    }
+
+    function distanceTo(point) {
+      const x2 = (point.x - this.x) ** 2
+      const y2 = (point.y - this.y) ** 2
+      return (x2 + y2) ** 0.5
+    }
+
+    const point0 = new Point(0, 0)
+    const point1 = new Point(3, 4)
+
+    it('creates a thunk that calls a function with the specified context', async () => {
+      const thunk = thunkify.call(distanceTo, point0, point1)
+      assert.equal(thunk(), 5)
+    })
+
+    it('resolves promises in argument position', async () => {
+      const thunk = thunkify.call(distanceTo, point0, Promise.resolve(point1))
+      assert.equal(await thunk(), 5)
+    })
+  })
+
   describe('always', () => {
     it('always returns a value', async () => {
       assert.strictEqual(always(1)(), 1)
