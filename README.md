@@ -26,7 +26,7 @@ pipe(numbers, [
 ```
 
 ## Installation
-[Core build](https://cdn.jsdelivr.net/npm/rubico/index.js) ([~7.7 kB minified and gzipped](https://cdn.jsdelivr.net/npm/rubico/dist/rubico.min.js)) [Transducer module](https://cdn.jsdelivr.net/npm/rubico/dist/Transducer.js) ([~1.5kb minified and gzipped](https://cdn.jsdelivr.net/npm/rubico/dist/Transducer.min.js))
+[Core build](https://cdn.jsdelivr.net/npm/rubico/index.js) ([~8.3 kB minified and gzipped](https://cdn.jsdelivr.net/npm/rubico/dist/rubico.min.js)) [Transducer module](https://cdn.jsdelivr.net/npm/rubico/dist/Transducer.js) ([~1.7kb minified and gzipped](https://cdn.jsdelivr.net/npm/rubico/dist/Transducer.min.js))
 
 with [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm):
 ```bash
