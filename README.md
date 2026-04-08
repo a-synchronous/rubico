@@ -251,7 +251,7 @@ Pull requests should provide some basic context and link the relevant issue. Her
 For more information please see [CONTRIBUTING.md](https://github.com/a-synchronous/rubico/blob/master/CONTRIBUTING.md)
 
 ## License
-Rubico is [MIT Licensed](https://github.com/a-synchronous/rubico/blob/master/LICENSE).
+Rubico is distributed under the [CFOSS License](https://cloutsworld.com/en-us/legal/license/cfoss).
 
 ## Support
  * minimum Node.js version: 16
