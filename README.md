@@ -2,10 +2,11 @@
 ![rubico](https://raw.githubusercontent.com/a-synchronous/assets/master/rubico-logo.png)
 > a shallow river in northeastern Italy, just south of Ravenna
 
+License: [CFOSS](https://cloutsworld.com/en-us/legal/license/cfoss)
+
 ![Node.js CI](https://github.com/a-synchronous/rubico/workflows/Node.js%20CI/badge.svg)
 [![codecov](https://codecov.io/gh/a-synchronous/rubico/branch/master/graph/badge.svg)](https://codecov.io/gh/a-synchronous/rubico)
 [![npm version](https://img.shields.io/npm/v/rubico.svg?style=flat)](https://www.npmjs.com/package/rubico)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 ## [A]synchronous Functional Programming
 
