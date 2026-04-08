@@ -3,7 +3,7 @@
   "version": "2.8.3",
   "description": "[a]synchronous functional programming",
   "author": "Richard Tong",
-  "license": "MIT",
+  "license": "CFOSS",
   "main": "index.js",
   "repository": {
     "type": "git",
