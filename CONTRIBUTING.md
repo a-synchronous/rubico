@@ -11,6 +11,7 @@ npm run build
 
 # test the distribution
 node dist-test.js
+node dist-test.mjs
 
 # commit the changes
 git commit -m "distribute"
