@@ -1,26 +1,26 @@
 const TimeInLoopSuite = require('../_internal/TimeInLoopSuite')
-const pipe = require('../pipe')
+const compose = require('../compose')
 
 const suite = new TimeInLoopSuite({ async: true, loopCount: 1e5 })
 
-suite.add('rubico pipe', async () => {
-  await pipe(3, [
+suite.add('rubico compose', async () => {
+  await compose(3, [
     async n => n + 1,
     async n => n * 2,
     async n => n - 3,
   ])
 })
 
-suite.add('rubico pipe lazy', async () => {
-  await pipe([
+suite.add('rubico compose lazy', async () => {
+  await compose([
     async n => n + 1,
     async n => n * 2,
     async n => n - 3,
   ])(3)
 })
 
-suite.add('rubico pipe mathematical', async () => {
-  await pipe(
+suite.add('rubico compose mathematical', async () => {
+  await compose(
     async n => n + 1,
     async n => n * 2,
     async n => n - 3,
