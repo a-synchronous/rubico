@@ -2,6 +2,7 @@
 ![rubico](https://raw.githubusercontent.com/a-synchronous/assets/master/rubico-logo.png)
 > a shallow river in northeastern Italy, just south of Ravenna
 
+Source code: [GitHub](https://github.com/a-synchronous/rubico) |
 License: [CFOSS](https://cloutsworld.com/en-us/legal/license/cfoss)
 
 ![Node.js CI](https://github.com/a-synchronous/rubico/workflows/Node.js%20CI/badge.svg)
