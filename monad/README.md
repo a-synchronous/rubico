@@ -6,70 +6,76 @@ Warning: this entire directory is experimental; APIs here are subject to change.
 
 # Specification
 
-Each rubico monad must return an object that implements `.chain`, while having some notion of `.map` and `.concat`. Similarly, while `.empty` is not strictly required, there should be some notion of an empty instance of a Monad. For example, `[]` is `empty` for Arrays. All of these methods as well as any others are free to implement; only `.chain` is required. Monads should throw TypeErrors from the constructor for invalid types of arguments. rubico Monads should generally act on objects or primitive values and not functions. A Monad that acts on a function may be better for rubico/x.
+Each rubico monad must return an object that implements `.chain`, `.flatMap`, `.then`, or have a combination of `.map` and `.concat`. Similarly, while `.empty` is not strictly required, there should be some notion of an empty instance of a Monad. For example, `[]` is `empty` for Arrays. All of these methods as well as any others are free to implement; only `.chain`, `.flatMap`, or `.then` is required. Monads should throw TypeErrors from the constructor for invalid types of arguments. rubico Monads should generally act on objects or primitive values and not functions. A Monad that acts on a function may be better for rubico/x.
 
 ```coffeescript [specscript]
 Monad = (args ...any)=>({
   chain: function,
-  map: function?,
-  concat: function?,
-  empty: function?,
+  flatMap: function,
+  then: function,
+  map: function,
+  concat: function,
+  empty: function,
 })
 ```
 
-## Monad.prototype.chain - required
+## Monad.prototype.chain
 ```coffeescript [specscript]
-Monad(value any).chain(
-  flatMapper value=>(result Monad|any)) -> result
+monad Monad
+
+monad.chain(any=>Monad|any) -> Monad
+```
+
+## Monad.prototype.flatMap
+```coffeescript [specscript]
+monad Monad
+
+monad.flatMap(any=>Monad|any) -> Monad
+```
+
+## Monad.prototype.then
+```coffeescript [specscript]
+monad Monad
+
+monad.then(any=>Monad|any) -> Monad
 ```
 
 ## Monad.prototype.map
 ```coffeescript [specscript]
-Monad(value any).map(mapper value=>any) -> mappedMonad Monad
+monad Monad
+
+monad.map(value=>any) -> Monad
 ```
 
 ## Monad.prototype.concat
 ```coffeescript [specscript]
-Monad(value any).concat(anotherMonad Monad) -> combinedMonad Monad
+monad Monad
+
+monad.concat(Monad) -> Monad
 ```
 
 ## Monad.prototype.empty
 ```coffeescript [specscript]
-Monad.empty() -> emptyMonad Monad
+monad Monad
+
+monad.empty() -> Monad
 ```
 
-# Examples
-
+# Example
 A monad's effect is activated by calling its `.chain` method with `flatMap`.
 
 ```javascript
-const { flatMap } = require('rubico')
-
 const Maybe = value => ({
-  chain(flatMapper) {
-    return value == null ? value : flatMapper(value)
+  chain(func) {
+    if (value) {
+      func(value)
+    }
+    return this
   },
 })
 
-flatMap(console.log)(Maybe(null))
+Maybe(null).chain(console.log)
 
-flatMap(console.log)(Maybe('hello world')) // hello world
+Maybe('hello world').chain(console.log) // hello world
 ```
 
-Additionally, if a monad implements `.concat`, it can be transformed as a Semigroup with a transducer and `transform`.
-
-```javascript
-const { transform } = require('rubico')
-
-const Max = number => ({
-  number,
-  concat(value) {
-    return Max(Math.max(
-      number, value.constructor == Max ? value.number : value))
-  },
-})
-
-transform(
-  map(Math.abs), new Max(-Infinity),
-)([-1, -2, -3, -4, -5]) // Max { 5 }
-```
