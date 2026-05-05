@@ -1,4 +1,4 @@
-# rubico/monad
+# Monad
 
 This is a place for JavaScript monads.
 
@@ -6,63 +6,80 @@ Warning: this entire directory is experimental; APIs here are subject to change.
 
 # Specification
 
-Each rubico monad must return an object that implements `.chain`, `.flatMap`, `.then`, or have a combination of `.map` and `.concat`. Similarly, while `.empty` is not strictly required, there should be some notion of an empty instance of a Monad. For example, `[]` is `empty` for Arrays. All of these methods as well as any others are free to implement; only `.chain`, `.flatMap`, or `.then` is required. Monads should throw TypeErrors from the constructor for invalid types of arguments. rubico Monads should generally act on objects or primitive values and not functions. A Monad that acts on a function may be better for rubico/x.
+Each monad must have a way to wrap one or more values, either using the constructor or using the `of` method.
 
+Each monad must implement the `chain`, `flatMap`, or `then` methods, or have a combination of the `map` and `concat` methods. Similarly, while `empty` is not strictly required, there should be some notion of an empty instance of a Monad. For example, `[]` is `empty` for Arrays. All of these methods as well as any others are free to implement; only the `chain`, `flatMap`, or `then` methods and the constructor or `of` methods is required.
+
+Each monad should throw TypeErrors from the constructor for invalid types of arguments.
+
+## Monad constructor
 ```coffeescript [specscript]
-Monad = (args ...any)=>({
+new Monad(...arguments) -> Monad {
+  of: function,
   chain: function,
   flatMap: function,
   then: function,
   map: function,
   concat: function,
   empty: function,
-})
+}
 ```
 
-## Monad.prototype.chain
+## Monad of method
+```coffeescript [specscript]
+Monad.of(...arguments) -> Monad {
+  of: function,
+  chain: function,
+  flatMap: function,
+  then: function,
+  map: function,
+  concat: function,
+  empty: function,
+}
+```
+
+## Monad chain method
 ```coffeescript [specscript]
 monad Monad
 
 monad.chain(any=>Monad|any) -> Monad
 ```
 
-## Monad.prototype.flatMap
+## Monad flatMap method
 ```coffeescript [specscript]
 monad Monad
 
 monad.flatMap(any=>Monad|any) -> Monad
 ```
 
-## Monad.prototype.then
+## Monad then method
 ```coffeescript [specscript]
 monad Monad
 
 monad.then(any=>Monad|any) -> Monad
 ```
 
-## Monad.prototype.map
+## Monad map method
 ```coffeescript [specscript]
 monad Monad
 
 monad.map(value=>any) -> Monad
 ```
 
-## Monad.prototype.concat
+## Monad concat method
 ```coffeescript [specscript]
 monad Monad
 
 monad.concat(Monad) -> Monad
 ```
 
-## Monad.prototype.empty
+## Monad empty method
 ```coffeescript [specscript]
-monad Monad
-
-monad.empty() -> Monad
+Monad.empty() -> Monad
 ```
 
 # Example
-A monad's effect is activated by calling its `.chain` method with `flatMap`.
+A monad's effect is activated by calling its `chain` method with a function.
 
 ```javascript
 const Maybe = value => ({
