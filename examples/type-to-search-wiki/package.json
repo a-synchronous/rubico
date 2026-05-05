@@ -6,7 +6,6 @@
     "start": "serve ./src"
   },
   "author": "",
-  "license": "ISC",
   "devDependencies": {
     "serve": "^13.0.2"
   }

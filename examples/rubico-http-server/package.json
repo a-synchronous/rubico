@@ -3,7 +3,6 @@
   "version": "0.0.0",
   "description": "The HTTP server with rubico switchCase and tryCatch from Handling HTTP",
   "author": "Richard Tong",
-  "license": "MIT",
   "main": "index.js",
   "repository": {
     "type": "git",
