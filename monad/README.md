@@ -21,7 +21,6 @@ new Monad(...arguments) -> Monad {
   then: function,
   map: function,
   concat: function,
-  empty: function,
 }
 ```
 
@@ -34,7 +33,6 @@ Monad.of(...arguments) -> Monad {
   then: function,
   map: function,
   concat: function,
-  empty: function,
 }
 ```
 
