@@ -8,7 +8,7 @@ Warning: this entire directory is experimental; APIs here are subject to change.
 
 Each monad must have a way to wrap one or more values, either using the constructor or using the `of` method.
 
-Each monad must implement the `chain`, `flatMap`, or `then` methods, or have a combination of the `map` and `concat` methods. Similarly, while `empty` is not strictly required, there should be some notion of an empty instance of a Monad. For example, `[]` is `empty` for Arrays. All of these methods as well as any others are free to implement; only the `chain`, `flatMap`, or `then` methods and the constructor or `of` methods is required.
+Each monad must implement the `chain`, `flatMap`, or `then` methods, or have a combination of the `map` and `concat` methods. Similarly, while `empty` is not strictly required, there should be some notion of an empty instance of a Monad. For example, `[]` is `empty` for Arrays. All of these methods as well as any others not listed may be implemented; only the `chain`, `flatMap`, or `then` methods and the constructor or `of` methods are required.
 
 Each monad should throw TypeErrors from the constructor for invalid types of arguments.
 
