@@ -40,28 +40,28 @@ Monad.of(...arguments) -> Monad {
 ```coffeescript [specscript]
 monad Monad
 
-monad.chain(any=>Monad|any) -> Monad
+monad.chain(any -> Monad|any) -> Monad
 ```
 
 ## Monad flatMap method
 ```coffeescript [specscript]
 monad Monad
 
-monad.flatMap(any=>Monad|any) -> Monad
+monad.flatMap(any -> Monad|any) -> Monad
 ```
 
 ## Monad then method
 ```coffeescript [specscript]
 monad Monad
 
-monad.then(any=>Monad|any) -> Monad
+monad.then(any -> Monad|any) -> Monad
 ```
 
 ## Monad map method
 ```coffeescript [specscript]
 monad Monad
 
-monad.map(value=>any) -> Monad
+monad.map(value -> any) -> Monad
 ```
 
 ## Monad concat method
