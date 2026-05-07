@@ -3693,9 +3693,13 @@ flatMap(
     })
     it('defaultValue can be a function', async () => {
       ase(get('a', obj => obj.b)({ b: 1 }), 1)
+      ase(await get('a', async obj => obj.b)({ b: 1 }), 1)
       ase(get('a', obj => obj.b)({}), undefined)
+      ase(await get('a', async obj => obj.b)({}), undefined)
     })
-    it('clears cache at size 500', async () => {
+    it('defaultValue can be a promise', async () => {
+      ase(await get({}, 'a', Promise.resolve(9)), 9)
+      ase(await get('a', Promise.resolve(9))({}), 9)
     })
   })
 

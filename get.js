@@ -1,6 +1,9 @@
 const isPromise = require('./_internal/isPromise')
+const promiseAll = require('./_internal/promiseAll')
 const __ = require('./_internal/placeholder')
+const curry2 = require('./_internal/curry2')
 const curry3 = require('./_internal/curry3')
+const funcApply = require('./_internal/funcApply')
 const isArray = require('./_internal/isArray')
 const isObject = require('./_internal/isObject')
 const getByPath = require('./_internal/getByPath')
@@ -18,47 +21,62 @@ const _get = function (object, path, defaultValue) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * get(
- *   object Promise|Object,
- *   path string|number|Array<string|number>,
- *   defaultValue? function|any
- * ) -> result Promise|Object
+ * path string|number|Array<string|number>
+ * defaultValue any
+ * defaultResolver function
  *
- * get(
- *   path string|number|Array<string|number>,
- *   defaultValue? function|any
- * )(object Object) -> result Promise|Object
+ * get(Promise|Object, path) -> Promise|any
+ * get(Promise|Object, path, defaultValue) -> Promise|any
+ * get(Promise|Object, path, defaultResolver) -> Promise|any
+ *
+ * get(path)(Object) -> Promise|any
+ * get(path, defaultValue)(Object) -> Promise|any
+ * get(path, defaultResolver)(Object) -> Promise|any
  * ```
  *
  * @description
- * Accesses a property of an object given a path denoted by a string, number, or an array of string or numbers.
+ * Property accessor. Accesses the property of an object given a path denoted by a string, number, or array of string or numbers.
  *
  * ```javascript [playground]
  * const obj = { hello: 'world' }
  *
- * console.log(get(obj, 'hello')) // world
+ * const value = get(obj, 'hello')
+ *
+ * console.log(value)
  * ```
  *
- * `get` supports a lazy API for composability
+ * `get` supports a lazy API for composability.
  *
  * ```javascript [playground]
  * const obj = { hello: 'world' }
  *
  * const getHello = get('hello')
  *
- * console.log(getHello({ hello: 'world' })) // world
+ * const value = getHello({ hello: 'world' })
+ *
+ * console.log(value)
  * ```
  *
- * If the value at the end of the path is not found on the object, returns an optional default value. The default value can be a function resolver that takes the object as an argument. If no default value is provided, returns `undefined`. The function resolver may be asynchronous (returns a promise).
+ * If the value denoted by the path is not found in the object, `get` returns a default value. The default value can be a function resolver that takes the object as an argument. If no default value is provided, `get` returns `undefined`.
  *
  * ```javascript [playground]
  * const getHelloWithDefaultValue = get('hello', 'default')
  *
- * console.log(getHelloWithDefaultValue({ foo: 'bar' })) // default
+ * console.log(getHelloWithDefaultValue({ foo: 'bar' }))
  *
  * const getHelloWithDefaultResolver = get('hello', object => object.foo)
  *
- * console.log(getHelloWithDefaultResolver({ foo: 'bar' })) // bar
+ * console.log(getHelloWithDefaultResolver({ foo: 'bar' }))
+ * ```
+ *
+ * The default resolver may be asynchronous, in which case `get` returns a promise.
+ *
+ * ```javascript [playground]
+ * const asyncDefaultResolver = async object => object.a
+ *
+ * const promise = get({ a: 1 }, 'notfound', asyncDefaultResolver)
+ *
+ * promise.then(console.log)
  * ```
  *
  * `get` supports three types of path patterns for nested property access.
@@ -70,18 +88,22 @@ const _get = function (object, path, defaultValue) {
  * ```javascript [playground]
  * const getABC0 = get('a.b.c[0]')
  *
- * console.log(getABC0({ a: { b: { c: ['hello'] } } })) // hello
+ * const abc0 = getABC0({ a: { b: { c: ['hello'] } } })
+ *
+ * console.log(abc0)
  *
  * const get00000DotNotation = get('0.0.0.0.0')
  * const get00000BracketNotation = get('[0][0][0][0][0]')
  * const get00000ArrayNotation = get([0, 0, 0, 0, 0])
  *
- * console.log(get00000DotNotation([[[[['foo']]]]])) // foo
- * console.log(get00000BracketNotation([[[[['foo']]]]])) // foo
- * console.log(get00000ArrayNotation([[[[['foo']]]]])) // foo
+ * const nested = [[[[['foo']]]]]
+ *
+ * console.log(get00000DotNotation(nested))
+ * console.log(get00000BracketNotation(nested))
+ * console.log(get00000ArrayNotation(nested))
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ * Any promises passed in argument position are resolved for their values before further execution.
  *
  * ```javascript [playground]
  * get(Promise.resolve({ a: 1 }), 'a').then(console.log) // 1
@@ -101,8 +123,8 @@ const get = function (arg0, arg1, arg2) {
   if (typeof arg0 == 'string' || typeof arg0 == 'number' || isArray(arg0)) {
     return curry3(_get, __, arg0, arg1)
   }
-  if (isPromise(arg0)) {
-    return arg0.then(curry3(_get, __, arg1, arg2))
+  if (isPromise(arg0) || isPromise(arg2)) {
+    return promiseAll([arg0, arg1, arg2]).then(curry2(funcApply, _get, __))
   }
   return _get(arg0, arg1, arg2)
 }
