@@ -59,7 +59,7 @@ const _not = function (args, predicate) {
  * not(promise).then(console.log) // true
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ * Any promises passed in argument position are resolved for their values before further execution.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1

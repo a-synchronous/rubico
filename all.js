@@ -36,42 +36,35 @@ const _allValues = function (values) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * args Array<any>
- * argsOrPromises Array<Promise|any>
+ * type SyncOrAsyncResolver = (...arguments)=>Promise|any
+ * type ResolverOrValue = SyncOrAsyncResolver|Promise|any
  *
- * type SyncOrAsyncResolver = (...args)=>Promise|any
+ * all(Promise|Array<Promise|any>) -> Promise|Array
+ * all(...arguments, Array<ResolverOrValue>) -> Promise|Array
+ * all(Array<ResolverOrValue>)(...arguments) -> Promise|Array
  *
- * arrayResolversOrPromisesOrValues Array<SyncOrAsyncResolver|Promise|any>
- * objectResolversOrPromisesOrValues Object<SyncOrAsyncResolver|Promise|any>
- *
- * all(arrayValues Promise|Array<Promise|any>) -> arrayResult Promise|Array
- * all(...argsOrPromises, arrayResolversOrPromisesOrValues) -> arrayResult Promise|Array
- * all(arrayResolversOrPromisesOrValues)(...args) -> arrayResult Promise|Array
- *
- * all(objectValues Promise|Object<Promise|any>) -> objectResult Promise|Object
- * all(...argsOrPromises, objectResolversOrPromisesOrValues) -> objectResult Promise|Object
- * all(objectResolversOrPromisesOrValues)(...args) -> objectResult Promise|Object
+ * all(Promise|Object<Promise|any>) -> Promise|Object
+ * all(...arguments, Object<ResolverOrValue>) -> Promise|Object
+ * all(Object<ResolverOrValue>)(...arguments) -> Promise|Object
  * ```
  *
  * @description
- * Constructs an array if provided an array of resolvers, promises, values, or a mix thereof. Constructs an object if provided an object of resolvers, promises, values, or a mix thereof. If provided any resolvers, `all` returns a function that constructs the array or object. Otherwise, if none of the provided values in the array or object are functions, `all` returns the constructed array or object directly.
- *
- * `all` constructs an array from resolvers.
+ * Function composer and data constructor. Constructs an array if provided an array of resolvers, promises, or values. Constructs an object if provided an object of resolvers, promises, or values. `all` returns a constructor function if provided resolvers. Otherwise, `all` returns the constructed array or object directly.
  *
  * ```javascript [playground]
- * const createArrayOfGreetingsFor = all([
+ * const createArrayOfGreetings = all([
  *   name => `Hi ${name}`,
- *   name => `Hey ${name}`,
  *   name => `Hello ${name}`,
+ *   name => `Greetings ${name}`,
  * ])
  *
- * const arrayOfGreetingsFor1 = createArrayOfGreetingsFor('1')
+ * const arrayOfGreetings = createArrayOfGreetings('example')
  *
  * console.log(arrayOfGreetingsFor1)
- * // ['Hi 1', 'Hey 1', 'Hello 1']
+ * // ['Hi example', 'Hello example', 'Gretings example']
  * ```
  *
- * If any provided values are promises, `all` returns a promise.
+ * If provided promises, `all` resolves those promises and returns a promise of the resolved values.
  *
  * ```javascript [playground]
  * const promise1 = all([
@@ -79,23 +72,25 @@ const _allValues = function (values) {
  *   Promise.resolve(2),
  *   3,
  * ])
- * promise1.then(console.log) // [1, 2, 3]
+ *
+ * promise1.then(console.log)
  *
  * const promise2 = all({
  *   a: 1,
  *   b: Promise.resolve(2),
  *   c: Promise.resolve(3),
  * })
- * promise2.then(console.log) // { a: 1, b: 2, c: 3 }
+ *
+ * promise2.then(console.log)
  * ```
  *
- * If any provided resolvers are asynchronous, `all` returns a promise. `all` can be used in a pipeline to compose and manpulate data.
+ * If any resolvers provided to `all` are asynchronous, `all` returns a promise.
  *
  * ```javascript [playground]
  * const identity = value => value
  *
  * const userbase = new Map()
- * userbase.set('1', { _id: 1, name: 'John' })
+ * userbase.set('1', { id: 1, name: 'John' })
  *
  * const getUserByID = async id => userbase.get(id)
  *
@@ -109,35 +104,17 @@ const _allValues = function (values) {
  *   }),
  * ])
  *
- * getAndLogUserById('1') // Got user {"_id":1,"name":"John"} by id 1
+ * getAndLogUserById('1')
  * ```
  *
- * Provided no resolvers, `all` returns the constructed array or object.
- *
- * ```javascript [playground]
- * all({}, {
- *   a: Promise.resolve(1),
- *   b: 2,
- *   c: () => 3,
- *   d: async () => 4,
- * }).then(console.log) // { a: 1, b: 2, c: 3, d: 4 }
- *
- * all([], [
- *   Promise.resolve(1),
- *   2,
- *   () => 3,
- *   async () => 4,
- * ]).then(console.log) // [1, 2, 3, 4]
- * ```
- *
- * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ * Any promises passed in argument position are resolved for their values before further execution.
  *
  * ```javascript [playground]
  * all(Promise.resolve({ a: 1 }), [
  *   obj => obj.a + 1,
  *   obj => obj.a + 2,
  *   obj => obj.a + 3,
- * ]).then(console.log) // [2, 3, 4]
+ * ]).then(console.log)
  * ```
  *
  * See also:
@@ -186,9 +163,9 @@ const all = function (...args) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * all.series(...args, funcsArray Array<function>) -> result Promise|Array
+ * all.series(...arguments, Array<function>) -> Promise|Array
  *
- * all.series(funcsArray Array<function>)(...args) -> result Promise|Array
+ * all.series(Array<function>)(...arguments) -> Promise|Array
  * ```
  *
  * @description
@@ -197,15 +174,13 @@ const all = function (...args) {
  * ```javascript [playground]
  * const sleep = ms => () => new Promise(resolve => setTimeout(resolve, ms))
  *
- * all.series([
+ * all.series('hello', [
  *   greeting => console.log(greeting + ' world'),
  *   sleep(1000),
- *   greeting => console.log(greeting + ' mom'),
+ *   greeting => console.log(greeting + ' all'),
  *   sleep(1000),
  *   greeting => console.log(greeting + ' goodbye'),
- * ])('hello') // hello world
- *             // hello mom
- *             // hello goodbye
+ * ])
  * ```
  *
  * @execution series

@@ -145,7 +145,7 @@ const areAllPredicatesTruthy = function (args, predicates) {
  * console.log(condition) // true
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ * Any promises passed in argument position are resolved for their values before further execution.
  *
  * ```javascript [playground]
  * and(Promise.resolve(5), [

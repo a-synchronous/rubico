@@ -10,31 +10,30 @@ const funcConcat = require('./_internal/funcConcat')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * args Array<any>
- * argsOrPromises Array<Promise|any>
- *
- * type SyncOrAsyncFunction = (...args)=>Promise|any
+ * type SyncOrAsyncFunction = (...arguments)=>Promise|any
  * type UnarySyncOrAsyncFunction = any=>Promise|any
  *
  * funcs [SyncOrAsyncFunction, ...Array<UnarySyncOrAsyncFunction>]
  *
- * compose(funcs)(...args) -> result Promise|any
- * compose(...argsOrPromises, funcs) -> result Promise|any
- * compose(...funcs)(...args) -> result Promise|any
+ * compose(funcs)(...arguments) -> Promise|any
+ * compose(...arguments, funcs) -> Promise|any
+ * compose(...funcs)(...arguments) -> Promise|any
  * ```
  *
  * @description
- * Creates a function composition from multiple functions. Each function in the composition is evaluated starting from the last function in the composition in series, passing its return value as an argument to the previous function. The result of a composition execution is the return value of the first function in the composition. All arguments provided to the composition are provided to the last function in the composition. If any function in the composition is asynchronous, the result of the composition execution is a Promise.
+ * Creates a function composition from multiple functions. Each function in the function composition is evaluated in series starting from the last function in the function composition, passing its return value as the first and only argument to the previous function in the function composition. The result of the execution of a function composition is the return value of the first function in the function composition. If any function in the function composition is asynchronous, the result of the execution of the function composition is a promise.
+ *
+ * Multiple arguments may be provided to a function composition, in which case they are passed directly to the last function in the function composition.
  *
  * ```javascript [playground]
  * const f = x => x * 2
  * const g = x => x + 3
  *
  * const result = compose(5, [f, g])
- * console.log(result) // 16
+ * console.log(result)
  * ```
  *
- * `compose` supports a mathematical API.
+ * Functions may be passed to `compose` as arguments instead of as items of an array.
  *
  * ```javascript [playground]
  * const f = x => x * 2
@@ -42,14 +41,14 @@ const funcConcat = require('./_internal/funcConcat')
  *
  * const composition = compose(f, g)
  *
- * console.log(composition(1)) // 4
+ * console.log(composition(1))
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ * Any promises passed in argument position are resolved for their values before further execution.
  *
  * ```javascript [playground]
  * compose(Promise.resolve(1), 2, Promise.resolve(3), [
- *   console.log, // [1, 2, 3]
+ *   console.log,
  * ])
  * ```
  *

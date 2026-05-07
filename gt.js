@@ -65,7 +65,7 @@ const greaterThan = require('./_internal/greaterThan')
  * ])
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ * Any promises passed in argument position are resolved for their values before further execution.
  *
  * ```javascript [playground]
  * gt(Promise.resolve({ a: 2, b: 1 }), get('a'), get('b')).then(console.log) // true

@@ -10,41 +10,35 @@ const __ = require('./_internal/placeholder')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * args Array<any>
- * argsOrPromises Array<Promise|any>
- *
- * type SyncOrAsyncFunction = (...args)=>Promise|any
+ * type SyncOrAsyncFunction = (...arguments)=>Promise|any
  * type UnarySyncOrAsyncFunction = any=>Promise|any
  *
  * funcs [SyncOrAsyncFunction, ...Array<UnarySyncOrAsyncFunction>]
  *
- * pipe(funcs)(...args) -> result Promise|any
- * pipe(...argsOrPromises, funcs) -> result Promise|any
- * pipe(...funcs)(...args) -> result Promise|any
+ * pipe(funcs)(...arguments) -> Promise|any
+ * pipe(...arguments, funcs) -> Promise|any
+ * pipe(...funcs)(...arguments) -> Promise|any
  * ```
  *
  * @description
- * Creates a function pipeline from multiple functions. Each function in the pipeline is evaluated in series, passing its return value as an argument to the next function. The result of a pipeline execution is the return value of the last function in the pipeline. All arguments provided to the pipeline are provided to the first function in the pipeline. If any function in the pipeline is asynchronous, the result of the pipeline execution is a Promise.
+ * Creates a function pipeline from multiple functions. Each function in the function pipeline is evaluated in series starting from the first function in the function pipeline, passing its return value as the first and only argument to the next function in the pipeline. The result of the execution of a function pipeline is the return value of the last function in the function pipeline. If any function in the function pipeline is asynchronous, the result of the execution of the function pipeline is a promise.
+ *
+ * Multiple arguments may be provided to a function pipeline, in which case they are passed directly to the first function in the function pipeline.
  *
  * ```javascript [playground]
- * const syncAdd123 = pipe([
- *   number => number + 1,
- *   number => number + 2,
- *   number => number + 3,
+ * function add(a, b, c) {
+ *   return a + b + c
+ * }
+ *
+ * const pipeline = pipe([
+ *   add,
+ *   console.log,
  * ])
  *
- * console.log(syncAdd123(5)) // 11
- *
- * const asyncAdd123 = pipe([
- *   async number => number + 1,
- *   async number => number + 2,
- *   async number => number + 3,
- * ])
- *
- * asyncAdd123(5).then(console.log) // 11
+ * pipeline(1, 2, 3)
  * ```
  *
- * `pipe` supports a mathematical API.
+ * Functions may be passed to `pipe` as arguments instead of as items of an array.
  *
  * ```javascript [playground]
  * const appendB = x => x + 'b'
@@ -52,14 +46,14 @@ const __ = require('./_internal/placeholder')
  *
  * const appendBC = pipe(appendB, appendC)
  *
- * console.log(appendBC('a')) // 'abc'
+ * console.log(appendBC('a'))
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ * Any promises passed in argument position are resolved for their values before further execution.
  *
  * ```javascript [playground]
  * pipe(Promise.resolve(1), 2, Promise.resolve(3), [
- *   console.log, // 1 2 3
+ *   console.log,
  * ])
  * ```
  *

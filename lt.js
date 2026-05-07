@@ -67,7 +67,7 @@ const lessThan = require('./_internal/lessThan')
  * ])
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ * Any promises passed in argument position are resolved for their values before further execution.
  *
  * ```javascript [playground]
  * lt(Promise.resolve({ a: 1, b: 2 }), get('a'), get('b')).then(console.log) // true

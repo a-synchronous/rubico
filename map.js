@@ -250,7 +250,7 @@ const _map = function (value, f) {
  * })()
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ * Any promises passed in argument position are resolved for their values before further execution.
  *
  * ```javascript [playground]
  * const asyncSquare = async n => n ** 2
@@ -357,7 +357,7 @@ const _mapEntries = (value, f) => {
  * // Map(3) { 'A' => 1, 'B' => 4, 'C' => 9 }
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ * Any promises passed in argument position are resolved for their values before further execution.
  *
  * ```javascript [playground]
  * const asyncSquareEntries = async ([k, v]) => [k, v ** 2]
@@ -467,7 +467,7 @@ const _mapSeries = function (collection, f) {
  * map.series([1, 2, 3, 4, 5], delayedLog)
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ * Any promises passed in argument position are resolved for their values before further execution.
  *
  * ```javascript [playground]
  * const asyncSquare = async n => n ** 2
@@ -574,7 +574,7 @@ const _mapPool = function (f, concurrency, mapper) {
  * ]))(ids)
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ * Any promises passed in argument position are resolved for their values before further execution.
  *
  * ```javascript [playground]
  * const asyncSquare = async n => n ** 2

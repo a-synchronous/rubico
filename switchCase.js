@@ -12,84 +12,84 @@ const curryArgs3 = require('./_internal/curryArgs3')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * args Array<any>
- * argsOrPromises Array<Promise|any>
+ * type SyncOrAsyncPredicate = (...arguments)=>Promise|boolean|any
+ * type SyncOrAsyncFunction = (...arguments)=>Promise|any
  *
- * type SyncOrAsyncPredicate = (...args)=>Promise|boolean|any
+ * conditionalValues Array<Promise|boolean|any>
+ * conditionalFunctionsOrValues Array<SyncOrAsyncPredicate|SyncOrAsyncFunction|Promise|boolean|any>
  *
- * conditionalPromisesOrValues Array<Promise|boolean|any>
- * conditionalFuncsOrPromisesOrValues Array<SyncOrAsyncPredicate|Promise|boolean|any>
- *
- * switchCase(conditionalPromisesOrValues) -> Promise|any
- * switchCase(...argsOrPromises, conditionalFuncsOrPromisesOrValues) -> Promise|any
- * switchCase(conditionalFuncsOrPromisesOrValues)(...args) -> Promise|any
+ * switchCase(conditionalValues) -> Promise|any
+ * switchCase(...arguments, conditionalFunctionsOrValues) -> Promise|any
+ * switchCase(conditionalFunctionsOrValues)(...arguments) -> Promise|any
  * ```
  *
  * @description
- * Function equivalent to the [Conditional (ternary) operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Conditional_Operator). Accepts an array of conditional functions that specifies cases as pairings of `predicate` and `resolver` functions with the exception of the last, default resolver. All functions are provided with the same arguments and executed in series. The result of a `switchCase` operation is either the result of the execution the last default resolver, or the result of the execution of the first resolver where the associated predicate tested true.
+ * Conditional function operator. Accepts an array of conditional functions or values that specifies cases as function or value pairs with the exception of the last, default function or value. All functions are provided with the same arguments and executed in series. The result of a conditional execution with `switchCase` is the result of the execution of the first truthy function or value pair, the result of the execution of the last, default function, or the provided last, default value.
  *
  * ```javascript [playground]
- * const fruitIsYellow = fruit => fruit.color == 'yellow'
+ * function isOdd(n) {
+ *   return n % 2 == 1
+ * }
  *
- * console.log(
- *   switchCase({ name: 'plantain', color: 'yellow' }, [
- *     fruitIsYellow,
- *     fruit => fruit.name + ' is possibly a banana',
- *     fruit => fruit.name + ' is probably not a banana',
- *   ])
- * ) // plantain is possibly a banana
+ * switchCase(1, [
+ *   isOdd,
+ *   n => console.log(`${n} is odd`),
+ *   n => console.log(`${n} is even`),
+ * ])
  * ```
  *
- * For composability `switchCase` supports a lazy API.
+ * `switchCase` supports a lazy API for composability.
  *
  * ```javascript [playground]
- * const fruitIsYellow = fruit => fruit.color == 'yellow'
- *
  * const fruitsGuesser = switchCase([
- *   fruitIsYellow,
+ *   fruit => fruit.color == 'yellow',
  *   fruit => fruit.name + ' is possibly a banana',
  *   fruit => fruit.name + ' is probably not a banana',
  * ])
  *
- * console.log(fruitsGuesser({ name: 'plantain', color: 'yellow' }))
- * // plantain is possibly a banana
+ * const guess1 = fruitsGuesser({ name: 'plantain', color: 'yellow' })
+ * const guess2 = fruitsGuesser({ name: 'apple', color: 'red' })
  *
- * console.log(fruitsGuesser({ name: 'apple', color: 'red' }))
- * // apple is probably not a banana
+ * console.log(guess1)
+ * console.log(guess2)
  * ```
  *
- * Any function can be replaced with a nonfunction (object or primitive) value to be used directly in the operation.
+ * Any item of the conditional array passed to switchCase can be a nonfunction (object or primitive) value.
  *
  * ```javascript [playground]
- * switchCase(false, [
- *   async function asyncIdentity(value) {
- *     return value
- *   },
- *   'something',
- *   'default',
- * ]).then(console.log) // default
+ * function identity (value) {
+ *   return value
+ * }
+ *
+ * const value = switchCase(false, [
+ *   identity,
+ *   'non-function',
+ *   'default-value',
+ * ])
+ *
+ * console.log(value)
  * ```
  *
- * If every element in the conditional array is a nonfunction value, `switchCase` executes eagerly.
+ * If every item in the conditional array is a nonfunction value, `switchCase` executes eagerly.
  *
  * ```javascript [playground]
  * const age = 26
  *
- * const myDrink = switchCase([age >= 21, 'Beer', 'Juice'])
+ * const myDrink = switchCase([age >= 21, 'Water', 'Juice'])
  *
- * console.log(myDrink) // Beer
+ * console.log(myDrink)
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ * Any promises passed in argument position are resolved for their values before further execution.
  *
  * ```javascript [playground]
  * switchCase(Promise.resolve(1), 2, Promise.resolve(3), [
  *   function doValuesAddUpTo6(a, b, c) {
- *     return a + b + c == 6
+ *     return a + b + c === 6
  *   },
  *   (a, b, c) => console.log(`${a} + ${b} + ${c} == 6`),
  *   (a, b, c) => console.log(`${a} + ${b} + ${c} != 6`),
- * ]) // 1 + 2 + 3 == 6
+ * ])
  * ```
  *
  * See also:

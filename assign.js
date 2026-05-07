@@ -18,36 +18,33 @@ const _assign = function (object, funcs) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * args Array<any>
- *
  * type UnarySyncOrAsyncResolver = any=>Promise|any
  *
- * objectResolversOrPromisesOrValues Object<UnarySyncOrAsyncResolver|Promise|any>
- *
- * assign(argumentObject Promise|Object, objectResolversOrPromisesOrValues) -> resultObject
- * assign(objectResolversOrPromisesOrValues)(argumentObject Object) -> resultObject
+ * assign(Promise|Object, Object<UnarySyncOrAsyncResolver|Promise|any>) -> Promise|Object
+ * assign(Object<UnarySyncOrAsyncResolver|Promise|any>)(Object) -> Promise|Object
  * ```
  *
  * @description
- * Function equivalent to [Object.assign](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign). Constructs an object `result` from an object `objectResolversOrPromisesOrValues` of resolvers, promises, values, or a mix thereof and an argument object `argumentObject`.
+ * Function composer and data constructor. Constructs a new object from an argument object and an object of resolvers, promises, or values.
  *
- * If any values of `objectResolversOrPromisesOrValues` are resolvers, `assign` provides the `argumentObject` to those resolvers to resolve the values for assignment in `resultObject`.
+ * If provided resolver functions, `assign` resolves the values to be assigned at the keys of the resolver functions in the new object by calling those resolvers with the argument object.
  *
  * ```javascript [playground]
  * const assignSquaredAndCubed = assign({
  *   squared: ({ number }) => number ** 2,
  *   cubed: ({ number }) => number ** 3,
- *   n: 1,
  * })
  *
  * console.log(assignSquaredAndCubed({ number: 2 }))
- * // { number: 2, squared: 4, cubed: 8, n: 1 }
- *
  * console.log(assignSquaredAndCubed({ number: 3 }))
- * // { number: 3, squared: 9, cubed: 27, n: 1 }
+ *
+ * const n = 1
+ * const assignN = assign({ n })
+ *
+ * console.log(assignN({}))
  * ```
  *
- * If any of the resolvers in `objectResolversOrPromisesOrValues` are asynchronous, `assign` returns a promise of `resultObject`.
+ * If any of the resolvers provided to `assign` are asynchronous, the execution of `assign` with the argument object returns a promise.
  *
  * ```javascript [playground]
  * const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
@@ -59,11 +56,12 @@ const _assign = function (object, funcs) {
  *   },
  * })
  *
- * asyncAssignTotal({ numbers: [1, 2, 3, 4, 5] }).then(console.log)
- * // { numbers: [1, 2, 3, 4, 5], total: 15 }
+ * const promise = asyncAssignTotal({ numbers: [1, 2, 3, 4, 5] })
+ *
+ * promise.then(console.log)
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ * Any promises passed in argument position are resolved for their values before further execution.
  *
  * ```javascript [playground]
  * assign(Promise.resolve({}), {

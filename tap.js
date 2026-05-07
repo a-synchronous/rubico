@@ -22,15 +22,12 @@ const _tap = function (args, f) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * args Array<any>
- * argsOrPromises Array<Promise|any>
- *
- * type SyncOrAsyncFunction = (...args)=>Promise|any
+ * type SyncOrAsyncFunction = (...arguments)=>Promise|any
  *
  * f SyncOrAsyncFunction
  *
- * tap(...argsOrPromises, f) -> Promise|args[0]
- * tap(f)(...args) -> Promise|args[0]
+ * tap(...arguments, f) -> Promise|arguments[0]
+ * tap(f)(...arguments) -> Promise|arguments[0]
  * ```
  *
  * @description
@@ -43,15 +40,13 @@ const _tap = function (args, f) {
  *   tap(value => console.log(value + 'barbaz')),
  * ])
  *
- * pipeline('foo') // 'foo'
- *                 // 'foobar'
- *                 // 'foobarbaz'
+ * pipeline('foo')
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ * Any promises passed in argument position are resolved for their values before further execution.
  *
  * ```javascript [playground]
- * tap(Promise.resolve(1), Promise.resolve(2), 3, console.log) // 1 2 3
+ * tap(Promise.resolve(1), Promise.resolve(2), 3, console.log)
  * ```
  *
  * See also:
@@ -108,17 +103,14 @@ const _tapIf = function (predicate, f, args) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * args Array<any>
- * argsOrPromises Array<Promise|any>
- *
- * type SyncOrAsyncPredicate = (...args)=>Promise|boolean|any
- * type SyncOrAsyncFunction = (...args)=>Promise|any
+ * type SyncOrAsyncPredicate = (...arguments)=>Promise|boolean|any
+ * type SyncOrAsyncFunction = (...arguments)=>Promise|any
  *
  * predicate SyncOrAsyncPredicate
  * f SyncOrAsyncFunction
  *
- * tap.if(...argsOrPromises, predicate, f) -> Promise|args[0]
- * tap.if(predicate, f)(...args) -> Promise|args[0]
+ * tap.if(...arguments, predicate, f) -> Promise|arguments[0]
+ * tap.if(predicate, f)(...arguments) -> Promise|arguments[0]
  * ```
  *
  * @description
@@ -130,13 +122,13 @@ const _tapIf = function (predicate, f, args) {
  * const logIfOdd = tap.if(isOdd, console.log)
  *
  * logIfOdd(2)
- * logIfOdd(3) // 3
+ * logIfOdd(3)
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ * Any promises passed in argument position are resolved for their values before further execution.
  *
  * ```javascript [playground]
- * tap.if(Promise.resolve(1), n => n < 5, console.log) // 1
+ * tap.if(Promise.resolve(1), n => n < 5, console.log)
  * tap.if(Promise.resolve(6), n => n < 5, console.log)
  * ```
  *

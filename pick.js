@@ -62,7 +62,7 @@ const _pick = function (source, keys) {
  * ])
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution. This only applies to the eager version of the API.
+ * Any promises passed in argument position are resolved for their values before further execution.
  *
  * ```javascript [playground]
  * pick(Promise.resolve({ a: 1, b: 2, c: 3 }), ['a', 'b']).then(console.log)
