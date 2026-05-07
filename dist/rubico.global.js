@@ -1,5 +1,5 @@
 /**
- * Rubico v2.8.5
+ * Rubico v2.8.6
  * https://rubico.land/
  *
  * © Richard Yufei Tong, King of Software
@@ -1079,7 +1079,7 @@ const _curryArity = (arity, func, context, args) => function curried(...curriedA
     curriedArgsIndex = -1,
     numCurriedPlaceholders = 0
 
-  while (++argsIndex < argsLength) {
+  while ((argsIndex += 1) < argsLength) {
     const arg = args[argsIndex]
     if (arg == __ && (curriedArgsIndex += 1) < curriedArgsLength) {
       const curriedArg = curriedArgs[curriedArgsIndex]
@@ -1103,7 +1103,7 @@ const _curryArity = (arity, func, context, args) => function curried(...curriedA
     }
   }
 
-  while (++curriedArgsIndex < curriedArgsLength) {
+  while ((curriedArgsIndex += 1) < curriedArgsLength) {
     const curriedArg = curriedArgs[curriedArgsIndex]
     if (curriedArg == __) {
       numCurriedPlaceholders += 1
@@ -1133,7 +1133,7 @@ const curryArity = function (arity, func, context, args) {
     return _curryArity(arity, func, context, args)
   }
   let argsIndex = -1
-  while (++argsIndex < argsLength) {
+  while ((argsIndex += 1) < argsLength) {
     const arg = args[argsIndex]
     if (arg == __) {
       return _curryArity(arity, func, context, args)
@@ -3126,8 +3126,8 @@ const get = function (arg0, arg1, arg2) {
   if (typeof arg0 == 'string' || typeof arg0 == 'number' || isArray(arg0)) {
     return curry3(_get, __, arg0, arg1)
   }
-  if (isPromise(arg0)) {
-    return arg0.then(curry3(_get, __, arg1, arg2))
+  if (isPromise(arg0) || isPromise(arg2)) {
+    return promiseAll([arg0, arg1, arg2]).then(curry2(funcApply, _get, __))
   }
   return _get(arg0, arg1, arg2)
 }

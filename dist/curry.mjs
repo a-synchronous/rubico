@@ -1,5 +1,5 @@
 /**
- * Rubico v2.8.5
+ * Rubico v2.8.6
  * https://rubico.land/
  *
  * © Richard Yufei Tong, King of Software
@@ -118,7 +118,7 @@ const _curryArity = (arity, func, context, args) => function curried(...curriedA
     curriedArgsIndex = -1,
     numCurriedPlaceholders = 0
 
-  while (++argsIndex < argsLength) {
+  while ((argsIndex += 1) < argsLength) {
     const arg = args[argsIndex]
     if (arg == __ && (curriedArgsIndex += 1) < curriedArgsLength) {
       const curriedArg = curriedArgs[curriedArgsIndex]
@@ -142,7 +142,7 @@ const _curryArity = (arity, func, context, args) => function curried(...curriedA
     }
   }
 
-  while (++curriedArgsIndex < curriedArgsLength) {
+  while ((curriedArgsIndex += 1) < curriedArgsLength) {
     const curriedArg = curriedArgs[curriedArgsIndex]
     if (curriedArg == __) {
       numCurriedPlaceholders += 1
@@ -172,7 +172,7 @@ const curryArity = function (arity, func, context, args) {
     return _curryArity(arity, func, context, args)
   }
   let argsIndex = -1
-  while (++argsIndex < argsLength) {
+  while ((argsIndex += 1) < argsLength) {
     const arg = args[argsIndex]
     if (arg == __) {
       return _curryArity(arity, func, context, args)

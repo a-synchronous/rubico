@@ -1,5 +1,5 @@
 /**
- * Rubico v2.8.5
+ * Rubico v2.8.6
  * https://rubico.land/
  *
  * © Richard Yufei Tong, King of Software
@@ -8,7 +8,29 @@
 
 const isPromise = value => value != null && typeof value.then == 'function'
 
+const promiseAll = Promise.all.bind(Promise)
+
 const __ = Symbol.for('placeholder')
+
+// argument resolver for curry2
+const curry2ResolveArg0 = (
+  baseFunc, arg1,
+) => function arg0Resolver(arg0) {
+  return baseFunc(arg0, arg1)
+}
+
+// argument resolver for curry2
+const curry2ResolveArg1 = (
+  baseFunc, arg0,
+) => function arg1Resolver(arg1) {
+  return baseFunc(arg0, arg1)
+}
+
+const curry2 = function (baseFunc, arg0, arg1) {
+  return arg0 == __
+    ? curry2ResolveArg0(baseFunc, arg1)
+    : curry2ResolveArg1(baseFunc, arg0)
+}
 
 // argument resolver for curry3
 const curry3ResolveArg0 = (
@@ -40,6 +62,8 @@ const curry3 = function (baseFunc, arg0, arg1, arg2) {
   }
   return curry3ResolveArg2(baseFunc, arg0, arg1)
 }
+
+const funcApply = (func, args) => func(...args)
 
 const isArray = Array.isArray
 
@@ -122,8 +146,8 @@ const get = function (arg0, arg1, arg2) {
   if (typeof arg0 == 'string' || typeof arg0 == 'number' || isArray(arg0)) {
     return curry3(_get, __, arg0, arg1)
   }
-  if (isPromise(arg0)) {
-    return arg0.then(curry3(_get, __, arg1, arg2))
+  if (isPromise(arg0) || isPromise(arg2)) {
+    return promiseAll([arg0, arg1, arg2]).then(curry2(funcApply, _get, __))
   }
   return _get(arg0, arg1, arg2)
 }
