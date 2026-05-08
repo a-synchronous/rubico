@@ -107,7 +107,7 @@ const _map = function (value, f) {
  * ```
  *
  * @description
- * Applies a mapper function to each item of a functor, returning a mapped functor of the same type with the mapped items. The order of the elements is maintained.
+ * Applies a mapper function to each item of a functor, returning a mapped functor of the same type with the mapped items. The order of the items of the functor is preserved.
  *
  * The following data types are considered to be functors:
  *  * `array`
@@ -204,7 +204,7 @@ const _map = function (value, f) {
  * console.log(mappedMap)
  * ```
  *
- * `map` maps each value of a generator, creating a new generator with mapped elements.
+ * `map` maps each value of a generator, creating a new generator with mapped items.
  *
  * ```javascript [playground]
  * const capitalize = string => string.toUpperCase()
@@ -373,7 +373,7 @@ map.entries = function mapEntries(arg0, arg1) {
  *   value any,
  *   indexOrKey number|string|any,
  *   f Functor
- * )=>(mappedElement Promise|any)
+ * )=>(mappedItem Promise|any)
  *
  * _mapSeries(f Functor, f SyncOrAsyncMapper) -> result Promise|Functor
  * ```
@@ -421,7 +421,7 @@ const _mapSeries = function (functor, f) {
  *   value any,
  *   indexOrKey number|string|any,
  *   functor Functor,
- * )=>(mappedElement Promise|any)
+ * )=>(mappedItem Promise|any)
  *
  * map.series(
  *   functor Promise|Functor,
@@ -558,13 +558,12 @@ const _mapPool = function (f, concurrency, mapper) {
  * ]))(ids)
  * ```
  *
- * Any promises passed in data argument position are resolved for their values before further execution.
+ * If the functor is a promise, it is resolved for its value before further execution for the eager interface only.
  *
  * ```javascript [playground]
  * const asyncSquare = async n => n ** 2
  *
  * map.pool(Promise.resolve([1, 2, 3, 4, 5]), 5, asyncSquare).then(console.log)
- * // [1, 4, 9, 16, 25]
  * ```
  *
  * See also:

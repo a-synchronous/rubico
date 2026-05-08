@@ -1189,7 +1189,7 @@ describe('rubico', () => {
         assert.deepEqual(numbers, [1, 2, 3, 4, 5])
       }).timeout(1000)
 
-      it('async iterator with 1s pause and async mapper', async () => {
+      it('async iterator with 100ms pause and async mapper', async () => {
         const asyncNumbers = async function* () {
           let i = 0
           while (++i < 6) {
@@ -1203,7 +1203,7 @@ describe('rubico', () => {
         assert.deepEqual(numbers, [1, 2, 3, 4, 5])
       }).timeout(1000)
 
-      it('async iterator with 1s pause and sync mapper', async () => {
+      it('async iterator with 100ms pause and sync mapper', async () => {
         const asyncNumbers = async function* () {
           let i = 0
           while (++i < 6) {
@@ -1569,7 +1569,7 @@ describe('rubico', () => {
       assert.deepEqual(squaredNumbers, [1, 4, 9, 16, 25])
     }).timeout(10000)
 
-    it('async iterator with 1s pause and sync mapper', async () => {
+    it('async iterator with 100ms pause and sync mapper', async () => {
       const asyncNumbers = async function* () {
         let i = 0
         while (++i < 6) {
@@ -1585,7 +1585,7 @@ describe('rubico', () => {
       assert.deepEqual(numbers, [1, 2, 3, 4, 5])
     }).timeout(1000)
 
-    it('async iterator with 1s pause and async mapper', async () => {
+    it('async iterator with 100ms pause and async mapper', async () => {
       const asyncNumbers = async function* () {
         let i = 0
         while (++i < 6) {
@@ -1958,14 +1958,115 @@ then(() => {
       })
     })
     describe('filter(predicate T=>Promise|boolean)(AsyncIterator<T>) -> AsyncIterator<T>', () => {
-      const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
       it('predicate T=>boolean', async () => {
+        const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
         const isOdd = number => number % 2 == 1
-        const asyncOddNumbersIterator = filter(isOdd)(asyncNumbers())
+        const asyncOddNumbersIterator = filter(asyncNumbers(), isOdd)
         const oddNumbersArray = []
         for await (const number of asyncOddNumbersIterator) oddNumbersArray.push(number)
         assert.deepEqual(oddNumbersArray, [1, 3, 5])
       })
+
+      it('async iterator with 100ms pause and async truthy predicate', async () => {
+        const asyncNumbers = async function* () {
+          let i = 0
+          while (++i < 6) {
+            yield i
+            await sleep(100)
+          }
+        }
+        const filteredAsyncNumbers = filter(asyncNumbers(), async () => {
+          return true
+        })
+        const numbers = []
+        for await (const n of filteredAsyncNumbers) numbers.push(n)
+        assert.deepEqual(numbers, [1, 2, 3, 4, 5])
+      })
+
+      it('async iterator with 100ms pause and sync truthy predicate', async () => {
+        const asyncNumbers = async function* () {
+          let i = 0
+          while (++i < 6) {
+            yield i
+            await sleep(100)
+          }
+        }
+        const filteredAsyncNumbers = filter(asyncNumbers(), () => {
+          return true
+        })
+        const numbers = []
+        for await (const n of filteredAsyncNumbers) numbers.push(n)
+        assert.deepEqual(numbers, [1, 2, 3, 4, 5])
+      })
+
+      it('async iterator with 100ms pause and async falsy predicate', async () => {
+        const asyncNumbers = async function* () {
+          let i = 0
+          while (++i < 6) {
+            yield i
+            await sleep(100)
+          }
+        }
+        const filteredAsyncNumbers = filter(asyncNumbers(), async () => {
+          return false
+        })
+        const numbers = []
+        for await (const n of filteredAsyncNumbers) numbers.push(n)
+        assert.deepEqual(numbers, [])
+      })
+
+      it('async iterator with 100ms pause and sync falsy predicate', async () => {
+        const asyncNumbers = async function* () {
+          let i = 0
+          while (++i < 6) {
+            yield i
+            await sleep(100)
+          }
+        }
+        const filteredAsyncNumbers = filter(asyncNumbers(), () => {
+          return false
+        })
+        const numbers = []
+        for await (const n of filteredAsyncNumbers) numbers.push(n)
+        assert.deepEqual(numbers, [])
+      })
+
+      it('async iterators times truthy predicate', async () => {
+        const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
+        const start = performance.now()
+        const times = []
+        const filteredAsyncNumbers = filter(asyncNumbers(), async () => {
+          await sleep(100)
+          times.push(performance.now() - start)
+          return true
+        })
+        const numbers = []
+        for await (const n of filteredAsyncNumbers) numbers.push(n)
+        assert.deepEqual(numbers, [1, 2, 3, 4, 5])
+        assert.strictEqual(times.length, 5)
+        for (const time of times) {
+          assert(time < 110)
+        }
+      })
+
+      it('async iterators times falsy predicate', async () => {
+        const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
+        const start = performance.now()
+        const times = []
+        const filteredAsyncNumbers = filter(asyncNumbers(), async () => {
+          await sleep(100)
+          times.push(performance.now() - start)
+          return false
+        })
+        const numbers = []
+        for await (const n of filteredAsyncNumbers) numbers.push(n)
+        assert.deepEqual(numbers, [])
+        assert.strictEqual(times.length, 5)
+        for (const time of times) {
+          assert(time < 110)
+        }
+      })
+
     })
     describe('filter(predicate T=>Promise|boolean)(Reducer<T>) -> Reducer<T>', () => {
       const concat = (array, values) => array.concat(values)

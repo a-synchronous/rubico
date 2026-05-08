@@ -96,14 +96,14 @@ const _filter = function (value, predicate) {
  *   value any,
  *   indexOrKey number|string|any,
  *   filterable Filterable,
- * )=>(condition Promise|boolean)
+ * )=>(booleanResult Promise|boolean)
  *
- * filter(filterable Promise|Filterable, predicate SyncOrAsyncPredicate) -> result Promise|Filterable
- * filter(predicate SyncOrAsyncPredicate)(filterable Filterable) -> result Promise|Filterable
+ * filter(filterable Promise|Filterable, predicate SyncOrAsyncPredicate) -> filteredFilterable Promise|Filterable
+ * filter(predicate SyncOrAsyncPredicate)(filterable Filterable) -> filteredFilterable Promise|Filterable
  * ```
  *
  * @description
- * Filters out elements from a filterable. Returns a filterable of the same type. The order of the elements in the filterable is preserved.
+ * Filters out items from a filterable, returning a filterable of the same type. The order of the items of the filterable is preserved.
  *
  * The following data types are considered to be filterables:
  *  * `array`
@@ -114,12 +114,12 @@ const _filter = function (value, predicate) {
  *  * `object with .filter method`
  *  * `object`
  *
- * The filtering operation is defined by a given predicate function. The predicate function dictates whether a given element from the filterable should be included in the returned filterable.
+ * The filtering operation is defined by a given predicate function. The predicate function dictates whether a given item from the filterable should be included in the returned filterable.
  *
  * ```javascript
- * const predicate = function (element) {
- *   // condition is the boolean result of the predicate test on element
- *   return condition
+ * const predicate = function (item) {
+ *   // booleanResult is the boolean result of the predicate test on item
+ *   return booleanResult
  * }
  * ```
  *
@@ -127,48 +127,47 @@ const _filter = function (value, predicate) {
  *
  * If the filterable is an array:
  * ```coffeescript [specscript]
- * predicate(element any, index number, filt Array) -> condition Promise|boolean|any
+ * predicate(item any, index number, filterable Array) -> booleanResult Promise|boolean|any
  * ```
  *
  * If the filterable is a set:
  * ```coffeescript [specscript]
- * predicate(element any, element any, filt Set) -> condition Promise|boolean|any
+ * predicate(item any, item any, filterable Set) -> booleanResult Promise|boolean|any
  * ```
  *
  * If the filterable is a map:
  * ```coffeescript [specscript]
- * predicate(element any, key any, filt Map) -> condition Promise|boolean|any
+ * predicate(item any, key any, filterable Map) -> booleanResult Promise|boolean|any
  * ```
  *
  * If the filterable is a generator:
  * ```coffeescript [specscript]
- * predicate(element any) -> condition Promise|boolean|any
+ * predicate(item any) -> booleanResult Promise|boolean|any
  * ```
  *
  * If the filterable is an async generator:
  * ```coffeescript [specscript]
- * predicate(element any) -> condition Promise|boolean|any
+ * predicate(item any) -> booleanResult Promise|boolean|any
  * ```
  *
  * If the filterable is an object with a `.filter` method, the predicate function signature is defined externally.
  *
  * If the filterable is a plain object:
  * ```coffeescript [specscript]
- * predicate(element any, key string, filt Object) -> condition Promise|boolean|any
+ * predicate(item any, key string, filterable Object) -> booleanResult Promise|boolean|any
  * ```
- *
- * `filter` works for arrays.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
  *
  * const array = [1, 2, 3, 4, 5]
  *
- * const result = filter(array, isOdd)
- * console.log(result) // [1, 3, 5]
+ * const filteredArray = filter(array, isOdd)
+ *
+ * console.log(filteredArray)
  * ```
  *
- * If the predicate is asynchronous, the returned promise is concurrently resolved for its boolean condition before continuing with the filtering operation.
+ * If the predicate is asynchronous, it is executed concurrently.
  *
  * ```javascript [playground]
  * const asyncIsOdd = async number => number % 2 == 1
