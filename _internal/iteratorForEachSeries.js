@@ -32,7 +32,7 @@ const _iteratorForEachSeriesAsync = async function (iterator, callback) {
  */
 const iteratorForEachSeries = function (iterator, callback) {
   let iteration = iterator.next()
-  while (!iterator.done) {
+  while (!iteration.done) {
     const operation = callback(iteration.value)
     if (isPromise(operation)) {
       return operation

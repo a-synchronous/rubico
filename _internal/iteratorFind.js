@@ -28,7 +28,6 @@ const iteratorFindAsync = async function (iterator, predicate) {
     }
     iteration = iterator.next()
   }
-  return undefined
 }
 
 /**
@@ -57,7 +56,6 @@ const iteratorFind = function (iterator, predicate) {
     }
     iteration = iterator.next()
   }
-  return undefined
 }
 
 module.exports = iteratorFind

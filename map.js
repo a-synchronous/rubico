@@ -1,6 +1,7 @@
 const isPromise = require('./_internal/isPromise')
 const MappingIterator = require('./_internal/MappingIterator')
 const MappingAsyncIterator = require('./_internal/MappingAsyncIterator')
+const SerialMappingAsyncIterator = require('./_internal/SerialMappingAsyncIterator')
 const __ = require('./_internal/placeholder')
 const curry2 = require('./_internal/curry2')
 const curry3 = require('./_internal/curry3')
@@ -64,9 +65,6 @@ const _map = function (value, f) {
   if (typeof value.then == 'function') {
     return value.then(f)
   }
-  if (typeof value.map == 'function') {
-    return value.map(f)
-  }
   if (typeof value == 'string' || value.constructor == String) {
     return stringMap(value, f)
   }
@@ -82,6 +80,9 @@ const _map = function (value, f) {
   if (typeof value[symbolAsyncIterator] == 'function') {
     return MappingAsyncIterator(value[symbolAsyncIterator](), f)
   }
+  if (typeof value.map == 'function') {
+    return value.map(f)
+  }
   if (value.constructor == Object) {
     return objectMap(value, f)
   }
@@ -96,17 +97,17 @@ const _map = function (value, f) {
  * type Functor = Array|Set|Map|Generator|AsyncGenerator|{ map: function }|Object
  *
  * type SyncOrAsyncMapper = (
- *   element any,
+ *   item any,
  *   indexOrKey number|string|any,
  *   functor Functor
- * )=>(resultElement Promise|any)
+ * )=>(mappedItem Promise|any)
  *
- * map(functor Promise|Functor, mapper SyncOrAsyncMapper) -> result Promise|Functor
- * map(mapper SyncOrAsyncMapper)(functor Functor) -> result Promise|Functor
+ * map(functor Promise|Functor, mapper SyncOrAsyncMapper) -> mappedFunctor Promise|Functor
+ * map(mapper SyncOrAsyncMapper)(functor Functor) -> mappedFunctor Promise|Functor
  * ```
  *
  * @description
- * Applies a mapper function to each element of a functor, returning a functor of the same type with the mapped elements. The order of the elements is maintained.
+ * Applies a mapper function to each item of a functor, returning a mapped functor of the same type with the mapped items. The order of the elements is maintained.
  *
  * The following data types are considered to be functors:
  *  * `array`
@@ -117,12 +118,13 @@ const _map = function (value, f) {
  *  * `object with .map method`
  *  * `object`
  *
- * The mapper function defines a mapping between a given element in the functor to a resulting element in the returned functor.
+ * The mapper function defines a mapping between a given item and an item in the returned functor.
  *
  * ```javascript
- * const mapper = function (element) {
- *   // resultElement is the result of a mapping from element
- *   return resultElement
+ * const mapper = function (item) {
+ *   // ...
+ *   // mappedItem is mapped from item
+ *   return mappedItem
  * }
  * ```
  *
@@ -130,48 +132,52 @@ const _map = function (value, f) {
  *
  * If the functor is an array:
  * ```coffeescript [specscript]
- * mapper(element any, index number, ftor Array) -> resultElement Promise|any
+ * mapper(item any, index number, functor Array) -> mappedItem Promise|any
  * ```
  *
  * If the functor is a set:
  * ```coffeescript [specscript]
- * mapper(element any, element any, ftor Set) -> resultElement Promise|any
+ * mapper(item any, item any, functor Set) -> mappedItem Promise|any
  * ```
  *
  * If the functor is a map:
  * ```coffeescript [specscript]
- * mapper(element any, key any, ftor Map) -> resultElement Promise|any
+ * mapper(item any, key any, functor Map) -> mappedItem Promise|any
  * ```
  *
  * If the functor is a generator:
  * ```coffeescript [specscript]
- * mapper(element any) -> resultElement Promise|any
+ * mapper(item any) -> mappedItem any
  * ```
  *
  * If the functor is an async generator:
  * ```coffeescript [specscript]
- * mapper(element any) -> resultElement Promise|any
+ * mapper(item any) -> mappedItem Promise|any
  * ```
- *
- * If the functor is an object with a `.map` method, the mapper function signature is defined externally.
  *
  * If the functor is a plain object:
  * ```coffeescript [specscript]
- * mapper(element any, key string, ftor Object) -> resultElement Promise|any
+ * mapper(item any, key string, functor Object) -> mappedItem Promise|any
  * ```
- *
- * `map` works for arrays.
  *
  * ```javascript [playground]
  * const square = number => number ** 2
  *
  * const array = [1, 2, 3, 4, 5]
+ * const object = { a: 1, b: 2, c: 3 }
  *
- * const result = map(array, square)
- * console.log(result) // [1, 4, 9, 16, 25]
+ * const mappedArray = map(array, square)
+ * const mappedObject = map(object, square)
+ *
+ * console.log(mappedArray)
+ * console.log(mappedObject)
  * ```
  *
- * The mapper function may be asynchronous, in which case it is applied concurrently.
+ * If the functor is an object with a `.map` method, the mapper function signature is defined externally.
+ *
+ * If the mapper function is asynchronous, it is executed concurrently.
+ *
+ * If the functor is a generator, the mapper function must be synchronous.
  *
  * ```javascript [playground]
  * const asyncSquare = async number => number ** 2
@@ -179,84 +185,56 @@ const _map = function (value, f) {
  * const array = [1, 2, 3, 4, 5]
  *
  * const promise = map(array, asyncSquare)
- * promise.then(console.log) // [1, 4, 9, 16, 25]
+ *
+ * promise.then(console.log)
  * ```
  *
- * `map` applies the mapper function to just the values of an object.
+ * `map` applies the mapper function to just the values of objects and maps.
  *
  * ```javascript [playground]
  * const square = number => number ** 2
  *
- * const obj = { a: 1, b: 2, c: 3, d: 4, e: 5 }
- *
- * const result = map(obj, square)
- * console.log(result) // { a: 1, b: 4, c: 9, d: 16, e: 25 }
- * ```
- *
- * `map` applies the mapper function to the values of the entries of a map.
- *
- * ```javascript [playground]
- * const square = number => number ** 2
- *
+ * const object = { a: 1, b: 2, c: 3, d: 4, e: 5 }
  * const m = new Map([['a', 1], ['b', 2], ['c', 3], ['d', 4], ['e', 5]])
  *
- * const result = map(m, square)
- * console.log(result) // Map { 'a' => 1, 'b' => 4, 'c' => 9, 'd' => 16, 'e' => 25 }
+ * const mappedObject = map(object, square)
+ * const mappedMap = map(m, square)
+ *
+ * console.log(mappedObject)
+ * console.log(mappedMap)
  * ```
  *
- * `map` applies the mapper function lazily to each value of a generator, creating a new generator with mapped elements.
+ * `map` maps each value of a generator, creating a new generator with mapped elements.
  *
  * ```javascript [playground]
  * const capitalize = string => string.toUpperCase()
  *
- * const abcGeneratorFunc = function* () {
- *   yield 'a'; yield 'b'; yield 'c'
+ * async function* generateAlphabet() {
+ *   for (let i = 0; i < 26; i++) {
+ *     yield String.fromCharCode(97 + i)
+ *   }
  * }
  *
- * const abcGenerator = abcGeneratorFunc()
- * const ABCGenerator = map(abcGeneratorFunc(), capitalize)
+ * const alphabet = generateAlphabet()
+ * const uppercaseAlphabet = map(generateAlphabet(), capitalize)
  *
- * console.log([...abcGenerator]) // ['a', 'b', 'c']
- *
- * console.log([...ABCGenerator]) // ['A', 'B', 'C']
- * ```
- *
- * `map` applies the mapper function lazily to each value of an async generator, creating a new async generator with mapped elements.
- *
- * ```javascript [playground]
- * const capitalize = string => string.toUpperCase()
- *
- * const abcAsyncGeneratorFunc = async function* () {
- *   yield 'a'; yield 'b'; yield 'c'
+ * console.log('alphabet')
+ * for await (const letter of alphabet) {
+ *   console.log(letter)
  * }
  *
- * const abcAsyncGenerator = abcAsyncGeneratorFunc()
- * const ABCGenerator = map(abcAsyncGeneratorFunc(), capitalize)
- *
- * ;(async function () {
- *   for await (const letter of abcAsyncGenerator) {
- *     console.log(letter)
- *     // a
- *     // b
- *     // c
- *   }
- *
- *   for await (const letter of ABCGenerator) {
- *     console.log(letter)
- *     // A
- *     // B
- *     // C
- *   }
- * })()
+ * console.log('uppercase alphabet')
+ * for await (const letter of uppercaseAlphabet) {
+ *   console.log(letter)
+ * }
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution.
+ * If the functor is a promise, it is resolved for its value before further execution for the eager interface only.
  *
  * ```javascript [playground]
  * const asyncSquare = async n => n ** 2
  *
  * map(Promise.resolve([1, 2, 3, 4, 5]), asyncSquare).then(console.log)
- * // [1, 4, 9, 16, 25]
  * ```
  *
  * See also:
@@ -302,23 +280,23 @@ const _mapEntries = (value, f) => {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type FunctorWithEntries = Map|Object
+ * type FunctorOfEntries = Map|Object
  *
  * type EntryMapper = (
- *   entry [key string|any, value any],
- * )=>(resultEntry Promise|[resultKey string|any, resultElement any])
+ *   entry [key any, value any],
+ * )=>(mappedEntry Promise|[mappedKey any, mappedValue any])
  *
  * map.entries(
- *   value Promise|FunctorWithEntries,
+ *   functorOfEntries Promise|FunctorOfEntries,
  *   mapper EntryMapper
- * ) -> Promise|FunctorWithEntries
+ * ) -> mappedFunctorWithEntries Promise|FunctorOfEntries
  *
- * map.entries(mapper EntryMapper)(value FunctorWithEntries)
- *   -> Promise|FunctorWithEntries
+ * map.entries(mapper EntryMapper)(functorOfEntries FunctorOfEntries)
+ *   -> mappedFunctorWithEntries Promise|FunctorOfEntries
  * ```
  *
  * @description
- * `map` over the entries of a functor as opposed to the values.
+ * [map](/docs/map) that applies the mapper function to the entries of a functor as opposed to the values.
  *
  * The following data types are considered to be functors with entries:
  *   * `map`
@@ -327,46 +305,39 @@ const _mapEntries = (value, f) => {
  * The signature of the mapper function changes depending on the provided functor:
  *
  * If the functor is a map:
- *
  * ```coffeescript [specscript]
- * mapper(entry [key any, value any]) -> resultEntry Promise|[
- *   resultKey any,
- *   resultValue any,
- * ]
+ * mapper(entry [key any, value any]) ->
+ *   mappedEntry Promise|[mappedKey any, mappedValue any]
  * ```
  *
  * If the functor is an object:
- *
  * ```coffeescript [specscript]
- * mapper(entry [key string, value any]) -> resultEntry Promise|[
- *   resultKey string,
- *   resultValue any,
- * ]
+ * mapper(entry [key string, value any]) ->
+ *   mappedEntry Promise|[mappedKey string, mappedValue any]
  * ```
- *
- * `map.entries` works for objects and maps.
  *
  * ```javascript [playground]
  * const upperCaseKeysAndSquareValues =
  *   map.entries(([key, value]) => [key.toUpperCase(), value ** 2])
  *
- * console.log(upperCaseKeysAndSquareValues({ a: 1, b: 2, c: 3 }))
- * // { A: 1, B: 4, C: 9 }
+ * const object = { a: 1, b: 2, c: 3 }
  *
- * console.log(upperCaseKeysAndSquareValues(new Map([['a', 1], ['b', 2], ['c', 3]])))
- * // Map(3) { 'A' => 1, 'B' => 4, 'C' => 9 }
+ * console.log(upperCaseKeysAndSquareValues(object))
+ *
+ * const m = new Map([['a', 1], ['b', 2], ['c', 3]])
+ *
+ * console.log(upperCaseKeysAndSquareValues(m))
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution.
+ * If the functor with entries is a promise, it is resolved for its value before further execution for the eager interface only.
  *
  * ```javascript [playground]
  * const asyncSquareEntries = async ([k, v]) => [k, v ** 2]
  *
  * map.entries(
  *   Promise.resolve({ a: 1, b: 2, c: 3 }),
- *   asyncSquareEntries,
+ *   asyncSquareEntries
  * ).then(console.log)
- * // { a: 1, b: 4, c: 9 }
  * ```
  *
  * See also:
@@ -407,27 +378,36 @@ map.entries = function mapEntries(arg0, arg1) {
  * _mapSeries(f Functor, f SyncOrAsyncMapper) -> result Promise|Functor
  * ```
  */
-const _mapSeries = function (collection, f) {
-  if (isArray(collection)) {
-    return arrayMapSeries(collection, f)
+const _mapSeries = function (functor, f) {
+  if (isArray(functor)) {
+    return arrayMapSeries(functor, f)
   }
-  if (collection == null) {
-    throw new TypeError(`invalid collection ${collection}`)
+  if (functor == null) {
+    throw new TypeError(`invalid functor ${functor}`)
   }
 
-  if (typeof collection == 'string' || collection.constructor == String) {
-    return stringMapSeries(collection, f)
+  if (typeof functor == 'string' || functor.constructor == String) {
+    return stringMapSeries(functor, f)
   }
-  if (collection.constructor == Set) {
-    return setMapSeries(collection, f)
+  if (functor.constructor == Set) {
+    return setMapSeries(functor, f)
   }
-  if (collection.constructor == Map) {
-    return mapMapSeries(collection, f)
+  if (functor.constructor == Map) {
+    return mapMapSeries(functor, f)
   }
-  if (collection.constructor == Object) {
-    return objectMapSeries(collection, f)
+  if (typeof functor[symbolIterator] == 'function') {
+    return MappingIterator(functor[symbolIterator](), f)
   }
-  throw new TypeError(`invalid collection ${collection}`)
+  if (typeof functor[symbolAsyncIterator] == 'function') {
+    return SerialMappingAsyncIterator(functor[symbolAsyncIterator](), f)
+  }
+  if (typeof functor.map == 'function') {
+    return functor.map(f)
+  }
+  if (functor.constructor == Object) {
+    return objectMapSeries(functor, f)
+  }
+  throw new TypeError(`invalid functor ${functor}`)
 }
 
 /**
@@ -435,21 +415,22 @@ const _mapSeries = function (collection, f) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type MapSeriesFunctor = Array|Object|Set|Map
+ * type Functor = Array|Set|Map|Generator|AsyncGenerator|{ map: function }|Object
  *
  * type SyncOrAsyncMapper = (
  *   value any,
  *   indexOrKey number|string|any,
- *   ftor MapSeriesFunctor,
+ *   functor Functor,
  * )=>(mappedElement Promise|any)
  *
  * map.series(
- *   ftor Promise|MapSeriesFunctor,
+ *   functor Promise|Functor,
  *   mapper SyncOrAsyncMapper
- * ) -> result MapSeriesFunctor
+ * ) -> mappedFunctor Promise|Functor
  *
- * map.series(mapper SyncOrAsyncMapper)(ftor MapSeriesFunctor)
- *   -> result MapSeriesFunctor
+ * map.series(
+ *   mapper SyncOrAsyncMapper
+ * )(functor Functor) -> mappedFunctor Promise|Functor
  * ```
  *
  * @description
@@ -467,13 +448,16 @@ const _mapSeries = function (collection, f) {
  * map.series([1, 2, 3, 4, 5], delayedLog)
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution.
+ * If the functor is an object with a `.map` method, the mapper function signature is defined externally. Serial execution is not guaranteed in this case.
+ *
+ * If the functor is a generator, the mapper function must be synchronous.
+ *
+ * If the functor is a promise, it is resolved for its value before further execution for the eager interface only.
  *
  * ```javascript [playground]
  * const asyncSquare = async n => n ** 2
  *
  * map.series(Promise.resolve([1, 2, 3, 4, 5]), asyncSquare).then(console.log)
- * // [1, 4, 9, 16, 25]
  * ```
  *
  * See also:
@@ -538,13 +522,13 @@ const _mapPool = function (f, concurrency, mapper) {
  * type MapPoolFunctor = Array|Object|Set|Map
  *
  * type SyncOrAsyncMapper = (
- *   element any,
+ *   item any,
  *   indexOrKey number|string|any,
- *   ftor Functor
- * )=>(resultElement Promise|any)
+ *   functor Functor
+ * )=>(mappedItem Promise|any)
  *
  * map.pool(
- *   ftor MapPoolFunctor,
+ *   functor MapPoolFunctor,
  *   concurrency number,
  *   mapper SyncOrAsyncMapper
  * ) -> result Promise|Array
@@ -552,7 +536,7 @@ const _mapPool = function (f, concurrency, mapper) {
  * map.pool(
  *   concurrency number,
  *   mapper SyncOrAsyncMapper
- * )(ftor MapPoolFunctor) -> result Promise|Array
+ * )(functor MapPoolFunctor) -> result Promise|Array
  * ```
  *
  * @description
@@ -574,7 +558,7 @@ const _mapPool = function (f, concurrency, mapper) {
  * ]))(ids)
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution.
+ * Any promises passed in data argument position are resolved for their values before further execution.
  *
  * ```javascript [playground]
  * const asyncSquare = async n => n ** 2
@@ -606,25 +590,5 @@ map.pool = function mapPool(arg0, arg1, arg2) {
     ? arg0.then(curry3(_mapPool, __, arg1, arg2))
     : _mapPool(arg0, arg1, arg2)
 }
-
-/**
- * @name map.rate
- *
- * @synopsis
- * ```coffeescript [specscript]
- * type Functor = Array|Object|Set|Map
- *
- * map.rate(
- *   rate number,
- *   f (value any)=>Promise|any,
- * )(f Functor) -> result Promise|Array
- *
- * map.rate(
- *   f Functor,
- *   rate number,
- *   f (value any)=>Promise|any,
- * ) -> result Promise|Array
- * ```
- */
 
 module.exports = map

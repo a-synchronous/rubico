@@ -8,19 +8,19 @@ const arrayPush = require('./arrayPush')
 const sleep = require('./sleep')
 
 /**
- * @name MappingAsyncIterator
+ * @name SerialMappingAsyncIterator
  *
  * @synopsis
  * ```coffeescript [specscript]
- * mappingAsyncIterator = new MappingAsyncIterator(
+ * serialMappingAsyncIterator = new SerialMappingAsyncIterator(
  *   asyncIter AsyncIterator<T>,
  *   mapper T=>Promise|any,
- * ) -> mappingAsyncIterator AsyncIterator
+ * ) -> serialMappingAsyncIterator AsyncIterator
  *
- * mappingAsyncIterator.next() -> Promise<{ value: any, done: boolean }>
+ * serialMappingAsyncIterator.next() -> Promise<{ value: any, done: boolean }>
  * ```
  */
-const MappingAsyncIterator = (asyncIterator, mapper) => {
+const SerialMappingAsyncIterator = (asyncIterator, mapper) => {
   const buffer = new LinkedList()
 
   let index = -1
@@ -36,7 +36,10 @@ const MappingAsyncIterator = (asyncIterator, mapper) => {
     async _consumeAsyncIterator() {
       for await (const item of asyncIterator) {
         index += 1
-        const mappedItem = mapper(item)
+        let mappedItem = mapper(item)
+        if (isPromise(mappedItem)) {
+          mappedItem = await mappedItem
+        }
         buffer.append(mappedItem)
       }
       isAsyncIteratorDone = true
@@ -58,21 +61,13 @@ const MappingAsyncIterator = (asyncIterator, mapper) => {
 
       while (!isAsyncIteratorDone) {
         if (buffer.length > 0) {
-          let value = buffer.popFirst()
-          if (isPromise(value)) {
-            value = await value
-          }
-          return { value, done: false }
+          return { value: buffer.popFirst(), done: false }
         }
         await sleep(10)
       }
 
       if (buffer.length > 0) {
-        let value = buffer.popFirst()
-        if (isPromise(value)) {
-          value = await value
-        }
-        return { value, done: false }
+        return { value: buffer.popFirst(), done: false }
       }
 
       return { value: undefined, done: true }
@@ -81,4 +76,4 @@ const MappingAsyncIterator = (asyncIterator, mapper) => {
   }
 }
 
-module.exports = MappingAsyncIterator
+module.exports = SerialMappingAsyncIterator

@@ -38,9 +38,12 @@ const objectFlatten = function (object) {
 
   for (const key in object) {
     const element = object[key]
+
     if (element == null) {
       continue
-    } else if (typeof element[symbolIterator] == 'function') {
+    }
+
+    if (typeof element[symbolIterator] == 'function') {
       for (const monadElement of element) {
         objectAssign(result, monadElement)
       }
