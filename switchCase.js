@@ -44,7 +44,7 @@ const curryArgs3 = require('./_internal/curryArgs3')
  * const fruitsGuesser = switchCase([
  *   fruit => fruit.color == 'yellow',
  *   fruit => fruit.name + ' is possibly a banana',
- *   fruit => fruit.name + ' is probably not a banana',
+ *   fruit => fruit.name + ' is possibly not a banana',
  * ])
  *
  * const guess1 = fruitsGuesser({ name: 'plantain', color: 'yellow' })
@@ -91,13 +91,13 @@ const curryArgs3 = require('./_internal/curryArgs3')
  *   (a, b, c) => console.log(`${a} + ${b} + ${c} !== 6`),
  * ])
  *
- * const promise = switchCase(true, [
+ * const result = await switchCase(true, [
  *   bool => bool,
  *   Promise.resolve(1),
  *   Promise.resolve(2),
  * ])
  *
- * promise.then(console.log)
+ * console.log(result)
  * ```
  *
  * See also:

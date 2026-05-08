@@ -96,14 +96,14 @@ const _filter = function (value, predicate) {
  *   value any,
  *   indexOrKey number|string|any,
  *   filterable Filterable,
- * )=>(booleanResult Promise|boolean)
+ * )=>(booleanResult Promise|boolean|any)
  *
  * filter(filterable Promise|Filterable, predicate SyncOrAsyncPredicate) -> filteredFilterable Promise|Filterable
  * filter(predicate SyncOrAsyncPredicate)(filterable Filterable) -> filteredFilterable Promise|Filterable
  * ```
  *
  * @description
- * Filters out items from a filterable, returning a filterable of the same type. The order of the items of the filterable is preserved.
+ * Filters out items from a filterable, returning a filtered filterable of the same type. The order of the items of the filterable is preserved.
  *
  * The following data types are considered to be filterables:
  *  * `array`
@@ -114,11 +114,11 @@ const _filter = function (value, predicate) {
  *  * `object with .filter method`
  *  * `object`
  *
- * The filtering operation is defined by a given predicate function. The predicate function dictates whether a given item from the filterable should be included in the returned filterable.
+ * The filtering operation is defined by the predicate function, which determines whether a given item from the filterable should be included in the filtered filterable.
  *
  * ```javascript
  * const predicate = function (item) {
- *   // booleanResult is the boolean result of the predicate test on item
+ *   // booleanResult is the boolean result of the predicate
  *   return booleanResult
  * }
  * ```
@@ -150,8 +150,6 @@ const _filter = function (value, predicate) {
  * predicate(item any) -> booleanResult Promise|boolean|any
  * ```
  *
- * If the filterable is an object with a `.filter` method, the predicate function signature is defined externally.
- *
  * If the filterable is a plain object:
  * ```coffeescript [specscript]
  * predicate(item any, key string, filterable Object) -> booleanResult Promise|boolean|any
@@ -167,101 +165,66 @@ const _filter = function (value, predicate) {
  * console.log(filteredArray)
  * ```
  *
- * If the predicate is asynchronous, it is executed concurrently.
+ * If the filterable is an object with a `.filter` method, the predicate function signature is defined externally.
+ *
+ * If the filterable is a generator, the predicate function must be synchronous.
+ *
+ * If the predicate function is asynchronous, it is executed concurrently.
  *
  * ```javascript [playground]
  * const asyncIsOdd = async number => number % 2 == 1
  *
  * const array = [1, 2, 3, 4, 5]
  *
- * const promise = filter(array, asyncIsOdd)
- * promise.then(console.log) // [1, 3, 5]
+ * const result = await filter(array, asyncIsOdd)
+ *
+ * console.log(result)
  * ```
  *
- * `filter` applies the predicate function to just the values of an object.
+ * `filter` applies the predicate function to just the values of objects and maps.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
  *
- * const obj = { a: 1, b: 2, c: 3, d: 4, e: 5 }
+ * const object = { a: 1, b: 2, c: 3, d: 4, e: 5 }
+ * const map = new Map([['a', 1], ['b', 2], ['c', 3], ['d', 4], ['e', 5]])
  *
- * const result = filter(obj, isOdd)
- * console.log(result) // { a: 1, c: 3, e: 5 }
+ * const filteredObject = filter(object, isOdd)
+ * const filteredMap = filter(map, isOdd)
+ *
+ * console.log(filteredObject)
+ * console.log(filteredMap)
  * ```
  *
- * `filter` applies the predicate to the values of the entries of a map.
+ * For generators, `filter` returns a filtered generator.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
  *
- * const myMap = new Map([['a', 1], ['b', 2], ['c', 3], ['d', 4], ['e', 5]])
- *
- * const result = filter(myMap, isOdd)
- * console.log(result) // Map(3) { 'a' => 1, 'c' => 3, 'e' => 5 }
- * ```
- *
- * For generators, `filter` returns a lazily filtered generator. All values that are normally yielded by the generator that test false by the predicate are excluded from the returned generator.
- *
- * ```javascript [playground]
- * const isOdd = number => number % 2 == 1
- *
- * const numbersGeneratorFunction = function* () {
+ * const generateNumbers = function* () {
  *   yield 1; yield 2; yield 3; yield 4; yield 5
  * }
  *
- * const numbersGenerator = numbersGeneratorFunction()
- * const oddNumbersGenerator = filter(numbersGeneratorFunction(), isOdd)
+ * const numbers = generateNumbers()
+ * const oddNumbers = filter(generateNumbers(), isOdd)
  *
- * for (const number of numbersGenerator) {
- *   console.log(number) // 1
- *                       // 2
- *                       // 3
- *                       // 4
- *                       // 5
+ * console.log('numbers')
+ * for (const number of numbers) {
+ *   console.log(number)
  * }
  *
- * for (const number of oddNumbersGenerator) {
- *   console.log(number) // 1
- *                       // 3
- *                       // 5
+ * console.log('odd numbers')
+ * for (const number of oddNumbers) {
+ *   console.log(number)
  * }
  * ```
  *
- * For async generators, `filter` returns a lazily filtered async generator. All values that are normally yielded by the async generator that test falsy by the predicate are excluded from the returned async generator.
- *
- * ```javascript [playground]
- * const asyncIsOdd = async number => number % 2 == 1
- *
- * const asyncNumbersGeneratorFunction = async function* () {
- *   yield 1; yield 2; yield 3; yield 4; yield 5
- * }
- *
- * const asyncNumbersGenerator = asyncNumbersGeneratorFunction()
- *
- * const asyncOddNumbersGenerator = filter(asyncNumbersGeneratorFunction(), asyncIsOdd)
- *
- * for await (const number of asyncNumbersGenerator) {
- *   console.log(number) // 1
- *                       // 2
- *                       // 3
- *                       // 4
- *                       // 5
- * }
- *
- * for await (const number of asyncOddNumbersGenerator) {
- *   console.log(number) // 1
- *                       // 3
- *                       // 5
- * }
- * ```
- *
- * Any promises passed in data argument position are resolved for their values before further execution.
+ * If the filterable is a promise, it is resolved for its value before further execution for the eager interface only. 
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
  *
  * filter(Promise.resolve([1, 2, 3, 4, 5]), isOdd).then(console.log)
- * // [1, 3, 5]
  * ```
  *
  * See also:

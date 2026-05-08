@@ -25,22 +25,26 @@ const _reduce = function (collection, reducer, initial) {
  *
  * type SyncOrAsyncReducer = (
  *   accumulator any,
- *   element any,
+ *   item any,
  *   indexOrKey number|string|any,
  *   foldable Foldable
  * )=>(nextAccumulator Promise|any)
  *
  * type UnarySyncOrAsyncResolver = any=>Promise|any
  *
- * reducer SyncOrAsyncReducer
- * initial UnarySyncOrAsyncResolver|any
+ * reduce(foldable Promise|Foldable, reducer SyncOrAsyncReducer) -> accumulator Promise|any
+ * reduce(foldable Promise|Foldable, reducer SyncOrAsyncReducer, initialValue Promise|any) -> accumulator Promise|any
+ * reduce(foldable Promise|Foldable, reducer SyncOrAsyncReducer, initialResolver UnarySyncOrAsyncResolver) -> accumulator Promise|any
  *
- * reduce(foldable Promise|Foldable, reducer, initial?) -> result Promise|any
- * reduce(reducer, initial?)(foldable Foldable) -> result Promise|any
+ * reduce(reducer SyncOrAsyncReducer)(foldable Foldable) -> accumulator Promise|any
+ * reduce(reducer SyncOrAsyncReducer, initialValue Promise|any)(foldable Foldable) -> accumulator Promise|any
+ * reduce(reducer SyncOrAsyncReducer, initialResolver UnarySyncOrAsyncResolver)(foldable Foldable) -> accumulator Promise|any
  * ```
  *
  * @description
- * Reduces a foldable to a single value.
+ * Reduces a foldable to an accumulated value.
+ *
+ * `reduce` executes a reducer function for each item of a foldable in order. If an initial value is provided, `reduce` starts iterating from the first item of the foldable. If no initial value is provided, `reduce` uses the first item of the foldable as the initial value and starts iterating from the second item of the foldable.
  *
  * The following data types are considered to be foldables:
  *  * `array`
@@ -51,11 +55,11 @@ const _reduce = function (collection, reducer, initial) {
  *  * `object with .reduce method`
  *  * `object`
  *
- * The reducing operation is dictated by a provided reducer function, which defines a transformation between the accumulator and a given element of the foldable.
+ * The reducing operation is expressed by the reducer function and optional initial value, which defines a transformation between an accumulator and a given item of the foldable.
  *
  * ```javascript
- * const reducer = function (accumulator, element) {
- *   // nextAccumulator is the result of some operation between accumulator and element
+ * const reducer = function (accumulator, item) {
+ *   // nextAccumulator is the result of some operation between accumulator and item
  *   // and becomes the accumulator for the next iteration and invocation of the reducer
  *   return nextAccumulator
  * }
@@ -67,7 +71,7 @@ const _reduce = function (collection, reducer, initial) {
  * ```coffeescript [specscript]
  * reducer(
  *   accumulator any,
- *   element any,
+ *   item any,
  *   index number,
  *   fold Array
  * ) -> nextAccumulator Promise|any
@@ -77,7 +81,7 @@ const _reduce = function (collection, reducer, initial) {
  * ```coffeescript [specscript]
  * reducer(
  *   accumulator any,
- *   element any
+ *   item any
  * ) -> nextAccumulator Promise|any
  * ```
  *
@@ -85,7 +89,7 @@ const _reduce = function (collection, reducer, initial) {
  * ```coffeescript [specscript]
  * reducer(
  *   accumulator any,
- *   element any,
+ *   item any,
  *   key any,
  *   fold Map
  * ) -> nextAccumulator Promise|any
@@ -95,7 +99,7 @@ const _reduce = function (collection, reducer, initial) {
  * ```coffeescript [specscript]
  * reducer(
  *   accumulator any,
- *   element any
+ *   item any
  * ) -> nextAccumulator Promise|any
  * ```
  *
@@ -103,47 +107,46 @@ const _reduce = function (collection, reducer, initial) {
  * ```coffeescript [specscript]
  * reducer(
  *   accumulator any,
- *   element any
+ *   item any
  * ) -> nextAccumulator Promise|any
  * ```
- *
- * If the foldable is an object with a `.reduce` method, the reducer function signature is defined externally.
  *
  * If the foldable is a plain object:
  * ```coffeescript [specscript]
  * reducer(
  *   accumulator any,
- *   element any,
+ *   item any,
  *   key string,
  *   fold Object
  * ) -> nextAccumulator Promise|any
  * ```
  *
- * `reduce` executes a reducer function for each element of the array in order. If no initial value is provided, `reduce` uses the first element of the foldable as the initial value and starts iterating from the second element of the foldable.
- *
  * ```javascript [playground]
  * const max = (a, b) => a > b ? a : b
  *
  * const result = reduce([1, 3, 5, 4, 2], max)
- * console.log(result) // 5
- * ```
  *
- * If an initial value is provided, the accumulator starts as the initial value rather than the first element of the foldable.
+ * console.log(result)
+ * ```
  *
  * ```javascript [playground]
  * const add = (a, b) => a + b
  *
  * const result = reduce([1, 2, 3, 4, 5], add, 0)
- * console.log(result) // 15
+  *
+ * console.log(result)
  * ```
+ *
+ * If the foldable is an object with a `.reduce` method, the reducer function signature is defined externally.
  *
  * If the reducer is asynchronous, all promises created by the reducer are resolved before continuing with the reducing operation.
  *
  * ```javascript [playground]
  * const asyncAdd = async (a, b) => a + b
  *
- * const promise = reduce([1, 2, 3, 4, 5], asyncAdd, 0)
- * promise.then(console.log) // 15
+ * const result = await reduce([1, 2, 3, 4, 5], asyncAdd, 0)
+ *
+ * console.log(result)
  * ```
  *
  * If the initialization parameter is a function, it is treated as a resolver of the initial value and called with the foldable.
@@ -155,59 +158,51 @@ const _reduce = function (collection, reducer, initial) {
  *
  * const array = [1, 2, 3, 4, 5]
  *
- * console.log(reduce(array, concatSquares, contrivedInitializer))
- * // ['initial length 5', 1, 4, 9, 16, 25]
+ * const result = reduce(array, concatSquares, contrivedInitializer)
+ *
+ * console.log(result)
  * ```
  *
- * For objects, `reduce` iterates over just the values.
+ * `reduce` iterates over just the values of objects and maps.
  *
  * ```javascript [playground]
  * const add = (a, b) => a + b
  *
- * const obj = { a: 1, b: 2, c: 3, d: 4, e: 5 }
+ * const object = { a: 1, b: 2, c: 3, d: 4, e: 5 }
+ * const map = new Map([['a', 1], ['b', 2], ['c', 3], ['d', 4], ['e', 5]])
  *
- * const result = reduce(obj, add)
- * console.log(result) // 15
+ * const objectResult = reduce(object, add)
+ * const mapResult = reduce(map, add)
+ *
+ * console.log(objectResult)
+ * console.log(mapResult)
  * ```
  *
- * For maps, `reduce` iterates over the values of the entries.
+ * `reduce` reduces async generators.
  *
  * ```javascript [playground]
  * const add = (a, b) => a + b
  *
- * const m = new Map([['a', 1], ['b', 2], ['c', 3], ['d', 4], ['e', 5]])
- *
- * const result = reduce(m, add)
- * console.log(result) // 15
- * ```
- *
- * `reduce` works for async generators.
- *
- * ```javascript [playground]
- * const asyncAdd = async (a, b) => a + b
- *
- * const asyncGenerate = async function* () {
+ * const generateAsyncNumbers = async function* () {
  *   yield 1; yield 2; yield 3; yield 4; yield 5
  * }
  *
- * reduce(asyncGenerate(), asyncAdd).then(console.log) // 15
+ * const result = await reduce(generateAsyncNumbers(), add)
+ *
+ * console.log(result)
  * ```
  *
- * Any promises passed in data argument position are resolved for their values before further execution.
+ * If the foldable or initial value is a promise, it is resolved for its value before further execution for the eager interface only.
  *
  * ```javascript [playground]
  * const add = (a, b) => a + b
  *
- * reduce(Promise.resolve([1, 2, 3, 4, 5]), add, 0).then(console.log) // 15
- * ```
+ * const resultWithPromiseFoldable = await reduce(Promise.resolve([1, 2, 3, 4, 5]), add, 0)
  *
- * Any promises passed for the initial value are also resolved before further execution.
+ * const resultWithPromiseInitialValue = await reduce([1, 2, 3, 4, 5], add, Promise.resolve(0))
  *
- * ```javascript [playground]
- * const add = (a, b) => a + b
- *
- * const promise = reduce([1, 2, 3, 4, 5], add, Promise.resolve(0))
- * promise.then(console.log) // 15
+ * console.log(resultWithPromiseFoldable)
+ * console.log(resultWithPromiseInitialValue)
  * ```
  *
  * See also:

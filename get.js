@@ -74,9 +74,9 @@ const _get = function (object, path, defaultValue) {
  * ```javascript [playground]
  * const asyncDefaultResolver = async object => object.a
  *
- * const promise = get({ a: 1 }, 'notfound', asyncDefaultResolver)
+ * const result = await get({ a: 1 }, 'notfound', asyncDefaultResolver)
  *
- * promise.then(console.log)
+ * console.log(result)
  * ```
  *
  * `get` supports three types of path patterns for nested property access.
@@ -96,7 +96,7 @@ const _get = function (object, path, defaultValue) {
  * const get00000BracketNotation = get('[0][0][0][0][0]')
  * const get00000ArrayNotation = get([0, 0, 0, 0, 0])
  *
- * const nested = [[[[['foo']]]]]
+ * const nested = [[[[[1]]]]]
  *
  * console.log(get00000DotNotation(nested))
  * console.log(get00000BracketNotation(nested))

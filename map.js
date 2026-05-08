@@ -175,21 +175,21 @@ const _map = function (value, f) {
  *
  * If the functor is an object with a `.map` method, the mapper function signature is defined externally.
  *
- * If the mapper function is asynchronous, it is executed concurrently.
- *
  * If the functor is a generator, the mapper function must be synchronous.
+ *
+ * If the mapper function is asynchronous, it is executed concurrently.
  *
  * ```javascript [playground]
  * const asyncSquare = async number => number ** 2
  *
  * const array = [1, 2, 3, 4, 5]
  *
- * const promise = map(array, asyncSquare)
+ * const result = await map(array, asyncSquare)
  *
- * promise.then(console.log)
+ * console.log(result)
  * ```
  *
- * `map` applies the mapper function to just the values of objects and maps.
+ * `map` iterates over just the values of objects and maps.
  *
  * ```javascript [playground]
  * const square = number => number ** 2
@@ -552,10 +552,7 @@ const _mapPool = function (f, concurrency, mapper) {
  *   return value
  * }
  *
- * map.pool(2, pipe([
- *   delayedIdentity,
- *   console.log,
- * ]))(ids)
+ * map.pool(ids, 2, pipe(delayedIdentity, console.log))
  * ```
  *
  * If the functor is a promise, it is resolved for its value before further execution for the eager interface only.

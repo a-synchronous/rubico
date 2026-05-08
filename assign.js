@@ -56,9 +56,9 @@ const _assign = function (object, funcs) {
  *   },
  * })
  *
- * const promise = asyncAssignTotal({ numbers: [1, 2, 3, 4, 5] })
+ * const result = await asyncAssignTotal({ numbers: [1, 2, 3, 4, 5] })
  *
- * promise.then(console.log)
+ * console.log(result)
  * ```
  *
  * If the argument object is a promise, it is resolved for its value before further execution for the eager interface only.

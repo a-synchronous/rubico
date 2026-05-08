@@ -79,9 +79,9 @@ const _flatMap = function (value, flatMapper) {
  * @description
  * Applies a flat-mapper function to each item of a monad, returning a flat-mapped monad of the same type.
  *
- * A flat-mapping operation iterates through each item of a monad and applies the flat-mapper function to each item, flattening the result of the execution into the returned monad.
+ * `flatMap` iterates through each item of a monad and applies the flat-mapper function to each item, concatenating the execution result (flat-mapped item) into the flat-mapped monad. If the execution result is a promise, it is resolved for its value before being concatenated into the flat-mapped monad. If the execution result is asynchronously iterable, it is muxed into the flat-mapped monad.
  *
- * If the flat-mapper is asynchronous, it is executed concurrently. The execution result may be asynchronously iterable, in which case it is muxed into the returned monad.
+ * If the flat-mapper function is asynchronous, it is executed concurrently.
  *
  * The following data types are considered to be monads:
  *  * `array`
@@ -133,7 +133,7 @@ const _flatMap = function (value, flatMapper) {
  * console.log(duplicated)
  * ```
  *
- * If the iterable is an object with a `.flatMap` or `.chain` method, the flat-mapper function signature is defined externally.
+ * If the iterable is an object with a `flatMap` or `chain` method, the flat-mapper function signature is defined externally.
  *
  * Values from async generators are muxed. Muxing, or asynchronously "mixing", is the process of combining multiple asynchronous sources into one source, with order determined by the asynchronous resolution of the individual promise elements.
  *
@@ -153,7 +153,7 @@ const _flatMap = function (value, flatMapper) {
  * // values from async generators are muxed
  * const muxed = await flatMap(['foo', 'bar', 'baz'], asyncRepeat3)
  *
- * console.log(muxed)
+ * console.log('muxed:', muxed)
  *
  * const repeat3 = function* (message) {
  *   yield message; yield message; yield message
@@ -162,7 +162,7 @@ const _flatMap = function (value, flatMapper) {
  * // values from generators and other monads are concatenated
  * const repeated = flatMap(['foo', 'bar', 'baz'], repeat3)
  *
- * console.log(repeated)
+ * console.log('repeated:', repeated)
  * ```
  *
  * If the monad is a promise, it is resolved for its value before further execution for the eager interface only.

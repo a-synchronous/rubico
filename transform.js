@@ -25,20 +25,19 @@ const _transform = function (collection, transducer, initialValue) {
  * type SyncOrAsyncReducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
  * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer
  *
- * type Semigroup =
- *   Array|String|Set|TypedArray|{ concat: function }|{ write: function }|Object
+ * type Semigroup = Array|String|Set|TypedArray|{ concat: function }|{ write: function }|Object
  *
  * type UnarySyncOrAsyncSemigroupResolver = any=>Promise|Semigroup
  *
- * transducer Transducer
- * initial UnarySyncOrAsyncSemigroupResolver|Semigroup
+ * transform(foldable Promise|Foldable, transducer, initialValue Promise|any) -> result Promise|Semigroup
+ * transform(foldable Promise|Foldable, transducer, initialResolver UnarySyncOrAsyncSemigroupResolver) -> result Promise|Semigroup
  *
- * transform(foldable Promise|Foldable, transducer, initial?) -> result Promise|Semigroup
- * transform(transducer, initial?)(foldable Foldable) -> result Promise|Semigroup
+ * transform(transducer, initialValue Promise|any)(foldable Foldable) -> result Promise|Semigroup
+ * transform(transducer, initialResolver UnarySyncOrAsyncSemigroupResolver)(foldable Foldable) -> result Promise|Semigroup
  * ```
  *
  * @description
- * Transforms a foldable with [transducers](https://rubico.land/blog/transducers-crash-course-rubico-v2) into a semigroup.
+ * Transforms a foldable into a semigroup with a [transducer](https://rubico.land/blog/transducers-crash-course-rubico-v2).
  *
  * The following data types are considered to be foldables:
  *  * `array`
@@ -49,7 +48,7 @@ const _transform = function (collection, transducer, initialValue) {
  *  * `object with .reduce method`
  *  * `object`
  *
- * Transducers, due to their lazy nature, don't have knowledge of the foldable they are transforming. As such, the transducer signature for all foldables is the same:
+ * The transducer defines the transformation done by `transform`. In a transformation, each item of the foldable is processed by the transducer.
  *
  * ```coffeescript [specscript]
  * type SyncOrAsyncReducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
@@ -106,8 +105,6 @@ const _transform = function (collection, transducer, initialValue) {
  * nextAccumulator = ({ ...accumulator, ...values })
  * ```
  *
- * `transform` transforms numbers from an array into another array.
- *
  * ```javascript [playground]
  * const square = number => number ** 2
  *
@@ -118,28 +115,30 @@ const _transform = function (collection, transducer, initialValue) {
  *   Transducer.map(square),
  * ])
  *
+ * const array = [1, 2, 3, 4, 5]
+ *
  * // transform arrays into arrays
- * console.log(
- *   transform([1, 2, 3, 4, 5], squaredOdds, [])
- * ) // [1, 9, 25]
+ * const squaredOddsArray = transform(array, squaredOdds, [])
+ * console.log('array into array')
+ * console.log(squaredOddsArray)
  *
  * // transform arrays into strings
- * console.log(
- *   transform([1, 2, 3, 4, 5], squaredOdds, '')
- * ) // '1925'
+ * const squaredOddsString = transform(array, squaredOdds, '')
+ * console.log('array into string')
+ * console.log(squaredOddsString)
  *
  * // transform arrays into sets
- * console.log(
- *   transform([1, 2, 3, 4, 5], squaredOdds, new Set())
- * ) // Set (3) { 1, 9, 25 }
+ * const squaredOddsSet = transform(array, squaredOdds, new Set())
+ * console.log('array into set')
+ * console.log(squaredOddsSet)
  *
  * // transform arrays into typed arrays
- * console.log(
- *   transform([1, 2, 3, 4, 5], squaredOdds, new Uint8Array()),
- * ) // Uint8Array(3) [ 1, 9, 25 ]
+ * const squaredOddsUint8Array = transform(array, squaredOdds, new Uint8Array())
+ * console.log('array into binary')
+ * console.log(squaredOddsUint8Array)
  * ```
  *
- * `transform` transforms arrays into objects that implement `.concat`.
+ * Any object that implements concat may be used as the semigroup for `transform`.
  *
  * ```javascript [playground]
  * const square = number => number ** 2
@@ -152,14 +151,9 @@ const _transform = function (collection, transducer, initialValue) {
  * }
  *
  * transform([1, 2, 3, 4, 5], Transducer.map(square), Stdout)
- * // 1
- * // 4
- * // 9
- * // 16
- * // 25
  * ```
  *
- * `transform` transforms an async generator into `process.stdout`, a Node.js writable stream that implements `.write`.
+ * Node.js `process.stdout`, a writable stream (implements the `write` method), may be used as the semigroup for `transform`
  *
  * ```javascript
  * const { pipe, compose, transform } = rubico
@@ -189,28 +183,35 @@ const _transform = function (collection, transducer, initialValue) {
  * )
  * ```
  *
- * If the initial value is a function it is treated as a resolver of the semigroup. The resolver may be asynchronous.
+ * If the initial value is a function, it is treated as a resolver of the semigroup. The resolver may be asynchronous.
  *
  * ```javascript [playground]
- * const promise = transform(
+ * const result = await transform(
  *   [1, 2, 3, 4, 5],
  *   Transducer.map(number => number ** 2),
- *   async () => ['a'],
+ *   async () => []
  * )
  *
- * promise.then(console.log)
+ * console.log(result)
  * ```
  *
- * Any promises passed in data argument position are resolved for their values before further execution.
+ * If the foldable or initial value is a promise, it is resolved for its value before further execution for the eager interface only.
  *
  * ```javascript [playground]
- * const promise = transform(
+ * const resultFromPromiseFoldable = await transform(
  *   Promise.resolve([1, 2, 3, 4, 5]),
  *   Transducer.map(n => n ** 2),
- *   [],
+ *   []
  * )
  *
- * promise.then(console.log) // [1, 4, 9, 16, 25]
+ * const resultFromPromiseSemigroup = await transform(
+ *   [1, 2, 3, 4, 5],
+ *   Transducer.map(n => n ** 2),
+ *   Promise.resolve([])
+ * )
+  *
+ * console.log(resultFromPromiseFoldable)
+ * console.log(resultFromPromiseSemigroup)
  * ```
  *
  * See also:

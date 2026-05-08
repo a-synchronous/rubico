@@ -86,12 +86,12 @@ const _some = function (collection, predicate) {
  *   yield 1; yield 2; yield 3; yield 4; yield 5
  * }
  *
- * const promise = some(todoIDsGenerator(), async id => {
+ * const result = await some(todoIDsGenerator(), async id => {
  *   const todo = await fetchTodo(id)
  *   return todo.title.startsWith('fugiat')
  * })
  *
- * promise.then(console.log) // true
+ * console.log(result)
  * ```
  *
  * `some` supports a lazy interface for composability.

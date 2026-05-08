@@ -30,6 +30,7 @@ const funcConcat = require('./_internal/funcConcat')
  * const g = x => x + 3
  *
  * const result = compose(5, [f, g])
+ *
  * console.log(result)
  * ```
  *
