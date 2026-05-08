@@ -1,5 +1,5 @@
 /**
- * Rubico v2.10.0
+ * Rubico v2.11.0
  * https://rubico.land/
  *
  * © Richard Yufei Tong, King of Software
@@ -52,30 +52,124 @@ const FilteringIterator = (iterator, predicate) => ({
   },
 })
 
+const promiseRace = Promise.race.bind(Promise)
+
 const isPromise = value => value != null && typeof value.then == 'function'
+
+class LinkedList {
+  constructor() {
+    this.first = null
+    this.last = null
+    this.length = 0
+  }
+
+  // popFirst() -> firstValue any
+  popFirst() {
+    const first = this.first
+
+    if (first == null) {
+      return undefined
+    }
+
+    if (first.next) {
+      this.first = first.next
+    } else {
+      this.first = null
+    }
+
+    this.length -= 1
+
+    return first.value
+  }
+
+  // append(value any) -> undefined
+  append(value) {
+    const node = { value }
+    if (this.first == null) {
+      this.first = node
+    }
+
+    if (this.last == null) {
+      this.last = node
+    } else {
+      this.last.next = node
+      this.last = node
+    }
+
+    this.length += 1
+  }
+
+}
 
 const symbolAsyncIterator = Symbol.asyncIterator
 
-const FilteringAsyncIterator = (asyncIterator, predicate) => ({
-  isAsyncIteratorDone: false,
-  [symbolAsyncIterator]() {
-    return this
-  },
-  async next() {
-    while (!this.isAsyncIteratorDone) {
-      const { value, done } = await asyncIterator.next()
-      if (done) {
-        this.isAsyncIteratorDone = true
-      } else {
-        const predication = predicate(value)
-        if (isPromise(predication) ? await predication : predication) {
-          return { value, done: false }
+const arrayPush = function (array, value) {
+  array.push(value)
+  return array
+}
+
+const sleep = time => new Promise(resolve => {
+  setTimeout(resolve, time)
+})
+
+const FilteringAsyncIterator = (asyncIterator, predicate) => {
+  const buffer = new LinkedList()
+
+  let index = -1
+  let consumingAsyncIterator = false
+  let isAsyncIteratorDone = false
+
+  return {
+    [symbolAsyncIterator]() {
+      return this
+    },
+
+    // _consumeAsyncIterator() -> Promise<>
+    async _consumeAsyncIterator() {
+      for await (const item of asyncIterator) {
+        index += 1
+        const booleanResult = predicate(item)
+        buffer.append([booleanResult, item])
+      }
+      isAsyncIteratorDone = true
+    },
+
+    
+    async next() {
+      if (!consumingAsyncIterator) {
+        this._consumeAsyncIterator()
+        consumingAsyncIterator = true
+      }
+
+      while (!isAsyncIteratorDone) {
+        if (buffer.length > 0) {
+          let [booleanResult, item] = buffer.popFirst()
+          if (isPromise(booleanResult)) {
+            booleanResult = await booleanResult
+          }
+          if (booleanResult) {
+            return { value: item, done: false }
+          }
+          continue
+        }
+        await sleep(10)
+      }
+
+      while (buffer.length > 0) {
+        let [booleanResult, item] = buffer.popFirst()
+        if (isPromise(booleanResult)) {
+          booleanResult = await booleanResult
+        }
+        if (booleanResult) {
+          return { value: item, done: false }
         }
       }
-    }
-    return { value: undefined, done: true }
-  },
-})
+
+      return { value: undefined, done: true }
+    },
+
+  }
+}
 
 const isArray = Array.isArray
 
