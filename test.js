@@ -1624,7 +1624,7 @@ describe('rubico', () => {
       for (let i = 0; i < 5; i++) {
         const time = times[i]
         const second = Math.floor(time / 100)
-        assert.equal(second, i + 1)
+        assert.equal(second, i + 1, time)
       }
     }).timeout(1000)
 
