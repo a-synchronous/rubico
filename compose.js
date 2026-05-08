@@ -44,7 +44,7 @@ const funcConcat = require('./_internal/funcConcat')
  * console.log(composition(1))
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution.
+ * Any promises in `arguments` are resolved for their values before further execution for the eager interface only.
  *
  * ```javascript [playground]
  * compose(Promise.resolve(1), 2, Promise.resolve(3), [

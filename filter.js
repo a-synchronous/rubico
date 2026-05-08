@@ -70,14 +70,14 @@ const _filter = function (value, predicate) {
   if (value.constructor == Map) {
     return mapFilter(value, predicate)
   }
-  if (typeof value.filter == 'function') {
-    return value.filter(predicate)
-  }
   if (typeof value[symbolIterator] == 'function') {
     return FilteringIterator(value[symbolIterator](), predicate)
   }
   if (typeof value[symbolAsyncIterator] == 'function') {
     return FilteringAsyncIterator(value[symbolAsyncIterator](), predicate)
+  }
+  if (typeof value.filter == 'function') {
+    return value.filter(predicate)
   }
   if (value.constructor == Object) {
     return objectFilter(value, predicate)
@@ -256,7 +256,7 @@ const _filter = function (value, predicate) {
  * }
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution.
+ * Any promises passed in data argument position are resolved for their values before further execution.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1

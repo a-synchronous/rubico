@@ -27,17 +27,21 @@ const _pick = function (source, keys) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * pick(source Promise|Object, keys Array<string>) -> result Object
- * pick(keys Array<string>)(source Object) -> result Object
+ * keys Array<string>
+ *
+ * pick(Promise|Object, keys) -> Object
+ * pick(keys)(Object) -> Object
  * ```
  *
  * @description
- * Creates a new object from a source object by selecting provided keys. If a provided key does not exist on the source object, excludes it from the resulting object.
+ * Object constructor. Creates a new object from an argument object by selecting keys from an array. If a key does not exist on the argument object, it is excluded from the new object.
  *
  * ```javascript [playground]
- * console.log(
- *   pick({ goodbye: 1, world: 2 }, ['hello', 'world']),
- * ) // { world: 2 }
+ * const argumentObject = { goodbye: 1, world: 2 }
+ *
+ * const newObject = pick(argumentObject, ['hello', 'world'])
+ *
+ * console.log(newObject)
  * ```
  *
  * `pick` supports three types of path patterns for nested property access
@@ -49,24 +53,23 @@ const _pick = function (source, keys) {
  * ```javascript [playground]
  * const nested = { a: { b: { c: { d: 1, e: [2, 3] } } } }
  *
- * console.log(pick(['a.b.c.d'])(nested)) // { a: { b: { c: { d: 1 } } } }
+ * console.log(pick(nested, ['a.b.c.d']))
  * ```
  *
- * Compose `pick` inside a `pipe` with its lazy API.
+ * `pick` supports a lazy interface for composability.
  *
  * ```javascript [playground]
  * pipe({ a: 1, b: 2, c: 3 }, [
  *   map(number => number ** 2),
  *   pick(['a', 'c']),
- *   console.log, // { a: 1, c: 9 }
+ *   console.log,
  * ])
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution.
+ * If the argument object is a promise, it is resolved for its value before further execution for the eager interface only.
  *
  * ```javascript [playground]
  * pick(Promise.resolve({ a: 1, b: 2, c: 3 }), ['a', 'b']).then(console.log)
- * // { a: 1, b: 2 }
  * ```
  *
  * See also:

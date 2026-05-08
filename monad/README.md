@@ -2,7 +2,7 @@
 
 This is a place for JavaScript monads.
 
-Warning: this entire directory is experimental; APIs here are subject to change.
+Warning: this entire directory is experimental; interfaces here are subject to change.
 
 # Specification
 

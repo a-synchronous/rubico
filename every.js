@@ -84,7 +84,7 @@ const _every = function (collection, predicate) {
  * every(asyncNumbers(), async number => number < 6).then(console.log) // true
  * ```
  *
- * `every` supports a lazy API for composability.
+ * `every` supports a lazy interface for composability.
  *
  * ```javascript [playground]
  * pipe([1, 2, 3], [
@@ -93,7 +93,7 @@ const _every = function (collection, predicate) {
  * ])
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution.
+ * Any promises passed in data argument position are resolved for their values before further execution.
  *
  * ```javascript [playground]
  * every(Promise.resolve([1, 2, 3, 4, 5]), n => n < 6).then(console.log) // true

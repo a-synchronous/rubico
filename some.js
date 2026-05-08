@@ -94,7 +94,7 @@ const _some = function (collection, predicate) {
  * promise.then(console.log) // true
  * ```
  *
- * `some` supports a lazy API for composability.
+ * `some` supports a lazy interface for composability.
  *
  * ```javascript [playground]
  * pipe([1, 2, 3], [
@@ -103,7 +103,7 @@ const _some = function (collection, predicate) {
  * ])
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution.
+ * Any promises passed in data argument position are resolved for their values before further execution.
  *
  * ```javascript [playground]
  * some(Promise.resolve([1, 2, 3, 4, 5]), n => n > 6).then(console.log) // false

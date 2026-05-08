@@ -45,7 +45,7 @@ const _get = function (object, path, defaultValue) {
  * console.log(value)
  * ```
  *
- * `get` supports a lazy API for composability.
+ * `get` supports a lazy interface for composability.
  *
  * ```javascript [playground]
  * const obj = { hello: 'world' }
@@ -103,10 +103,12 @@ const _get = function (object, path, defaultValue) {
  * console.log(get00000ArrayNotation(nested))
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution.
+ * If the argument object or default value is a promise, it is resolved for its value before further execution for the eager interface only.
  *
  * ```javascript [playground]
- * get(Promise.resolve({ a: 1 }), 'a').then(console.log) // 1
+ * get(Promise.resolve({ a: 1 }), 'a').then(console.log)
+ *
+ * get({}, 'a', Promise.resolve('default-value')).then(console.log)
  * ```
  *
  * See also:

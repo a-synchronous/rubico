@@ -201,7 +201,7 @@ const _transform = function (collection, transducer, initialValue) {
  * promise.then(console.log)
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution.
+ * Any promises passed in data argument position are resolved for their values before further execution.
  *
  * ```javascript [playground]
  * const promise = transform(

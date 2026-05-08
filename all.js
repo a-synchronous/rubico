@@ -60,8 +60,7 @@ const _allValues = function (values) {
  *
  * const arrayOfGreetings = createArrayOfGreetings('example')
  *
- * console.log(arrayOfGreetingsFor1)
- * // ['Hi example', 'Hello example', 'Gretings example']
+ * console.log(arrayOfGreetings)
  * ```
  *
  * If provided promises, `all` resolves those promises and returns a promise of the resolved values.
@@ -107,13 +106,13 @@ const _allValues = function (values) {
  * getAndLogUserById('1')
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution.
+ * Any promises in `arguments` are resolved for their values before further execution for the eager interface only.
  *
  * ```javascript [playground]
- * all(Promise.resolve({ a: 1 }), [
- *   obj => obj.a + 1,
- *   obj => obj.a + 2,
- *   obj => obj.a + 3,
+ * all(Promise.resolve({ a: 1 }), Promise.resolve(2), [
+ *   (obj, n) => obj.a + n + 1,
+ *   (obj, n) => obj.a + n + 2,
+ *   (obj, n) => obj.a + n + 3,
  * ]).then(console.log)
  * ```
  *
@@ -169,7 +168,7 @@ const all = function (...args) {
  * ```
  *
  * @description
- * `all` with serial execution.
+ * [all](/docs/all) with serial execution.
  *
  * ```javascript [playground]
  * const sleep = ms => () => new Promise(resolve => setTimeout(resolve, ms))

@@ -20,17 +20,21 @@ const _omit = function (source, paths) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * omit(source Promise|Object, paths Array<string>) -> result Object
- * omit(paths Array<string>)(source Object) -> result Object
+ * paths Array<string>
+ *
+ * omit(Promise|Object, paths) -> Object
+ * omit(paths)(Object) -> Object
  * ```
  *
  * @description
- * Create a new object by excluding provided paths on a source object.
+ * Object constructor. Creates a new object by excluding provided paths on an argument object.
  *
  * ```javascript [playground]
- * console.log(
- *   omit({ _id: '1', name: 'John' }, ['_id']),
- * ) // { name: 'John' }
+ * const argumentObject = { _id: '1', name: 'John' }
+ *
+ * const newObject = omit(argumentObject, ['_id'])
+ *
+ * console.log(newObject)
  * ```
  *
  * `omit` supports three types of path patterns for nested property access
@@ -40,33 +44,32 @@ const _omit = function (source, paths) {
  *  * an array of keys or indices - `['a', 0, 'value']`
  *
  * ```javascript [playground]
- * console.log(
- *   omit(['a.b.d'])({
- *     a: {
- *       b: {
- *         c: 'hello',
- *         d: 'goodbye',
- *       },
+ * const omittedABD = omit(['a.b.d'])({
+ *   a: {
+ *     b: {
+ *       c: 'hello',
+ *       d: 'goodbye',
  *     },
- *   }),
- * ) // { a: { b: { c: 'hello' } } }
+ *   },
+ * })
+ *
+ * console.log(omittedABD)
  * ```
  *
- * Compose `omit` inside a `pipe` with its lazy API
+ * `omit` supports a lazy interface for composability.
  *
  * ```javascript [playground]
  * pipe({ a: 1, b: 2, c: 3 }, [
  *   map(number => number ** 2),
  *   omit(['a', 'b']),
- *   console.log, // { c: 9 }
+ *   console.log,
  * ])
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution.
+ * If the argument object is a promise, it is resolved for its value before further execution for the eager interface only.
  *
  * ```javascript [playground]
  * omit(Promise.resolve({ a: 1, b: 2, c: 3 }), ['a', 'b']).then(console.log)
- * // { c: 3 }
  * ```
  *
  * See also:

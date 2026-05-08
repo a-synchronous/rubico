@@ -38,7 +38,7 @@ const curryArgs3 = require('./_internal/curryArgs3')
  * ])
  * ```
  *
- * `switchCase` supports a lazy API for composability.
+ * `switchCase` supports a lazy interface for composability.
  *
  * ```javascript [playground]
  * const fruitsGuesser = switchCase([
@@ -80,16 +80,24 @@ const curryArgs3 = require('./_internal/curryArgs3')
  * console.log(myDrink)
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution.
+ * Any promises in `arguments` are resolved for their values before further execution for the eager interface only. Any promises in the conditional array are resolved before further execution for both the lazy and eager interface.
  *
  * ```javascript [playground]
  * switchCase(Promise.resolve(1), 2, Promise.resolve(3), [
  *   function doValuesAddUpTo6(a, b, c) {
  *     return a + b + c === 6
  *   },
- *   (a, b, c) => console.log(`${a} + ${b} + ${c} == 6`),
- *   (a, b, c) => console.log(`${a} + ${b} + ${c} != 6`),
+ *   (a, b, c) => console.log(`${a} + ${b} + ${c} === 6`),
+ *   (a, b, c) => console.log(`${a} + ${b} + ${c} !== 6`),
  * ])
+ *
+ * const promise = switchCase(true, [
+ *   bool => bool,
+ *   Promise.resolve(1),
+ *   Promise.resolve(2),
+ * ])
+ *
+ * promise.then(console.log)
  * ```
  *
  * See also:

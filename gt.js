@@ -56,7 +56,7 @@ const greaterThan = require('./_internal/greaterThan')
  * asyncIsOfLegalAge(juvenile).then(console.log) // false
  * ```
  *
- * `gt` supports a lazy API for composability.
+ * `gt` supports a lazy interface for composability.
  *
  * ```javascript [playground]
  * pipe({ value: 1 }, [
@@ -65,7 +65,7 @@ const greaterThan = require('./_internal/greaterThan')
  * ])
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution.
+ * Any promises passed in data argument position are resolved for their values before further execution.
  *
  * ```javascript [playground]
  * gt(Promise.resolve({ a: 2, b: 1 }), get('a'), get('b')).then(console.log) // true

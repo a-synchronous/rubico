@@ -24,15 +24,15 @@ const _forEach = function (collection, callback) {
   if (collection == null) {
     return collection
   }
-  if (typeof collection.forEach == 'function') {
-    collection.forEach(callback)
-    return collection
-  }
   if (typeof collection[symbolIterator] == 'function') {
     return iteratorForEach(collection[symbolIterator](), callback)
   }
   if (typeof collection[symbolAsyncIterator] == 'function') {
     return asyncIteratorForEach(collection[symbolAsyncIterator](), callback)
+  }
+  if (typeof collection.forEach == 'function') {
+    collection.forEach(callback)
+    return collection
   }
   if (collection.constructor == Object) {
     return objectForEach(collection, callback)
@@ -48,22 +48,19 @@ const _forEach = function (collection, callback) {
  * type Iterable = Array|Set|Map|Generator|AsyncGenerator|{ forEach: function }|Object
  *
  * type SyncOrAsyncCallback = (
- *   element any,
+ *   item any,
  *   indexOrKey number|string|any,
- *   iter Iterable
+ *   iterable Iterable
  * )=>Promise|undefined
  *
- * iterable Iterable
- * cb SyncOrAsyncCallback
- *
- * forEach(iterable, cb) -> unmodifiedIterable Promise|Iterable
- * forEach(cb)(iterable) -> unmodifiedIterable Promise|Iterable
+ * forEach(iterable Promise|Iterable, callback SyncOrAsyncCallback) -> iterable Promise|Iterable
+ * forEach(callback SyncOrAsyncCallback)(iterable Iterable) -> iterable Promise|Iterable
  * ```
  *
  * @description
- * Execute a callback function for each element of an iterable, returning the original iterable unmodified.
+ * Executes a callback function for each item of an iterable, returning the original iterable unmodified.
  *
- * The following data types are considered to be iterables:
+ * The following data types are considered to be iterable:
  *  * `array`
  *  * `set`
  *  * `map`
@@ -76,35 +73,43 @@ const _forEach = function (collection, callback) {
  *
  * If the iterable is an array:
  * ```coffeescript [specscript]
- * callback(element any, index number, iter Array) -> Promise|undefined
+ * callback(item any, index number, iterable Array) -> Promise|undefined
  * ```
  *
  * If the iterable is a set:
  * ```coffeescript [specscript]
- * callback(element any, key any, iter Set) -> Promise|undefined
+ * callback(item any, item any, iterable Set) -> Promise|undefined
  * ```
  *
  * If the iterable is a map:
  * ```coffeescript [specscript]
- * callback(element any, key any, filt Map) -> Promise|undefined
+ * callback(item any, key any, iterable Map) -> Promise|undefined
  * ```
  *
  * If the iterable is a generator:
  * ```coffeescript [specscript]
- * callback(element any) -> Promise|undefined
+ * callback(item any) -> Promise|undefined
  * ```
  *
  * If the iterable is an async generator:
  * ```coffeescript [specscript]
- * callback(element any) -> Promise|undefined
+ * callback(item any) -> Promise|undefined
  * ```
- *
- * If the iterable is an object with a `.forEach` method, the callback function signature is defined externally.
  *
  * If the iterable is a plain object:
  * ```coffeescript [specscript]
- * callback(element any, key string, iter Object) -> Promise|undefined
+ * callback(item any, key string, iterable Object) -> Promise|undefined
  * ```
+ *
+ * ```javascript [playground]
+ * console.log('array')
+ * forEach([1, 2, 3, 4, 5], num => console.log(num))
+ *
+ * console.log('object')
+ * forEach({ a: 1, b: 2, c: 3 }, num => console.log(num))
+ * ```
+ *
+ * If the iterable is an object with a `.forEach` method, the callback function signature is defined externally.
  *
  * If the callback function is asynchronous, it is executed concurrently.
  *
@@ -117,37 +122,20 @@ const _forEach = function (collection, callback) {
  * })
  * ```
  *
- * `forEach` works for arrays.
- *
- * ```javascript [playground]
- * forEach([1, 2, 3, 4, 5], num => console.log(num)) // 1 2 3 4 5
- * ```
- *
- * `forEach` works for objects.
- *
- * ```javascript [playground]
- * forEach({ a: 1, b: 2, c: 3 }, num => console.log(num)) // 1 2 3
- * ```
- *
- * Omit the data argument for a composable API
+ * `forEach` supports a lazy interface for composability.
  *
  * ```javascript [playground]
  * pipe([1, 2, 3, 4, 5], [
  *   filter(number => number % 2 == 1),
  *   map(number => number ** 2),
- *   forEach(console.log), // 1
- *                         // 9
- *                         // 25
+ *   forEach(console.log),
  * ])
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution.
+ * If the iterable is a promise, it is resolved for its value before further execution for the eager interface only.
  *
  * ```javascript [playground]
  * forEach(Promise.resolve([1, 2, 3]), console.log)
- * // 1
- * // 2
- * // 3
  * ```
  *
  * See also:
@@ -203,16 +191,13 @@ const _forEachSeries = function (collection, callback) {
  * type Iterable = Array|Set|Map|Generator|AsyncGenerator|{ forEach: function }|Object
  *
  * type SyncOrAsyncCallback = (
- *   element any,
+ *   item any,
  *   indexOrKey number|string|any,
  *   iter Iterable
  * )=>Promise|undefined
  *
- * iterable Iterable
- * cb SyncOrAsyncCallback
- *
- * forEach(iterable, cb) -> unmodifiedIterable Promise|Iterable
- * forEach(cb)(iterable) -> unmodifiedIterable Promise|Iterable
+ * forEach.series(iterable Promise|Iterable, callback SyncOrAsyncCallback) -> iterable Promise|Iterable
+ * forEach.series(callback SyncOrAsyncCallback)(iterable Iterable) -> iterable Promise|Iterable
  * ```
  *
  * @description
@@ -224,21 +209,13 @@ const _forEachSeries = function (collection, callback) {
  *     setTimeout(resolve, 1000)
  *   })
  *   console.log(number)
- *   // 1
- *   // 2
- *   // 3
- *   // 4
- *   // 5
  * })
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution.
+ * If the iterable is a promise, it is resolved for its value before further execution for the eager interface only.
  *
  * ```javascript [playground]
  * forEach.series(Promise.resolve([1, 2, 3]), console.log)
- * // 1
- * // 2
- * // 3
  * ```
  *
  * See also:

@@ -38,20 +38,19 @@ const _set = function (obj, path, value) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * set(
- *   object Promise|Object,
- *   path string|Array<string|number>,
- *   value function|any,
- * ) -> result Promise|Object
+ * path string|Array<string|number>
+ * resolver (...arguments)=>Promise|any
+ * value any
  *
- * set(
- *   path string|Array<string|number>,
- *   value function|any,
- * )(object Object) -> result Promise|Object
+ * set(Promise|Object, path, value) -> Promise|Object
+ * set(Promise|Object, path, resolver) -> Promise|Object
+ *
+ * set(path, value)(Object) -> Promise|Object
+ * set(path, resolver)(Object) -> Promise|Object
  * ```
  *
  * @description
- * Sets a property on a new object shallow cloned from the argument object given a path denoted by a string, number, or an array of string or numbers.
+ * Property setter. Shallow clones the argument object and sets a property on the shallow cloned object at the path denoted by a string, number, or array of string or numbers.
  *
  * `set` supports three types of path patterns for nested property access.
  *
@@ -60,15 +59,15 @@ const _set = function (obj, path, value) {
  *  * an array of keys or indices - `['a', 0, 'value']`
  *
  * ```javascript [playground]
- * console.log(set({ b: 2 }, 'a', 1)) // { a: 1, b: 2 }
+ * console.log(set({ b: 2 }, 'a', 1))
  *
  * const nestedAC2 = { a: { c: 2 } }
  *
- * console.log(set(nestedAC2, 'a.b', 1)) // { a : { b: 1, c: 2 }}
+ * console.log(set(nestedAC2, 'a.b', 1))
  *
  * const nestedA0BC3 = { a: [{ b: { c: 3 } }] }
  *
- * console.log(set(nestedA0BC3, 'a[0].b.c', 4)) // { a: [{ b: { c: 4 } }] }
+ * console.log(set(nestedA0BC3, 'a[0].b.c', 4))
  * ```
  *
  * The property value may be a function, in which case it is treated as a resolver and provided the argument object to resolve the value to set.
@@ -78,22 +77,22 @@ const _set = function (obj, path, value) {
  *
  * const myNewObj = set('b', obj => obj.a + 2)(myObj)
  *
- * console.log(myNewObj) // { a: 1, b: 3 }
+ * console.log(myNewObj)
  * ```
  *
- * `set` supports a lazy API for composability.
+ * `set` supports a lazy interface for composability.
  *
  * ```javascript [playground]
  * pipe({ a: 1 }, [
  *   set('b', 2),
- *   console.log, // { a: 1, b: 2 }
+ *   console.log,
  * ])
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution.
+ * If the argument object is a promise, it is resolved for its value before further execution for the eager interface only.
  *
  * ```javascript [playground]
- * set(Promise.resolve({}), 'a', 1).then(console.log) // { a: 1 }
+ * set(Promise.resolve({}), 'a', 1).then(console.log)
  * ```
  *
  * See also:

@@ -61,7 +61,7 @@ const equals = require('./_internal/equals')
  * })
  * ```
  *
- * `eq` supports a lazy API for composability.
+ * `eq` supports a lazy interface for composability.
  *
  * ```javascript [playground]
  * pipe({ name: 'John' }, [
@@ -70,7 +70,7 @@ const equals = require('./_internal/equals')
  * ])
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution.
+ * Any promises passed in data argument position are resolved for their values before further execution.
  *
  * ```javascript [playground]
  * eq(Promise.resolve({ a: 1, b: 1 }), get('a'), get('b')).then(console.log) // true

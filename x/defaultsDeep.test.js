@@ -2,7 +2,7 @@ const assert = require('assert')
 const defaultsDeep = require('./defaultsDeep')
 
 describe('defaultsDeep', () => {
-  it('eager API', async () => {
+  it('eager interface', async () => {
     assert.deepEqual(
       defaultsDeep([3], [1, 2, 3]),
       [3, 2, 3],

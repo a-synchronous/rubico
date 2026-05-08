@@ -37,7 +37,7 @@ const curryArity = require('./_internal/curryArity')
  * console.log(curry(add, __, __, 'c')(__, 'b')('a'))
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution.
+ * Any promises passed in data argument position are resolved for their values before further execution.
  *
  * ```javascript [playground]
  * const add = (a, b, c) => a + b + c

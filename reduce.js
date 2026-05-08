@@ -193,7 +193,7 @@ const _reduce = function (collection, reducer, initial) {
  * reduce(asyncGenerate(), asyncAdd).then(console.log) // 15
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution.
+ * Any promises passed in data argument position are resolved for their values before further execution.
  *
  * ```javascript [playground]
  * const add = (a, b) => a + b

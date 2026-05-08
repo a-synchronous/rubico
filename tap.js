@@ -31,7 +31,7 @@ const _tap = function (args, f) {
  * ```
  *
  * @description
- * Call a function with provided arguments, returning the first argument. The return value of the function call is discarded.
+ * Calls a function with provided arguments, returning the first argument. The return value of the function call is discarded.
  *
  * ```javascript [playground]
  * const pipeline = pipe([
@@ -43,7 +43,7 @@ const _tap = function (args, f) {
  * pipeline('foo')
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution.
+ * Any promises in `arguments` are resolved for their values before further execution for the eager interface only.
  *
  * ```javascript [playground]
  * tap(Promise.resolve(1), Promise.resolve(2), 3, console.log)
@@ -114,7 +114,9 @@ const _tapIf = function (predicate, f, args) {
  * ```
  *
  * @description
- * A version of `tap` that accepts a predicate function (a function that returns a boolean value) before the function `f` to execute. Only executes `f` if the predicate function tests true. The arguments are the same to both the predicate function and the function to execute `f`.
+ * A version of [tap](/docs/tap) that accepts a predicate function before the function to execute and only executes the function if the predicate function tests true.
+ *
+ * Arguments passed to `tap.if` are provided to both the predicate function and the function to execute.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -125,7 +127,7 @@ const _tapIf = function (predicate, f, args) {
  * logIfOdd(3)
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution.
+ * Any promises in `arguments` are resolved for their values before further execution for the eager interface only.
  *
  * ```javascript [playground]
  * tap.if(Promise.resolve(1), n => n < 5, console.log)

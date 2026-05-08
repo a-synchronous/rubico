@@ -1172,20 +1172,75 @@ describe('rubico', () => {
         for await (const number of asyncSquaresGenerator) squaresArray.push(number)
         assert.deepEqual(squaresArray, [1, 4, 9, 16, 25])
       })
-      it.skip('func A=>Promise<B>; AsyncIterator<B>', async () => {
+
+      it('async iterators async mapper', async () => {
+        const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
+        const asyncNumbers2 = map(asyncNumbers(), async n => n)
+        const numbers = []
+        for await (const n of asyncNumbers2) numbers.push(n)
+        assert.deepEqual(numbers, [1, 2, 3, 4, 5])
+      }).timeout(1000)
+
+      it('async iterators sync mapper', async () => {
+        const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
+        const asyncNumbers2 = map(asyncNumbers(), n => n)
+        const numbers = []
+        for await (const n of asyncNumbers2) numbers.push(n)
+        assert.deepEqual(numbers, [1, 2, 3, 4, 5])
+      }).timeout(1000)
+
+      it('async iterator with 1s pause and async mapper', async () => {
+        const asyncNumbers = async function* () {
+          let i = 0
+          while (++i < 6) {
+            yield i
+            await sleep(100)
+          }
+        }
+        const asyncNumbers2 = map(asyncNumbers(), async n => n)
+        const numbers = []
+        for await (const n of asyncNumbers2) numbers.push(n)
+        assert.deepEqual(numbers, [1, 2, 3, 4, 5])
+      }).timeout(1000)
+
+      it('async iterator with 1s pause and sync mapper', async () => {
+        const asyncNumbers = async function* () {
+          let i = 0
+          while (++i < 6) {
+            yield i
+            await sleep(100)
+          }
+        }
+        const asyncNumbers2 = map(asyncNumbers(), n => n)
+        const numbers = []
+        for await (const n of asyncNumbers2) numbers.push(n)
+        assert.deepEqual(numbers, [1, 2, 3, 4, 5])
+      }).timeout(1000)
+
+      it('async iterators order', async () => {
+        const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
+        const asyncNumbers2 = map(asyncNumbers(), async n => {
+          await sleep(500 - (n * 100))
+          return n
+        })
+        const numbers = []
+        for await (const n of asyncNumbers2) numbers.push(n)
+        assert.deepEqual(numbers, [1, 2, 3, 4, 5])
+      }).timeout(1000)
+
+      it('async iterators times', async () => {
         const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
         const start = performance.now()
         const asyncTimesGenerator = map(asyncNumbers(), async () => {
-          await sleep(1000)
+          await sleep(100)
           return performance.now() - start
         })
         const times = []
         for await (const time of asyncTimesGenerator) times.push(time)
-        console.log(times)
         for (const time of times) {
-          assert(time < 2000)
+          assert(time < 110)
         }
-      }).timeout(10000)
+      }).timeout(1000)
     })
 
     describe('map(func A=>Promise|B)(Reducer<A>) -> Reducer<B>', () => {
@@ -1504,7 +1559,7 @@ describe('rubico', () => {
       )
     })
 
-    it.skip('iterators', async () => {
+    it('iterators', async () => {
       const numbers = function* () { let i = 0; while (++i < 6) yield i }
       const squaredNumbersGenerator = map.series(numbers(), n => n ** 2)
       const squaredNumbers = []
@@ -1514,22 +1569,79 @@ describe('rubico', () => {
       assert.deepEqual(squaredNumbers, [1, 4, 9, 16, 25])
     }).timeout(10000)
 
-    it.skip('async iterators', async () => {
+    it('async iterator with 1s pause and sync mapper', async () => {
+      const asyncNumbers = async function* () {
+        let i = 0
+        while (++i < 6) {
+          yield i
+          await sleep(100)
+        }
+      }
+      const asyncTimesGenerator = map.series(asyncNumbers(), n => n)
+
+      const asyncNumbers2 = map(asyncNumbers(), n => n)
+      const numbers = []
+      for await (const n of asyncNumbers2) numbers.push(n)
+      assert.deepEqual(numbers, [1, 2, 3, 4, 5])
+    }).timeout(1000)
+
+    it('async iterator with 1s pause and async mapper', async () => {
+      const asyncNumbers = async function* () {
+        let i = 0
+        while (++i < 6) {
+          yield i
+          await sleep(100)
+        }
+      }
+      const asyncTimesGenerator = map.series(asyncNumbers(), n => n)
+
+      const asyncNumbers2 = map(asyncNumbers(), async n => n)
+      const numbers = []
+      for await (const n of asyncNumbers2) numbers.push(n)
+      assert.deepEqual(numbers, [1, 2, 3, 4, 5])
+    }).timeout(1000)
+
+    it('async iterators order', async () => {
       const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
+      const asyncNumbers2 = map.series(asyncNumbers(), async n => {
+        await sleep(500 - (n * 100))
+        return n
+      })
+      const numbers = []
+      for await (const n of asyncNumbers2) numbers.push(n)
+      assert.deepEqual(numbers, [1, 2, 3, 4, 5])
+    }).timeout(5000)
+
+    it('async iterators times', async () => {
+      const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
+      const start = performance.now()
       const asyncTimesGenerator = map.series(asyncNumbers(), async () => {
-        const start = performance.now()
-        await sleep(1000)
+        await sleep(100)
         return performance.now() - start
       })
       const times = []
       for await (const time of asyncTimesGenerator) times.push(time)
-      console.log(times)
       for (let i = 0; i < 5; i++) {
         const time = times[i]
-        const second = Math.floor(time / 1000)
+        const second = Math.floor(time / 100)
         assert.equal(second, i + 1)
       }
-    }).timeout(10000)
+    }).timeout(1000)
+
+    it('object with map function', async () => {
+      let calledF
+      const functor = {
+        map(f) {
+          calledF = f
+          return true
+        }
+      }
+
+      const f = () => {}
+      const result = map.series(functor, f)
+      assert.strictEqual(result, true)
+      assert.equal(calledF, f)
+    })
   })
 
   describe('map.pool', () => {
@@ -3241,20 +3353,31 @@ flatMap(
         assert.strictEqual(flatMappingAsyncIterator.toString(), '[object FlatMappingAsyncIterator]')
       })
 
-      it.only('async iterators', async () => {
+      it('async iterators times', async () => {
         const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
         const start = performance.now()
         const asyncTimesGenerator = flatMap(asyncNumbers(), async () => {
-          await sleep(1000)
+          await sleep(100)
           return [performance.now() - start]
         })
         const times = []
         for await (const time of asyncTimesGenerator) times.push(time)
         assert.strictEqual(times.length, 5)
         for (const time of times) {
-          assert(time < 2000)
+          assert(time < 110)
         }
-      }).timeout(10000)
+      }).timeout(1000)
+
+      it('async iterators order', async () => {
+        const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
+        const asyncNumbers2 = flatMap(asyncNumbers(), async n => {
+          await sleep(500 - (n * 100))
+          return [n]
+        })
+        const numbers = []
+        for await (const n of asyncNumbers2) numbers.push(n)
+        assert.deepEqual(numbers, [5, 4, 3, 2, 1])
+      }).timeout(1000)
     })
   })
 
@@ -3654,6 +3777,26 @@ flatMap(
       const result1 = []
       await forEach.series(async element => {
         await sleep(element)
+        result1.push(element)
+      })(gen())
+
+      assert.deepEqual(result1, [100, 80, 60, 40, 20])
+    }).timeout(60000)
+
+    it('iterators 2', async () => {
+      const gen = function* () {
+        yield 100; yield 80; yield 60; yield 40; yield 20
+      }
+
+      const result = []
+      await forEach.series(gen(), element => {
+        result.push(element)
+      })
+
+      assert.deepEqual(result, [100, 80, 60, 40, 20])
+
+      const result1 = []
+      await forEach.series(element => {
         result1.push(element)
       })(gen())
 

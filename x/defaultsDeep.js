@@ -133,7 +133,7 @@ function _defaultsDeep(data, defaults) {
  * // }
  * ```
  *
- * The `defaults` array or object may be provided to `defaultsDeep` without `data` to create a lazy version of `defaultsDeep` that accepts `data` as a single argument. This "lazy" API can be used for function pipelines and function compositions.
+ * The `defaults` array or object may be provided to `defaultsDeep` without `data` to create a lazy version of `defaultsDeep` that accepts `data` as a single argument. This lazy interface can be used for function pipelines and function compositions.
  *
  * ```javascript [playground]
  * pipe({ a: 1 }, [

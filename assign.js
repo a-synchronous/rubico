@@ -61,7 +61,7 @@ const _assign = function (object, funcs) {
  * promise.then(console.log)
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution.
+ * If the argument object is a promise, it is resolved for its value before further execution for the eager interface only.
  *
  * ```javascript [playground]
  * assign(Promise.resolve({}), {

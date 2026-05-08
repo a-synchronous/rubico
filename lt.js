@@ -58,7 +58,7 @@ const lessThan = require('./_internal/lessThan')
  * asyncIsLessThan3(5).then(console.log) // false
  * ```
  *
- * `lt` supports a lazy API for composability.
+ * `lt` supports a lazy interface for composability.
  *
  * ```javascript [playground]
  * pipe({ value: 1 }, [
@@ -67,7 +67,7 @@ const lessThan = require('./_internal/lessThan')
  * ])
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution.
+ * Any promises passed in data argument position are resolved for their values before further execution.
  *
  * ```javascript [playground]
  * lt(Promise.resolve({ a: 1, b: 2 }), get('a'), get('b')).then(console.log) // true

@@ -49,7 +49,7 @@ const __ = require('./_internal/placeholder')
  * console.log(appendBC('a'))
  * ```
  *
- * Any promises passed in argument position are resolved for their values before further execution.
+ * Any promises in `arguments` are resolved for their values before further execution for the eager interface only.
  *
  * ```javascript [playground]
  * pipe(Promise.resolve(1), 2, Promise.resolve(3), [
