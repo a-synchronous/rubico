@@ -79,6 +79,14 @@ const _flatMap = function (value, flatMapper) {
  * @description
  * Applies a flat-mapper function to each item of a monad, returning a flat-mapped monad of the same type.
  *
+ * ```javascript [playground]
+ * const duplicate = value => [value, value]
+ *
+ * const duplicated = flatMap([1, 2, 3, 4, 5], duplicate)
+ *
+ * console.log(duplicated)
+ * ```
+ *
  * `flatMap` iterates through each item of a monad and applies the flat-mapper function to each item, concatenating the execution result (flat-mapped item) into the flat-mapped monad. If the execution result is a promise, it is resolved for its value before being concatenated into the flat-mapped monad. If the execution result is asynchronously iterable, it is muxed into the flat-mapped monad.
  *
  * If the flat-mapper function is asynchronous, it is executed concurrently.
@@ -123,14 +131,6 @@ const _flatMap = function (value, flatMapper) {
  * If the monad is a plain object:
  * ```coffeescript [specscript]
  * flatMapper(item any, key string, monad Object) -> flatMappedItem Promise|Monad|any
- * ```
- *
- * ```javascript [playground]
- * const duplicate = value => [value, value]
- *
- * const duplicated = flatMap([1, 2, 3, 4, 5], duplicate)
- *
- * console.log(duplicated)
  * ```
  *
  * If the iterable is an object with a `flatMap` or `chain` method, the flat-mapper function signature is defined externally.

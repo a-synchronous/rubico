@@ -45,19 +45,21 @@ const _some = function (collection, predicate) {
  *
  * predicate UnarySyncOrAsyncPredicate
  *
- * some(foldable Foldable, predicate) -> Promise|boolean
- * some(predicate)(foldable Foldable) -> Promise|boolean
+ * some(foldable Promise|Foldable, predicate) -> testResult Promise|boolean
+ * some(predicate)(foldable Foldable) -> testResult Promise|boolean
  * ```
  *
  * @description
- * Test a predicate concurrently across all elements of a foldable, returning true if any executions return true.
+ * Tests a predicate concurrently across all items of a foldable. Returns true if any item tests true by the predicate.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
  *
- * console.log(
- *   some([1, 2, 3, 4, 5], isOdd),
- * ) // true
+ * const array = [1, 2, 3, 4, 5]
+ *
+ * const arrayHasOddNumbers = some(array, isOdd)
+ *
+ * console.log(arrayHasOddNumbers)
  * ```
  *
  * The following data types are considered to be foldables:
@@ -69,44 +71,19 @@ const _some = function (collection, predicate) {
  *  * `object with .reduce method`
  *  * `object`
  *
- * `some` works for async generators.
- *
- * ```javascript [playground]
- * const toTodosUrl = id => 'https://jsonplaceholder.typicode.com/todos/' + id
- *
- * const fetchedToJson = fetched => fetched.json()
- *
- * const fetchTodo = pipe([
- *   toTodosUrl,
- *   fetch,
- *   fetchedToJson,
- * ])
- *
- * const todoIDsGenerator = async function* () {
- *   yield 1; yield 2; yield 3; yield 4; yield 5
- * }
- *
- * const result = await some(todoIDsGenerator(), async id => {
- *   const todo = await fetchTodo(id)
- *   return todo.title.startsWith('fugiat')
- * })
- *
- * console.log(result)
- * ```
- *
  * `some` supports a lazy interface for composability.
  *
  * ```javascript [playground]
  * pipe([1, 2, 3], [
  *   some(number => number < 5),
- *   console.log, // true
+ *   console.log,
  * ])
  * ```
  *
- * Any promises passed in data argument position are resolved for their values before further execution.
+ * If the foldable is a promise, it is resolved for its value before further execution for the eager interface only.
  *
  * ```javascript [playground]
- * some(Promise.resolve([1, 2, 3, 4, 5]), n => n > 6).then(console.log) // false
+ * some(Promise.resolve([1, 2, 3, 4, 5]), n => n > 6).then(console.log)
  * ```
  *
  * See also:

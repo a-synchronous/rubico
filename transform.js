@@ -39,6 +39,39 @@ const _transform = function (collection, transducer, initialValue) {
  * @description
  * Transforms a foldable into a semigroup with a [transducer](https://rubico.land/blog/transducers-crash-course-rubico-v2).
  *
+ * ```javascript [playground]
+ * const square = number => number ** 2
+ *
+ * const isOdd = number => number % 2 == 1
+ *
+ * const squaredOdds = compose([
+ *   Transducer.filter(isOdd),
+ *   Transducer.map(square),
+ * ])
+ *
+ * const array = [1, 2, 3, 4, 5]
+ *
+ * // transform arrays into arrays
+ * const squaredOddsArray = transform(array, squaredOdds, [])
+ * console.log('array into array')
+ * console.log(squaredOddsArray)
+ *
+ * // transform arrays into strings
+ * const squaredOddsString = transform(array, squaredOdds, '')
+ * console.log('array into string')
+ * console.log(squaredOddsString)
+ *
+ * // transform arrays into sets
+ * const squaredOddsSet = transform(array, squaredOdds, new Set())
+ * console.log('array into set')
+ * console.log(squaredOddsSet)
+ *
+ * // transform arrays into typed arrays
+ * const squaredOddsUint8Array = transform(array, squaredOdds, new Uint8Array())
+ * console.log('array into binary')
+ * console.log(squaredOddsUint8Array)
+ * ```
+ *
  * The following data types are considered to be foldables:
  *  * `array`
  *  * `set`
@@ -103,39 +136,6 @@ const _transform = function (collection, transducer, initialValue) {
  * If the semigroup is a plain object, concatenation is defined as:
  * ```javascript
  * nextAccumulator = ({ ...accumulator, ...values })
- * ```
- *
- * ```javascript [playground]
- * const square = number => number ** 2
- *
- * const isOdd = number => number % 2 == 1
- *
- * const squaredOdds = compose([
- *   Transducer.filter(isOdd),
- *   Transducer.map(square),
- * ])
- *
- * const array = [1, 2, 3, 4, 5]
- *
- * // transform arrays into arrays
- * const squaredOddsArray = transform(array, squaredOdds, [])
- * console.log('array into array')
- * console.log(squaredOddsArray)
- *
- * // transform arrays into strings
- * const squaredOddsString = transform(array, squaredOdds, '')
- * console.log('array into string')
- * console.log(squaredOddsString)
- *
- * // transform arrays into sets
- * const squaredOddsSet = transform(array, squaredOdds, new Set())
- * console.log('array into set')
- * console.log(squaredOddsSet)
- *
- * // transform arrays into typed arrays
- * const squaredOddsUint8Array = transform(array, squaredOdds, new Uint8Array())
- * console.log('array into binary')
- * console.log(squaredOddsUint8Array)
  * ```
  *
  * Any object that implements concat may be used as the semigroup for `transform`.

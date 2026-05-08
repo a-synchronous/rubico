@@ -6,46 +6,39 @@ const greaterThanOrEqual = require('./_internal/greaterThanOrEqual')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * args Array<any>
- * argsOrPromises Array<Promise|any>
+ * type SyncOrAsyncResolver = (...arguments)=>Promise|any
  *
- * type SyncOrAsyncResolver = (...args)=>Promise|any
+ * gte(leftValue Promise|any, rightValue Promise|any) -> Promise|boolean
+ * gte(...arguments, leftResolver SyncOrAsyncResolver, rightValue Promise|any) -> Promise|boolean
+ * gte(...arguments, leftValue Promise|any, rightResolver SyncOrAsyncResolver) -> Promise|boolean
+ * gte(...arguments, leftResolver SyncOrAsyncResolver, rightResolver SyncOrAsyncResolver) -> Promise|boolean
  *
- * leftValue Promise|any
- * rightValue Promise|any
- * leftResolver SyncOrAsyncResolver
- * rightResolver SyncOrAsyncResolver
- *
- * gte(leftValue, rightValue) -> Promise|boolean
- * gte(...argsOrPromises, leftResolver, rightValue) -> Promise|boolean
- * gte(...argsOrPromises, leftValue, rightResolver) -> Promise|boolean
- * gte(...argsOrPromises, leftResolver, rightResolver) -> Promise|boolean
- * gte(leftResolver, rightValue)(...args) -> Promise|boolean
- * gte(leftValue, rightResolver)(...args) -> Promise|boolean
- * gte(leftResolver, rightResolver)(...args) -> Promise|boolean
+ * gte(leftResolver SyncOrAsyncResolver, rightValue Promise|any)(...arguments) -> Promise|boolean
+ * gte(leftValue Promise|any, rightResolver SyncOrAsyncResolver)(...arguments) -> Promise|boolean
+ * gte(leftResolver SyncOrAsyncResolver, rightResolver SyncOrAsyncResolver)(...arguments) -> Promise|boolean
  * ```
  *
  * @description
- * Functional equivalent of the [Greater than or equal (>=)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Greater_than_or_equal) operator. Tests if a value is greater than or equal (`>=`) to another value.
+ * Comparison operator. Tests if a value is greater than or equal (`>=`) to another value.
  *
  * ```javascript [playground]
  * const age = 20
  *
  * const isAdultAge = gte(age, 18)
  *
- * console.log(isAdultAge) // true
+ * console.log(isAdultAge)
  * ```
  *
- * If either of the two values are resolver functions, `gte` returns a function that resolves the value(s) to compare.
+ * If either of the two values are resolver functions, `gte` returns a function that resolves the values to compare.
  *
  * ```javascript [playground]
  * const identity = value => value
  *
  * const isAtLeast100 = gte(identity, 100)
  *
- * console.log(isAtLeast100(99)) // false
- * console.log(isAtLeast100(100)) // true
- * console.log(isAtLeast100(101)) // true
+ * console.log(isAtLeast100(99))
+ * console.log(isAtLeast100(100))
+ * console.log(isAtLeast100(101))
  * ```
  *
  * If either of the two resolver functions is asynchronous, `gte` returns an asynchronous function.
@@ -55,9 +48,9 @@ const greaterThanOrEqual = require('./_internal/greaterThanOrEqual')
  *
  * const asyncIsAtLeast100 = gte(asyncIdentity, 100)
  *
- * asyncIsAtLeast100(99).then(console.log) // false
- * asyncIsAtLeast100(100).then(console.log) // true
- * asyncIsAtLeast100(101).then(console.log) // true
+ * asyncIsAtLeast100(99).then(console.log)
+ * asyncIsAtLeast100(100).then(console.log)
+ * asyncIsAtLeast100(101).then(console.log)
  * ```
  *
  * `gte` supports a lazy interface for composability.
@@ -65,14 +58,14 @@ const greaterThanOrEqual = require('./_internal/greaterThanOrEqual')
  * ```javascript [playground]
  * pipe({ value: 1 }, [
  *   gte(1, get('value')),
- *   console.log, // true
+ *   console.log,
  * ])
  * ```
  *
- * Any promises passed in data argument position are resolved for their values before further execution.
+ * Any promises in `arguments` are resolved for their values before further execution for the eager interface only.
  *
  * ```javascript [playground]
- * gte(Promise.resolve({ a: 1, b: 1 }), get('a'), get('b')).then(console.log) // true
+ * gte(Promise.resolve({ a: 1, b: 1 }), get('a'), get('b')).then(console.log)
  * ```
  *
  * See also:

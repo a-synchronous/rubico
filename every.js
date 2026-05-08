@@ -51,18 +51,22 @@ const _every = function (collection, predicate) {
  * ```
  *
  * @description
- * Test a predicate concurrently across all elements of a foldable, returning true if all executions return true.
+ * Tests a predicate concurrently across all items of a foldable. Returns true if every item tests true by the predicate.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
  *
- * console.log(
- *   every([1, 2, 3, 4, 5], isOdd),
- * ) // false
+ * {
+ *   const array = [1, 2, 3, 4, 5]
+ *   const isEveryNumberOdd = every(array, isOdd)
+ *   console.log(isEveryNumberOdd)
+ * }
  *
- * console.log(
- *   every([1, 3, 5], isOdd),
- * ) // true
+ * {
+ *   const array = [1, 3, 5]
+ *   const isEveryNumberOdd = every(array, isOdd)
+ *   console.log(isEveryNumberOdd)
+ * }
  * ```
  *
  * The following data types are considered to be foldables:
@@ -74,29 +78,19 @@ const _every = function (collection, predicate) {
  *  * `object with .reduce method`
  *  * `object`
  *
- * `every` works for async generators.
- *
- * ```javascript [playground]
- * const asyncNumbers = async function* () {
- *   yield 1; yield 2; yield 3; yield 4; yield 5
- * }
- *
- * every(asyncNumbers(), async number => number < 6).then(console.log) // true
- * ```
- *
  * `every` supports a lazy interface for composability.
  *
  * ```javascript [playground]
  * pipe([1, 2, 3], [
  *   every(number => number < 5),
- *   console.log, // true
+ *   console.log,
  * ])
  * ```
  *
- * Any promises passed in data argument position are resolved for their values before further execution.
+ * If the foldable is a promise, it is resolved for its value before further execution for the eager interface only.
  *
  * ```javascript [playground]
- * every(Promise.resolve([1, 2, 3, 4, 5]), n => n < 6).then(console.log) // true
+ * every(Promise.resolve([1, 2, 3, 4, 5]), n => n < 6).then(console.log)
  * ```
  *
  * See also:

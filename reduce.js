@@ -44,7 +44,23 @@ const _reduce = function (collection, reducer, initial) {
  * @description
  * Reduces a foldable to an accumulated value.
  *
+ * ```javascript [playground]
+ * const max = (a, b) => a > b ? a : b
+ *
+ * const result = reduce([1, 3, 5, 4, 2], max)
+ *
+ * console.log(result)
+ * ```
+ *
  * `reduce` executes a reducer function for each item of a foldable in order. If an initial value is provided, `reduce` starts iterating from the first item of the foldable. If no initial value is provided, `reduce` uses the first item of the foldable as the initial value and starts iterating from the second item of the foldable.
+ *
+ * ```javascript [playground]
+ * const add = (a, b) => a + b
+ *
+ * const result = reduce([1, 2, 3, 4, 5], add, 10)
+ *
+ * console.log(result)
+ * ```
  *
  * The following data types are considered to be foldables:
  *  * `array`
@@ -121,22 +137,6 @@ const _reduce = function (collection, reducer, initial) {
  * ) -> nextAccumulator Promise|any
  * ```
  *
- * ```javascript [playground]
- * const max = (a, b) => a > b ? a : b
- *
- * const result = reduce([1, 3, 5, 4, 2], max)
- *
- * console.log(result)
- * ```
- *
- * ```javascript [playground]
- * const add = (a, b) => a + b
- *
- * const result = reduce([1, 2, 3, 4, 5], add, 0)
-  *
- * console.log(result)
- * ```
- *
  * If the foldable is an object with a `.reduce` method, the reducer function signature is defined externally.
  *
  * If the reducer is asynchronous, all promises created by the reducer are resolved before continuing with the reducing operation.
@@ -154,11 +154,9 @@ const _reduce = function (collection, reducer, initial) {
  * ```javascript [playground]
  * const concatSquares = (array, value) => array.concat(value ** 2)
  *
- * const contrivedInitializer = array => [`initial length ${array.length}`]
- *
  * const array = [1, 2, 3, 4, 5]
  *
- * const result = reduce(array, concatSquares, contrivedInitializer)
+ * const result = reduce(array, concatSquares, () => [])
  *
  * console.log(result)
  * ```

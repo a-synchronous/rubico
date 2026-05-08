@@ -10,18 +10,15 @@ const curryArity = require('./_internal/curryArity')
  * @synopsis
  * ```coffeescript [specscript]
  * __ Symbol(placeholder)
+ * argumentsWithPlaceholder Array<__|any>
  *
- * type ArgsWithPlaceholder = Array<__|any>
- *
- * args ArgsWithPlaceholder
- * moreArgs ArgsWithPlaceholder
- *
- * curry(func function, ...args) -> curriedFuncOrResult function|any
- * curriedFuncOrResult(...moreArgs) -> anotherCurriedFuncOrResult function|any
+ * curry(func function, ...arguments) -> result any
+ * curry(func function, ...argumentsWithPlaceholder) -> result any
+ * curry(func function, ...argumentsWithPlaceholder) -> curriedFunction function
  * ```
  *
  * @description
- * Enables partial application of a function's arguments in any order. Provide the placeholder value `__` to specify an argument to be resolved in the partially applied function.
+ * Enables partial application of a function's arguments in any order. The placeholder value [__](/docs/__) specifies an argument to be resolved in the partially applied function.
  *
  * ```javascript [playground]
  * const add = (a, b, c) => a + b + c
@@ -31,13 +28,12 @@ const curryArity = require('./_internal/curryArity')
  * console.log(curry(add, 'a')('b', 'c'))
  * console.log(curry(add, 'a', 'b')('c'))
  * console.log(curry(add)('a')('b')('c'))
- *
  * console.log(curry(add, __, 'b', 'c')('a'))
  * console.log(curry(add, __, __, 'c')('a', 'b'))
  * console.log(curry(add, __, __, 'c')(__, 'b')('a'))
  * ```
  *
- * Any promises passed in data argument position are resolved for their values before further execution.
+ * Any promises in `arguments` or `argumentsWithPlaceholder` are resolved for their values before further execution.
  *
  * ```javascript [playground]
  * const add = (a, b, c) => a + b + c
@@ -71,24 +67,29 @@ const curry = (func, ...args) => {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type __ = Symbol(placeholder)
- * type ArgsWithPlaceholder = Array<__|any>
+ * __ Symbol(placeholder)
+ * argumentsWithPlaceholder Array<__|any>
  *
- * n number
- * args ArgsWithPlaceholder
- * moreArgs ArgsWithPlaceholder
- *
- * curry.arity(n number, func function, ...args) -> curriedFuncOrResult function|any
- * curriedFuncOrResult(...moreArgs) -> anotherCurriedFuncOrResult function|any
+ * curry.arity(n number, func function, ...arguments) -> result any
+ * curry.arity(n number, func function, ...argumentsWithPlaceholder) -> result any
+ * curry.arity(n number, func function, ...argumentsWithPlaceholder) -> curriedFunction function
  * ```
  *
  * @description
- * [curry](/docs/curry) with specified arity (number of arguments taken by the function) as the first parameter.
+ * [curry](/docs/curry) with specified arity (number of arguments taken by the function).
  *
  * ```javascript [playground]
  * const add = (a, b, c = 0) => a + b + c
  *
- * console.log(curry.arity(2, add, 1, 2)) // 3
+ * console.log(curry.arity(2, add, 1, 2))
+ * ```
+ *
+ * Any promises in `arguments` or `argumentsWithPlaceholder` are resolved for their values before further execution.
+ *
+ * ```javascript [playground]
+ * const add = (a, b, c = 0) => a + b + c
+ *
+ * console.log(await curry.arity(2, add, Promise.resolve(1), 2))
  * ```
  *
  * See also:
@@ -113,15 +114,12 @@ curry.arity = function curryArity_(arity, func, ...args) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type __ = Symbol(placeholder)
- * type ArgsWithPlaceholder = Array<__|any>
+ * __ Symbol(placeholder)
+ * argumentsWithPlaceholder Array<__|any>
  *
- * n number
- * args ArgsWithPlaceholder
- * moreArgs ArgsWithPlaceholder
- *
- * curry.call(func function, context object, ...args) -> curriedFuncOrResult function|any
- * curriedFuncOrResult(...moreArgs) -> anotherCurriedFuncOrResult function|any
+ * curry.call(func function, context object, ...arguments) -> result any
+ * curry.call(func function, context object, ...argumentsWithPlaceholder) -> result any
+ * curry.call(func function, context object, ...argumentsWithPlaceholder) -> curriedFunction function
  * ```
  *
  * @description
@@ -145,6 +143,28 @@ curry.arity = function curryArity_(arity, func, ...args) {
  *
  * console.log(curry.call(point.toString, point))
  * console.log(curry.call(point.toString, box))
+ * ```
+ *
+ * Any promises in `arguments` are resolved for their values during thunk creation.
+ *
+ * ```javascript [playground]
+ * class Point {
+ *   constructor(x, y) {
+ *     this.x = x
+ *     this.y = y
+ *   }
+ *
+ *   distanceTo(point) {
+ *     const x2 = (point.x - this.x) ** 2
+ *     const y2 = (point.y - this.y) ** 2
+ *     return (x2 + y2) ** 0.5
+ *   }
+ * }
+ *
+ * const point1 = new Point(100, 100)
+ * const point2 = new Point(200, 200)
+ *
+ * console.log(await curry.call(point1.distanceTo, point1, Promise.resolve(point2)))
  * ```
  *
  * See also:

@@ -23,20 +23,18 @@ const Transducer = {}
  * ```coffeescript [specscript]
  * type SyncOrAsyncReducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
  * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer
- * type UnarySyncOrAsyncMapper = (element any)=>(resultElement Promise|any)
+ * type UnarySyncOrAsyncMapper = (item any)=>(mappedItem Promise|any)
  *
- * mapper UnarySyncOrAsyncMapper
- *
- * Transducer.map(mapper) -> mappingTransducer Transducer
+ * Transducer.map(mapper UnarySyncOrAsyncMapper) -> mappingTransducer Transducer
  * ```
  *
  * @description
- * Creates a mapping transducer. Elements of the transducer's reducing operation are transformed by the mapper function. It is possible to use an asynchronous mapper, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
+ * Creates a mapping [transducer](/blog/transducers-crash-course). Items of the transducer's reducing operation are transformed by the mapper function. It is possible to use an asynchronous mapper, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
  *
  * ```javascript [playground]
  * const square = number => number ** 2
  *
- * const concat = (array, element) => array.concat(element)
+ * const concat = (array, item) => array.concat(item)
  *
  * const mapSquare = Transducer.map(square)
  * // mapSquare is a transducer
@@ -45,22 +43,17 @@ const Transducer = {}
  * // now mapSquare is passed the reducer function concat; squareConcatReducer
  * // is a reducer with chained functionality square and concat
  *
- * console.log(
- *   reduce([1, 2, 3, 4, 5], squareConcatReducer, [])
- * ) // [1, 4, 9, 16, 25]
+ * const squaredNumbersRubicoReduce = reduce([1, 2, 3, 4, 5], squareConcatReducer, [])
+ * console.log(squaredNumbersRubicoReduce)
  *
  * // the same squareConcatReducer is consumable with vanilla JavaScript
- * console.log(
- *   [1, 2, 3, 4, 5].reduce(squareConcatReducer, [])
- * ) // [1, 4, 9, 16, 25]
+ * const squaredNumbersVanillaReduce = [1, 2, 3, 4, 5].reduce(squareConcatReducer, [])
+ * console.log(squaredNumbersVanillaReduce)
  *
  * // concat is implicit when transforming into arrays
- * console.log(
- *   transform([1, 2, 3, 4, 5], Transducer.map(square), [])
- * ) // [1, 4, 9, 16, 25]
+ * const squaredNumbersTransform = transform([1, 2, 3, 4, 5], Transducer.map(square), [])
+ * console.log(squaredNumbersTransform)
  * ```
- *
- * Read more on [transducers](/blog/transducers-crash-course-rubico-v2).
  *
  * See also:
  *  * [thunkify](/docs/thunkify)
@@ -84,31 +77,27 @@ Transducer.map = function transducerMap(mapper) {
  * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer
  * type UnarySyncOrAsyncPredicate = any=>Promise|boolean|any
  *
- * predicate UnarySyncOrAsyncPredicate
- *
- * Transducer.filter(predicate) -> filteringTransducer Transducer
+ * Transducer.filter(predicate UnarySyncOrAsyncPredicate) -> filteringTransducer Transducer
  * ```
  *
  * @description
- * Creates a filtering transducer. A filtering transducer filters out elements of its reducing operation if they test false by the predicate. It is possible to use an asynchronous predicate, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
+ * Creates a filtering [transducer](/blog/transducers-crash-course). A filtering transducer filters out items of its reducing operation if they test false by the predicate. It is possible to use an asynchronous predicate, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
  *
- * const concat = (array, element) => array.concat(element)
+ * const concat = (array, item) => array.concat(item)
  *
  * const concatOddNumbers = Transducer.filter(isOdd)(concat)
  *
  * const array = [1, 2, 3, 4, 5]
  *
  * const oddNumbers1 = array.reduce(concatOddNumbers, [])
- * console.log(oddNumbers1) // [1, 3, 5]
- *
  * const oddNumbers2 = transform(array, Transducer.filter(isOdd), [])
- * console.log(oddNumbers2) // [1, 3, 5]
- * ```
  *
- * Read more on [transducers](/blog/transducers-crash-course-rubico-v2).
+ * console.log(oddNumbers1)
+ * console.log(oddNumbers2)
+ * ```
  *
  * See also:
  *  * [thunkify](/docs/thunkify)
@@ -131,27 +120,23 @@ Transducer.filter = function transducerFilter(predicate) {
  * type SyncOrAsyncReducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
  * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer
  * type Monad = Array|String|Set|Generator|AsyncGenerator|{ flatMap: string }|{ chain: string }|Object
- * type UnarySyncOrAsyncFlatMapper = (element any)=>(monad Promise|Monad|any)
+ * type UnarySyncOrAsyncFlatMapper = (item any)=>(monad Promise|Monad|any)
  *
- * flatMapper UnarySyncOrAsyncFlatMapper
- *
- * Transducer.flatMap(flatMapper) -> flatMappingTransducer Transducer
+ * Transducer.flatMap(flatMapper UnarySyncOrAsyncFlatMapper) -> flatMappingTransducer Transducer
  * ```
  *
  * @description
- * Creates a flatMapping transducer. A flatMapping transducer applies the flatMapper function to each element of its reducing operation, concatenating the results of the flatMapper execution onto the accumulator. It is possible to use an asynchronous flatMapper, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
+ * Creates a flatMapping [transducer](/blog/transducers-crash-course). A flatMapping transducer applies the flatMapper function to each item of its reducing operation, concatenating the results of the flatMapper execution onto the accumulator. It is possible to use an asynchronous flatMapper, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
  *
  * ```javascript [playground]
  * const powers = number => [number, number ** 2, number ** 3]
  *
  * const numbers = [1, 2, 3, 4, 5]
  *
- * console.log(
- *   transform(numbers, Transducer.flatMap(powers), [])
- * ) // [1, 1, 1, 2, 4, 8, 3, 9, 27, 4, 16, 64, 5, 25, 125]
- * ```
+ * const result = transform(numbers, Transducer.flatMap(powers), [])
  *
- * Read more on [transducers](/blog/transducers-crash-course-rubico-v2).
+ * console.log(result)
+ * ```
  *
  * See also:
  *  * [thunkify](/docs/thunkify)
@@ -173,25 +158,22 @@ Transducer.flatMap = function transducerFlatMap(flatMapper) {
  * ```coffeescript [specscript]
  * type SyncOrAsyncReducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
  * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer
- * type UnarySyncOrAsyncCallback = (element any)=>Promise|undefined
+ * type UnarySyncOrAsyncCallback = (item any)=>Promise|undefined
  *
- * callback UnarySyncOrAsyncCallback
- *
- * Transducer.forEach(callback) -> forEachTransducer Transducer
+ * Transducer.forEach(callback UnarySyncOrAsyncCallback) -> forEachTransducer Transducer
  * ```
  *
  * @description
- * Executes a callback function for each element of a reducing operation, leaving the reducing operation unmodified. It is possible to use an asynchronous callback function, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
+ * Creates an iterative [transducer](/blog/transducers-crash-course). Executes a callback function for each item of a reducing operation, leaving each item unmodified. It is possible to use an asynchronous callback function, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
  *
  * ```javascript [playground]
  * const numbers = [1, 2, 3, 4, 5]
+ *
  * transform(numbers, compose(
  *   Transducer.map(number => number ** 2),
- *   Transducer.forEach(console.log), // 1 4 9 16 25
+ *   Transducer.forEach(console.log),
  * ), null)
  * ```
- *
- * Read more on [transducers](/blog/transducers-crash-course-rubico-v2).
  *
  * See also:
  *  * [thunkify](/docs/thunkify)
@@ -214,11 +196,11 @@ Transducer.forEach = function transducerForEach(func) {
  * type SyncOrAsyncReducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
  * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer
  *
- * Transducer.passthrough Transducer
+ * Transducer.passthrough -> Transducer
  * ```
  *
  * @description
- * Creates a pasthrough transducer. The passthrough transducer simply passes each element of the reducing operation through to the next downstream operation, leaving the reducing operation unmodified.
+ * Creates a pasthrough [transducer](/blog/transducers-crash-course). The passthrough transducer simply passes each item of the reducing operation through to the next downstream transducer, leaving each item unmodified.
  *
  * ```javascript [playground]
  * const createAsyncNumbers = async function* () {
@@ -229,11 +211,10 @@ Transducer.forEach = function transducerForEach(func) {
  *   }
  * }
  *
- * transform(createAsyncNumbers(), Transducer.passthrough, [])
- *   .then(console.log) // [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
- * ```
+ * const numbers = await transform(createAsyncNumbers(), Transducer.passthrough, [])
  *
- * Read more on [transducers](/blog/transducers-crash-course-rubico-v2).
+ * console.log(numbers)
+ * ```
  *
  * See also:
  *  * [thunkify](/docs/thunkify)
@@ -256,14 +237,14 @@ Transducer.passthrough = function transducerPassthrough(reducer) {
  * type SyncOrAsyncReducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
  * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer
  *
- * transducerTryer Transducer
- * catcher (error Error, element any)=>Promise|any
- *
- * Transducer.tryCatch(transducerTryer, catcher) -> tryCatchTransducer Transducer
+ * Transducer.tryCatch(
+ *   transducerTryer Transducer,
+ *   catcher (error Error, item any)=>(Promise|any)
+ * ) -> tryCatchTransducer Transducer
  * ```
  *
  * @description
- * Creates an error handling transducer. The error handling transducer wraps a transducer and catches any errors thrown by the transducer with the catcher function. The catcher function is provided the error as well as the element for which the error was thrown. It is possible for either the transducer or the catcher to be asynchronous, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
+ * Creates an error handling [transducer](/blog/transducers-crash-course). The error handling transducer wraps a transducer and catches any errors thrown by the transducer with the catcher function. The catcher function is provided the error and the item for which the error was thrown. It is possible for either the transducer or the catcher to be asynchronous, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
  *
  * ```javascript [playground]
  * const db = new Map()
@@ -294,8 +275,6 @@ Transducer.passthrough = function transducerPassthrough(reducer) {
  *   }
  * ), null)
  * ```
- *
- * Read more on [transducers](/blog/transducers-crash-course-rubico-v2).
  *
  * See also:
  *  * [thunkify](/docs/thunkify)

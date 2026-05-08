@@ -9,14 +9,14 @@ const always = require('./_internal/always')
  * ```
  *
  * @description
- * Creates a function from a value that always returns the provided value.
+ * Creates a function that always returns a value.
  *
  * ```javascript [playground]
  * const always5 = always(5)
  *
- * console.log(always5()) // 5
- * console.log(always5()) // 5
- * console.log(always5()) // 5
+ * console.log(always5())
+ * console.log(always5())
+ * console.log(always5())
  * ```
  *
  * See also:

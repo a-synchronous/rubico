@@ -6,44 +6,37 @@ const lessThanOrEqual = require('./_internal/lessThanOrEqual')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * args Array<any>
- * argsOrPromises Array<Promise|any>
+ * type SyncOrAsyncResolver = (...arguments)=>Promise|any
  *
- * type SyncOrAsyncResolver = (...args)=>Promise|any
+ * lte(leftValue Promise|any, rightValue Promise|any) -> Promise|boolean
+ * lte(...arguments, leftResolver SyncOrAsyncResolver, rightValue Promise|any) -> Promise|boolean
+ * lte(...arguments, leftValue Promise|any, rightResolver SyncOrAsyncResolver) -> Promise|boolean
+ * lte(...arguments, leftResolver SyncOrAsyncResolver, rightResolver SyncOrAsyncResolver) -> Promise|boolean
  *
- * leftValue Promise|any
- * rightValue Promise|any
- * leftResolver SyncOrAsyncResolver
- * rightResolver SyncOrAsyncResolver
- *
- * lte(leftValue, rightValue) -> Promise|boolean
- * lte(...argsOrPromises, leftResolver, rightValue) -> Promise|boolean
- * lte(...argsOrPromises, leftValue, rightResolver) -> Promise|boolean
- * lte(...argsOrPromises, leftResolver, rightResolver) -> Promise|boolean
- * lte(leftResolver, rightValue)(...args) -> Promise|boolean
- * lte(leftValue, rightResolver)(...args) -> Promise|boolean
- * lte(leftResolver, rightResolver)(...args) -> Promise|boolean
+ * lte(leftResolver SyncOrAsyncResolver, rightValue Promise|any)(...arguments) -> Promise|boolean
+ * lte(leftValue Promise|any, rightResolver SyncOrAsyncResolver)(...arguments) -> Promise|boolean
+ * lte(leftResolver SyncOrAsyncResolver, rightResolver SyncOrAsyncResolver)(...arguments) -> Promise|boolean
  * ```
  *
  * @description
- * Functional equivalent of the [Less than or equal (>=)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Less_than_or_equal) operator. Tests if a value is less than or equal (`<=`) to another value.
+ * Comparison operator. Tests if a value is less than or equal (`<=`) to another value.
  *
  * ```javascript [playground]
- * console.log(lte(1, 3)) // true
- * console.log(lte(3, 3)) // true
- * console.log(lte(4, 3)) // false
+ * console.log(lte(1, 3))
+ * console.log(lte(3, 3))
+ * console.log(lte(4, 3))
  * ```
  *
- * If either of the two values are resolver functions, `lte` returns a function that resolves the value(s) to compare.
+ * If either of the two values are resolver functions, `lte` returns a function that resolves the values to compare.
  *
  * ```javascript [playground]
  * const identity = value => value
  *
  * const isLessThanOrEqualTo3 = lte(identity, 3)
  *
- * console.log(isLessThanOrEqualTo3(1)) // true
- * console.log(isLessThanOrEqualTo3(3)) // true
- * console.log(isLessThanOrEqualTo3(5)) // false
+ * console.log(isLessThanOrEqualTo3(1))
+ * console.log(isLessThanOrEqualTo3(3))
+ * console.log(isLessThanOrEqualTo3(5))
  * ```
  *
  * If either of the two resolver functions is asynchronous, `lte` returns an asynchronous function.
@@ -53,9 +46,9 @@ const lessThanOrEqual = require('./_internal/lessThanOrEqual')
  *
  * const asyncIsLessThanOrEqualTo3 = lte(asyncIdentity, 3)
  *
- * asyncIsLessThanOrEqualTo3(1).then(console.log) // true
- * asyncIsLessThanOrEqualTo3(3).then(console.log) // true
- * asyncIsLessThanOrEqualTo3(5).then(console.log) // false
+ * asyncIsLessThanOrEqualTo3(1).then(console.log)
+ * asyncIsLessThanOrEqualTo3(3).then(console.log)
+ * asyncIsLessThanOrEqualTo3(5).then(console.log)
  * ```
  *
  * `lte` supports a lazy interface for composability.
@@ -63,14 +56,14 @@ const lessThanOrEqual = require('./_internal/lessThanOrEqual')
  * ```javascript [playground]
  * pipe({ value: 1 }, [
  *   lte(1, get('value')),
- *   console.log, // true
+ *   console.log,
  * ])
  * ```
  *
- * Any promises passed in data argument position are resolved for their values before further execution.
+ * Any promises in `arguments` are resolved for their values before further execution for the eager interface only.
  *
  * ```javascript [playground]
- * lte(Promise.resolve({ a: 1, b: 1 }), get('a'), get('b')).then(console.log) // true
+ * lte(Promise.resolve({ a: 1, b: 1 }), get('a'), get('b')).then(console.log)
  * ```
  *
  * See also:

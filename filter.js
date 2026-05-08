@@ -105,6 +105,16 @@ const _filter = function (value, predicate) {
  * @description
  * Filters out items from a filterable, returning a filtered filterable of the same type. The order of the items of the filterable is preserved.
  *
+ * ```javascript [playground]
+ * const isOdd = number => number % 2 == 1
+ *
+ * const array = [1, 2, 3, 4, 5]
+ *
+ * const filteredArray = filter(array, isOdd)
+ *
+ * console.log(filteredArray)
+ * ```
+ *
  * The following data types are considered to be filterables:
  *  * `array`
  *  * `set`
@@ -153,16 +163,6 @@ const _filter = function (value, predicate) {
  * If the filterable is a plain object:
  * ```coffeescript [specscript]
  * predicate(item any, key string, filterable Object) -> booleanResult Promise|boolean|any
- * ```
- *
- * ```javascript [playground]
- * const isOdd = number => number % 2 == 1
- *
- * const array = [1, 2, 3, 4, 5]
- *
- * const filteredArray = filter(array, isOdd)
- *
- * console.log(filteredArray)
  * ```
  *
  * If the filterable is an object with a `.filter` method, the predicate function signature is defined externally.

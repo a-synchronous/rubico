@@ -97,37 +97,28 @@ const areAllPredicatesTruthy = function (args, predicates) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * args Array<any>
- * argsOrPromises Array<Promise|any>
+ * type SyncOrAsyncPredicate = (...arguments)=>Promise|boolean|any
  *
- * type SyncOrAsyncPredicate = (...args)=>Promise|boolean|any
- *
- * predicatesOrValues Array<SyncOrAsyncPredicate|boolean|any>
- *
- * and(values Array<boolean|any>) -> result boolean
- * and(...argsOrPromises, predicatesOrValues) -> Promise|boolean
- * and(predicatesOrValues)(...args) -> Promise|boolean
+ * and(values Array<boolean|any>) -> testResult boolean
+ * and(...arguments, predicatesOrValues Array<SyncOrAsyncPredicate|boolean|any>) -> testResult Promise|boolean
+ * and(predicatesOrValues Array<SyncOrAsyncPredicate|boolean|any>)(...arguments) -> testResult Promise|boolean
  * ```
  *
  * @description
- * Function equivalent to the [Logical AND](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Logical_AND) operator. Tests an array of predicate functions, promises, values, or a mix thereof.
- *
- * If provided an array of boolean values, `and` returns true if all boolean values are true.
+ * Logical operator. Tests an array of predicate functions, promises, or values, returning true if all predicates test true and all values are truthy.
  *
  * ```javascript [playground]
- * const oneIsLessThanThree = 1 < 3
- * const twoIsGreaterThanOne = 2 > 1
- * const threeIsEqualToThree = 3 === 3
- *
- * const condition = and([
- *   oneIsLessThanThree,
- *   twoIsGreaterThanOne,
- *   threeIsEqualToThree
+ * const isOddAndGreaterThan3 = and([
+ *   n => n % 2 == 1,
+ *   n => n > 3,
  * ])
- * console.log(condition) // true
+ *
+ * console.log(isOddAndGreaterThan3(5))
+ * console.log(isOddAndGreaterThan3(3))
+ * console.log(isOddAndGreaterThan3(6))
  * ```
  *
- * If any predicate functions are provided in the array, `and` returns an aggregate predicate function that returns true for a given set of arguments if all provided predicate functions test true. If any provided predicate functions are asynchronous, the aggregate predicate function becomes asynchronous.
+ * If the array contains predicate functions, `and` returns an aggregate predicate function that returns true if all predicate functions test true. If any predicate function is asynchronous, the aggregate predicate function is asynchronous.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -141,17 +132,34 @@ const areAllPredicatesTruthy = function (args, predicates) {
  *   asyncIsLessThan3,
  * ])
  *
- * const condition = await aggregatePredicate(1)
- * console.log(condition) // true
+ * const booleanResult = await aggregatePredicate(1)
+ *
+ * console.log(booleanResult)
  * ```
  *
- * Any promises passed in data argument position are resolved for their values before further execution.
+ * If the array contains only values, `and` returns a boolean value.
+ *
+ * ```javascript [playground]
+ * const oneIsLessThanThree = 1 < 3
+ * const twoIsGreaterThanOne = 2 > 1
+ * const threeIsEqualToThree = 3 === 3
+ *
+ * const booleanResult = and([
+ *   oneIsLessThanThree,
+ *   twoIsGreaterThanOne,
+ *   threeIsEqualToThree
+ * ])
+ *
+ * console.log(booleanResult)
+ * ```
+ *
+ * Any promises in the array are resolved for their values before further execution.
  *
  * ```javascript [playground]
  * and(Promise.resolve(5), [
  *   n => n > 0,
  *   n => n < 10,
- * ]).then(console.log) // true
+ * ]).then(console.log)
  * ```
  *
  * See also:

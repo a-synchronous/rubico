@@ -19,36 +19,31 @@ const _not = function (args, predicate) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * args Array<any>
- * argsOrPromises Array<Promise|any>
+ * type SyncOrAsyncPredicate = (...arguments)=>Promise|boolean
  *
- * type SyncOrAsyncPredicate = (...args)=>Promise|boolean
- *
- * predicate SyncOrAsyncPredicate
- *
- * not(value Promise|boolean|any) -> negated Promise|boolean
- * not(...argsOrPromises, predicate) -> negated Promise|boolean
- * not(predicate)(...args) -> negated Promise|boolean
+ * not(value Promise|boolean|any) -> negatedResult Promise|boolean
+ * not(...arguments, predicate SyncOrAsyncPredicate) -> negatedResult Promise|boolean
+ * not(predicate SyncOrAsyncPredicate)(...arguments) -> negatedResult Promise|boolean
  * ```
  *
  * @description
- * Function equivalent to the [Logical NOT (`!`)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Logical_NOT) operator. Negates a value.
+ * Logical operator. Negates a predicate or value.
  *
  * ```javascript [playground]
- * const myObj = { a: 1 }
+ * const object = { a: 1 }
  *
- * console.log(not('a' in myObj)) // false
- * console.log(not('b' in myObj)) // true
+ * console.log(not('a' in object))
+ * console.log(not('b' in object))
  * ```
  *
- * If provided a predicate function, `not` returns a logically inverted predicate that returns true everywhere the original predicate would have returned false.
+ * If provided a predicate function, `not` returns a logically inverted predicate.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
  *
  * const isNotOdd = not(isOdd)
  *
- * console.log(isNotOdd(3)) // false
+ * console.log(isNotOdd(3))
  * ```
  *
  * `not` negates the resolved value of a promise.
@@ -56,10 +51,10 @@ const _not = function (args, predicate) {
  * ```javascript [playground]
  * const promise = Promise.resolve(false)
  *
- * not(promise).then(console.log) // true
+ * not(promise).then(console.log)
  * ```
  *
- * Any promises passed in data argument position are resolved for their values before further execution.
+ * Any promises in `arguments` are resolved for their values before further execution for the eager interface only.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1

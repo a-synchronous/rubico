@@ -109,6 +109,19 @@ const _map = function (value, f) {
  * @description
  * Applies a mapper function to each item of a functor, returning a mapped functor of the same type with the mapped items. The order of the items of the functor is preserved.
  *
+ * ```javascript [playground]
+ * const square = number => number ** 2
+ *
+ * const array = [1, 2, 3, 4, 5]
+ * const object = { a: 1, b: 2, c: 3 }
+ *
+ * const mappedArray = map(array, square)
+ * const mappedObject = map(object, square)
+ *
+ * console.log(mappedArray)
+ * console.log(mappedObject)
+ * ```
+ *
  * The following data types are considered to be functors:
  *  * `array`
  *  * `set`
@@ -158,19 +171,6 @@ const _map = function (value, f) {
  * If the functor is a plain object:
  * ```coffeescript [specscript]
  * mapper(item any, key string, functor Object) -> mappedItem Promise|any
- * ```
- *
- * ```javascript [playground]
- * const square = number => number ** 2
- *
- * const array = [1, 2, 3, 4, 5]
- * const object = { a: 1, b: 2, c: 3 }
- *
- * const mappedArray = map(array, square)
- * const mappedObject = map(object, square)
- *
- * console.log(mappedArray)
- * console.log(mappedObject)
  * ```
  *
  * If the functor is an object with a `.map` method, the mapper function signature is defined externally.
@@ -298,6 +298,19 @@ const _mapEntries = (value, f) => {
  * @description
  * [map](/docs/map) that applies the mapper function to the entries of a functor as opposed to the values.
  *
+ * ```javascript [playground]
+ * const upperCaseKeysAndSquareValues =
+ *   map.entries(([key, value]) => [key.toUpperCase(), value ** 2])
+ *
+ * const object = { a: 1, b: 2, c: 3 }
+ *
+ * console.log(upperCaseKeysAndSquareValues(object))
+ *
+ * const m = new Map([['a', 1], ['b', 2], ['c', 3]])
+ *
+ * console.log(upperCaseKeysAndSquareValues(m))
+ * ```
+ *
  * The following data types are considered to be functors with entries:
  *   * `map`
  *   * `object`
@@ -314,19 +327,6 @@ const _mapEntries = (value, f) => {
  * ```coffeescript [specscript]
  * mapper(entry [key string, value any]) ->
  *   mappedEntry Promise|[mappedKey string, mappedValue any]
- * ```
- *
- * ```javascript [playground]
- * const upperCaseKeysAndSquareValues =
- *   map.entries(([key, value]) => [key.toUpperCase(), value ** 2])
- *
- * const object = { a: 1, b: 2, c: 3 }
- *
- * console.log(upperCaseKeysAndSquareValues(object))
- *
- * const m = new Map([['a', 1], ['b', 2], ['c', 3]])
- *
- * console.log(upperCaseKeysAndSquareValues(m))
  * ```
  *
  * If the functor with entries is a promise, it is resolved for its value before further execution for the eager interface only.

@@ -23,20 +23,28 @@ function _thunkifyArgs(func, context, args) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * args Array<any>
- *
- * thunkify(func function, ...args) -> thunk ()=>func(...args)
+ * thunkify(func function, ...arguments) -> thunk function
  * ```
  *
  * @description
- * Creates a thunk from a function and arguments. A thunk takes no arguments, and when called, executes the other function with the arguments. The other function is said to be "thunkified".
+ * Creates a thunk function from a function and arguments. A thunk function takes no arguments, and when called, executes the function and arguments. The function is said to be "thunkified".
  *
  * ```javascript [playground]
  * const add = (a, b) => a + b
  *
  * const thunkAdd12 = thunkify(add, 1, 2)
  *
- * console.log(thunkAdd12()) // 3
+ * console.log(thunkAdd12())
+ * ```
+ *
+ * Any promises in `arguments` are resolved for their values during thunk creation.
+ *
+ * ```javascript [playground]
+ * const add = (a, b) => a + b
+ *
+ * const thunkAdd12 = await thunkify(add, Promise.resolve(1), 2)
+ *
+ * console.log(thunkAdd12())
  * ```
  *
  * See also:
@@ -60,13 +68,11 @@ const thunkify = function thunkify(func, ...args) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * args Array<any>
- *
- * thunkify.call(func function, context object, ...args) -> thunk ()=>func(...args)
+ * thunkify.call(func function, context object, ...arguments) -> thunk function
  * ```
  *
  * @description
- * Creates a thunk that calls a function with the specified context and arguments.
+ * Creates a thunk function that calls a function with the specified context and arguments.
  *
  * ```javascript [playground]
  * class Point {
@@ -75,7 +81,7 @@ const thunkify = function thunkify(func, ...args) {
  *     this.y = y
  *   }
  *
- *   distanceTo() {
+ *   distanceTo(point) {
  *     const x2 = (point.x - this.x) ** 2
  *     const y2 = (point.y - this.y) ** 2
  *     return (x2 + y2) ** 0.5
@@ -83,9 +89,33 @@ const thunkify = function thunkify(func, ...args) {
  * }
  *
  * const point0 = new Point(0, 0)
- * const point = new Point(3, 4)
+ * const point1 = new Point(3, 4)
  *
- * const thunk = thunkify.call(point0.distanceTo, point0, point)
+ * const thunk = thunkify.call(point0.distanceTo, point0, point1)
+ *
+ * console.log(thunk())
+ * ```
+ *
+ * Any promises in `arguments` are resolved for their values during thunk creation.
+ *
+ * ```javascript [playground]
+ * class Point {
+ *   constructor(x, y) {
+ *     this.x = x
+ *     this.y = y
+ *   }
+ *
+ *   distanceTo(point) {
+ *     const x2 = (point.x - this.x) ** 2
+ *     const y2 = (point.y - this.y) ** 2
+ *     return (x2 + y2) ** 0.5
+ *   }
+ * }
+ *
+ * const point0 = new Point(0, 0)
+ * const point1 = new Point(3, 4)
+ *
+ * const thunk = await thunkify.call(point0.distanceTo, point0, Promise.resolve(point1))
  *
  * console.log(thunk())
  * ```

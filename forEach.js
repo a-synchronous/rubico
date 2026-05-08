@@ -60,6 +60,14 @@ const _forEach = function (collection, callback) {
  * @description
  * Executes a callback function for each item of an iterable, returning the original iterable unmodified.
  *
+ * ```javascript [playground]
+ * console.log('array')
+ * forEach([1, 2, 3, 4, 5], num => console.log(num))
+ *
+ * console.log('object')
+ * forEach({ a: 1, b: 2, c: 3 }, num => console.log(num))
+ * ```
+ *
  * The following data types are considered to be iterable:
  *  * `array`
  *  * `set`
@@ -99,14 +107,6 @@ const _forEach = function (collection, callback) {
  * If the iterable is a plain object:
  * ```coffeescript [specscript]
  * callback(item any, key string, iterable Object) -> Promise|undefined
- * ```
- *
- * ```javascript [playground]
- * console.log('array')
- * forEach([1, 2, 3, 4, 5], num => console.log(num))
- *
- * console.log('object')
- * forEach({ a: 1, b: 2, c: 3 }, num => console.log(num))
  * ```
  *
  * If the iterable is an object with a `.forEach` method, the callback function signature is defined externally.
