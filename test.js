@@ -272,7 +272,7 @@ describe('rubico', () => {
       ])
       assert.deepEqual(array, [3, 6, 9])
     })
-    it('mathematical API', async () => {
+    it('argument interface', async () => {
       const appendB = x => x + 'b'
       const appendC = x => x + 'c'
       const appendBC = pipe(appendB, appendC)
@@ -404,7 +404,7 @@ describe('rubico', () => {
       )
     })
 
-    it('mathematical API', async () => {
+    it('argument interface', async () => {
       const f = x => x * 2
       const g = x => x + 1
 
@@ -417,7 +417,7 @@ describe('rubico', () => {
   })
 
   describe('all', () => {
-    it('API coverage', async () => {
+    it('coverage', async () => {
       ade(
         all(1, 2, 3, [
           Array.of,
@@ -577,7 +577,7 @@ describe('rubico', () => {
   })
 
   describe('all.series', () => {
-    it('API coverage', async () => {
+    it('coverage', async () => {
       ade(
         all.series(1, 2, 3, [
           Array.of,
@@ -662,7 +662,7 @@ describe('rubico', () => {
   })
 
   describe('assign', () => {
-    it('API coverage', async () => {
+    it('coverage', async () => {
       ade(await assign({}, {
         a: () => 1,
         b: () => 2,
@@ -737,7 +737,7 @@ describe('rubico', () => {
       assert.strictEqual(point, 1)
       assert.deepEqual(array, [1, 2, 3, 4, 5])
     })
-    it('eager API', async () => {
+    it('eager interface', async () => {
       let val = null
       tap('a', 'b', 'c', (...args) => {
         val = args
@@ -902,7 +902,7 @@ describe('rubico', () => {
   })
 
   describe('switchCase', () => {
-    it('API coverage', async () => {
+    it('coverage', async () => {
       ase(
         switchCase(1, [
           x => x === 1, () => 'hi',
@@ -1050,7 +1050,7 @@ describe('rubico', () => {
   })
 
   describe('map', () => {
-    it('API coverage', async () => {
+    it('coverage', async () => {
       const myArray = [1, 2, 3]
       assert.deepEqual(
         map(myArray, number => number ** 2),
@@ -1172,6 +1172,20 @@ describe('rubico', () => {
         for await (const number of asyncSquaresGenerator) squaresArray.push(number)
         assert.deepEqual(squaresArray, [1, 4, 9, 16, 25])
       })
+      it.skip('func A=>Promise<B>; AsyncIterator<B>', async () => {
+        const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
+        const start = performance.now()
+        const asyncTimesGenerator = map(asyncNumbers(), async () => {
+          await sleep(1000)
+          return performance.now() - start
+        })
+        const times = []
+        for await (const time of asyncTimesGenerator) times.push(time)
+        console.log(times)
+        for (const time of times) {
+          assert(time < 2000)
+        }
+      }).timeout(10000)
     })
 
     describe('map(func A=>Promise|B)(Reducer<A>) -> Reducer<B>', () => {
@@ -1281,7 +1295,7 @@ describe('rubico', () => {
 
   describe('map.series', () => {
     describe('map.series(func A=>Promise|B)(Array<A>) -> Promise|Array<B>', () => {
-      it('func A=>Promise<B>', async () => {
+      it('func A=>Promise<!-- <B> -->', async () => {
         const createNumbersPromises = () => [
           sleep(15).then(() => 1),
           sleep(10).then(() => 2),
@@ -1478,17 +1492,44 @@ describe('rubico', () => {
     it('invalid', async () => {
       assert.throws(
         () => map.series(undefined, () => {}),
-        new TypeError('invalid collection undefined'),
+        new TypeError('invalid functor undefined'),
       )
       assert.throws(
         () => map.series(null, () => {}),
-        new TypeError('invalid collection null'),
+        new TypeError('invalid functor null'),
       )
       assert.throws(
         () => map.series(3, () => {}),
-        new TypeError('invalid collection 3'),
+        new TypeError('invalid functor 3'),
       )
     })
+
+    it.skip('iterators', async () => {
+      const numbers = function* () { let i = 0; while (++i < 6) yield i }
+      const squaredNumbersGenerator = map.series(numbers(), n => n ** 2)
+      const squaredNumbers = []
+      for (const n2 of squaredNumbersGenerator) {
+        squaredNumbers.push(n2)
+      }
+      assert.deepEqual(squaredNumbers, [1, 4, 9, 16, 25])
+    }).timeout(10000)
+
+    it.skip('async iterators', async () => {
+      const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
+      const asyncTimesGenerator = map.series(asyncNumbers(), async () => {
+        const start = performance.now()
+        await sleep(1000)
+        return performance.now() - start
+      })
+      const times = []
+      for await (const time of asyncTimesGenerator) times.push(time)
+      console.log(times)
+      for (let i = 0; i < 5; i++) {
+        const time = times[i]
+        const second = Math.floor(time / 1000)
+        assert.equal(second, i + 1)
+      }
+    }).timeout(10000)
   })
 
   describe('map.pool', () => {
@@ -2315,7 +2356,7 @@ transform(
     `, () => {
       describe('collection x init', () => {
         const square = number => number ** 2
-        it('API coverage', async () => {
+        it('coverage', async () => {
           assert.deepEqual(
             transform([1, 2, 3, 4, 5], Transducer.map(square), []),
             [1, 4, 9, 16, 25],
@@ -2762,7 +2803,7 @@ flatMap(
 )(value FlatMappable) -> result Promise|FlatMappable
     `, () => {
 
-      it('API coverage', async () => {
+      it('coverage', async () => {
         assert.deepEqual(
           flatMap([1, 2, 3, 4, 5], number => isOdd(number) ? [number] : []),
           [1, 3, 5],
@@ -3199,6 +3240,21 @@ flatMap(
       it('[object FlatMappingAsyncIterator]', async () => {
         assert.strictEqual(flatMappingAsyncIterator.toString(), '[object FlatMappingAsyncIterator]')
       })
+
+      it.only('async iterators', async () => {
+        const asyncNumbers = async function* () { let i = 0; while (++i < 6) yield i }
+        const start = performance.now()
+        const asyncTimesGenerator = flatMap(asyncNumbers(), async () => {
+          await sleep(1000)
+          return [performance.now() - start]
+        })
+        const times = []
+        for await (const time of asyncTimesGenerator) times.push(time)
+        assert.strictEqual(times.length, 5)
+        for (const time of times) {
+          assert(time < 2000)
+        }
+      }).timeout(10000)
     })
   })
 
@@ -3330,7 +3386,7 @@ flatMap(
      forEach(callback)(collection) -> ()
     `,
     () => {
-      it('API coverage', async () => {
+      it('coverage', async () => {
         let sum1 = 0
         forEach([1, 2, 3, 4, 5], number => {
           sum1 += number
@@ -3647,7 +3703,7 @@ flatMap(
   describe('get', () => {
     const aaaaa = { a: { a: { a: { a: { a: 1 } } } } }
     const nested = [[[[[1]]]]]
-    it('API coverage', async () => {
+    it('coverage', async () => {
       ase(get({ a: 1 }, 'a'), 1)
       ase(get(null, 'a'), undefined)
       ase(get(undefined, 'a'), undefined)
@@ -3750,7 +3806,7 @@ flatMap(
     const abc = { a: 1, b: 2, c: 3 }
     const nested = { a: { b: { c: { d: 1, e: [2, 3] } } } }
 
-    it('API coverage', async () => {
+    it('coverage', async () => {
       ade(pick(abc, ['a']), { a: 1 })
       ade(pick(abc, ['a', 'd']), { a: 1 })
       ade(pick(abc, ['d']), {})
@@ -3779,7 +3835,7 @@ flatMap(
     const abc = { a: 1, b: 2, c: 3 }
     const nested = { a: { b: { c: { d: 1, e: [2, 3] } } } }
 
-    it('API coverage', async () => {
+    it('coverage', async () => {
       ade(omit(nested, []), nested)
       ade(await omit(Promise.resolve(nested), []), nested)
       ade(omit([1, 2, 3], []), [1, 2, 3])
@@ -3838,7 +3894,7 @@ flatMap(
   })
 
   describe('some', () => {
-    it('API coverage', async () => {
+    it('coverage', async () => {
       ase(
         some([1, 2, 3, 4, 5], number => number > 3),
         true,
@@ -3978,7 +4034,7 @@ flatMap(
   })
 
   describe('every', () => {
-    it('API coverage', async () => {
+    it('coverage', async () => {
       ase(
         every([1, 2, 3, 4, 5], number => number > 0),
         true,
@@ -4112,7 +4168,7 @@ flatMap(
   })
 
   describe('not', () => {
-    it('API coverage', async () => {
+    it('coverage', async () => {
       ase(
         not(1, 2, 3, (...numbers) => (
           numbers.every(num => typeof num == 'number')
@@ -4149,7 +4205,7 @@ flatMap(
   })
 
   describe('and', () => {
-    it('API coverage', async () => {
+    it('coverage', async () => {
       aok(
         and(1, 2, 3, [
           (...numbers) => numbers.every(num => typeof num == 'number'),
@@ -4217,7 +4273,7 @@ flatMap(
   })
 
   describe('or', () => {
-    it('API coverage', async () => {
+    it('coverage', async () => {
       aok(
         or(1, 2, 3, [
           (...numbers) => numbers.every(num => typeof num == 'number'),
@@ -4278,7 +4334,7 @@ flatMap(
   })
 
   describe('eq', () => {
-    it('API coverage', async () => {
+    it('coverage', async () => {
       aok(eq(2, 2))
       aok(await eq(Promise.resolve(2), 2))
       aok(await eq(2, Promise.resolve(2)))
@@ -4335,7 +4391,7 @@ flatMap(
   })
 
   describe('gt', () => {
-    it('API coverage', async () => {
+    it('coverage', async () => {
       aok(
         gt(1, number => number, number => number * 0)
       )
@@ -4388,7 +4444,7 @@ flatMap(
   })
 
   describe('lt', () => {
-    it('API coverage', async () => {
+    it('coverage', async () => {
       aok(
         lt(5, number => number - 3, number => number + 3)
       )
@@ -4441,7 +4497,7 @@ flatMap(
   })
 
   describe('gte', () => {
-    it('API coverage', async () => {
+    it('coverage', async () => {
       aok(
         gte(5, number => number + 3, number => number + 3)
       )
@@ -4494,7 +4550,7 @@ flatMap(
   })
 
   describe('lte', () => {
-    it('API coverage', async () => {
+    it('coverage', async () => {
       aok(
         lte(5, number => number + 3, number => number + 3)
       )
@@ -4584,7 +4640,7 @@ flatMap(
       assert.equal(thunk(), 5)
     })
 
-    it('resolves promises in argument position', async () => {
+    it('resolves promises in data argument position', async () => {
       const thunk = await thunkify.call(distanceTo, point0, Promise.resolve(point1))
       assert.equal(thunk(), 5)
     })
