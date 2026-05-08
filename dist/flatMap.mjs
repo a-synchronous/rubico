@@ -1,5 +1,5 @@
 /**
- * Rubico v2.8.6
+ * Rubico v2.10.0
  * https://rubico.land/
  *
  * © Richard Yufei Tong, King of Software
@@ -443,8 +443,11 @@ const sleep = time => new Promise(resolve => {
 })
 
 const FlatMappingAsyncIterator = function (asyncIterator, flatMapper) {
-  const buffer = [],
-    promises = new Set()
+  const buffer = []
+  const promises = new Set()
+
+  let consumingAsyncIterator = false
+  let isAsyncIteratorDone = false
 
   return {
     isAsyncIteratorDone: false,
@@ -455,38 +458,48 @@ const FlatMappingAsyncIterator = function (asyncIterator, flatMapper) {
       return '[object FlatMappingAsyncIterator]'
     },
 
-    
-    async next() {
-      while (
-        !this.isAsyncIteratorDone || buffer.length > 0 || promises.size > 0
-      ) {
-        if (!this.isAsyncIteratorDone) {
-          const { value, done } = await asyncIterator.next()
-          if (done) {
-            this.isAsyncIteratorDone = done
-          } else {
-            const monad = flatMapper(value)
-            if (isPromise(monad)) {
-              const bufferLoading =
-                monad.then(curry3(genericReduce, __, arrayPush, buffer))
-              const promise = bufferLoading.then(() => promises.delete(promise))
-              promises.add(promise)
-            } else {
-              const bufferLoading = genericReduce(monad, arrayPush, buffer)
-              if (isPromise(bufferLoading)) {
-                const promise = bufferLoading.then(() => promises.delete(promise))
-                promises.add(promise)
-              }
-            }
+    // _consumeAsyncIterator() -> Promise<>
+    async _consumeAsyncIterator() {
+      for await (const item of asyncIterator) {
+        const monad = flatMapper(item)
+        if (isPromise(monad)) {
+          const bufferLoading =
+            monad.then(curry3(genericReduce, __, arrayPush, buffer))
+          const promise = bufferLoading.then(() => promises.delete(promise))
+          promises.add(promise)
+        } else {
+          const bufferLoading = genericReduce(monad, arrayPush, buffer)
+          if (isPromise(bufferLoading)) {
+            const promise = bufferLoading.then(() => promises.delete(promise))
+            promises.add(promise)
           }
         }
+      }
+      isAsyncIteratorDone = true
+    },
+
+    
+    async next() {
+      if (!consumingAsyncIterator) {
+        this._consumeAsyncIterator()
+        consumingAsyncIterator = true
+      }
+
+      while (!isAsyncIteratorDone || promises.size > 0) {
         if (buffer.length > 0) {
           return { value: buffer.shift(), done: false }
         }
         if (promises.size > 0) {
-          await promiseRace([sleep(1000), ...promises])
+          await promiseRace(promises)
+        } else {
+          await sleep(10)
         }
       }
+
+      if (buffer.length > 0) {
+        return { value: buffer.shift(), done: false }
+      }
+
       return { value: undefined, done: true }
     },
   }
@@ -642,9 +655,12 @@ const objectFlatten = function (object) {
 
   for (const key in object) {
     const element = object[key]
+
     if (element == null) {
       continue
-    } else if (typeof element[symbolIterator] == 'function') {
+    }
+
+    if (typeof element[symbolIterator] == 'function') {
       for (const monadElement of element) {
         objectAssign(result, monadElement)
       }

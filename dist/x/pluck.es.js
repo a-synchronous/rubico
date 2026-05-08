@@ -1,5 +1,5 @@
 /**
- * Rubico v2.8.6
+ * Rubico v2.10.0
  * https://rubico.land/
  *
  * © Richard Yufei Tong, King of Software
@@ -33,25 +33,7 @@ const MappingIterator = (iterator, mapper) => ({
   },
 })
 
-const NextIteration = value => ({ value, done: false })
-
-const symbolAsyncIterator = Symbol.asyncIterator
-
-const MappingAsyncIterator = (asyncIterator, mapper) => ({
-  [symbolAsyncIterator]() {
-    return this
-  },
-  async next() {
-    const iteration = await asyncIterator.next()
-    if (iteration.done) {
-      return iteration
-    }
-    const mapped = mapper(iteration.value)
-    return isPromise(mapped)
-      ? mapped.then(NextIteration)
-      : { value: mapped, done: false }
-  }
-})
+const promiseRace = Promise.race.bind(Promise)
 
 const __ = Symbol.for('placeholder')
 
@@ -73,6 +55,165 @@ const curry2 = function (baseFunc, arg0, arg1) {
   return arg0 == __
     ? curry2ResolveArg0(baseFunc, arg1)
     : curry2ResolveArg1(baseFunc, arg0)
+}
+
+class LinkedList {
+  constructor() {
+    this.first = null
+    this.last = null
+    this.length = 0
+  }
+
+  // popFirst() -> firstValue any
+  popFirst() {
+    const first = this.first
+
+    if (first == null) {
+      return undefined
+    }
+
+    if (first.next) {
+      this.first = first.next
+    } else {
+      this.first = null
+    }
+
+    this.length -= 1
+
+    return first.value
+  }
+
+  // append(value any) -> undefined
+  append(value) {
+    const node = { value }
+    if (this.first == null) {
+      this.first = node
+    }
+
+    if (this.last == null) {
+      this.last = node
+    } else {
+      this.last.next = node
+      this.last = node
+    }
+
+    this.length += 1
+  }
+
+}
+
+const symbolAsyncIterator = Symbol.asyncIterator
+
+const arrayPush = function (array, value) {
+  array.push(value)
+  return array
+}
+
+const sleep = time => new Promise(resolve => {
+  setTimeout(resolve, time)
+})
+
+const MappingAsyncIterator = (asyncIterator, mapper) => {
+  const buffer = new LinkedList()
+
+  let index = -1
+  let consumingAsyncIterator = false
+  let isAsyncIteratorDone = false
+
+  return {
+    [symbolAsyncIterator]() {
+      return this
+    },
+
+    // _consumeAsyncIterator() -> Promise<>
+    async _consumeAsyncIterator() {
+      for await (const item of asyncIterator) {
+        index += 1
+        const mappedItem = mapper(item)
+        buffer.append(mappedItem)
+      }
+      isAsyncIteratorDone = true
+    },
+
+    
+    async next() {
+      if (!consumingAsyncIterator) {
+        this._consumeAsyncIterator()
+        consumingAsyncIterator = true
+      }
+
+      while (!isAsyncIteratorDone) {
+        if (buffer.length > 0) {
+          let value = buffer.popFirst()
+          if (isPromise(value)) {
+            value = await value
+          }
+          return { value, done: false }
+        }
+        await sleep(10)
+      }
+
+      if (buffer.length > 0) {
+        let value = buffer.popFirst()
+        if (isPromise(value)) {
+          value = await value
+        }
+        return { value, done: false }
+      }
+
+      return { value: undefined, done: true }
+    },
+
+  }
+}
+
+const SerialMappingAsyncIterator = (asyncIterator, mapper) => {
+  const buffer = new LinkedList()
+
+  let index = -1
+  let consumingAsyncIterator = false
+  let isAsyncIteratorDone = false
+
+  return {
+    [symbolAsyncIterator]() {
+      return this
+    },
+
+    // _consumeAsyncIterator() -> Promise<>
+    async _consumeAsyncIterator() {
+      for await (const item of asyncIterator) {
+        index += 1
+        let mappedItem = mapper(item)
+        if (isPromise(mappedItem)) {
+          mappedItem = await mappedItem
+        }
+        buffer.append(mappedItem)
+      }
+      isAsyncIteratorDone = true
+    },
+
+    
+    async next() {
+      if (!consumingAsyncIterator) {
+        this._consumeAsyncIterator()
+        consumingAsyncIterator = true
+      }
+
+      while (!isAsyncIteratorDone) {
+        if (buffer.length > 0) {
+          return { value: buffer.popFirst(), done: false }
+        }
+        await sleep(10)
+      }
+
+      if (buffer.length > 0) {
+        return { value: buffer.popFirst(), done: false }
+      }
+
+      return { value: undefined, done: true }
+    },
+
+  }
 }
 
 // argument resolver for curry3
@@ -432,8 +573,6 @@ const tapSync = func => function tapping(...args) {
   return args[0]
 }
 
-const promiseRace = Promise.race.bind(Promise)
-
 const arrayMapPoolAsync = async function (
   array, f, concurrencyLimit, result, index, promises,
 ) {
@@ -778,9 +917,6 @@ const _map = function (value, f) {
   if (typeof value.then == 'function') {
     return value.then(f)
   }
-  if (typeof value.map == 'function') {
-    return value.map(f)
-  }
   if (typeof value == 'string' || value.constructor == String) {
     return stringMap(value, f)
   }
@@ -795,6 +931,9 @@ const _map = function (value, f) {
   }
   if (typeof value[symbolAsyncIterator] == 'function') {
     return MappingAsyncIterator(value[symbolAsyncIterator](), f)
+  }
+  if (typeof value.map == 'function') {
+    return value.map(f)
   }
   if (value.constructor == Object) {
     return objectMap(value, f)
@@ -834,27 +973,36 @@ map.entries = function mapEntries(arg0, arg1) {
     : _mapEntries(arg0, arg1)
 }
 
-const _mapSeries = function (collection, f) {
-  if (isArray(collection)) {
-    return arrayMapSeries(collection, f)
+const _mapSeries = function (functor, f) {
+  if (isArray(functor)) {
+    return arrayMapSeries(functor, f)
   }
-  if (collection == null) {
-    throw new TypeError(`invalid collection ${collection}`)
+  if (functor == null) {
+    throw new TypeError(`invalid functor ${functor}`)
   }
 
-  if (typeof collection == 'string' || collection.constructor == String) {
-    return stringMapSeries(collection, f)
+  if (typeof functor == 'string' || functor.constructor == String) {
+    return stringMapSeries(functor, f)
   }
-  if (collection.constructor == Set) {
-    return setMapSeries(collection, f)
+  if (functor.constructor == Set) {
+    return setMapSeries(functor, f)
   }
-  if (collection.constructor == Map) {
-    return mapMapSeries(collection, f)
+  if (functor.constructor == Map) {
+    return mapMapSeries(functor, f)
   }
-  if (collection.constructor == Object) {
-    return objectMapSeries(collection, f)
+  if (typeof functor[symbolIterator] == 'function') {
+    return MappingIterator(functor[symbolIterator](), f)
   }
-  throw new TypeError(`invalid collection ${collection}`)
+  if (typeof functor[symbolAsyncIterator] == 'function') {
+    return SerialMappingAsyncIterator(functor[symbolAsyncIterator](), f)
+  }
+  if (typeof functor.map == 'function') {
+    return functor.map(f)
+  }
+  if (functor.constructor == Object) {
+    return objectMapSeries(functor, f)
+  }
+  throw new TypeError(`invalid functor ${functor}`)
 }
 
 map.series = function mapSeries(arg0, arg1) {

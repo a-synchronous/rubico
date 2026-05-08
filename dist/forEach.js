@@ -1,5 +1,5 @@
 /**
- * Rubico v2.8.6
+ * Rubico v2.10.0
  * https://rubico.land/
  *
  * © Richard Yufei Tong, King of Software
@@ -193,7 +193,7 @@ const _iteratorForEachSeriesAsync = async function (iterator, callback) {
 
 const iteratorForEachSeries = function (iterator, callback) {
   let iteration = iterator.next()
-  while (!iterator.done) {
+  while (!iteration.done) {
     const operation = callback(iteration.value)
     if (isPromise(operation)) {
       return operation
@@ -223,15 +223,15 @@ const _forEach = function (collection, callback) {
   if (collection == null) {
     return collection
   }
-  if (typeof collection.forEach == 'function') {
-    collection.forEach(callback)
-    return collection
-  }
   if (typeof collection[symbolIterator] == 'function') {
     return iteratorForEach(collection[symbolIterator](), callback)
   }
   if (typeof collection[symbolAsyncIterator] == 'function') {
     return asyncIteratorForEach(collection[symbolAsyncIterator](), callback)
+  }
+  if (typeof collection.forEach == 'function') {
+    collection.forEach(callback)
+    return collection
   }
   if (collection.constructor == Object) {
     return objectForEach(collection, callback)

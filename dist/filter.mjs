@@ -1,5 +1,5 @@
 /**
- * Rubico v2.8.6
+ * Rubico v2.10.0
  * https://rubico.land/
  *
  * © Richard Yufei Tong, King of Software
@@ -297,14 +297,14 @@ const _filter = function (value, predicate) {
   if (value.constructor == Map) {
     return mapFilter(value, predicate)
   }
-  if (typeof value.filter == 'function') {
-    return value.filter(predicate)
-  }
   if (typeof value[symbolIterator] == 'function') {
     return FilteringIterator(value[symbolIterator](), predicate)
   }
   if (typeof value[symbolAsyncIterator] == 'function') {
     return FilteringAsyncIterator(value[symbolAsyncIterator](), predicate)
+  }
+  if (typeof value.filter == 'function') {
+    return value.filter(predicate)
   }
   if (value.constructor == Object) {
     return objectFilter(value, predicate)

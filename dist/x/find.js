@@ -1,5 +1,5 @@
 /**
- * Rubico v2.8.6
+ * Rubico v2.10.0
  * https://rubico.land/
  *
  * © Richard Yufei Tong, King of Software
@@ -116,7 +116,6 @@ const iteratorFindAsync = async function (iterator, predicate) {
     }
     iteration = iterator.next()
   }
-  return undefined
 }
 
 const iteratorFind = function (iterator, predicate) {
@@ -135,7 +134,6 @@ const iteratorFind = function (iterator, predicate) {
     }
     iteration = iterator.next()
   }
-  return undefined
 }
 
 const asyncIteratorFind = async function (asyncIterator, predicate) {
