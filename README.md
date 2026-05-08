@@ -23,7 +23,7 @@ const numbers = [1, 2, 3, 4, 5]
 pipe(numbers, [
   filter(isOdd),
   map(asyncSquare),
-  console.log, // [1, 9, 25]
+  console.log,
 ])
 ```
 
@@ -94,26 +94,29 @@ Rubico is a library for [A]synchronous Functional Programming in JavaScript. The
 
 ```javascript
 const {
-  // compose functions
+  // function composition
   pipe, compose, tap,
 
-  // control flow
+  // conditional operators
   switchCase,
 
-  // handle errors
+  // error handling
   tryCatch,
 
-  // compose data
+  // data construction
   all, assign, get, set, pick, omit,
 
-  // iterate
+  // iteration
   forEach,
 
-  // transform data
+  // transformation
   map, filter, reduce, transform, flatMap,
 
-  // compose predicates
-  and, or, not, some, every,
+  // data testing
+  some, every,
+
+  // logical operators
+  and, or, not,
 
   // comparison operators
   eq, gt, lt, gte, lte,
@@ -133,7 +136,7 @@ pipe(helloPromise, [ // helloPromise is resolved for 'hello'
   // the Promise returned from the async function is resolved
   // and the resolved value is passed to console.log
 
-  console.log, // hello world
+  console.log,
 ])
 ```
 
@@ -151,7 +154,6 @@ const myDuplicatedSquaredObject = map(myObj, pipe([
 ]))
 
 console.log(myDuplicatedSquaredObject)
-// { a: [1, 1], b: [4, 4], c: [9, 9] }
 ```
 
 The Rubico operators are versatile and act on a wide range of vanilla JavaScript types to create declarative, extensible, and async-enabled function compositions. The same operator `map` can act on an array and also a `Map` data structure.
@@ -172,11 +174,6 @@ pipe(todoIDs, [
     response => response.json(),
 
     tap(console.log),
-    // { userId: 1, id: 4, title: 'et porro tempora', completed: true }
-    // { userId: 1, id: 1, title: 'delectus aut autem', completed: false }
-    // { userId: 1, id: 3, title: 'fugiat veniam minus', completed: false }
-    // { userId: 1, id: 2, title: 'quis ut nam facilis...', completed: false }
-    // { userId: 1, id: 5, title: 'laboriosam mollitia...', completed: false }
   ])),
 
   // group the todos by userId in a new Map
@@ -201,9 +198,6 @@ pipe(todoIDs, [
   })),
 
   tap(console.log),
-  // Map(1) {
-  //   1 => [ { userId: 1, id: 4, title: 'et porro tempora', completed: true } ]
-  // }
 ])
 ```
 
@@ -227,7 +221,7 @@ pipe(generateNumbers(), [
     Transducer.filter(isOdd),
     Transducer.map(asyncSquare),
   ), []),
-  console.log, // [1, 9, 25]
+  console.log,
 ])
 ```
 
