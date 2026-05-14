@@ -142,6 +142,14 @@ describe('Transducer', () => {
       sum2 += number
     })(() => {}), null)
     assert.equal(sum2, 15)
+
+    let sum3 = 0
+    await reduce(async function* () {
+      yield* [1, 2, 3, 4, 5]
+    }, Transducer.forEach(number => {
+      sum3 += number
+    })(() => {}), null)
+    assert.equal(sum1, 15)
   })
 
   it('passthrough transducer', async () => {
