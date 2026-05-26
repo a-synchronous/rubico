@@ -81,7 +81,7 @@ const _transform = function (collection, transducer, initialValue) {
  *  * `object with .reduce method`
  *  * `object`
  *
- * The transducer defines the transformation done by `transform`. In a transformation, each item of the foldable is processed by the transducer.
+ * The transducer defines the transformation done by `transform`. In a transformation, each item of the foldable is processed by the transducer in series.
  *
  * ```coffeescript [specscript]
  * type SyncOrAsyncReducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
