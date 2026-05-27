@@ -9,6 +9,7 @@ const curry2 = require('./_internal/curry2')
 const curryArgs2 = require('./_internal/curryArgs2')
 const functionArrayAll = require('./_internal/functionArrayAll')
 const functionArrayAllSeries = require('./_internal/functionArrayAllSeries')
+const functionObjectAllSeries = require('./_internal/functionObjectAllSeries')
 const functionObjectAll = require('./_internal/functionObjectAll')
 
 /**
@@ -39,13 +40,13 @@ const _allValues = function (values) {
  * type Resolver = (...arguments)=>Promise|any
  * type ResolverOrValue = Resolver|Promise|any
  *
- * all(Promise|Array<Promise|any>) -> Promise|Array
- * all(...arguments, Array<ResolverOrValue>) -> Promise|Array
- * all(Array<ResolverOrValue>)(...arguments) -> Promise|Array
+ * all(values Promise|Array<Promise|any>) -> result Promise|Array
+ * all(...arguments, valuesOrFuncs Array<ResolverOrValue>) -> result Promise|Array
+ * all(valuesOrFuncs Array<ResolverOrValue>)(...arguments) -> result Promise|Array
  *
- * all(Promise|Object<Promise|any>) -> Promise|Object
- * all(...arguments, Object<ResolverOrValue>) -> Promise|Object
- * all(Object<ResolverOrValue>)(...arguments) -> Promise|Object
+ * all(values Promise|Object<Promise|any>) -> result Promise|Object
+ * all(...arguments, valuesOrFuncs Object<ResolverOrValue>) -> result Promise|Object
+ * all(valuesOrFuncs Object<ResolverOrValue>)(...arguments) -> result Promise|Object
  * ```
  *
  * @description
@@ -162,9 +163,9 @@ const all = function (...args) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * all.series(...arguments, Array<function>) -> Promise|Array
+ * all.series(...arguments, funcs Array<function>) -> result Promise|Array
  *
- * all.series(Array<function>)(...arguments) -> Promise|Array
+ * all.series(funcs Array<function>)(...arguments) -> result Promise|Array
  * ```
  *
  * @description
@@ -186,14 +187,33 @@ const all = function (...args) {
  */
 
 all.series = function allSeries(...args) {
-  const funcs = args.pop()
-  if (args.length == 0) {
-    return curryArgs2(functionArrayAllSeries, funcs, __)
+  if (args.length == 1) {
+    const resolversOrValues = args[0]
+    if (isPromise(resolversOrValues)) {
+      return resolversOrValues.then(_allValues)
+    }
+    if (areAllValuesNonfunctions(resolversOrValues)) {
+      return _allValues(resolversOrValues)
+    }
+    return isArray(resolversOrValues)
+      ? curryArgs2(functionArrayAllSeries, resolversOrValues, __)
+      : curryArgs2(functionObjectAllSeries, resolversOrValues, __)
   }
-  if (areAnyValuesPromises(args)) {
-    return promiseAll(args).then(curry2(functionArrayAllSeries, funcs, __))
+
+  const resolversOrValues = args[args.length - 1]
+  const argValues = args.slice(0, -1)
+
+  if (areAnyValuesPromises(argValues)) {
+    return isArray(resolversOrValues)
+      ? promiseAll(argValues)
+        .then(curry2(functionArrayAllSeries, resolversOrValues, __))
+      : promiseAll(argValues)
+        .then(curry2(functionObjectAllSeries, resolversOrValues, __))
   }
-  return functionArrayAllSeries(funcs, args)
+
+  return isArray(resolversOrValues)
+    ? functionArrayAllSeries(resolversOrValues, argValues)
+    : functionObjectAllSeries(resolversOrValues, argValues)
 }
 
 module.exports = all

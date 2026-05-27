@@ -15,9 +15,9 @@ const __ = require('./_internal/placeholder')
  *
  * funcs [Function, ...Array<UnaryFunction>]
  *
- * pipe(funcs)(...arguments) -> Promise|any
- * pipe(...arguments, funcs) -> Promise|any
- * pipe(...funcs)(...arguments) -> Promise|any
+ * pipe(funcs)(...arguments) -> result Promise|any
+ * pipe(...arguments, funcs) -> result Promise|any
+ * pipe(...funcs)(...arguments) -> result Promise|any
  * ```
  *
  * @description

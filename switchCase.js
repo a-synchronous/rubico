@@ -18,9 +18,9 @@ const curryArgs3 = require('./_internal/curryArgs3')
  * conditionalValues Array<Promise|boolean|any>
  * conditionalFunctionsOrValues Array<Predicate|Function|Promise|boolean|any>
  *
- * switchCase(conditionalValues) -> Promise|any
- * switchCase(...arguments, conditionalFunctionsOrValues) -> Promise|any
- * switchCase(conditionalFunctionsOrValues)(...arguments) -> Promise|any
+ * switchCase(conditionalValues) -> result Promise|any
+ * switchCase(...arguments, conditionalFunctionsOrValues) -> result Promise|any
+ * switchCase(conditionalFunctionsOrValues)(...arguments) -> result Promise|any
  * ```
  *
  * @description

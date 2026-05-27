@@ -25,11 +25,8 @@ const _tryCatch = function (tryer, catcher, args) {
  * type Function = (...arguments)=>Promise|any
  * type Catcher = (error Error|any, ...arguments)=>Promise|any
  *
- * tryer Function
- * catcher Catcher
- *
- * tryCatch(tryer, catcher)(...arguments) -> Promise|any
- * tryCatch(...arguments, tryer, catcher) -> Promise|any
+ * tryCatch(tryer Function, catcher Catcher)(...arguments) -> result Promise|any
+ * tryCatch(...arguments, tryer Function, catcher Catcher) -> result Promise|any
  * ```
  *
  * @description

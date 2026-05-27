@@ -573,6 +573,7 @@ describe('rubico', () => {
         c: 3,
       }), { a: 1, b: 2, c: 3 })
       ade(all({}), {})
+      assert.deepEqual(await all(Promise.resolve([Promise.resolve('test1'), 'test2'])), ['test1', 'test2'])
     })
   })
 
@@ -630,6 +631,20 @@ describe('rubico', () => {
       )
       ade(arr, [1, 2, 3])
     })
+
+    it('evaluates input against object of functions in series (sync)', async () => {
+      const obj = {}
+      ade(
+        all.series({
+          a: () => { obj.a = 1; return 1 },
+          b: () => { obj.b = 2; return 2 },
+          c: () => { obj.c = 3; return 3 },
+        })(),
+        { a: 1, b: 2, c: 3 }
+      )
+      ade(obj, { a: 1, b: 2, c: 3 })
+    })
+
     it('evaluates input against array of functions in series (async)', async () => {
       const arr = []
       const staggeredPush = all.series([
@@ -650,14 +665,32 @@ describe('rubico', () => {
       ade(await parallelPush, ['a', 'b', 'c'])
       ade(arr2, [3, 2, 1])
     })
-    it('throws TypeError for all([])', async () => {
-      assert.deepEqual(all.series([])(), [])
+
+    it('evaluates input against object of functions in series (async)', async () => {
+      const obj = {}
+      const staggeredSet = all.series({
+        a: () => sleep(10).then(() => { obj.a = 1; return 1 }),
+        b: () => sleep(5).then(() => { obj.b = 2; return 2 }),
+        c: () => { obj.c = 3; return 3 },
+      })()
+      aok(staggeredSet instanceof Promise)
+      ade(await staggeredSet, { a: 1, b: 2, c: 3 })
+      ade(obj, { a: 1, b: 2, c: 3 })
     })
-    it('throws TypeError for all([nonFunction])', async () => {
-      assert.throws(
-        () => all.series(['hey'])(),
-        new TypeError('funcs[funcsIndex] is not a function')
-      )
+
+    it('returns empty array for empty array', async () => {
+      assert.deepEqual(all.series([]), [])
+      assert.deepEqual(await all.series(Promise.resolve([])), [])
+    })
+    it('returns empty object for empty object', async () => {
+      assert.deepEqual(all.series({}), {})
+      assert.deepEqual(await all.series(Promise.resolve({})), {})
+    })
+    it('resolves nonfunction values', async () => {
+      assert.deepEqual(all.series(['test1', 'test2']), ['test1', 'test2'])
+      assert.deepEqual(await all.series(Promise.resolve(['test1', 'test2'])), ['test1', 'test2'])
+      assert.deepEqual(await all.series([Promise.resolve('test1'), 'test2']), ['test1', 'test2'])
+      assert.deepEqual(await all.series(Promise.resolve([Promise.resolve('test1'), 'test2'])), ['test1', 'test2'])
     })
   })
 

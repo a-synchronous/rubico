@@ -15,9 +15,9 @@ const funcConcat = require('./_internal/funcConcat')
  *
  * funcs [Function, ...Array<UnaryFunction>]
  *
- * compose(funcs)(...arguments) -> Promise|any
- * compose(...arguments, funcs) -> Promise|any
- * compose(...funcs)(...arguments) -> Promise|any
+ * compose(funcs)(...arguments) -> result Promise|any
+ * compose(...arguments, funcs) -> result Promise|any
+ * compose(...funcs)(...arguments) -> result Promise|any
  * ```
  *
  * @description

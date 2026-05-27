@@ -11,7 +11,7 @@ const objectSet = require('./objectSet')
  * @synopsis
  * ```coffeescript [specscript]
  * asyncFunctionArrayAllSeries(
- *   funcs Array<function>,
+ *   funcs Array<function|any>,
  *   args Array,
  *   result Array,
  *   funcsIndex number
@@ -34,14 +34,15 @@ const asyncFunctionArrayAllSeries = async function (funcs, args, result, funcsIn
  *
  * @synopsis
  * ```coffeescript [specscript]
- * functionArrayAllSeries(funcs Array<function>, args Array) -> Promise|Array
+ * functionArrayAllSeries(funcs Array<function|any>, args Array) -> Promise|Array
  * ```
  */
 const functionArrayAllSeries = function (funcs, args) {
   const funcsLength = funcs.length, result = []
   let funcsIndex = -1
   while (++funcsIndex < funcsLength) {
-    const resultElement = funcs[funcsIndex](...args)
+    const f = funcs[funcsIndex]
+    const resultElement = typeof f == 'function' ? f(...args) : f
     if (isPromise(resultElement)) {
       return resultElement.then(funcConcat(
         curry3(objectSet, result, funcsIndex, __),

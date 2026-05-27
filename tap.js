@@ -24,10 +24,8 @@ const _tap = function (args, f) {
  * ```coffeescript [specscript]
  * type Function = (...arguments)=>Promise|any
  *
- * f Function
- *
- * tap(...arguments, f) -> Promise|arguments[0]
- * tap(f)(...arguments) -> Promise|arguments[0]
+ * tap(...arguments, f Function) -> result Promise|any
+ * tap(f Function)(...arguments) -> result Promise|any
  * ```
  *
  * @description
@@ -106,11 +104,8 @@ const _tapIf = function (predicate, f, args) {
  * type Predicate = (...arguments)=>Promise|boolean|any
  * type Function = (...arguments)=>Promise|any
  *
- * predicate Predicate
- * f Function
- *
- * tap.if(...arguments, predicate, f) -> Promise|arguments[0]
- * tap.if(predicate, f)(...arguments) -> Promise|arguments[0]
+ * tap.if(...arguments, predicate Predicate, f Function) -> result Promise|any
+ * tap.if(predicate Predicate, f Function)(...arguments) -> result Promise|any
  * ```
  *
  * @description
