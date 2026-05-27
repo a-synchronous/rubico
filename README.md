@@ -94,6 +94,7 @@ Rubico is a library for [A]synchronous Functional Programming in JavaScript. The
 
 ```javascript
 const {
+
   // function composition
   pipe, compose, tap,
 
@@ -123,6 +124,7 @@ const {
 
   // partial application
   thunkify, always, curry, __,
+
 } = rubico
 ```
 
