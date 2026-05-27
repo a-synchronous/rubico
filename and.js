@@ -99,9 +99,9 @@ const areAllPredicatesTruthy = function (args, predicates) {
  * ```coffeescript [specscript]
  * type Predicate = (...arguments)=>Promise|boolean|any
  *
- * and(values Array<boolean|any>) -> booleanResult boolean
- * and(...arguments, predicatesOrValues Array<Predicate|boolean|any>) -> booleanResult Promise|boolean
- * and(predicatesOrValues Array<Predicate|boolean|any>)(...arguments) -> booleanResult Promise|boolean
+ * and(values Array<Promise|boolean|any>) -> booleanResult boolean
+ * and(...arguments, predicatesOrValues Array<Promise|Predicate|boolean|any>) -> booleanResult Promise|boolean
+ * and(predicatesOrValues Array<Promise|Predicate|boolean|any>)(...arguments) -> booleanResult Promise|boolean
  * ```
  *
  * @description
