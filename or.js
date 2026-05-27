@@ -100,8 +100,8 @@ const areAnyPredicatesTruthy = function (args, predicates) {
  * type Predicate = (...arguments)=>Promise|boolean|any
  *
  * or(values Array<Promise|boolean|any>) -> booleanResult boolean
- * or(...arguments, predicatesOrValues Array<Promise|Predicate|boolean|any>) -> booleanResult Promise|boolean
- * or(predicatesOrValues Array<Promise|Predicate|boolean|any>)(...arguments) -> booleanResult Promise|boolean
+ * or(...arguments, predicatesOrValues Array<Predicate|Promise|boolean|any>) -> booleanResult Promise|boolean
+ * or(predicatesOrValues Array<Predicate|Promise|boolean|any>)(...arguments) -> booleanResult Promise|boolean
  * ```
  *
  * @description
