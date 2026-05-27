@@ -43,8 +43,8 @@ const _some = function (collection, predicate) {
  * type Foldable = Array|Set|Map|Generator|AsyncGenerator|{ reduce: function }|Object
  * type Predicate = any=>Promise|boolean
  *
- * some(foldable Promise|Foldable, predicate Predicate) -> testResult Promise|boolean
- * some(predicate Predicate)(foldable Foldable) -> testResult Promise|boolean
+ * some(foldable Promise|Foldable, predicate Predicate) -> booleanResult Promise|boolean
+ * some(predicate Predicate)(foldable Foldable) -> booleanResult Promise|boolean
  * ```
  *
  * @description
