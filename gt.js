@@ -8,14 +8,14 @@ const greaterThan = require('./_internal/greaterThan')
  * ```coffeescript [specscript]
  * type Resolver = (...arguments)=>Promise|any
  *
- * gt(leftValue Promise|any, rightValue Promise|any) -> Promise|boolean
- * gt(...arguments, leftResolver Resolver, rightValue Promise|any) -> Promise|boolean
- * gt(...arguments, leftValue Promise|any, rightResolver Resolver) -> Promise|boolean
- * gt(...arguments, leftResolver Resolver, rightResolver Resolver) -> Promise|boolean
+ * gt(leftValue Promise|any, rightValue Promise|any) -> booleanResult Promise|boolean
+ * gt(...arguments, leftResolver Resolver, rightValue Promise|any) -> booleanResult Promise|boolean
+ * gt(...arguments, leftValue Promise|any, rightResolver Resolver) -> booleanResult Promise|boolean
+ * gt(...arguments, leftResolver Resolver, rightResolver Resolver) -> booleanResult Promise|boolean
  *
- * gt(leftResolver Resolver, rightValue Promise|any)(...arguments) -> Promise|boolean
- * gt(leftValue Promise|any, rightResolver Resolver)(...arguments) -> Promise|boolean
- * gt(leftResolver Resolver, rightResolver Resolver)(...arguments) -> Promise|boolean
+ * gt(leftResolver Resolver, rightValue Promise|any)(...arguments) -> booleanResult Promise|boolean
+ * gt(leftValue Promise|any, rightResolver Resolver)(...arguments) -> booleanResult Promise|boolean
+ * gt(leftResolver Resolver, rightResolver Resolver)(...arguments) -> booleanResult Promise|boolean
  * ```
  *
  * @description

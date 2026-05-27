@@ -27,10 +27,9 @@ const _pick = function (source, keys) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * keys Array<string>
+ * pick(object Promise|Object, keys Array<string>) -> result Object
  *
- * pick(Promise|Object, keys) -> Object
- * pick(keys)(Object) -> Object
+ * pick(keys Array<string>)(object Object) -> result Object
  * ```
  *
  * @description

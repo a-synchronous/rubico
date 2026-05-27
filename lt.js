@@ -8,14 +8,14 @@ const lessThan = require('./_internal/lessThan')
  * ```coffeescript [specscript]
  * type Resolver = (...arguments)=>Promise|any
  *
- * lt(leftValue Promise|any, rightValue Promise|any) -> Promise|boolean
- * lt(...arguments, leftResolver Resolver, rightValue Promise|any) -> Promise|boolean
- * lt(...arguments, leftValue Promise|any, rightResolver Resolver) -> Promise|boolean
- * lt(...arguments, leftResolver Resolver, rightResolver Resolver) -> Promise|boolean
+ * lt(leftValue Promise|any, rightValue Promise|any) -> booleanResult Promise|boolean
+ * lt(...arguments, leftResolver Resolver, rightValue Promise|any) -> booleanResult Promise|boolean
+ * lt(...arguments, leftValue Promise|any, rightResolver Resolver) -> booleanResult Promise|boolean
+ * lt(...arguments, leftResolver Resolver, rightResolver Resolver) -> booleanResult Promise|boolean
  *
- * lt(leftResolver Resolver, rightValue Promise|any)(...arguments) -> Promise|boolean
- * lt(leftValue Promise|any, rightResolver Resolver)(...arguments) -> Promise|boolean
- * lt(leftResolver Resolver, rightResolver Resolver)(...arguments) -> Promise|boolean
+ * lt(leftResolver Resolver, rightValue Promise|any)(...arguments) -> booleanResult Promise|boolean
+ * lt(leftValue Promise|any, rightResolver Resolver)(...arguments) -> booleanResult Promise|boolean
+ * lt(leftResolver Resolver, rightResolver Resolver)(...arguments) -> booleanResult Promise|boolean
  * ```
  *
  * @description

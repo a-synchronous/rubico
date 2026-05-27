@@ -21,17 +21,16 @@ const _get = function (object, path, defaultValue) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * path string|number|Array<string|number>
- * defaultValue any
- * defaultResolver function
+ * type Path = string|number|Array<string|number>
+ * type Resolver = any=>Promise|any
  *
- * get(Promise|Object, path) -> Promise|any
- * get(Promise|Object, path, defaultValue) -> Promise|any
- * get(Promise|Object, path, defaultResolver) -> Promise|any
+ * get(object Promise|Object, path Path) -> result Promise|any
+ * get(object Promise|Object, path Path, defaultValue any) -> result Promise|any
+ * get(object Promise|Object, path Path, defaultResolver Resolver) -> result Promise|any
  *
- * get(path)(Object) -> Promise|any
- * get(path, defaultValue)(Object) -> Promise|any
- * get(path, defaultResolver)(Object) -> Promise|any
+ * get(path Path)(object Object) -> result Promise|any
+ * get(path Path, defaultValue any)(object Object) -> result Promise|any
+ * get(path Path, defaultResolver Resolver)(object Object) -> result Promise|any
  * ```
  *
  * @description

@@ -44,10 +44,8 @@ const _every = function (collection, predicate) {
  * type Foldable = Array|Set|Map|Generator|AsyncGenerator|{ reduce: function }|Object
  * type Predicate = any=>Promise|boolean
  *
- * predicate Predicate
- *
- * every(foldable Foldable, predicate) -> result Promise|boolean
- * every(predicate)(foldable Foldable) -> result Promise|boolean
+ * every(foldable Foldable, predicate Predicate) -> result Promise|boolean
+ * every(predicate Predicate)(foldable Foldable) -> result Promise|boolean
  * ```
  *
  * @description

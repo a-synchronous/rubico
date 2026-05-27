@@ -20,8 +20,8 @@ const _assign = function (object, funcs) {
  * ```coffeescript [specscript]
  * type Resolver = any=>Promise|any
  *
- * assign(Promise|Object, Object<Resolver|Promise|any>) -> Promise|Object
- * assign(Object<Resolver|Promise|any>)(Object) -> Promise|Object
+ * assign(object Promise|Object, valuesOrFuncs Object<Resolver|Promise|any>) -> result Promise|Object
+ * assign(valuesOrFuncs Object<Resolver|Promise|any>)(object Object) -> result Promise|Object
  * ```
  *
  * @description

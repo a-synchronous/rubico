@@ -289,10 +289,13 @@ const _mapEntries = (value, f) => {
  * map.entries(
  *   functorOfEntries Promise|FunctorOfEntries,
  *   mapper EntryMapper
- * ) -> mappedFunctorWithEntries Promise|FunctorOfEntries
+ * ) -> mappedFunctorOfEntries Promise|FunctorOfEntries
  *
- * map.entries(mapper EntryMapper)(functorOfEntries FunctorOfEntries)
- *   -> mappedFunctorWithEntries Promise|FunctorOfEntries
+ * map.entries(
+ *   mapper EntryMapper
+ * )(
+ *   functorOfEntries FunctorOfEntries
+ * ) -> mappedFunctorOfEntries Promise|FunctorOfEntries
  * ```
  *
  * @description
@@ -423,14 +426,9 @@ const _mapSeries = function (functor, f) {
  *   functor Functor,
  * )=>(mappedItem Promise|any)
  *
- * map.series(
- *   functor Promise|Functor,
- *   mapper Mapper
- * ) -> mappedFunctor Promise|Functor
+ * map.series(functor Promise|Functor, mapper Mapper) -> mappedFunctor Promise|Functor
  *
- * map.series(
- *   mapper Mapper
- * )(functor Functor) -> mappedFunctor Promise|Functor
+ * map.series(mapper Mapper)(functor Functor) -> mappedFunctor Promise|Functor
  * ```
  *
  * @description
@@ -527,16 +525,9 @@ const _mapPool = function (f, concurrency, mapper) {
  *   functor Functor
  * )=>(mappedItem Promise|any)
  *
- * map.pool(
- *   functor MapPoolFunctor,
- *   concurrency number,
- *   mapper Mapper
- * ) -> result Promise|Array
+ * map.pool(functor MapPoolFunctor, concurrency number, mapper Mapper) -> result Promise|Array
  *
- * map.pool(
- *   concurrency number,
- *   mapper Mapper
- * )(functor MapPoolFunctor) -> result Promise|Array
+ * map.pool(concurrency number, mapper Mapper)(functor MapPoolFunctor) -> result Promise|Array
  * ```
  *
  * @description

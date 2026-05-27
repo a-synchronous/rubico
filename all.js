@@ -163,9 +163,16 @@ const all = function (...args) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * all.series(...arguments, funcs Array<function>) -> result Promise|Array
+ * type Resolver = (...arguments)=>Promise|any
+ * type ResolverOrValue = Resolver|Promise|any
  *
- * all.series(funcs Array<function>)(...arguments) -> result Promise|Array
+ * all.series(values Promise|Array<Promise|any>) -> result Promise|Array
+ * all.series(...arguments, valuesOrFuncs Array<ResolverOrValue>) -> result Promise|Array
+ * all.series(valuesOrFuncs Array<ResolverOrValue>)(...arguments) -> result Promise|Array
+ *
+ * all.series(values Promise|Object<Promise|any>) -> result Promise|Object
+ * all.series(...arguments, valuesOrFuncs Object<ResolverOrValue>) -> result Promise|Object
+ * all.series(valuesOrFuncs Object<ResolverOrValue>)(...arguments) -> result Promise|Object
  * ```
  *
  * @description

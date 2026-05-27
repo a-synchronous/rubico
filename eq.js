@@ -8,14 +8,14 @@ const equals = require('./_internal/equals')
  * ```coffeescript [specscript]
  * type Resolver = (...arguments)=>Promise|any
  *
- * eq(leftValue Promise|any, rightValue Promise|any) -> Promise|boolean
- * eq(...arguments, leftResolver Resolver, rightValue Promise|any) -> Promise|boolean
- * eq(...arguments, leftValue Promise|any, rightResolver Resolver) -> Promise|boolean
- * eq(...arguments, leftResolver Resolver, rightResolver Resolver) -> Promise|boolean
+ * eq(leftValue Promise|any, rightValue Promise|any) -> booleanResult Promise|boolean
+ * eq(...arguments, leftResolver Resolver, rightValue Promise|any) -> booleanResult Promise|boolean
+ * eq(...arguments, leftValue Promise|any, rightResolver Resolver) -> booleanResult Promise|boolean
+ * eq(...arguments, leftResolver Resolver, rightResolver Resolver) -> booleanResult Promise|boolean
  *
- * eq(leftResolver Resolver, rightValue Promise|any)(...arguments) -> Promise|boolean
- * eq(leftValue Promise|any, rightResolver Resolver)(...arguments) -> Promise|boolean
- * eq(leftResolver Resolver, rightResolver Resolver)(...arguments) -> Promise|boolean
+ * eq(leftResolver Resolver, rightValue Promise|any)(...arguments) -> booleanResult Promise|boolean
+ * eq(leftValue Promise|any, rightResolver Resolver)(...arguments) -> booleanResult Promise|boolean
+ * eq(leftResolver Resolver, rightResolver Resolver)(...arguments) -> booleanResult Promise|boolean
  * ```
  *
  * @description

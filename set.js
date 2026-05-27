@@ -40,13 +40,13 @@ const _set = function (obj, path, value) {
  * ```coffeescript [specscript]
  * path string|Array<string|number>
  * resolver (...arguments)=>Promise|any
- * value any
+ * defaultValue any
  *
- * set(Promise|Object, path, value) -> Promise|Object
- * set(Promise|Object, path, resolver) -> Promise|Object
+ * set(object Promise|Object, path, defaultValue) -> result Promise|Object
+ * set(object Promise|Object, path, resolver) -> result Promise|Object
  *
- * set(path, value)(Object) -> Promise|Object
- * set(path, resolver)(Object) -> Promise|Object
+ * set(path, defaultValue)(object Object) -> result Promise|Object
+ * set(path, resolver)(object Object) -> result Promise|Object
  * ```
  *
  * @description

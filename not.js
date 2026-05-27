@@ -21,9 +21,9 @@ const _not = function (args, predicate) {
  * ```coffeescript [specscript]
  * type Predicate = (...arguments)=>Promise|boolean
  *
- * not(value Promise|boolean|any) -> negatedResult Promise|boolean
- * not(...arguments, predicate Predicate) -> negatedResult Promise|boolean
- * not(predicate Predicate)(...arguments) -> negatedResult Promise|boolean
+ * not(value Promise|boolean|any) -> booleanResult Promise|boolean
+ * not(...arguments, predicate Predicate) -> booleanResult Promise|boolean
+ * not(predicate Predicate)(...arguments) -> booleanResult Promise|boolean
  * ```
  *
  * @description
