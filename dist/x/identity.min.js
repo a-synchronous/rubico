@@ -1,5 +1,5 @@
 /**
- * Rubico v2.12.0
+ * Rubico v2.12.1
  * https://rubico.land/
  *
  * © Richard Yufei Tong, King of Software
