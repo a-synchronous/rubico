@@ -19,11 +19,11 @@ const _not = function (args, predicate) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type SyncOrAsyncPredicate = (...arguments)=>Promise|boolean
+ * type Predicate = (...arguments)=>Promise|boolean
  *
  * not(value Promise|boolean|any) -> negatedResult Promise|boolean
- * not(...arguments, predicate SyncOrAsyncPredicate) -> negatedResult Promise|boolean
- * not(predicate SyncOrAsyncPredicate)(...arguments) -> negatedResult Promise|boolean
+ * not(...arguments, predicate Predicate) -> negatedResult Promise|boolean
+ * not(predicate Predicate)(...arguments) -> negatedResult Promise|boolean
  * ```
  *
  * @description

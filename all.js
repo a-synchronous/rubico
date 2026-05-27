@@ -36,8 +36,8 @@ const _allValues = function (values) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type SyncOrAsyncResolver = (...arguments)=>Promise|any
- * type ResolverOrValue = SyncOrAsyncResolver|Promise|any
+ * type Resolver = (...arguments)=>Promise|any
+ * type ResolverOrValue = Resolver|Promise|any
  *
  * all(Promise|Array<Promise|any>) -> Promise|Array
  * all(...arguments, Array<ResolverOrValue>) -> Promise|Array

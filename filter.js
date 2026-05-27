@@ -92,14 +92,14 @@ const _filter = function (value, predicate) {
  * ```coffeescript [specscript]
  * type Filterable = Array|Set|Map|Generator|AsyncGenerator|{ filter: function }|Object
  *
- * type SyncOrAsyncPredicate = (
+ * type Predicate = (
  *   value any,
  *   indexOrKey number|string|any,
  *   filterable Filterable,
  * )=>(booleanResult Promise|boolean|any)
  *
- * filter(filterable Promise|Filterable, predicate SyncOrAsyncPredicate) -> filteredFilterable Promise|Filterable
- * filter(predicate SyncOrAsyncPredicate)(filterable Filterable) -> filteredFilterable Promise|Filterable
+ * filter(filterable Promise|Filterable, predicate Predicate) -> filteredFilterable Promise|Filterable
+ * filter(predicate Predicate)(filterable Filterable) -> filteredFilterable Promise|Filterable
  * ```
  *
  * @description

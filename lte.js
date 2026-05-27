@@ -6,16 +6,16 @@ const lessThanOrEqual = require('./_internal/lessThanOrEqual')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type SyncOrAsyncResolver = (...arguments)=>Promise|any
+ * type Resolver = (...arguments)=>Promise|any
  *
  * lte(leftValue Promise|any, rightValue Promise|any) -> Promise|boolean
- * lte(...arguments, leftResolver SyncOrAsyncResolver, rightValue Promise|any) -> Promise|boolean
- * lte(...arguments, leftValue Promise|any, rightResolver SyncOrAsyncResolver) -> Promise|boolean
- * lte(...arguments, leftResolver SyncOrAsyncResolver, rightResolver SyncOrAsyncResolver) -> Promise|boolean
+ * lte(...arguments, leftResolver Resolver, rightValue Promise|any) -> Promise|boolean
+ * lte(...arguments, leftValue Promise|any, rightResolver Resolver) -> Promise|boolean
+ * lte(...arguments, leftResolver Resolver, rightResolver Resolver) -> Promise|boolean
  *
- * lte(leftResolver SyncOrAsyncResolver, rightValue Promise|any)(...arguments) -> Promise|boolean
- * lte(leftValue Promise|any, rightResolver SyncOrAsyncResolver)(...arguments) -> Promise|boolean
- * lte(leftResolver SyncOrAsyncResolver, rightResolver SyncOrAsyncResolver)(...arguments) -> Promise|boolean
+ * lte(leftResolver Resolver, rightValue Promise|any)(...arguments) -> Promise|boolean
+ * lte(leftValue Promise|any, rightResolver Resolver)(...arguments) -> Promise|boolean
+ * lte(leftResolver Resolver, rightResolver Resolver)(...arguments) -> Promise|boolean
  * ```
  *
  * @description

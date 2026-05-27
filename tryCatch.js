@@ -22,11 +22,11 @@ const _tryCatch = function (tryer, catcher, args) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type SyncOrAsyncFunction = (...arguments)=>Promise|any
- * type SyncOrAsyncCatcher = (error Error|any, ...arguments)=>Promise|any
+ * type Function = (...arguments)=>Promise|any
+ * type Catcher = (error Error|any, ...arguments)=>Promise|any
  *
- * tryer SyncOrAsyncFunction
- * catcher SyncOrAsyncCatcher
+ * tryer Function
+ * catcher Catcher
  *
  * tryCatch(tryer, catcher)(...arguments) -> Promise|any
  * tryCatch(...arguments, tryer, catcher) -> Promise|any

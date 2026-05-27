@@ -22,18 +22,18 @@ const _transform = function (collection, transducer, initialValue) {
  * @synopsis
  * ```coffeescript [specscript]
  * type Foldable = Array|Set|Map|Generator|AsyncGenerator|{ reduce: function }|Object
- * type SyncOrAsyncReducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
- * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer
+ * type Reducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
+ * type Transducer = Reducer=>Reducer
  *
  * type Semigroup = Array|String|Set|TypedArray|{ concat: function }|{ write: function }|Object
  *
- * type UnarySyncOrAsyncSemigroupResolver = any=>Promise|Semigroup
+ * type SemigroupResolver = any=>Promise|Semigroup
  *
  * transform(foldable Promise|Foldable, transducer, initialValue Promise|any) -> result Promise|Semigroup
- * transform(foldable Promise|Foldable, transducer, initialResolver UnarySyncOrAsyncSemigroupResolver) -> result Promise|Semigroup
+ * transform(foldable Promise|Foldable, transducer, initialResolver SemigroupResolver) -> result Promise|Semigroup
  *
  * transform(transducer, initialValue Promise|any)(foldable Foldable) -> result Promise|Semigroup
- * transform(transducer, initialResolver UnarySyncOrAsyncSemigroupResolver)(foldable Foldable) -> result Promise|Semigroup
+ * transform(transducer, initialResolver SemigroupResolver)(foldable Foldable) -> result Promise|Semigroup
  * ```
  *
  * @description
@@ -84,8 +84,8 @@ const _transform = function (collection, transducer, initialValue) {
  * The transducer defines the transformation done by `transform`. In a transformation, each item of the foldable is processed by the transducer in series.
  *
  * ```coffeescript [specscript]
- * type SyncOrAsyncReducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
- * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer
+ * type Reducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
+ * type Transducer = Reducer=>Reducer
  * ```
  *
  * The following data types are considered to be semigroups:

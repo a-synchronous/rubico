@@ -11,8 +11,44 @@ const __ = require('./_internal/placeholder')
 /**
  * @name Transducer
  *
+ * @synopsis
+ * ```coffeescript [specscript]
+ * type Reducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
+ *
+ * type Transducer = Reducer=>Reducer
+ * ```
+ *
  * @description
- * Temporary repository of transducer functionality throughout rubico v1
+ * A transducer is a function that takes a `Reducer` and returns another `Reducer`. Transducers enable function chains with reducers - pass a reducer to a transducer to create a reducer with chained functionality. A `Reducer` is a function that defines a relationship between an accumulator and an item in a transformation, and can be used in a reducing operation, such as with Rubico's [reduce](/docs/reduce) or vanilla JavaScript [Array.prototype.reduce](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce).
+ *
+ * ```javascript [playground]
+ * const isOdd = number => number % 2 == 1
+ *
+ * const asyncSquare = async number => number ** 2
+ *
+ * const numbers = [1, 2, 3, 4, 5]
+ *
+ * const transducer = compose(
+ *   Transducer.filter(isOdd),
+ *   Transducer.map(asyncSquare)
+ * )
+ *
+ * const transformed = await transform(numbers, transducer, [])
+ *
+ * console.log(transformed)
+ * ```
+ *
+ * The following are the core building blocks for creating transducers with Rubico, and are offered through this [Transducer](/docs/Transducer) module.
+ *
+ * * [Transducer.map](/docs/Transducer.map)
+ * * [Transducer.filter](/docs/Transducer.filter)
+ * * [Transducer.flatMap](/docs/Transducer.flatMap)
+ * * [Transducer.forEach](/docs/Transducer.forEach)
+ * * [Transducer.passthrough](/docs/Transducer.passthrough)
+ * * [Transducer.tryCatch](/docs/Transducer.tryCatch)
+ *
+ * See also:
+ *   * [Transducers Crash Course](/blog/transducers-crash-course)
  */
 const Transducer = {}
 
@@ -21,11 +57,11 @@ const Transducer = {}
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type SyncOrAsyncReducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
- * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer
- * type UnarySyncOrAsyncMapper = (item any)=>(mappedItem Promise|any)
+ * type Reducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
+ * type Transducer = Reducer=>Reducer
+ * type Mapper = (item any)=>(mappedItem Promise|any)
  *
- * Transducer.map(mapper UnarySyncOrAsyncMapper) -> mappingTransducer Transducer
+ * Transducer.map(mapper Mapper) -> mappingTransducer Transducer
  * ```
  *
  * @description
@@ -73,11 +109,11 @@ Transducer.map = function transducerMap(mapper) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type SyncOrAsyncReducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
- * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer
- * type UnarySyncOrAsyncPredicate = any=>Promise|boolean|any
+ * type Reducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
+ * type Transducer = Reducer=>Reducer
+ * type Predicate = any=>Promise|boolean|any
  *
- * Transducer.filter(predicate UnarySyncOrAsyncPredicate) -> filteringTransducer Transducer
+ * Transducer.filter(predicate Predicate) -> filteringTransducer Transducer
  * ```
  *
  * @description
@@ -117,12 +153,12 @@ Transducer.filter = function transducerFilter(predicate) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type SyncOrAsyncReducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
- * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer
+ * type Reducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
+ * type Transducer = Reducer=>Reducer
  * type Monad = Array|String|Set|Generator|AsyncGenerator|{ flatMap: string }|{ chain: string }|Object
- * type UnarySyncOrAsyncFlatMapper = (item any)=>(monad Promise|Monad|any)
+ * type FlatMapper = (item any)=>(monad Promise|Monad|any)
  *
- * Transducer.flatMap(flatMapper UnarySyncOrAsyncFlatMapper) -> flatMappingTransducer Transducer
+ * Transducer.flatMap(flatMapper FlatMapper) -> flatMappingTransducer Transducer
  * ```
  *
  * @description
@@ -156,11 +192,11 @@ Transducer.flatMap = function transducerFlatMap(flatMapper) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type SyncOrAsyncReducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
- * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer
- * type UnarySyncOrAsyncCallback = (item any)=>Promise|undefined
+ * type Reducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
+ * type Transducer = Reducer=>Reducer
+ * type Callback = (item any)=>Promise|undefined
  *
- * Transducer.forEach(callback UnarySyncOrAsyncCallback) -> forEachTransducer Transducer
+ * Transducer.forEach(callback Callback) -> forEachTransducer Transducer
  * ```
  *
  * @description
@@ -193,8 +229,8 @@ Transducer.forEach = function transducerForEach(func) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type SyncOrAsyncReducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
- * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer
+ * type Reducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
+ * type Transducer = Reducer=>Reducer
  *
  * Transducer.passthrough -> Transducer
  * ```
@@ -234,8 +270,8 @@ Transducer.passthrough = function transducerPassthrough(reducer) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type SyncOrAsyncReducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
- * type Transducer = SyncOrAsyncReducer=>SyncOrAsyncReducer
+ * type Reducer = (accumulator any, value any)=>(nextAccumulator Promise|any)
+ * type Transducer = Reducer=>Reducer
  *
  * Transducer.tryCatch(
  *   transducerTryer Transducer,

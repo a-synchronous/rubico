@@ -10,10 +10,10 @@ const funcConcat = require('./_internal/funcConcat')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type SyncOrAsyncFunction = (...arguments)=>Promise|any
- * type UnarySyncOrAsyncFunction = any=>Promise|any
+ * type Function = (...arguments)=>Promise|any
+ * type UnaryFunction = any=>Promise|any
  *
- * funcs [SyncOrAsyncFunction, ...Array<UnarySyncOrAsyncFunction>]
+ * funcs [Function, ...Array<UnaryFunction>]
  *
  * compose(funcs)(...arguments) -> Promise|any
  * compose(...arguments, funcs) -> Promise|any

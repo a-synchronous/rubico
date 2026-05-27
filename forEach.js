@@ -47,14 +47,14 @@ const _forEach = function (collection, callback) {
  * ```coffeescript [specscript]
  * type Iterable = Array|Set|Map|Generator|AsyncGenerator|{ forEach: function }|Object
  *
- * type SyncOrAsyncCallback = (
+ * type Callback = (
  *   item any,
  *   indexOrKey number|string|any,
  *   iterable Iterable
  * )=>Promise|undefined
  *
- * forEach(iterable Promise|Iterable, callback SyncOrAsyncCallback) -> iterable Promise|Iterable
- * forEach(callback SyncOrAsyncCallback)(iterable Iterable) -> iterable Promise|Iterable
+ * forEach(iterable Promise|Iterable, callback Callback) -> iterable Promise|Iterable
+ * forEach(callback Callback)(iterable Iterable) -> iterable Promise|Iterable
  * ```
  *
  * @description
@@ -190,14 +190,14 @@ const _forEachSeries = function (collection, callback) {
  * ```coffeescript [specscript]
  * type Iterable = Array|Set|Map|Generator|AsyncGenerator|{ forEach: function }|Object
  *
- * type SyncOrAsyncCallback = (
+ * type Callback = (
  *   item any,
  *   indexOrKey number|string|any,
  *   iter Iterable
  * )=>Promise|undefined
  *
- * forEach.series(iterable Promise|Iterable, callback SyncOrAsyncCallback) -> iterable Promise|Iterable
- * forEach.series(callback SyncOrAsyncCallback)(iterable Iterable) -> iterable Promise|Iterable
+ * forEach.series(iterable Promise|Iterable, callback Callback) -> iterable Promise|Iterable
+ * forEach.series(callback Callback)(iterable Iterable) -> iterable Promise|Iterable
  * ```
  *
  * @description

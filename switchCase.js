@@ -12,11 +12,11 @@ const curryArgs3 = require('./_internal/curryArgs3')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type SyncOrAsyncPredicate = (...arguments)=>Promise|boolean|any
- * type SyncOrAsyncFunction = (...arguments)=>Promise|any
+ * type Predicate = (...arguments)=>Promise|boolean|any
+ * type Function = (...arguments)=>Promise|any
  *
  * conditionalValues Array<Promise|boolean|any>
- * conditionalFunctionsOrValues Array<SyncOrAsyncPredicate|SyncOrAsyncFunction|Promise|boolean|any>
+ * conditionalFunctionsOrValues Array<Predicate|Function|Promise|boolean|any>
  *
  * switchCase(conditionalValues) -> Promise|any
  * switchCase(...arguments, conditionalFunctionsOrValues) -> Promise|any

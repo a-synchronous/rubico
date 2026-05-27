@@ -6,16 +6,16 @@ const greaterThanOrEqual = require('./_internal/greaterThanOrEqual')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type SyncOrAsyncResolver = (...arguments)=>Promise|any
+ * type Resolver = (...arguments)=>Promise|any
  *
  * gte(leftValue Promise|any, rightValue Promise|any) -> Promise|boolean
- * gte(...arguments, leftResolver SyncOrAsyncResolver, rightValue Promise|any) -> Promise|boolean
- * gte(...arguments, leftValue Promise|any, rightResolver SyncOrAsyncResolver) -> Promise|boolean
- * gte(...arguments, leftResolver SyncOrAsyncResolver, rightResolver SyncOrAsyncResolver) -> Promise|boolean
+ * gte(...arguments, leftResolver Resolver, rightValue Promise|any) -> Promise|boolean
+ * gte(...arguments, leftValue Promise|any, rightResolver Resolver) -> Promise|boolean
+ * gte(...arguments, leftResolver Resolver, rightResolver Resolver) -> Promise|boolean
  *
- * gte(leftResolver SyncOrAsyncResolver, rightValue Promise|any)(...arguments) -> Promise|boolean
- * gte(leftValue Promise|any, rightResolver SyncOrAsyncResolver)(...arguments) -> Promise|boolean
- * gte(leftResolver SyncOrAsyncResolver, rightResolver SyncOrAsyncResolver)(...arguments) -> Promise|boolean
+ * gte(leftResolver Resolver, rightValue Promise|any)(...arguments) -> Promise|boolean
+ * gte(leftValue Promise|any, rightResolver Resolver)(...arguments) -> Promise|boolean
+ * gte(leftResolver Resolver, rightResolver Resolver)(...arguments) -> Promise|boolean
  * ```
  *
  * @description

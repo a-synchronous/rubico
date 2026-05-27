@@ -96,14 +96,14 @@ const _map = function (value, f) {
  * ```coffeescript [specscript]
  * type Functor = Array|Set|Map|Generator|AsyncGenerator|{ map: function }|Object
  *
- * type SyncOrAsyncMapper = (
+ * type Mapper = (
  *   item any,
  *   indexOrKey number|string|any,
  *   functor Functor
  * )=>(mappedItem Promise|any)
  *
- * map(functor Promise|Functor, mapper SyncOrAsyncMapper) -> mappedFunctor Promise|Functor
- * map(mapper SyncOrAsyncMapper)(functor Functor) -> mappedFunctor Promise|Functor
+ * map(functor Promise|Functor, mapper Mapper) -> mappedFunctor Promise|Functor
+ * map(mapper Mapper)(functor Functor) -> mappedFunctor Promise|Functor
  * ```
  *
  * @description
@@ -369,13 +369,13 @@ map.entries = function mapEntries(arg0, arg1) {
  * ```coffeescript [specscript]
  * type Functor = Array|Object|Set|Map
  *
- * type SyncOrAsyncMapper = (
+ * type Mapper = (
  *   value any,
  *   indexOrKey number|string|any,
  *   f Functor
  * )=>(mappedItem Promise|any)
  *
- * _mapSeries(f Functor, f SyncOrAsyncMapper) -> result Promise|Functor
+ * _mapSeries(f Functor, f Mapper) -> result Promise|Functor
  * ```
  */
 const _mapSeries = function (functor, f) {
@@ -417,7 +417,7 @@ const _mapSeries = function (functor, f) {
  * ```coffeescript [specscript]
  * type Functor = Array|Set|Map|Generator|AsyncGenerator|{ map: function }|Object
  *
- * type SyncOrAsyncMapper = (
+ * type Mapper = (
  *   value any,
  *   indexOrKey number|string|any,
  *   functor Functor,
@@ -425,11 +425,11 @@ const _mapSeries = function (functor, f) {
  *
  * map.series(
  *   functor Promise|Functor,
- *   mapper SyncOrAsyncMapper
+ *   mapper Mapper
  * ) -> mappedFunctor Promise|Functor
  *
  * map.series(
- *   mapper SyncOrAsyncMapper
+ *   mapper Mapper
  * )(functor Functor) -> mappedFunctor Promise|Functor
  * ```
  *
@@ -521,7 +521,7 @@ const _mapPool = function (f, concurrency, mapper) {
  * ```coffeescript [specscript]
  * type MapPoolFunctor = Array|Object|Set|Map
  *
- * type SyncOrAsyncMapper = (
+ * type Mapper = (
  *   item any,
  *   indexOrKey number|string|any,
  *   functor Functor
@@ -530,12 +530,12 @@ const _mapPool = function (f, concurrency, mapper) {
  * map.pool(
  *   functor MapPoolFunctor,
  *   concurrency number,
- *   mapper SyncOrAsyncMapper
+ *   mapper Mapper
  * ) -> result Promise|Array
  *
  * map.pool(
  *   concurrency number,
- *   mapper SyncOrAsyncMapper
+ *   mapper Mapper
  * )(functor MapPoolFunctor) -> result Promise|Array
  * ```
  *

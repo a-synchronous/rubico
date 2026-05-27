@@ -6,16 +6,16 @@ const equals = require('./_internal/equals')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type SyncOrAsyncResolver = (...arguments)=>Promise|any
+ * type Resolver = (...arguments)=>Promise|any
  *
  * eq(leftValue Promise|any, rightValue Promise|any) -> Promise|boolean
- * eq(...arguments, leftResolver SyncOrAsyncResolver, rightValue Promise|any) -> Promise|boolean
- * eq(...arguments, leftValue Promise|any, rightResolver SyncOrAsyncResolver) -> Promise|boolean
- * eq(...arguments, leftResolver SyncOrAsyncResolver, rightResolver SyncOrAsyncResolver) -> Promise|boolean
+ * eq(...arguments, leftResolver Resolver, rightValue Promise|any) -> Promise|boolean
+ * eq(...arguments, leftValue Promise|any, rightResolver Resolver) -> Promise|boolean
+ * eq(...arguments, leftResolver Resolver, rightResolver Resolver) -> Promise|boolean
  *
- * eq(leftResolver SyncOrAsyncResolver, rightValue Promise|any)(...arguments) -> Promise|boolean
- * eq(leftValue Promise|any, rightResolver SyncOrAsyncResolver)(...arguments) -> Promise|boolean
- * eq(leftResolver SyncOrAsyncResolver, rightResolver SyncOrAsyncResolver)(...arguments) -> Promise|boolean
+ * eq(leftResolver Resolver, rightValue Promise|any)(...arguments) -> Promise|boolean
+ * eq(leftValue Promise|any, rightResolver Resolver)(...arguments) -> Promise|boolean
+ * eq(leftResolver Resolver, rightResolver Resolver)(...arguments) -> Promise|boolean
  * ```
  *
  * @description

@@ -23,22 +23,22 @@ const _reduce = function (collection, reducer, initial) {
  * ```coffeescript [specscript]
  * type Foldable = Array|Set|Map|Generator|AsyncGenerator|{ reduce: function }|Object
  *
- * type SyncOrAsyncReducer = (
+ * type Reducer = (
  *   accumulator any,
  *   item any,
  *   indexOrKey number|string|any,
  *   foldable Foldable
  * )=>(nextAccumulator Promise|any)
  *
- * type UnarySyncOrAsyncResolver = any=>Promise|any
+ * type Resolver = any=>Promise|any
  *
- * reduce(foldable Promise|Foldable, reducer SyncOrAsyncReducer) -> accumulator Promise|any
- * reduce(foldable Promise|Foldable, reducer SyncOrAsyncReducer, initialValue Promise|any) -> accumulator Promise|any
- * reduce(foldable Promise|Foldable, reducer SyncOrAsyncReducer, initialResolver UnarySyncOrAsyncResolver) -> accumulator Promise|any
+ * reduce(foldable Promise|Foldable, reducer Reducer) -> accumulator Promise|any
+ * reduce(foldable Promise|Foldable, reducer Reducer, initialValue Promise|any) -> accumulator Promise|any
+ * reduce(foldable Promise|Foldable, reducer Reducer, initialResolver Resolver) -> accumulator Promise|any
  *
- * reduce(reducer SyncOrAsyncReducer)(foldable Foldable) -> accumulator Promise|any
- * reduce(reducer SyncOrAsyncReducer, initialValue Promise|any)(foldable Foldable) -> accumulator Promise|any
- * reduce(reducer SyncOrAsyncReducer, initialResolver UnarySyncOrAsyncResolver)(foldable Foldable) -> accumulator Promise|any
+ * reduce(reducer Reducer)(foldable Foldable) -> accumulator Promise|any
+ * reduce(reducer Reducer, initialValue Promise|any)(foldable Foldable) -> accumulator Promise|any
+ * reduce(reducer Reducer, initialResolver Resolver)(foldable Foldable) -> accumulator Promise|any
  * ```
  *
  * @description

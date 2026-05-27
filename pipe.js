@@ -10,10 +10,10 @@ const __ = require('./_internal/placeholder')
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type SyncOrAsyncFunction = (...arguments)=>Promise|any
- * type UnarySyncOrAsyncFunction = any=>Promise|any
+ * type Function = (...arguments)=>Promise|any
+ * type UnaryFunction = any=>Promise|any
  *
- * funcs [SyncOrAsyncFunction, ...Array<UnarySyncOrAsyncFunction>]
+ * funcs [Function, ...Array<UnaryFunction>]
  *
  * pipe(funcs)(...arguments) -> Promise|any
  * pipe(...arguments, funcs) -> Promise|any

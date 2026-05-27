@@ -22,9 +22,9 @@ const _tap = function (args, f) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type SyncOrAsyncFunction = (...arguments)=>Promise|any
+ * type Function = (...arguments)=>Promise|any
  *
- * f SyncOrAsyncFunction
+ * f Function
  *
  * tap(...arguments, f) -> Promise|arguments[0]
  * tap(f)(...arguments) -> Promise|arguments[0]
@@ -103,11 +103,11 @@ const _tapIf = function (predicate, f, args) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * type SyncOrAsyncPredicate = (...arguments)=>Promise|boolean|any
- * type SyncOrAsyncFunction = (...arguments)=>Promise|any
+ * type Predicate = (...arguments)=>Promise|boolean|any
+ * type Function = (...arguments)=>Promise|any
  *
- * predicate SyncOrAsyncPredicate
- * f SyncOrAsyncFunction
+ * predicate Predicate
+ * f Function
  *
  * tap.if(...arguments, predicate, f) -> Promise|arguments[0]
  * tap.if(predicate, f)(...arguments) -> Promise|arguments[0]
