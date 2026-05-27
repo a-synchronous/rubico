@@ -32,13 +32,13 @@ const _reduce = function (collection, reducer, initial) {
  *
  * type Resolver = any=>Promise|any
  *
- * reduce(foldable Promise|Foldable, reducer Reducer) -> accumulator Promise|any
- * reduce(foldable Promise|Foldable, reducer Reducer, initialValue Promise|any) -> accumulator Promise|any
- * reduce(foldable Promise|Foldable, reducer Reducer, initialResolver Resolver) -> accumulator Promise|any
+ * reduce(foldable Promise|Foldable, reducer Reducer) -> result Promise|any
+ * reduce(foldable Promise|Foldable, reducer Reducer, initialValue Promise|any) -> result Promise|any
+ * reduce(foldable Promise|Foldable, reducer Reducer, initialResolver Resolver) -> result Promise|any
  *
- * reduce(reducer Reducer)(foldable Foldable) -> accumulator Promise|any
- * reduce(reducer Reducer, initialValue Promise|any)(foldable Foldable) -> accumulator Promise|any
- * reduce(reducer Reducer, initialResolver Resolver)(foldable Foldable) -> accumulator Promise|any
+ * reduce(reducer Reducer)(foldable Foldable) -> result Promise|any
+ * reduce(reducer Reducer, initialValue Promise|any)(foldable Foldable) -> result Promise|any
+ * reduce(reducer Reducer, initialResolver Resolver)(foldable Foldable) -> result Promise|any
  * ```
  *
  * @description
