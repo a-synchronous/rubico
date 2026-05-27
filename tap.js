@@ -34,11 +34,11 @@ const _tap = function (args, f) {
  * ```javascript [playground]
  * const pipeline = pipe([
  *   tap(value => console.log(value)),
- *   tap(value => console.log(value + 'bar')),
- *   tap(value => console.log(value + 'barbaz')),
+ *   tap(value => console.log(value + 'b')),
+ *   tap(value => console.log(value + 'bc')),
  * ])
  *
- * pipeline('foo')
+ * pipeline('a')
  * ```
  *
  * Any promises in `arguments` are resolved for their values before further execution for the eager interface only.

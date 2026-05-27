@@ -151,7 +151,7 @@ const _flatMap = function (value, flatMapper) {
  * }
  *
  * // values from async generators are muxed
- * const muxed = await flatMap(['foo', 'bar', 'baz'], asyncRepeat3)
+ * const muxed = await flatMap(['a', 'b', 'c'], asyncRepeat3)
  *
  * console.log('muxed:', muxed)
  *
@@ -160,7 +160,7 @@ const _flatMap = function (value, flatMapper) {
  * }
  *
  * // values from generators and other monads are concatenated
- * const repeated = flatMap(['foo', 'bar', 'baz'], repeat3)
+ * const repeated = flatMap(['a', 'b', 'c'], repeat3)
  *
  * console.log('repeated:', repeated)
  * ```

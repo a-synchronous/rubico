@@ -61,11 +61,11 @@ const _get = function (object, path, defaultValue) {
  * ```javascript [playground]
  * const getHelloWithDefaultValue = get('hello', 'default')
  *
- * console.log(getHelloWithDefaultValue({ foo: 'bar' }))
+ * console.log(getHelloWithDefaultValue({}))
  *
- * const getHelloWithDefaultResolver = get('hello', object => object.foo)
+ * const getHelloWithDefaultResolver = get('hello', object => object.a)
  *
- * console.log(getHelloWithDefaultResolver({ foo: 'bar' }))
+ * console.log(getHelloWithDefaultResolver({}))
  * ```
  *
  * The default resolver may be asynchronous, in which case `get` returns a promise.
