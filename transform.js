@@ -29,11 +29,11 @@ const _transform = function (collection, transducer, initialValue) {
  *
  * type SemigroupResolver = any=>Promise|Semigroup
  *
- * transform(foldable Promise|Foldable, transducer, initialValue Promise|any) -> result Promise|Semigroup
- * transform(foldable Promise|Foldable, transducer, initialResolver SemigroupResolver) -> result Promise|Semigroup
+ * transform(foldable Promise|Foldable, transducer Transducer, initialValue Promise|any) -> result Promise|Semigroup
+ * transform(foldable Promise|Foldable, transducer Transducer, initialResolver SemigroupResolver) -> result Promise|Semigroup
  *
- * transform(transducer, initialValue Promise|any)(foldable Foldable) -> result Promise|Semigroup
- * transform(transducer, initialResolver SemigroupResolver)(foldable Foldable) -> result Promise|Semigroup
+ * transform(transducer Transducer, initialValue Promise|any)(foldable Foldable) -> result Promise|Semigroup
+ * transform(transducer Transducer, initialResolver SemigroupResolver)(foldable Foldable) -> result Promise|Semigroup
  * ```
  *
  * @description
