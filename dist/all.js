@@ -1,5 +1,5 @@
 /**
- * Rubico v2.12.1
+ * Rubico v2.13.0
  * https://rubico.land/
  *
  * © Richard Yufei Tong, King of Software
@@ -242,13 +242,98 @@ const functionArrayAllSeries = function (funcs, args) {
   const funcsLength = funcs.length, result = []
   let funcsIndex = -1
   while (++funcsIndex < funcsLength) {
-    const resultElement = funcs[funcsIndex](...args)
+    const f = funcs[funcsIndex]
+    const resultElement = typeof f == 'function' ? f(...args) : f
     if (isPromise(resultElement)) {
       return resultElement.then(funcConcat(
         curry3(objectSet, result, funcsIndex, __),
         curry4(asyncFunctionArrayAllSeries, funcs, args, __, funcsIndex)))
     }
     result[funcsIndex] = resultElement
+  }
+  return result
+}
+
+// argument resolver for curry5
+const curry5ResolveArg0 = (
+  baseFunc, arg1, arg2, arg3, arg4,
+) => function arg0Resolver(arg0) {
+  return baseFunc(arg0, arg1, arg2, arg3, arg4)
+}
+
+// argument resolver for curry5
+const curry5ResolveArg1 = (
+  baseFunc, arg0, arg2, arg3, arg4,
+) => function arg1Resolver(arg1) {
+  return baseFunc(arg0, arg1, arg2, arg3, arg4)
+}
+
+// argument resolver for curry5
+const curry5ResolveArg2 = (
+  baseFunc, arg0, arg1, arg3, arg4,
+) => function arg2Resolver(arg2) {
+  return baseFunc(arg0, arg1, arg2, arg3, arg4)
+}
+
+// argument resolver for curry5
+const curry5ResolveArg3 = (
+  baseFunc, arg0, arg1, arg2, arg4,
+) => function arg3Resolver(arg3) {
+  return baseFunc(arg0, arg1, arg2, arg3, arg4)
+}
+
+// argument resolver for curry5
+const curry5ResolveArg4 = (
+  baseFunc, arg0, arg1, arg2, arg3,
+) => function arg3Resolver(arg4) {
+  return baseFunc(arg0, arg1, arg2, arg3, arg4)
+}
+
+const curry5 = function (baseFunc, arg0, arg1, arg2, arg3, arg4) {
+  if (arg0 == __) {
+    return curry5ResolveArg0(baseFunc, arg1, arg2, arg3, arg4)
+  }
+  if (arg1 == __) {
+    return curry5ResolveArg1(baseFunc, arg0, arg2, arg3, arg4)
+  }
+  if (arg2 == __) {
+    return curry5ResolveArg2(baseFunc, arg0, arg1, arg3, arg4)
+  }
+  if (arg3 == __) {
+    return curry5ResolveArg3(baseFunc, arg0, arg1, arg2, arg4)
+  }
+  return curry5ResolveArg4(baseFunc, arg0, arg1, arg2, arg3)
+}
+
+const asyncFunctionObjectAllSeries = async function (funcs, args, result, keys, keysIndex) {
+  const keysLength = keys.length
+  while (++keysIndex < keysLength) {
+    const key = keys[keysIndex]
+    const f = funcs[key]
+    let resultElement = typeof f == 'function' ? f(...args) : f
+    if (isPromise(resultElement)) {
+      resultElement = await resultElement
+    }
+    result[key] = resultElement
+  }
+  return result
+}
+
+const functionObjectAllSeries = function (funcs, args) {
+  const result = {}
+  const keys = Object.keys(funcs)
+  const keysLength = keys.length
+  let keysIndex = -1
+  while (++keysIndex < keysLength) {
+    const key = keys[keysIndex]
+    const f = funcs[key]
+    const resultElement = typeof f == 'function' ? f(...args) : f
+    if (isPromise(resultElement)) {
+      return resultElement.then(funcConcat(
+        curry3(objectSet, result, key, __),
+        curry5(asyncFunctionObjectAllSeries, funcs, args, __, keys, keysIndex)))
+    }
+    result[key] = resultElement
   }
   return result
 }
@@ -311,14 +396,33 @@ const all = function (...args) {
 }
 
 all.series = function allSeries(...args) {
-  const funcs = args.pop()
-  if (args.length == 0) {
-    return curryArgs2(functionArrayAllSeries, funcs, __)
+  if (args.length == 1) {
+    const resolversOrValues = args[0]
+    if (isPromise(resolversOrValues)) {
+      return resolversOrValues.then(_allValues)
+    }
+    if (areAllValuesNonfunctions(resolversOrValues)) {
+      return _allValues(resolversOrValues)
+    }
+    return isArray(resolversOrValues)
+      ? curryArgs2(functionArrayAllSeries, resolversOrValues, __)
+      : curryArgs2(functionObjectAllSeries, resolversOrValues, __)
   }
-  if (areAnyValuesPromises(args)) {
-    return promiseAll(args).then(curry2(functionArrayAllSeries, funcs, __))
+
+  const resolversOrValues = args[args.length - 1]
+  const argValues = args.slice(0, -1)
+
+  if (areAnyValuesPromises(argValues)) {
+    return isArray(resolversOrValues)
+      ? promiseAll(argValues)
+        .then(curry2(functionArrayAllSeries, resolversOrValues, __))
+      : promiseAll(argValues)
+        .then(curry2(functionObjectAllSeries, resolversOrValues, __))
   }
-  return functionArrayAllSeries(funcs, args)
+
+  return isArray(resolversOrValues)
+    ? functionArrayAllSeries(resolversOrValues, argValues)
+    : functionObjectAllSeries(resolversOrValues, argValues)
 }
 
 return all

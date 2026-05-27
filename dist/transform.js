@@ -1,5 +1,5 @@
 /**
- * Rubico v2.12.1
+ * Rubico v2.13.0
  * https://rubico.land/
  *
  * © Richard Yufei Tong, King of Software
@@ -76,8 +76,6 @@ const curry2 = function (baseFunc, arg0, arg1) {
 const always = value => function getter() { return value }
 
 const noop = function () {}
-
-const add = (a, b) => a + b
 
 const objectValues = Object.values
 
