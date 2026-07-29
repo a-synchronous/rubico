@@ -13,11 +13,7 @@ const { identity, noop } = x
 
 const license = `
 /**
- * Rubico v${rubicoVersion}
- * https://rubico.land/
- *
- * © Richard Yufei Tong, King of Software
- * Rubico may be freely distributed under the CFOSS license.
+ * rubico may be freely distributed under the CFOSS license.
  */
 `.trim()
 
