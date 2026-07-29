@@ -1,9 +1,5 @@
 /**
- * Rubico
- * https://rubico.land/
- *
- * © Richard Yufei Tong, King of Software
- * Rubico may be freely distributed under the CFOSS license.
+ * rubico may be freely distributed under the CFOSS license.
  */
 
 'use strict'
