@@ -21,7 +21,7 @@ const __ = require('./_internal/placeholder')
  * ```
  *
  * @description
- * Creates a function pipeline from multiple functions. Each function in the function pipeline is evaluated in series starting from the first function in the function pipeline, the its return value as the first and only argument to the next function in the pipeline. The result of the execution of a function pipeline is the return value of the last function in the function pipeline. If any function in the function pipeline is asynchronous, the result of the execution of the function pipeline is a promise.
+ * Creates a function pipeline from multiple functions. Each function in the function pipeline is evaluated in series starting from the first function in the function pipeline, passing the return value as the first and only argument to the next function in the pipeline. The result of the execution of a function pipeline is the return value of the last function in the function pipeline. If any function in the function pipeline is asynchronous, the result of the execution of the function pipeline is a promise.
  *
  * Multiple arguments may be provided to a function pipeline, in which case they are passed directly to the first function in the function pipeline.
  *
