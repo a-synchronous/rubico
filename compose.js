@@ -21,7 +21,7 @@ const funcConcat = require('./_internal/funcConcat')
  * ```
  *
  * @description
- * Creates a function composition from multiple functions. Each function in the function composition is evaluated in series starting from the last function in the function composition, passing its return value as the first and only argument to the previous function in the function composition. The result of the execution of a function composition is the return value of the first function in the function composition. If any function in the function composition is asynchronous, the result of the execution of the function composition is a promise.
+ * Creates a function composition from multiple functions. Each function in the function composition is evaluated in series starting from the last function in the function composition, passing the return value as the first and only argument to the previous function in the function composition. The result of the execution of a function composition is the return value of the first function in the function composition. If any function in the function composition is asynchronous, the result of the execution of the function composition is a promise.
  *
  * Multiple arguments may be provided to a function composition, in which case they are passed directly to the last function in the function composition.
  *
