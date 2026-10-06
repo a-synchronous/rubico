@@ -53,6 +53,15 @@ const __ = require('./_internal/placeholder')
  *
  * A single argument and one or more functions passed to `pipe` executes immediately.
  *
+ * ```javascript [playground]
+ * pipe(
+ *   1,
+ *   n => n + 2,
+ *   n => n + 3,
+ *   console.log
+ * )
+ * ```
+ *
  * Any promises in `arguments` are resolved for their values before further execution for the immediate interface only.
  *
  * ```javascript [playground]
