@@ -54,7 +54,7 @@ const _not = function (args, predicate) {
  * not(promise).then(console.log)
  * ```
  *
- * Any promises in `arguments` are resolved for their values before further execution for the eager interface only.
+ * Any promises in `arguments` are resolved for their values before further execution for the immediate interface only.
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1

@@ -1,3 +1,4 @@
+const isPromise = require('./_internal/isPromise')
 const areAnyValuesPromises = require('./_internal/areAnyValuesPromises')
 const promiseAll = require('./_internal/promiseAll')
 const funcConcat = require('./_internal/funcConcat')
@@ -17,6 +18,7 @@ const __ = require('./_internal/placeholder')
  *
  * pipe(funcs)(...arguments) -> result Promise|any
  * pipe(...arguments, funcs) -> result Promise|any
+ * pipe(argument, ...funcs) -> result Promise|any
  * pipe(...funcs)(...arguments) -> result Promise|any
  * ```
  *
@@ -49,7 +51,9 @@ const __ = require('./_internal/placeholder')
  * console.log(appendBC('a'))
  * ```
  *
- * Any promises in `arguments` are resolved for their values before further execution for the eager interface only.
+ * A single argument and one or more functions passed to `pipe` executes immediately.
+ *
+ * Any promises in `arguments` are resolved for their values before further execution for the immediate interface only.
  *
  * ```javascript [playground]
  * pipe(Promise.resolve(1), 2, Promise.resolve(3), [
@@ -72,6 +76,12 @@ const __ = require('./_internal/placeholder')
 const pipe = function (...args) {
   if (typeof args[0] == 'function') {
     return args.reduce(funcConcat)
+  }
+
+  if (typeof args[0] != 'function' && typeof args[1] == 'function') {
+    const arg = args.shift()
+    const pipeline = args.reduce(funcConcat)
+    return isPromise(arg) ? arg.then(pipeline) : pipeline(arg)
   }
 
   const funcs = args.pop()

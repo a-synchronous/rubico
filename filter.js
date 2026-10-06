@@ -219,7 +219,7 @@ const _filter = function (value, predicate) {
  * }
  * ```
  *
- * If the filterable is a promise, it is resolved for its value before further execution for the eager interface only. 
+ * If the filterable is a promise, it is resolved for its value before further execution for the immediate interface only. 
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1

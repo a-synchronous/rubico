@@ -26,7 +26,7 @@ describe('isIn', () => {
     })
   })
 
-  describe('eager isIn(value, any) -> boolean', () => {
+  describe('immediate isIn(value, any) -> boolean', () => {
     it('checks if in Array element exist', () => {
       assert.strictEqual(isIn(1, [1, 2, 3]), true)
       assert.strictEqual(isIn(4, [1, 2, 3]), false)

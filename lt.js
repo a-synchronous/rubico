@@ -60,7 +60,7 @@ const lessThan = require('./_internal/lessThan')
  * ])
  * ```
  *
- * Any promises in `arguments` are resolved for their values before further execution for the eager interface only.
+ * Any promises in `arguments` are resolved for their values before further execution for the immediate interface only.
  *
  * ```javascript [playground]
  * lt(Promise.resolve({ a: 1, b: 2 }), get('a'), get('b')).then(console.log)

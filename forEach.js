@@ -132,7 +132,7 @@ const _forEach = function (collection, callback) {
  * ])
  * ```
  *
- * If the iterable is a promise, it is resolved for its value before further execution for the eager interface only.
+ * If the iterable is a promise, it is resolved for its value before further execution for the immediate interface only.
  *
  * ```javascript [playground]
  * forEach(Promise.resolve([1, 2, 3]), console.log)
@@ -212,7 +212,7 @@ const _forEachSeries = function (collection, callback) {
  * })
  * ```
  *
- * If the iterable is a promise, it is resolved for its value before further execution for the eager interface only.
+ * If the iterable is a promise, it is resolved for its value before further execution for the immediate interface only.
  *
  * ```javascript [playground]
  * forEach.series(Promise.resolve([1, 2, 3]), console.log)

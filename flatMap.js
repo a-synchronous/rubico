@@ -165,7 +165,7 @@ const _flatMap = function (value, flatMapper) {
  * console.log('repeated:', repeated)
  * ```
  *
- * If the monad is a promise, it is resolved for its value before further execution for the eager interface only.
+ * If the monad is a promise, it is resolved for its value before further execution for the immediate interface only.
  *
  * ```javascript [playground]
  * flatMap(Promise.resolve([1, 2, 3, 4, 5]), n => [n, n]).then(console.log)

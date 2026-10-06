@@ -107,7 +107,7 @@ const _allValues = function (values) {
  * getAndLogUserById('1')
  * ```
  *
- * Any promises in `arguments` are resolved for their values before further execution for the eager interface only.
+ * Any promises in `arguments` are resolved for their values before further execution for the immediate interface only.
  *
  * ```javascript [playground]
  * all(Promise.resolve({ a: 1 }), Promise.resolve(2), [

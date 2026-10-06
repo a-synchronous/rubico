@@ -58,7 +58,7 @@ const greaterThan = require('./_internal/greaterThan')
  * ])
  * ```
  *
- * Any promises in `arguments` are resolved for their values before further execution for the eager interface only.
+ * Any promises in `arguments` are resolved for their values before further execution for the immediate interface only.
  *
  * ```javascript [playground]
  * gt(Promise.resolve({ a: 2, b: 1 }), get('a'), get('b')).then(console.log)

@@ -72,7 +72,7 @@ const _tryCatch = function (tryer, catcher, args) {
  * asyncHandler(3)
  * ```
  *
- * `tryCatch` executes eagerly when provided any number of arguments before the tryer and catcher functions.
+ * `tryCatch` executes immediate when provided any number of arguments before the tryer and catcher functions.
  *
  * ```javascript [playground]
  * const add = (a, b) => a + b
@@ -85,7 +85,7 @@ const _tryCatch = function (tryer, catcher, args) {
  * })
  * ```
  *
- * Any promises in `arguments` are resolved for their values before further execution for the eager interface only.
+ * Any promises in `arguments` are resolved for their values before further execution for the immediate interface only.
  *
  * ```javascript [playground]
  * tryCatch(Promise.resolve(1), 2, Promise.resolve(3), (a, b, c) => {

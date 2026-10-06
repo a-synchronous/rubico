@@ -195,7 +195,7 @@ const _transform = function (collection, transducer, initialValue) {
  * console.log(result)
  * ```
  *
- * If the foldable or initial value is a promise, it is resolved for its value before further execution for the eager interface only.
+ * If the foldable or initial value is a promise, it is resolved for its value before further execution for the immediate interface only.
  *
  * ```javascript [playground]
  * const resultFromPromiseFoldable = await transform(

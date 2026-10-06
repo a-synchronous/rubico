@@ -85,7 +85,7 @@ const _every = function (collection, predicate) {
  * ])
  * ```
  *
- * If the foldable is a promise, it is resolved for its value before further execution for the eager interface only.
+ * If the foldable is a promise, it is resolved for its value before further execution for the immediate interface only.
  *
  * ```javascript [playground]
  * every(Promise.resolve([1, 2, 3, 4, 5]), n => n < 6).then(console.log)

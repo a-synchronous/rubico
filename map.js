@@ -229,7 +229,7 @@ const _map = function (value, f) {
  * }
  * ```
  *
- * If the functor is a promise, it is resolved for its value before further execution for the eager interface only.
+ * If the functor is a promise, it is resolved for its value before further execution for the immediate interface only.
  *
  * ```javascript [playground]
  * const asyncSquare = async n => n ** 2
@@ -332,7 +332,7 @@ const _mapEntries = (value, f) => {
  *   mappedEntry Promise|[mappedKey string, mappedValue any]
  * ```
  *
- * If the functor with entries is a promise, it is resolved for its value before further execution for the eager interface only.
+ * If the functor with entries is a promise, it is resolved for its value before further execution for the immediate interface only.
  *
  * ```javascript [playground]
  * const asyncSquareEntries = async ([k, v]) => [k, v ** 2]
@@ -450,7 +450,7 @@ const _mapSeries = function (functor, f) {
  *
  * If the functor is a generator, the mapper function must be synchronous.
  *
- * If the functor is a promise, it is resolved for its value before further execution for the eager interface only.
+ * If the functor is a promise, it is resolved for its value before further execution for the immediate interface only.
  *
  * ```javascript [playground]
  * const asyncSquare = async n => n ** 2
@@ -546,7 +546,7 @@ const _mapPool = function (f, concurrency, mapper) {
  * map.pool(ids, 2, pipe(delayedIdentity, console.log))
  * ```
  *
- * If the functor is a promise, it is resolved for its value before further execution for the eager interface only.
+ * If the functor is a promise, it is resolved for its value before further execution for the immediate interface only.
  *
  * ```javascript [playground]
  * const asyncSquare = async n => n ** 2

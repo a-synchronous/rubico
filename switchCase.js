@@ -70,7 +70,7 @@ const curryArgs3 = require('./_internal/curryArgs3')
  * console.log(value)
  * ```
  *
- * If every item in the conditional array is a nonfunction value, `switchCase` executes eagerly.
+ * If every item in the conditional array is a nonfunction value, `switchCase` executes immediately.
  *
  * ```javascript [playground]
  * const age = 26
@@ -80,7 +80,7 @@ const curryArgs3 = require('./_internal/curryArgs3')
  * console.log(myDrink)
  * ```
  *
- * Any promises in `arguments` are resolved for their values before further execution for the eager interface only. Any promises in the conditional array are resolved before further execution for both the lazy and eager interface.
+ * Any promises in `arguments` are resolved for their values before further execution for the immediate interface only. Any promises in the conditional array are resolved before further execution for both the lazy and immediate interface.
  *
  * ```javascript [playground]
  * switchCase(Promise.resolve(1), 2, Promise.resolve(3), [

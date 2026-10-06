@@ -190,7 +190,7 @@ const _reduce = function (collection, reducer, initial) {
  * console.log(result)
  * ```
  *
- * If the foldable or initial value is a promise, it is resolved for its value before further execution for the eager interface only.
+ * If the foldable or initial value is a promise, it is resolved for its value before further execution for the immediate interface only.
  *
  * ```javascript [playground]
  * const add = (a, b) => a + b

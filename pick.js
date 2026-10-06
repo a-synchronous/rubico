@@ -65,7 +65,7 @@ const _pick = function (source, keys) {
  * ])
  * ```
  *
- * If the argument object is a promise, it is resolved for its value before further execution for the eager interface only.
+ * If the argument object is a promise, it is resolved for its value before further execution for the immediate interface only.
  *
  * ```javascript [playground]
  * pick(Promise.resolve({ a: 1, b: 2, c: 3 }), ['a', 'b']).then(console.log)

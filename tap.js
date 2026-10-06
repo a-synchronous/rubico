@@ -41,7 +41,7 @@ const _tap = function (args, f) {
  * pipeline('a')
  * ```
  *
- * Any promises in `arguments` are resolved for their values before further execution for the eager interface only.
+ * Any promises in `arguments` are resolved for their values before further execution for the immediate interface only.
  *
  * ```javascript [playground]
  * tap(Promise.resolve(1), Promise.resolve(2), 3, console.log)
@@ -122,7 +122,7 @@ const _tapIf = function (predicate, f, args) {
  * logIfOdd(3)
  * ```
  *
- * Any promises in `arguments` are resolved for their values before further execution for the eager interface only.
+ * Any promises in `arguments` are resolved for their values before further execution for the immediate interface only.
  *
  * ```javascript [playground]
  * tap.if(Promise.resolve(1), n => n < 5, console.log)

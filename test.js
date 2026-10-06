@@ -265,12 +265,22 @@ MockFoldable.prototype = {
 
 describe('rubico', () => {
   describe('pipe', () => {
-    it('behaves eagerly when passed any amount of arguments before the array of functions', async () => {
+    it('executes immediately when passed any amount of arguments before the array of functions', async () => {
       const array = pipe(1, 2, 3, [
         Array.of,
         numbers => numbers.map(number => number * 3),
       ])
       assert.deepEqual(array, [3, 6, 9])
+    })
+    it('executes immediately when passed a single argument and at least one function', async () => {
+      const result1 = pipe(1, n => n + 2, n => n + 3)
+      assert.equal(result1, 6)
+      const result2 = pipe(
+        3,
+        n => n ** 2,
+        n => n + 1,
+      )
+      assert.equal(result2, 10)
     })
     it('argument interface', async () => {
       const appendB = x => x + 'b'
@@ -278,7 +288,7 @@ describe('rubico', () => {
       const appendBC = pipe(appendB, appendC)
       assert.equal(appendBC('a'), 'abc')
     })
-    it('behaves eagerly and resolves any amount of Promise arguments before the array of functions', async () => {
+    it('executes immediately and resolves any amount of Promise arguments before the array of functions', async () => {
       const array = await pipe(Promise.resolve(1), 2, Promise.resolve(3), [
         Array.of,
         numbers => numbers.map(number => number * 3),
@@ -770,7 +780,7 @@ describe('rubico', () => {
       assert.strictEqual(point, 1)
       assert.deepEqual(array, [1, 2, 3, 4, 5])
     })
-    it('eager interface', async () => {
+    it('immediate interface', async () => {
       let val = null
       tap('a', 'b', 'c', (...args) => {
         val = args
@@ -815,7 +825,7 @@ describe('rubico', () => {
   })
 
   describe('tryCatch', () => {
-    it('behaves eagerly when supplied any amount of arguments before the tryer and catcher', async () => {
+    it('executes immediately when supplied any amount of arguments before the tryer and catcher', async () => {
       const add = (a, b) => a + b
 
       let sum = null
@@ -830,7 +840,7 @@ describe('rubico', () => {
       assert.equal(sum, 6)
     })
 
-    it('behaves eagerly when supplied any amount of Promise arguments before the tryer and catcher', async () => {
+    it('executes immediately when supplied any amount of Promise arguments before the tryer and catcher', async () => {
       const add = (a, b) => a + b
 
       let sum = null
@@ -845,7 +855,7 @@ describe('rubico', () => {
       assert.equal(sum, 6)
     })
 
-    it('async eager tryCatch', async () => {
+    it('async immediate tryCatch', async () => {
       const add = (a, b) => a + b
 
       let sum = null
@@ -954,7 +964,7 @@ describe('rubico', () => {
         'hi',
       )
     })
-    it('switches on values (including Promises), evaluating eagerly', async () => {
+    it('switches on values (including Promises), evaluating immediately', async () => {
       ase(switchCase([true, 'hey', 'ho']), 'hey')
       ase(await switchCase([
         Promise.resolve(true),
@@ -1338,7 +1348,7 @@ describe('rubico', () => {
   })
 
   describe('map.entries', () => {
-    it('eager', async () => {
+    it('immediate', async () => {
       assert.deepEqual(
         map.entries(
           { a: 1, b: 2, c: 3 },
@@ -1824,7 +1834,7 @@ then(() => {
   })
 
   describe('filter', () => {
-    it('eager', async () => {
+    it('immediate', async () => {
       const numbers = [1, 2, 3]
       const odds = filter(numbers, number => number % 2 == 1)
       assert.deepEqual(odds, [1, 3])
@@ -2155,7 +2165,7 @@ then(() => {
   })
 
   describe('reduce', () => {
-    it('eager', async () => {
+    it('immediate', async () => {
       const numbers = [1, 2, 3, 4, 5]
       const sum1 = reduce(numbers, (a, b) => a + b)
       const sum2 = reduce(numbers, (a, b) => a + b, 0)
@@ -2169,7 +2179,7 @@ then(() => {
       assert.equal(sum5, 15)
     })
 
-    it('eager Promise arguments', async () => {
+    it('immediate Promise arguments', async () => {
       const numbers = Promise.resolve([1, 2, 3, 4, 5])
       const sum1 = await reduce(numbers, (a, b) => a + b)
       const sum2 = await reduce(numbers, (a, b) => a + b, 0)
@@ -4050,7 +4060,7 @@ flatMap(
       ade(set('a.b.c.d', 1)({}), { a: { b: { c: { d: 1 } } } })
     })
 
-    it('eagerly set a property of an object', async () => {
+    it('immediately set a property of an object', async () => {
       ade(set(null, 'a', 1), null)
       ade(set(undefined, 'a', 1), undefined)
       ade(set('yo', 'a', 1), 'yo')

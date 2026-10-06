@@ -146,12 +146,12 @@ pipe(helloPromise, [ // helloPromise is resolved for 'hello'
 ])
 ```
 
-All Rubico operators support both eager and lazy interfaces. The eager interface takes all required arguments and executes at once, while the lazy interface takes only the setup arguments and returns a function that only expects the data arguments. This dual interface supports a natural and composable code style.
+All Rubico operators support both immediate and lazy interfaces. The immediate interface takes all required arguments and executes at once, while the lazy interface takes only the setup arguments and returns a function that only expects the data arguments. This dual interface supports a natural and composable code style.
 
 ```javascript [playground]
 const myObj = { a: 1, b: 2, c: 3 }
 
-// the first use of map is eager
+// the first use of map is immediate
 const myDuplicatedSquaredObject = map(myObj, pipe([
   number => [number, number],
 

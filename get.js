@@ -102,7 +102,7 @@ const _get = function (object, path, defaultValue) {
  * console.log(get00000ArrayNotation(nested))
  * ```
  *
- * If the argument object or default value is a promise, it is resolved for its value before further execution for the eager interface only.
+ * If the argument object or default value is a promise, it is resolved for its value before further execution for the immediate interface only.
  *
  * ```javascript [playground]
  * get(Promise.resolve({ a: 1 }), 'a').then(console.log)

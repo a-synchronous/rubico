@@ -123,7 +123,7 @@ forEach(console.log)([1, 2, 3])
 ```
 
 ### isDeepEqual
-left deeply equals right? eager version of eq.deep
+left deeply equals right? immediate version of eq.deep
 ```javascript
 y = isDeepEqual(a, b)
 ```
@@ -162,7 +162,7 @@ isEmpty(0) // TypeError
 ```
 
 ### isEqual
-left strictly equals right? eager version of [eq](https://doc.rubico.land/#eq)
+left strictly equals right? immediate version of [eq](https://doc.rubico.land/#eq)
 ```javascript
 y = isEqual(a, b)
 ```

@@ -89,7 +89,7 @@ const _set = function (obj, path, value) {
  * ])
  * ```
  *
- * If the argument object is a promise, it is resolved for its value before further execution for the eager interface only.
+ * If the argument object is a promise, it is resolved for its value before further execution for the immediate interface only.
  *
  * ```javascript [playground]
  * set(Promise.resolve({}), 'a', 1).then(console.log)
