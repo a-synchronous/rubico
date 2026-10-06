@@ -101,6 +101,7 @@ const areAnyPredicatesTruthy = function (args, predicates) {
  *
  * or(values Array<Promise|boolean|any>) -> booleanResult boolean
  * or(...arguments, predicatesOrValues Array<Predicate|Promise|boolean|any>) -> booleanResult Promise|boolean
+ * or(argument, ...predicatesOrValues Arguments<Predicate|Promise|boolean|any>) -> booleanResult Promise|boolean
  * or(predicatesOrValues Array<Predicate|Promise|boolean|any>)(...arguments) -> booleanResult Promise|boolean
  * ```
  *
@@ -153,6 +154,17 @@ const areAnyPredicatesTruthy = function (args, predicates) {
  * console.log(booleanResult)
  * ```
  *
+ * A single argument and one or more predicate functions passed to `or` executes immediately.
+ *
+ * ```javascript [playground]
+ * const bool = or(
+ *   2,
+ *   n => n > 1,
+ *   n => n % 2 == 0,
+ * )
+ *
+ * console.log(bool)
+ *
  * Any promises in the array are resolved for their values before further execution.
  *
  * ```javascript [playground]
@@ -173,6 +185,13 @@ const areAnyPredicatesTruthy = function (args, predicates) {
  * @note ...args slows down here by an order of magnitude
  */
 const or = function (...args) {
+  if (typeof args[1] == 'function') {
+    const arg = args.shift()
+    return isPromise(arg)
+      ? arg.then(curryArgs2(areAnyPredicatesTruthy, __, args))
+      : areAnyPredicatesTruthy([arg], args)
+  }
+
   const predicatesOrValues = args.pop()
   if (areAllValuesNonfunctions(predicatesOrValues)) {
     return areAnyNonfunctionsTruthy(predicatesOrValues, -1)

@@ -4567,6 +4567,15 @@ flatMap(
       )
     })
 
+    it('immediate interface', async () => {
+      const result1 = and(1, n => n > 0, n => n + 1 == 2)
+      assert.strictEqual(result1, true)
+      const promise = and(Promise.resolve(1), n => n > 0, n => n + 1 == 2)
+      assert.equal(promise.constructor, Promise)
+      const result2 = await promise
+      assert.strictEqual(result2, true)
+    })
+
     it('all nonfunctions', async () => {
       assert.strictEqual(and([true, true, true]), true)
       assert.strictEqual(and([true, true, false]), false)
@@ -4633,6 +4642,15 @@ flatMap(
           false,
         ])
       )
+    })
+
+    it('immediate interface', async () => {
+      const result1 = or(0, n => n > 0, n => n < 0)
+      assert.strictEqual(result1, false)
+      const promise = or(Promise.resolve(0), n => n > 0, n => n < 0)
+      assert.equal(promise.constructor, Promise)
+      const result2 = await promise
+      assert.strictEqual(result2, false)
     })
 
     it('all nonfunctions', async () => {

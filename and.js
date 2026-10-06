@@ -101,6 +101,7 @@ const areAllPredicatesTruthy = function (args, predicates) {
  *
  * and(values Array<Promise|boolean|any>) -> booleanResult boolean
  * and(...arguments, predicatesOrValues Array<Predicate|Promise|boolean|any>) -> booleanResult Promise|boolean
+ * and(argument, ...predicatesOrValues Arguments<Predicate|Promise|boolean|any>) -> booleanResult Promise|boolean
  * and(predicatesOrValues Array<Predicate|Promise|boolean|any>)(...arguments) -> booleanResult Promise|boolean
  * ```
  *
@@ -153,6 +154,19 @@ const areAllPredicatesTruthy = function (args, predicates) {
  * console.log(booleanResult)
  * ```
  *
+ * A single argument and one or more predicate functions passed to `and` executes immediately.
+ *
+ * ```javascript [playground]
+ * const bool = and(
+ *   3,
+ *   n => n > 1,
+ *   n => n % 2 == 1,
+ *   n => n / 3 == 1,
+ * )
+ *
+ * console.log(bool)
+ * ```
+ *
  * Any promises in the array are resolved for their values before further execution.
  *
  * ```javascript [playground]
@@ -173,6 +187,13 @@ const areAllPredicatesTruthy = function (args, predicates) {
  * @note ...args slows down here by an order of magnitude
  */
 const and = function (...args) {
+  if (typeof args[1] == 'function') {
+    const arg = args.shift()
+    return isPromise(arg)
+      ? arg.then(curryArgs2(areAllPredicatesTruthy, __, args))
+      : areAllPredicatesTruthy([arg], args)
+  }
+
   const predicatesOrValues = args.pop()
   if (areAllValuesNonfunctions(predicatesOrValues)) {
     return areAllValuesTruthy(predicatesOrValues, -1)
