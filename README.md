@@ -11,6 +11,8 @@ License: [CFOSS](https://cloutsworld.com/en-us/legal/license/cfoss)
 
 ## [A]synchronous Functional Programming
 
+A program is a tree of synchronous or asynchronous functions.
+
 ```javascript [playground]
 const { pipe, map, filter } = rubico
 
