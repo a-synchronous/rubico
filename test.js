@@ -4177,6 +4177,17 @@ flatMap(
       ade(omit(abc, ['a', 'd']), { b: 2, c: 3 })
       ade(omit(abc, ['d']), { a: 1, b: 2, c: 3 })
     })
+    it('immediate interface', async () => {
+      const result1 = omit({ a: 1, b: 2, c: 3 }, 'b', 'c')
+      assert.deepEqual(result1, { a: 1 })
+      const omitBC = omit('b', 'c')
+      const result2 = omitBC({ a: 1, b: 2, c: 3 })
+      assert.deepEqual(result2, { a: 1 })
+      const promise1 = omit(Promise.resolve({ a: 1, b: 2, c: 3 }), 'b', 'c')
+      assert.equal(promise1.constructor, Promise)
+      const result3 = await promise1
+      assert.deepEqual(result3, { a: 1 })
+    })
     it('omits properties from an object defined by array', async () => {
       assert(omit([])(nested) !== nested)
       ade(omit([])(nested), nested)

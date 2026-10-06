@@ -20,13 +20,14 @@ const _omit = function (source, paths) {
  *
  * @synopsis
  * ```coffeescript [specscript]
- * omit(object Promise|Object, paths Array<string>) -> result Object
- *
- * omit(paths Array<string>)(object Object) -> result Object
+ * omit(object Promise|Object, keysOrPathPatterns Array<string>) -> result Object
+ * omit(keysOrPathPatterns Array<string>)(object Object) -> result Object
+ * omit(object Promise|Object, ...keysOrPathPatterns Arguments<string>) -> result Object
+ * omit(...keysOrPathPatterns Arguments<string>)(object Object) -> result Object
  * ```
  *
  * @description
- * Object constructor. Creates a new object by excluding provided paths on an argument object.
+ * Object constructor. Creates a new object by excluding provided keys or path patterns on an argument object.
  *
  * ```javascript [playground]
  * const argumentObject = { _id: '1', name: 'John' }
@@ -65,6 +66,21 @@ const _omit = function (source, paths) {
  * ])
  * ```
  *
+ * The keys of the constructed object may be provided to `omit` as arguments. The object is immediately constructed if the argument object is provided along with the keys.
+ *
+ * ```javascript [playground]
+ * const objectA = omit({ a: 1, b: 2, c: 3 }, 'b', 'c')
+ * console.log(objectA)
+ * ```
+ *
+ * The object is constructed on a later call if the argument object is not immediately provided.
+ *
+ * ```javascript [playground]
+ * const omitBC = omit('b', 'c')
+ * const objectA = omitBC({ a: 1, b: 2, c: 3 })
+ * console.log(objectA)
+ * ```
+ *
  * If the argument object is a promise, it is resolved for its value before further execution for the immediate interface only.
  *
  * ```javascript [playground]
@@ -80,7 +96,18 @@ const _omit = function (source, paths) {
  *  * [pick](/docs/pick)
  *  * [forEach](/docs/forEach)
  */
-const omit = function (arg0, arg1) {
+const omit = function (...args) {
+  const arg0 = args[0]
+  const arg1 = args[1]
+  if (typeof arg0 == 'string') {
+    return curry2(_omit, __, args)
+  }
+  if (typeof arg1 == 'string') {
+    const argumentObject = args.shift()
+    return isPromise(argumentObject)
+      ? argumentObject.then(curry2(_omit, __, args))
+      : _omit(argumentObject, args)
+  }
   if (arg1 == null) {
     return curry2(_omit, __, arg0)
   }
