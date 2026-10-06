@@ -24,11 +24,12 @@ const asyncSquare = async number => number ** 2
 
 const numbers = [1, 2, 3, 4, 5]
 
-pipe(numbers, [
+pipe(
+  numbers, 
   filter(isOdd),
   map(asyncSquare),
   console.log,
-])
+)
 ```
 
 ## Installation
@@ -137,13 +138,15 @@ With [A]synchronous Functional Programming, any function may be asynchronous and
 ```javascript [playground]
 const helloPromise = Promise.resolve('hello')
 
-pipe(helloPromise, [ // helloPromise is resolved for 'hello'
+pipe(
+  helloPromise, // helloPromise is resolved for 'hello'
+
   async greeting => `${greeting} world`,
   // the Promise returned from the async function is resolved
   // and the resolved value is passed to console.log
 
   console.log,
-])
+)
 ```
 
 All Rubico operators support both immediate and lazy interfaces. The immediate interface takes all required arguments and executes at once, while the lazy interface takes only the setup arguments and returns a function that only expects the data arguments. This dual interface supports a natural and composable code style.
@@ -152,12 +155,12 @@ All Rubico operators support both immediate and lazy interfaces. The immediate i
 const myObj = { a: 1, b: 2, c: 3 }
 
 // the first use of map is immediate
-const myDuplicatedSquaredObject = map(myObj, pipe([
+const myDuplicatedSquaredObject = map(myObj, pipe(
   number => [number, number],
 
   // the second use of map is lazy
   map(number => number ** 2),
-]))
+))
 
 console.log(myDuplicatedSquaredObject)
 ```
@@ -174,13 +177,13 @@ const todoIDs = [1, 2, 3, 4, 5]
 pipe(todoIDs, [
 
   // fetch todos per id of todoIDs
-  map(pipe([
+  map(pipe(
     toTodosUrl,
     fetch,
     response => response.json(),
 
     tap(console.log),
-  ])),
+  )),
 
   // group the todos by userId in a new Map
   function createUserTodosMap(todos) {
@@ -222,13 +225,14 @@ const generateNumbers = function* () {
   yield 5
 }
 
-pipe(generateNumbers(), [
+pipe(
+  generateNumbers(),
   transform(compose(
     Transducer.filter(isOdd),
     Transducer.map(asyncSquare),
   ), []),
   console.log,
-])
+)
 ```
 
 For advanced asynchronous use cases, some of Rubico's operators have property operators that support varied asynchronous behavior, e.g.
