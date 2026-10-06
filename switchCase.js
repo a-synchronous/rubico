@@ -21,6 +21,7 @@ const curryArgs3 = require('./_internal/curryArgs3')
  *
  * switchCase(conditionalValues) -> result Promise|any
  * switchCase(...arguments, conditionalFunctionsOrValues) -> result Promise|any
+ * switchCase(argument, ...conditionalFunctionsOrValues) -> result Promise|any
  * switchCase(conditionalFunctionsOrValues)(...arguments) -> result Promise|any
  * ```
  *
@@ -87,8 +88,8 @@ const curryArgs3 = require('./_internal/curryArgs3')
  * switchCase(
  *   1,
  *   n => n % 2 == 0,
- *   () => 'even',
- *   () => 'odd'
+ *   () => console.log('even'),
+ *   () => console.log('odd')
  * )
  * ```
  *
