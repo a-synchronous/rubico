@@ -11,7 +11,9 @@ License: [CFOSS](https://cloutsworld.com/en-us/legal/license/cfoss)
 
 ## [A]synchronous Functional Programming
 
-A program is a tree of synchronous or asynchronous functions. A program can be a combination of programs from different paradigms.
+A program is a tree of synchronous or asynchronous functions.
+
+A program can be a combination of programs from different paradigms.
 
 ```javascript [playground]
 const { pipe, map, filter } = rubico
