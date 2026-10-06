@@ -164,6 +164,7 @@ const areAnyPredicatesTruthy = function (args, predicates) {
  * )
  *
  * console.log(bool)
+ * ```
  *
  * Any promises in the array are resolved for their values before further execution.
  *
