@@ -74,7 +74,7 @@ const pipe = function (...args) {
     return args.reduce(funcConcat)
   }
 
-  if (typeof args[0] != 'function' && typeof args[1] == 'function') {
+  if (typeof args[1] == 'function') {
     const arg = args.shift()
     const pipeline = args.reduce(funcConcat)
     return isPromise(arg) ? arg.then(pipeline) : pipeline(arg)

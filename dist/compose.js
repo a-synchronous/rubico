@@ -73,7 +73,7 @@ const compose = function (...args) {
     return args.reduceRight(funcConcat)
   }
 
-  if (typeof args[0] != 'function' && typeof args[1] == 'function') {
+  if (typeof args[1] == 'function') {
     const arg = args.shift()
     const composition = args.reduceRight(funcConcat)
     return isPromise(arg) ? arg.then(composition) : composition(arg)

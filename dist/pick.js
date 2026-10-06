@@ -144,7 +144,18 @@ const _pick = function (source, keys) {
   return result
 }
 
-const pick = function (arg0, arg1) {
+const pick = function (...args) {
+  const arg0 = args[0]
+  const arg1 = args[1]
+  if (typeof arg0 == 'string') {
+    return curry2(_pick, __, args)
+  }
+  if (typeof arg1 == 'string') {
+    const argumentObject = args.shift()
+    return isPromise(argumentObject)
+      ? argumentObject.then(curry2(_pick, __, args))
+      : _pick(argumentObject, args)
+  }
   if (arg1 == null) {
     return curry2(_pick, __, arg0)
   }

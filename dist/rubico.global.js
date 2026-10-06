@@ -74,7 +74,7 @@ const pipe = function (...args) {
     return args.reduce(funcConcat)
   }
 
-  if (typeof args[0] != 'function' && typeof args[1] == 'function') {
+  if (typeof args[1] == 'function') {
     const arg = args.shift()
     const pipeline = args.reduce(funcConcat)
     return isPromise(arg) ? arg.then(pipeline) : pipeline(arg)
@@ -99,7 +99,7 @@ const compose = function (...args) {
     return args.reduceRight(funcConcat)
   }
 
-  if (typeof args[0] != 'function' && typeof args[1] == 'function') {
+  if (typeof args[1] == 'function') {
     const arg = args.shift()
     const composition = args.reduceRight(funcConcat)
     return isPromise(arg) ? arg.then(composition) : composition(arg)
@@ -690,6 +690,12 @@ const nonfunctionsConditional = function (array, index) {
 }
 
 const switchCase = (...args) => {
+  if (typeof args[0] != 'function' && typeof args[1] == 'function') {
+    const arg = args.shift()
+    return isPromise(arg)
+      ? arg.then(curryArgs3(arrayConditional, args, __, -2))
+      : arrayConditional(args, [arg], -2)
+  }
   const values = args.pop()
   if (areAllValuesNonfunctions(values)) {
     return nonfunctionsConditional(values, -2)
@@ -3455,7 +3461,18 @@ const _pick = function (source, keys) {
   return result
 }
 
-const pick = function (arg0, arg1) {
+const pick = function (...args) {
+  const arg0 = args[0]
+  const arg1 = args[1]
+  if (typeof arg0 == 'string') {
+    return curry2(_pick, __, args)
+  }
+  if (typeof arg1 == 'string') {
+    const argumentObject = args.shift()
+    return isPromise(argumentObject)
+      ? argumentObject.then(curry2(_pick, __, args))
+      : _pick(argumentObject, args)
+  }
   if (arg1 == null) {
     return curry2(_pick, __, arg0)
   }
@@ -3544,7 +3561,18 @@ const _omit = function (source, paths) {
   return result
 }
 
-const omit = function (arg0, arg1) {
+const omit = function (...args) {
+  const arg0 = args[0]
+  const arg1 = args[1]
+  if (typeof arg0 == 'string') {
+    return curry2(_omit, __, args)
+  }
+  if (typeof arg1 == 'string') {
+    const argumentObject = args.shift()
+    return isPromise(argumentObject)
+      ? argumentObject.then(curry2(_omit, __, args))
+      : _omit(argumentObject, args)
+  }
   if (arg1 == null) {
     return curry2(_omit, __, arg0)
   }

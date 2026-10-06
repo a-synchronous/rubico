@@ -10,9 +10,9 @@
 
 const promiseAll = Promise.all.bind(Promise)
 
-const isArray = Array.isArray
-
 const isPromise = value => value != null && typeof value.then == 'function'
+
+const isArray = Array.isArray
 
 const areAnyValuesPromises = function (values) {
   if (isArray(values)) {
@@ -204,6 +204,12 @@ const curryArgs3 = function (baseFunc, arg0, arg1, arg2) {
 }
 
 const switchCase = (...args) => {
+  if (typeof args[0] != 'function' && typeof args[1] == 'function') {
+    const arg = args.shift()
+    return isPromise(arg)
+      ? arg.then(curryArgs3(arrayConditional, args, __, -2))
+      : arrayConditional(args, [arg], -2)
+  }
   const values = args.pop()
   if (areAllValuesNonfunctions(values)) {
     return nonfunctionsConditional(values, -2)
