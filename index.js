@@ -3039,6 +3039,13 @@ const areAllPredicatesTruthy = function (args, predicates) {
 }
 
 const and = function (...args) {
+  if (typeof args[1] == 'function') {
+    const arg = args.shift()
+    return isPromise(arg)
+      ? arg.then(curryArgs2(areAllPredicatesTruthy, __, args))
+      : areAllPredicatesTruthy([arg], args)
+  }
+
   const predicatesOrValues = args.pop()
   if (areAllValuesNonfunctions(predicatesOrValues)) {
     return areAllValuesTruthy(predicatesOrValues, -1)
@@ -3118,6 +3125,13 @@ const areAnyPredicatesTruthy = function (args, predicates) {
 }
 
 const or = function (...args) {
+  if (typeof args[1] == 'function') {
+    const arg = args.shift()
+    return isPromise(arg)
+      ? arg.then(curryArgs2(areAnyPredicatesTruthy, __, args))
+      : areAnyPredicatesTruthy([arg], args)
+  }
+
   const predicatesOrValues = args.pop()
   if (areAllValuesNonfunctions(predicatesOrValues)) {
     return areAnyNonfunctionsTruthy(predicatesOrValues, -1)

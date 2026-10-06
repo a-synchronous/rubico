@@ -200,6 +200,13 @@ const areAllPredicatesTruthy = function (args, predicates) {
 }
 
 const and = function (...args) {
+  if (typeof args[1] == 'function') {
+    const arg = args.shift()
+    return isPromise(arg)
+      ? arg.then(curryArgs2(areAllPredicatesTruthy, __, args))
+      : areAllPredicatesTruthy([arg], args)
+  }
+
   const predicatesOrValues = args.pop()
   if (areAllValuesNonfunctions(predicatesOrValues)) {
     return areAllValuesTruthy(predicatesOrValues, -1)
