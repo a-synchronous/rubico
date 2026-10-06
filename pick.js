@@ -77,7 +77,7 @@ const _pick = function (source, keys) {
  *
  * ```javascript [playground]
  * const pickAC = pick('a', 'c')
- * const objectAC = pick({ a: 1, b: 2, c: 3 })
+ * const objectAC = pickAC({ a: 1, b: 2, c: 3 })
  * console.log(objectAC)
  * ```
  *
