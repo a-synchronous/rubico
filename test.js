@@ -981,6 +981,24 @@ describe('rubico', () => {
         'hi',
       )
     })
+    it('immediate interface', async () => {
+      const result1 = switchCase(
+        1,
+        n => n % 2 == 0,
+        'even',
+        'odd'
+      )
+      assert.strictEqual(result1, 'odd')
+      const promise = switchCase(
+        Promise.resolve(2),
+        n => n % 2 == 0,
+        () => 'even',
+        () => 'odd'
+      )
+      assert.equal(promise.constructor, Promise)
+      const result2 = await promise
+      assert.strictEqual(result2, 'even')
+    })
     it('switches on values (including Promises), evaluating immediately', async () => {
       ase(switchCase([true, 'hey', 'ho']), 'hey')
       ase(await switchCase([

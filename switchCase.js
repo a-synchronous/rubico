@@ -1,4 +1,5 @@
 const promiseAll = require('./_internal/promiseAll')
+const isPromise = require('./_internal/isPromise')
 const areAnyValuesPromises = require('./_internal/areAnyValuesPromises')
 const arrayConditional = require('./_internal/arrayConditional')
 const areAllValuesNonfunctions = require('./_internal/areAllValuesNonfunctions')
@@ -80,6 +81,17 @@ const curryArgs3 = require('./_internal/curryArgs3')
  * console.log(myDrink)
  * ```
  *
+ * A single argument and one or more functions passed to `switchCase` executes immediately.
+ *
+ * ```javascript [playground]
+ * switchCase(
+ *   1,
+ *   n => n % 2 == 0,
+ *   () => 'even',
+ *   () => 'odd'
+ * )
+ * ```
+ *
  * Any promises in `arguments` are resolved for their values before further execution for the immediate interface only. Any promises in the conditional array are resolved before further execution for both the lazy and immediate interface.
  *
  * ```javascript [playground]
@@ -109,6 +121,12 @@ const curryArgs3 = require('./_internal/curryArgs3')
  * @execution series
  */
 const switchCase = (...args) => {
+  if (typeof args[0] != 'function' && typeof args[1] == 'function') {
+    const arg = args.shift()
+    return isPromise(arg)
+      ? arg.then(curryArgs3(arrayConditional, args, __, -2))
+      : arrayConditional(args, [arg], -2)
+  }
   const values = args.pop()
   if (areAllValuesNonfunctions(values)) {
     return nonfunctionsConditional(values, -2)
