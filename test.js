@@ -4136,6 +4136,17 @@ flatMap(
       ade(await pick(Promise.resolve(abc), ['a', 'd']), { a: 1 })
       ade(await pick(Promise.resolve(abc), ['d']), {})
     })
+    it('immediate interface', async () => {
+      const result1 = pick({ a: 1, b: 2, c: 3 }, 'a', 'c')
+      assert.deepEqual(result1, { a: 1, c: 3 })
+      const pickAC = pick('a', 'c')
+      const result2 = pickAC({ a: 1, b: 2, c: 3 })
+      assert.deepEqual(result2, { a: 1, c: 3 })
+      const promise1 = pick(Promise.resolve({ a: 1, b: 2, c: 3 }), 'a', 'c')
+      assert.equal(promise1.constructor, Promise)
+      const result3 = await promise1
+      assert.deepEqual(result3, { a: 1, c: 3 })
+    })
     it('picks properties off an object defined by array', async () => {
       ade(pick(['a'])(abc), { a: 1 })
       ade(pick(['a', 'd'])(abc), { a: 1 })

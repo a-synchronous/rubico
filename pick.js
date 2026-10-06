@@ -28,8 +28,9 @@ const _pick = function (source, keys) {
  * @synopsis
  * ```coffeescript [specscript]
  * pick(object Promise|Object, keys Array<string>) -> result Object
- *
  * pick(keys Array<string>)(object Object) -> result Object
+ * pick(object Promise|Object, ...keys Arguments<string>) -> result Object
+ * pick(...keys Arguments<string>)(object Object) -> result Object
  * ```
  *
  * @description
@@ -65,6 +66,21 @@ const _pick = function (source, keys) {
  * ])
  * ```
  *
+ * The keys of the constructed object may be provided to `pick` as arguments. The object is immediately constructed if the argument object is provided along with the keys.
+ *
+ * ```javascript [playground]
+ * const objectAC = pick({ a: 1, b: 2, c: 3 }, 'a', 'c')
+ * console.log(objectAC)
+ * ```
+ *
+ * The object is constructed on a later call if the argument object is not immediately provided.
+ *
+ * ```javascript [playground]
+ * const pickAC = pick('a', 'c')
+ * const objectAC = pick({ a: 1, b: 2, c: 3 })
+ * console.log(objectAC)
+ * ```
+ *
  * If the argument object is a promise, it is resolved for its value before further execution for the immediate interface only.
  *
  * ```javascript [playground]
@@ -80,7 +96,18 @@ const _pick = function (source, keys) {
  *  * [omit](/docs/omit)
  *  * [forEach](/docs/forEach)
  */
-const pick = function (arg0, arg1) {
+const pick = function (...args) {
+  const arg0 = args[0]
+  const arg1 = args[1]
+  if (typeof arg0 == 'string') {
+    return curry2(_pick, __, args)
+  }
+  if (typeof arg1 == 'string') {
+    const argumentObject = args.shift()
+    return isPromise(argumentObject)
+      ? argumentObject.then(curry2(_pick, __, args))
+      : _pick(argumentObject, args)
+  }
   if (arg1 == null) {
     return curry2(_pick, __, arg0)
   }
