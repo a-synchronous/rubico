@@ -281,6 +281,14 @@ describe('rubico', () => {
         n => n + 1,
       )
       assert.equal(result2, 10)
+      const promise = pipe(
+        Promise.resolve(1),
+        n => n + 1,
+        n => n + 1,
+      )
+      assert.equal(promise.constructor, Promise)
+      const result3 = await promise
+      assert.equal(result3, 3)
     })
     it('argument interface', async () => {
       const appendB = x => x + 'b'
@@ -412,6 +420,15 @@ describe('rubico', () => {
         ]),
         [9, 25, 49],
       )
+    })
+
+    it('executes immediately when passed a single argument and at least one function', async () => {
+      const result1 = compose(1, n => n ** 2, n => n + 1)
+      assert.equal(result1, 4)
+      const promise = compose(Promise.resolve(1), n => n ** 2, n => n + 1)
+      assert.equal(promise.constructor, Promise)
+      const result2 = await promise
+      assert.equal(result2, 4)
     })
 
     it('argument interface', async () => {

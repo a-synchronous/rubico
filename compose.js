@@ -1,5 +1,6 @@
 const curry2 = require('./_internal/curry2')
 const __ = require('./_internal/placeholder')
+const isPromise = require('./_internal/isPromise')
 const promiseAll = require('./_internal/promiseAll')
 const funcApply = require('./_internal/funcApply')
 const areAnyValuesPromises = require('./_internal/areAnyValuesPromises')
@@ -17,6 +18,7 @@ const funcConcat = require('./_internal/funcConcat')
  *
  * compose(funcs)(...arguments) -> result Promise|any
  * compose(...arguments, funcs) -> result Promise|any
+ * compose(argument, ...funcs) -> result Promise|any
  * compose(...funcs)(...arguments) -> result Promise|any
  * ```
  *
@@ -45,6 +47,17 @@ const funcConcat = require('./_internal/funcConcat')
  * console.log(composition(1))
  * ```
  *
+ * A single argument and one or more functions passed to `compose` executes immediately.
+ *
+ * ```javascript [playground]
+ * const f = x => x * 2
+ * const g = x => x + 1
+ *
+ * const result = compose(1, f, g)
+ *
+ * console.log(result)
+ * ```
+ *
  * Any promises in `arguments` are resolved for their values before further execution for the immediate interface only.
  *
  * ```javascript [playground]
@@ -62,6 +75,12 @@ const funcConcat = require('./_internal/funcConcat')
 const compose = function (...args) {
   if (typeof args[0] == 'function') {
     return args.reduceRight(funcConcat)
+  }
+
+  if (typeof args[0] != 'function' && typeof args[1] == 'function') {
+    const arg = args.shift()
+    const composition = args.reduceRight(funcConcat)
+    return isPromise(arg) ? arg.then(composition) : composition(arg)
   }
 
   const funcs = args.pop()
