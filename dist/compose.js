@@ -29,13 +29,13 @@ const curry2 = function (baseFunc, arg0, arg1) {
     : curry2ResolveArg1(baseFunc, arg0)
 }
 
+const isPromise = value => value != null && typeof value.then == 'function'
+
 const promiseAll = Promise.all.bind(Promise)
 
 const funcApply = (func, args) => func(...args)
 
 const isArray = Array.isArray
-
-const isPromise = value => value != null && typeof value.then == 'function'
 
 const areAnyValuesPromises = function (values) {
   if (isArray(values)) {
@@ -71,6 +71,12 @@ const funcConcat = (
 const compose = function (...args) {
   if (typeof args[0] == 'function') {
     return args.reduceRight(funcConcat)
+  }
+
+  if (typeof args[0] != 'function' && typeof args[1] == 'function') {
+    const arg = args.shift()
+    const composition = args.reduceRight(funcConcat)
+    return isPromise(arg) ? arg.then(composition) : composition(arg)
   }
 
   const funcs = args.pop()

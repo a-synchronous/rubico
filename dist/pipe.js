@@ -8,9 +8,9 @@
   else (root.pipe = pipe) // Browser
 }(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
 
-const isArray = Array.isArray
-
 const isPromise = value => value != null && typeof value.then == 'function'
+
+const isArray = Array.isArray
 
 const areAnyValuesPromises = function (values) {
   if (isArray(values)) {
@@ -72,6 +72,12 @@ const curry2 = function (baseFunc, arg0, arg1) {
 const pipe = function (...args) {
   if (typeof args[0] == 'function') {
     return args.reduce(funcConcat)
+  }
+
+  if (typeof args[0] != 'function' && typeof args[1] == 'function') {
+    const arg = args.shift()
+    const pipeline = args.reduce(funcConcat)
+    return isPromise(arg) ? arg.then(pipeline) : pipeline(arg)
   }
 
   const funcs = args.pop()

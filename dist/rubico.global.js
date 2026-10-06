@@ -8,9 +8,9 @@
   }
 }(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
 
-const isArray = Array.isArray
-
 const isPromise = value => value != null && typeof value.then == 'function'
+
+const isArray = Array.isArray
 
 const areAnyValuesPromises = function (values) {
   if (isArray(values)) {
@@ -74,6 +74,12 @@ const pipe = function (...args) {
     return args.reduce(funcConcat)
   }
 
+  if (typeof args[0] != 'function' && typeof args[1] == 'function') {
+    const arg = args.shift()
+    const pipeline = args.reduce(funcConcat)
+    return isPromise(arg) ? arg.then(pipeline) : pipeline(arg)
+  }
+
   const funcs = args.pop()
   const pipeline = funcs.reduce(funcConcat)
 
@@ -91,6 +97,12 @@ const pipe = function (...args) {
 const compose = function (...args) {
   if (typeof args[0] == 'function') {
     return args.reduceRight(funcConcat)
+  }
+
+  if (typeof args[0] != 'function' && typeof args[1] == 'function') {
+    const arg = args.shift()
+    const composition = args.reduceRight(funcConcat)
+    return isPromise(arg) ? arg.then(composition) : composition(arg)
   }
 
   const funcs = args.pop()
