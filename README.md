@@ -1,5 +1,5 @@
 # [Rubico](https://rubico.land/)
-![rubico](https://raw.githubusercontent.com/a-synchronous/assets/master/rubico-logo.png)
+![rubico](https://rubico.land/assets/rubico-logo-3-2.jpg)
 > a shallow river in northeastern Italy, just south of Ravenna
 
 Source code: [GitHub](https://github.com/a-synchronous/rubico) |
