@@ -87,9 +87,9 @@ A note from the author:
 > At a certain point in my career, I grew frustrated with the entanglement of my own code. While looking for something better, I found functional programming. I was excited by the idea of functional composition, but disillusioned by the redundancy of effectful types. I started Rubico to capitalize on the prior while rebuking the latter. Many iterations since then, the library has grown into something I personally enjoy using, and continue to use to this day.
 
 [A]synchronous functional programming is founded on the following principles:
- * asynchronous code should be simple
- * functional style should not care about async
- * functional transformations should be composable, performant, and simple to express
+ * Asynchronous code should be simple.
+ * Functional style should not care about async.
+ * Functional transformations should be composable, performant, and simple to express.
 
 When you import this library, you obtain the freedom that comes from having those three points fulfilled. The result is something you may enjoy.
 
