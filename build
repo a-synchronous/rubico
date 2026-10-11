@@ -150,6 +150,12 @@ const build = pipe([
         path,
         distPath: `${__dirname}/dist/${functionName}.mjs`,
       })
+      bundles.push({
+        name: functionName,
+        type: 'esm',
+        path,
+        distPath: `${__dirname}/${functionName}.mjs`,
+      })
     }
 
     for (const functionName of Object.keys(x)) {
@@ -183,6 +189,12 @@ const build = pipe([
         type: 'esm',
         path,
         distPath: `${__dirname}/dist/x/${functionName}.mjs`,
+      })
+      bundles.push({
+        name: functionName,
+        type: 'esm',
+        path,
+        distPath: `${__dirname}/x/${functionName}.mjs`,
       })
     }
 
@@ -282,6 +294,13 @@ const build = pipe([
       type: 'esm',
       path: `${__dirname}/Transducer.js`,
       distPath: `${__dirname}/dist/Transducer.mjs`,
+    })
+
+    bundles.push({
+      name: 'Transducer',
+      type: 'esm',
+      path: `${__dirname}/Transducer.js`,
+      distPath: `${__dirname}/Transducer.mjs`,
     })
 
     return bundles

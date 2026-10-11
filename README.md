@@ -40,8 +40,7 @@ with [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm):
 npm i rubico
 ```
 
-
-require Rubico in [CommonJS](https://nodejs.org/docs/latest/api/modules.html#modules-commonjs-modules):
+require Rubico with Node.js [CommonJS modules](https://nodejs.org/docs/latest/api/modules.html#modules-commonjs-modules):
 ```javascript
 // import rubico core globally
 require('rubico/global')
@@ -62,7 +61,6 @@ const defaultsDeep = require('rubico/x/defaultsDeep')
 const Transducer = require('rubico/Transducer')
 ```
 
-
 import Rubico in the browser:
 ```html [htmlmixed]
 <!-- import rubico core globally -->
@@ -79,6 +77,27 @@ import Rubico in the browser:
 
 <!-- import rubico's Transducer module -->
 <script src="https://cdn.jsdelivr.net/npm/rubico/dist/Transducer.min.js"></script>
+```
+
+import Rubico with Node.js [ECMAScript modules](https://nodejs.org/api/esm.html):
+```javascript
+// import rubico core globally
+import "rubico/global.mjs"
+
+// import rubico core as rubico
+import rubico from "rubico/rubico.mjs"
+
+// import an operator from rubico core
+import pipe from "rubico/pipe.mjs"
+
+// import rubico/x as x
+import x from "rubico/x/index.mjs"
+
+// import an operator from rubico/x
+import defaultsDeep from "rubico/x/defaultsDeep.mjs"
+
+// import rubico's Transducer module
+import Transducer from "rubico/Transducer.mjs"
 ```
 
 ## Motivation
