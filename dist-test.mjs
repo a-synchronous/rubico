@@ -1,8 +1,7 @@
 import assert from 'assert'
 import walk from './walk.mjs'
 
-const distTest = async function main() {
-  await import('./global.mjs')
+function assertGlobal() {
   assert.equal(typeof globalThis.pipe, 'function')
   assert.equal(typeof globalThis.compose, 'function')
   assert.equal(typeof globalThis.tap, 'function')
@@ -33,71 +32,84 @@ const distTest = async function main() {
   assert.equal(typeof globalThis.always, 'function')
   assert.equal(typeof globalThis.curry, 'function')
   assert.equal(typeof globalThis.__, 'symbol')
-  assert.equal(typeof globalThis.Transducer, 'object')
+}
+
+function assertRubico(rubico) {
+  assert.equal(Object.keys(rubico).length, 31)
+  assert.equal(typeof rubico.pipe, 'function')
+  assert.equal(typeof rubico.compose, 'function')
+  assert.equal(typeof rubico.tap, 'function')
+  assert.equal(typeof rubico.all, 'function')
+  assert.equal(typeof rubico.assign, 'function')
+  assert.equal(typeof rubico.tryCatch, 'function')
+  assert.equal(typeof rubico.switchCase, 'function')
+  assert.equal(typeof rubico.map, 'function')
+  assert.equal(typeof rubico.filter, 'function')
+  assert.equal(typeof rubico.reduce, 'function')
+  assert.equal(typeof rubico.transform, 'function')
+  assert.equal(typeof rubico.flatMap, 'function')
+  assert.equal(typeof rubico.forEach, 'function')
+  assert.equal(typeof rubico.some, 'function')
+  assert.equal(typeof rubico.every, 'function')
+  assert.equal(typeof rubico.and, 'function')
+  assert.equal(typeof rubico.or, 'function')
+  assert.equal(typeof rubico.not, 'function')
+  assert.equal(typeof rubico.gt, 'function')
+  assert.equal(typeof rubico.lt, 'function')
+  assert.equal(typeof rubico.gte, 'function')
+  assert.equal(typeof rubico.lte, 'function')
+  assert.equal(typeof rubico.get, 'function')
+  assert.equal(typeof rubico.set, 'function')
+  assert.equal(typeof rubico.pick, 'function')
+  assert.equal(typeof rubico.omit, 'function')
+  assert.equal(typeof rubico.thunkify, 'function')
+  assert.equal(typeof rubico.always, 'function')
+  assert.equal(typeof rubico.curry, 'function')
+  assert.equal(typeof rubico.__, 'symbol')
+}
+
+function assertTransducer(Transducer) {
+  assert.equal(Object.keys(Transducer).length, 6)
+  assert.equal(typeof Transducer.map, 'function')
+  assert.equal(typeof Transducer.filter, 'function')
+  assert.equal(typeof Transducer.flatMap, 'function')
+  assert.equal(typeof Transducer.forEach, 'function')
+  assert.equal(typeof Transducer.passthrough, 'function')
+  assert.equal(typeof Transducer.tryCatch, 'function')
+}
+
+const distTest = async function main() {
+  await import('./global.mjs')
+  assertGlobal()
 
   const filepaths = []
   for await (const filepath of walk(`${import.meta.dirname}/dist`)) {
     filepaths.push(filepath)
   }
-  filepaths.push(`${import.meta.dirname}/index.js`)
+  filepaths.push(`${import.meta.dirname}/rubico.mjs`)
   filepaths.push(`${import.meta.dirname}/es.js`)
 
   for (const path of filepaths) {
     if (
-      path.includes('.es')
-      || path.endsWith('.mjs')
-      || path.includes('es.js')
+      path.endsWith('.mjs')
+      || path.endsWith('.es.js')
+      || path.endsWith('/es.js')
+      || path.endsWith('.es.min.js')
     ) {
       const module = await import(path)
-      console.log('Successfully imported', path)
+      const name = path.split('/').slice(-1)[0]
+      console.log('Successfully imported', name)
 
-      if (
-        path.includes('rubico.js')
-        || path.includes('rubico.min.js')
-        || path.includes('index.js')
-      ) {
-        assert.equal(Object.keys(module.default).length, 31)
-        assert.equal(typeof module.default.pipe, 'function')
-        assert.equal(typeof module.default.compose, 'function')
-        assert.equal(typeof module.default.tap, 'function')
-        assert.equal(typeof module.default.all, 'function')
-        assert.equal(typeof module.default.assign, 'function')
-        assert.equal(typeof module.default.tryCatch, 'function')
-        assert.equal(typeof module.default.switchCase, 'function')
-        assert.equal(typeof module.default.map, 'function')
-        assert.equal(typeof module.default.filter, 'function')
-        assert.equal(typeof module.default.reduce, 'function')
-        assert.equal(typeof module.default.transform, 'function')
-        assert.equal(typeof module.default.flatMap, 'function')
-        assert.equal(typeof module.default.forEach, 'function')
-        assert.equal(typeof module.default.some, 'function')
-        assert.equal(typeof module.default.every, 'function')
-        assert.equal(typeof module.default.and, 'function')
-        assert.equal(typeof module.default.or, 'function')
-        assert.equal(typeof module.default.not, 'function')
-        assert.equal(typeof module.default.gt, 'function')
-        assert.equal(typeof module.default.lt, 'function')
-        assert.equal(typeof module.default.gte, 'function')
-        assert.equal(typeof module.default.lte, 'function')
-        assert.equal(typeof module.default.get, 'function')
-        assert.equal(typeof module.default.set, 'function')
-        assert.equal(typeof module.default.pick, 'function')
-        assert.equal(typeof module.default.omit, 'function')
-        assert.equal(typeof module.default.thunkify, 'function')
-        assert.equal(typeof module.default.always, 'function')
-        assert.equal(typeof module.default.curry, 'function')
-        assert.equal(typeof module.default.__, 'symbol')
-      } else if (
-        path.includes('Transducer.js')
-        || path.includes('Transducer.min.js')
-      ) {
-        assert.equal(Object.keys(module.default).length, 6)
-        assert.equal(typeof module.default.map, 'function')
-        assert.equal(typeof module.default.filter, 'function')
-        assert.equal(typeof module.default.flatMap, 'function')
-        assert.equal(typeof module.default.forEach, 'function')
-        assert.equal(typeof module.default.passthrough, 'function')
-        assert.equal(typeof module.default.tryCatch, 'function')
+      if (name.includes('rubico.global')) {
+        assertGlobal()
+      } else if (name.includes('rubico') || name.includes('index.js')) {
+        assertRubico(module.default)
+      } else if (name.includes('Transducer')) {
+        assertTransducer(module.default)
+      } else if (module.default == __) {
+        assert(typeof module.default, 'symbol')
+      } else {
+        assert(typeof module.default, 'function')
       }
     }
   }

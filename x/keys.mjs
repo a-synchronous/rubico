@@ -1,0 +1,11 @@
+/**
+ * rubico may be freely distributed under the CFOSS license.
+ */
+
+const objectKeys = Object.keys
+
+const keys = object => object == null ? []
+  : typeof object.keys == 'function' ? [...object.keys()]
+  : objectKeys(object)
+
+export default keys

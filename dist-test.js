@@ -1,8 +1,7 @@
 const assert = require('assert')
 const walk = require('./walk')
 
-const distTest = async function main() {
-  require('./global')
+function assertGlobal() {
   assert.equal(typeof globalThis.pipe, 'function')
   assert.equal(typeof globalThis.compose, 'function')
   assert.equal(typeof globalThis.tap, 'function')
@@ -33,74 +32,85 @@ const distTest = async function main() {
   assert.equal(typeof globalThis.always, 'function')
   assert.equal(typeof globalThis.curry, 'function')
   assert.equal(typeof globalThis.__, 'symbol')
-  assert.equal(typeof globalThis.Transducer, 'object')
+}
+
+function assertRubico(rubico) {
+  assert.equal(Object.keys(rubico).length, 31)
+  assert.equal(typeof rubico.pipe, 'function')
+  assert.equal(typeof rubico.compose, 'function')
+  assert.equal(typeof rubico.tap, 'function')
+  assert.equal(typeof rubico.all, 'function')
+  assert.equal(typeof rubico.assign, 'function')
+  assert.equal(typeof rubico.tryCatch, 'function')
+  assert.equal(typeof rubico.switchCase, 'function')
+  assert.equal(typeof rubico.map, 'function')
+  assert.equal(typeof rubico.filter, 'function')
+  assert.equal(typeof rubico.reduce, 'function')
+  assert.equal(typeof rubico.transform, 'function')
+  assert.equal(typeof rubico.flatMap, 'function')
+  assert.equal(typeof rubico.forEach, 'function')
+  assert.equal(typeof rubico.some, 'function')
+  assert.equal(typeof rubico.every, 'function')
+  assert.equal(typeof rubico.and, 'function')
+  assert.equal(typeof rubico.or, 'function')
+  assert.equal(typeof rubico.not, 'function')
+  assert.equal(typeof rubico.gt, 'function')
+  assert.equal(typeof rubico.lt, 'function')
+  assert.equal(typeof rubico.gte, 'function')
+  assert.equal(typeof rubico.lte, 'function')
+  assert.equal(typeof rubico.get, 'function')
+  assert.equal(typeof rubico.set, 'function')
+  assert.equal(typeof rubico.pick, 'function')
+  assert.equal(typeof rubico.omit, 'function')
+  assert.equal(typeof rubico.thunkify, 'function')
+  assert.equal(typeof rubico.always, 'function')
+  assert.equal(typeof rubico.curry, 'function')
+  assert.equal(typeof rubico.__, 'symbol')
+}
+
+function assertTransducer(Transducer) {
+  assert.equal(Object.keys(Transducer).length, 6)
+  assert.equal(typeof Transducer.map, 'function')
+  assert.equal(typeof Transducer.filter, 'function')
+  assert.equal(typeof Transducer.flatMap, 'function')
+  assert.equal(typeof Transducer.forEach, 'function')
+  assert.equal(typeof Transducer.passthrough, 'function')
+  assert.equal(typeof Transducer.tryCatch, 'function')
+}
+
+const distTest = async function main() {
+  require('./global')
+  assertGlobal()
 
   const filepaths = []
   for await (const filepath of walk(`${__dirname}/dist`)) {
     filepaths.push(filepath)
   }
+  filepaths.push(`${__dirname}/rubico.js`)
   filepaths.push(`${__dirname}/index.js`)
-  filepaths.push(`${__dirname}/es.js`)
 
   for (const path of filepaths) {
     if (
-      path.includes('.es')
-      || path.endsWith('.mjs')
-      || path.includes('es.js')
+      path.endsWith('.mjs')
+      || path.endsWith('.es.js')
+      || path.endsWith('.es.min.js')
     ) {
       // test in dist-test.mjs
-    }
-    else {
+    } else {
       const required = require(path)
-      console.log('Successfully required', path)
+      const name = path.split('/').slice(-1)[0]
+      console.log('Successfully required', name)
 
-      if (
-        path.includes('rubico.js')
-        || path.includes('rubico.min.js')
-        || path.includes('index.js')
-      ) {
-        assert.equal(Object.keys(required).length, 31)
-        assert.equal(typeof required.pipe, 'function')
-        assert.equal(typeof required.compose, 'function')
-        assert.equal(typeof required.tap, 'function')
-        assert.equal(typeof required.all, 'function')
-        assert.equal(typeof required.assign, 'function')
-        assert.equal(typeof required.tryCatch, 'function')
-        assert.equal(typeof required.switchCase, 'function')
-        assert.equal(typeof required.map, 'function')
-        assert.equal(typeof required.filter, 'function')
-        assert.equal(typeof required.reduce, 'function')
-        assert.equal(typeof required.transform, 'function')
-        assert.equal(typeof required.flatMap, 'function')
-        assert.equal(typeof required.forEach, 'function')
-        assert.equal(typeof required.some, 'function')
-        assert.equal(typeof required.every, 'function')
-        assert.equal(typeof required.and, 'function')
-        assert.equal(typeof required.or, 'function')
-        assert.equal(typeof required.not, 'function')
-        assert.equal(typeof required.gt, 'function')
-        assert.equal(typeof required.lt, 'function')
-        assert.equal(typeof required.gte, 'function')
-        assert.equal(typeof required.lte, 'function')
-        assert.equal(typeof required.get, 'function')
-        assert.equal(typeof required.set, 'function')
-        assert.equal(typeof required.pick, 'function')
-        assert.equal(typeof required.omit, 'function')
-        assert.equal(typeof required.thunkify, 'function')
-        assert.equal(typeof required.always, 'function')
-        assert.equal(typeof required.curry, 'function')
-        assert.equal(typeof required.__, 'symbol')
-      } else if (
-        path.includes('Transducer.js')
-        || path.includes('Transducer.min.js')
-      ) {
-        assert.equal(Object.keys(required).length, 6)
-        assert.equal(typeof required.map, 'function')
-        assert.equal(typeof required.filter, 'function')
-        assert.equal(typeof required.flatMap, 'function')
-        assert.equal(typeof required.forEach, 'function')
-        assert.equal(typeof required.passthrough, 'function')
-        assert.equal(typeof required.tryCatch, 'function')
+      if (name.includes('rubico.global')) {
+        assertGlobal()
+      } else if (name.includes('rubico') || name.includes('index.js')) {
+        assertRubico(required)
+      } else if (name.includes('Transducer')) {
+        assertTransducer(required)
+      } else if (required == __) {
+        assert(typeof required, 'symbol')
+      } else {
+        assert(typeof required, 'function')
       }
     }
   }
