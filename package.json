@@ -17,6 +17,7 @@
     "monad",
     "index.js",
     "es.js",
+    "rubico.mjs",
     "global.js",
     "global.mjs",
     "pipe.js",
