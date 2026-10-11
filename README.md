@@ -85,7 +85,7 @@ import Rubico with Node.js [ECMAScript modules](https://nodejs.org/api/esm.html)
 import "rubico/global.mjs"
 
 // import rubico core as rubico
-import rubico from "rubico/rubico.mjs"
+import rubico from "rubico"
 
 // import an operator from rubico core
 import pipe from "rubico/pipe.mjs"
