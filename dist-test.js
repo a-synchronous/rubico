@@ -114,6 +114,9 @@ const distTest = async function main() {
       }
     }
   }
+
+  const x = require('./x')
+  assert.equal(Object.keys(x).length, 33)
 }
 
 distTest()

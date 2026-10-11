@@ -88,6 +88,7 @@ const distTest = async function main() {
   }
   filepaths.push(`${import.meta.dirname}/rubico.mjs`)
   filepaths.push(`${import.meta.dirname}/es.js`)
+  filepaths.push(`${import.meta.dirname}/x/index.mjs`)
 
   for (const path of filepaths) {
     if (
@@ -113,6 +114,9 @@ const distTest = async function main() {
       }
     }
   }
+
+  const moduleX = await import('./x/index.mjs')
+  assert.equal(Object.keys(moduleX.default).length, 33)
 }
 
 distTest()
