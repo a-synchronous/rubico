@@ -690,11 +690,17 @@ const nonfunctionsConditional = function (array, index) {
 }
 
 const switchCase = (...args) => {
-  if (typeof args[0] != 'function' && typeof args[1] == 'function') {
+  if (typeof args[0] == 'function') {
+    return curryArgs3(arrayConditional, args, __, -2)
+  }
+  if (typeof args[1] == 'function') {
     const arg = args.shift()
     return isPromise(arg)
       ? arg.then(curryArgs3(arrayConditional, args, __, -2))
       : arrayConditional(args, [arg], -2)
+  }
+  if (args.length > 2 && areAllValuesNonfunctions(args)) {
+    return nonfunctionsConditional(args, -2)
   }
   const values = args.pop()
   if (areAllValuesNonfunctions(values)) {
