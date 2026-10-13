@@ -19,10 +19,12 @@ const curryArgs3 = require('./_internal/curryArgs3')
  * conditionalValues Array<Promise|boolean|any>
  * conditionalFunctionsOrValues Array<Predicate|Function|Promise|boolean|any>
  *
- * switchCase(conditionalValues) -> result Promise|any
  * switchCase(...arguments, conditionalFunctionsOrValues) -> result Promise|any
  * switchCase(argument, ...conditionalFunctionsOrValues) -> result Promise|any
+ * switchCase(conditionalValues) -> result Promise|any
  * switchCase(conditionalFunctionsOrValues)(...arguments) -> result Promise|any
+ * switchCase(...conditionalValues) -> result Promise|any
+ * switchCase(...conditionalFunctionsOrValues)(...arguments) -> result Promise|any
  * ```
  *
  * @description
@@ -33,21 +35,22 @@ const curryArgs3 = require('./_internal/curryArgs3')
  *   return n % 2 == 1
  * }
  *
- * switchCase(1, [
+ * switchCase(
+ *   1,
  *   isOdd,
  *   n => console.log(`${n} is odd`),
  *   n => console.log(`${n} is even`),
- * ])
+ * )
  * ```
  *
- * `switchCase` supports a lazy interface for composability.
+ * `switchCase` supports a composable interface.
  *
  * ```javascript [playground]
- * const fruitsGuesser = switchCase([
+ * const fruitsGuesser = switchCase(
  *   fruit => fruit.color == 'yellow',
  *   fruit => fruit.name + ' is possibly a banana',
  *   fruit => fruit.name + ' is possibly not a banana',
- * ])
+ * )
  *
  * const guess1 = fruitsGuesser({ name: 'plantain', color: 'yellow' })
  * const guess2 = fruitsGuesser({ name: 'apple', color: 'red' })
@@ -59,17 +62,17 @@ const curryArgs3 = require('./_internal/curryArgs3')
  * Any item of the conditional array passed to switchCase can be a nonfunction (object or primitive) value.
  *
  * ```javascript [playground]
- * function identity (value) {
- *   return value
+ * function isSumGreaterThan3(a, b) {
+ *   return a + b > 3
  * }
  *
- * const value = switchCase(false, [
- *   identity,
- *   'non-function',
- *   'default-value',
+ * const answer = switchCase(1, 3, [
+ *   isSumGreaterThan3,
+ *   'sum is greater than 3',
+ *   'sum is not greater than 3',
  * ])
  *
- * console.log(value)
+ * console.log(answer)
  * ```
  *
  * If every item in the conditional array is a nonfunction value, `switchCase` executes immediately.
@@ -77,7 +80,7 @@ const curryArgs3 = require('./_internal/curryArgs3')
  * ```javascript [playground]
  * const age = 26
  *
- * const myDrink = switchCase([age >= 21, 'Water', 'Juice'])
+ * const myDrink = switchCase(age >= 21, 'Water', 'Juice')
  *
  * console.log(myDrink)
  * ```
@@ -122,11 +125,17 @@ const curryArgs3 = require('./_internal/curryArgs3')
  * @execution series
  */
 const switchCase = (...args) => {
-  if (typeof args[0] != 'function' && typeof args[1] == 'function') {
+  if (typeof args[0] == 'function') {
+    return curryArgs3(arrayConditional, args, __, -2)
+  }
+  if (typeof args[1] == 'function') {
     const arg = args.shift()
     return isPromise(arg)
       ? arg.then(curryArgs3(arrayConditional, args, __, -2))
       : arrayConditional(args, [arg], -2)
+  }
+  if (args.length > 2 && areAllValuesNonfunctions(args)) {
+    return nonfunctionsConditional(args, -2)
   }
   const values = args.pop()
   if (areAllValuesNonfunctions(values)) {

@@ -981,6 +981,19 @@ describe('rubico', () => {
         'hi',
       )
     })
+    it('nonfunction arguments', async () => {
+      const result1 = switchCase(true, 1, 0)
+      assert.strictEqual(result1, 1)
+      const result2 = switchCase(false, 1, 0)
+      assert.strictEqual(result2, 0)
+    })
+    it('function arguments composable interface', async () => {
+      const lazy1 = switchCase(n => n > 1, () => "gt 1", () => "not gt 1")
+      const result1 = lazy1(0)
+      assert.strictEqual(result1, "not gt 1")
+      const result2 = lazy1(2)
+      assert.strictEqual(result2, "gt 1")
+    })
     it('immediate interface', async () => {
       const result1 = switchCase(
         1,
