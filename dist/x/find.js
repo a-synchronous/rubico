@@ -6,7 +6,7 @@
   if (typeof module == 'object') (module.exports = find) // CommonJS
   else if (typeof define == 'function') define(() => find) // AMD
   else (root.find = find) // Browser
-}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+}(typeof globalThis == 'object' ? globalThis : this, (function () {
 
 const isArray = Array.isArray
 

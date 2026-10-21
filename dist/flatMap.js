@@ -6,7 +6,7 @@
   if (typeof module == 'object') (module.exports = flatMap) // CommonJS
   else if (typeof define == 'function') define(() => flatMap) // AMD
   else (root.flatMap = flatMap) // Browser
-}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+}(typeof globalThis == 'object' ? globalThis : this, (function () {
 
 const isPromise = value => value != null && typeof value.then == 'function'
 

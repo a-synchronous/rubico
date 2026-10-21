@@ -6,7 +6,7 @@
   if (typeof module == 'object') (module.exports = isString) // CommonJS
   else if (typeof define == 'function') define(() => isString) // AMD
   else (root.isString = isString) // Browser
-}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+}(typeof globalThis == 'object' ? globalThis : this, (function () {
 
 const isString = function (value) {
   return typeof value == 'string'

@@ -6,7 +6,7 @@
   if (typeof module == 'object') (module.exports = switchCase) // CommonJS
   else if (typeof define == 'function') define(() => switchCase) // AMD
   else (root.switchCase = switchCase) // Browser
-}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+}(typeof globalThis == 'object' ? globalThis : this, (function () {
 
 const promiseAll = Promise.all.bind(Promise)
 

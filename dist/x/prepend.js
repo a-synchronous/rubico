@@ -6,7 +6,7 @@
   if (typeof module == 'object') (module.exports = prepend) // CommonJS
   else if (typeof define == 'function') define(() => prepend) // AMD
   else (root.prepend = prepend) // Browser
-}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+}(typeof globalThis == 'object' ? globalThis : this, (function () {
 
 const isString = function (value) {
   return typeof value == 'string'

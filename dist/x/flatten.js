@@ -6,7 +6,7 @@
   if (typeof module == 'object') (module.exports = flatten) // CommonJS
   else if (typeof define == 'function') define(() => flatten) // AMD
   else (root.flatten = flatten) // Browser
-}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+}(typeof globalThis == 'object' ? globalThis : this, (function () {
 
 const isArray = Array.isArray
 

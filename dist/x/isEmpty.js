@@ -6,7 +6,7 @@
   if (typeof module == 'object') (module.exports = isEmpty) // CommonJS
   else if (typeof define == 'function') define(() => isEmpty) // AMD
   else (root.isEmpty = isEmpty) // Browser
-}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+}(typeof globalThis == 'object' ? globalThis : this, (function () {
 
 const objectKeysLength = object => {
   let numKeys = 0

@@ -6,7 +6,7 @@
   if (typeof module == 'object') (module.exports = filter) // CommonJS
   else if (typeof define == 'function') define(() => filter) // AMD
   else (root.filter = filter) // Browser
-}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+}(typeof globalThis == 'object' ? globalThis : this, (function () {
 const __ = Symbol.for('placeholder')
 
 // argument resolver for curry2

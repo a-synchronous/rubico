@@ -6,7 +6,7 @@
   if (typeof module == 'object') (module.exports = unless) // CommonJS
   else if (typeof define == 'function') define(() => unless) // AMD
   else (root.unless = unless) // Browser
-}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+}(typeof globalThis == 'object' ? globalThis : this, (function () {
 
 const isPromise = value => value != null && typeof value.then == 'function'
 

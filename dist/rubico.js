@@ -6,7 +6,7 @@
   if (typeof module == 'object') (module.exports = rubico) // CommonJS
   else if (typeof define == 'function') define(() => rubico) // AMD
   else (root.rubico = rubico) // Browser
-}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+}(typeof globalThis == 'object' ? globalThis : this, (function () {
 
 const isPromise = value => value != null && typeof value.then == 'function'
 
@@ -3247,7 +3247,7 @@ const leftResolverRightValueCompare = function (args, comparator, left, right) {
 }
 
 // leftValueRightResolverCompare(
-//   args Array, comparator function, left any, right any,
+//   args Array, comparator function, left any, right function,
 // ) -> Promise|boolean
 const leftValueRightResolverCompare = function (args, comparator, left, right) {
   const rightResult = right(...args)
@@ -3257,8 +3257,26 @@ const leftValueRightResolverCompare = function (args, comparator, left, right) {
   return comparator(left, rightResult)
 }
 
+// leftValueRightValueCompare(
+//   comparator function, left any, right any,
+// ) -> Promise|boolean
+const leftValueRightValueCompare = function (comparator, left, right) {
+  if (isPromise(left) || isPromise(right)) {
+    return promiseAll([left, right]).then(spread2(comparator))
+  }
+  return comparator(left, right)
+}
+
 // ComparisonOperator(comparator function) -> operator function
 const ComparisonOperator = comparator => function operator(...args) {
+  if (args.length < 2) {
+    const left = args[0]
+    if (isPromise(left)) {
+      return curry3(leftValueRightValueCompare, comparator, left, __)
+    }
+    return curry2(ComparisonOperator(comparator), left, __)
+  }
+
   const right = args.pop()
   const left = args.pop()
   const isLeftResolver = typeof left == 'function',

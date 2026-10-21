@@ -6,7 +6,7 @@
   if (typeof module == 'object') (module.exports = noop) // CommonJS
   else if (typeof define == 'function') define(() => noop) // AMD
   else (root.noop = noop) // Browser
-}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+}(typeof globalThis == 'object' ? globalThis : this, (function () {
 
 const noop = function noop() {}
 

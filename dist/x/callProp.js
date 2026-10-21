@@ -6,7 +6,7 @@
   if (typeof module == 'object') (module.exports = callProp) // CommonJS
   else if (typeof define == 'function') define(() => callProp) // AMD
   else (root.callProp = callProp) // Browser
-}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+}(typeof globalThis == 'object' ? globalThis : this, (function () {
 
 const callProp = (property, ...args) => function callingProp(object) {
   return object[property](...args)

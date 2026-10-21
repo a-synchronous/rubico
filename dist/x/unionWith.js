@@ -6,7 +6,7 @@
   if (typeof module == 'object') (module.exports = unionWith) // CommonJS
   else if (typeof define == 'function') define(() => unionWith) // AMD
   else (root.unionWith = unionWith) // Browser
-}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+}(typeof globalThis == 'object' ? globalThis : this, (function () {
 
 const isArray = Array.isArray
 

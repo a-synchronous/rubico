@@ -6,7 +6,7 @@
   if (typeof module == 'object') (module.exports = last) // CommonJS
   else if (typeof define == 'function') define(() => last) // AMD
   else (root.last = last) // Browser
-}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+}(typeof globalThis == 'object' ? globalThis : this, (function () {
 
 const last = value => {
   if (value == null) {

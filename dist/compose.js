@@ -6,7 +6,7 @@
   if (typeof module == 'object') (module.exports = compose) // CommonJS
   else if (typeof define == 'function') define(() => compose) // AMD
   else (root.compose = compose) // Browser
-}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+}(typeof globalThis == 'object' ? globalThis : this, (function () {
 const __ = Symbol.for('placeholder')
 
 // argument resolver for curry2

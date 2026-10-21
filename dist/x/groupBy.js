@@ -6,7 +6,7 @@
   if (typeof module == 'object') (module.exports = groupBy) // CommonJS
   else if (typeof define == 'function') define(() => groupBy) // AMD
   else (root.groupBy = groupBy) // Browser
-}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+}(typeof globalThis == 'object' ? globalThis : this, (function () {
 // () => Map<>
 const EmptyMap = () => new Map()
 

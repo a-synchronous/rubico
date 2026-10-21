@@ -6,7 +6,7 @@
   if (typeof module == 'object') (module.exports = keys) // CommonJS
   else if (typeof define == 'function') define(() => keys) // AMD
   else (root.keys = keys) // Browser
-}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+}(typeof globalThis == 'object' ? globalThis : this, (function () {
 
 const objectKeys = Object.keys
 

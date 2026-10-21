@@ -6,7 +6,7 @@
   if (typeof module == 'object') (module.exports = __) // CommonJS
   else if (typeof define == 'function') define(() => __) // AMD
   else (root.__ = __) // Browser
-}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+}(typeof globalThis == 'object' ? globalThis : this, (function () {
 const __ = Symbol.for('placeholder')
 
 return __

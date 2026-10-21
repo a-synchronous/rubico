@@ -6,7 +6,7 @@
   if (typeof module == 'object') (module.exports = thunkify) // CommonJS
   else if (typeof define == 'function') define(() => thunkify) // AMD
   else (root.thunkify = thunkify) // Browser
-}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+}(typeof globalThis == 'object' ? globalThis : this, (function () {
 
 const isArray = Array.isArray
 

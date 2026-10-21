@@ -6,7 +6,7 @@
   if (typeof module == 'object') (module.exports = defaultsDeep) // CommonJS
   else if (typeof define == 'function') define(() => defaultsDeep) // AMD
   else (root.defaultsDeep = defaultsDeep) // Browser
-}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+}(typeof globalThis == 'object' ? globalThis : this, (function () {
 
 const isArray = Array.isArray
 

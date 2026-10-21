@@ -6,7 +6,7 @@
   if (typeof module == 'object') (module.exports = or) // CommonJS
   else if (typeof define == 'function') define(() => or) // AMD
   else (root.or = or) // Browser
-}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+}(typeof globalThis == 'object' ? globalThis : this, (function () {
 
 const promiseAll = Promise.all.bind(Promise)
 

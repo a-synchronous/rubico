@@ -6,7 +6,8 @@
   if (typeof module == 'object') (module.exports = eq) // CommonJS
   else if (typeof define == 'function') define(() => eq) // AMD
   else (root.eq = eq) // Browser
-}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+}(typeof globalThis == 'object' ? globalThis : this, (function () {
+const __ = Symbol.for('placeholder')
 
 const isPromise = value => value != null && typeof value.then == 'function'
 
@@ -34,7 +35,56 @@ const areAnyValuesPromises = function (values) {
   return false
 }
 
-const __ = Symbol.for('placeholder')
+// argument resolver for curry2
+const curry2ResolveArg0 = (
+  baseFunc, arg1,
+) => function arg0Resolver(arg0) {
+  return baseFunc(arg0, arg1)
+}
+
+// argument resolver for curry2
+const curry2ResolveArg1 = (
+  baseFunc, arg0,
+) => function arg1Resolver(arg1) {
+  return baseFunc(arg0, arg1)
+}
+
+const curry2 = function (baseFunc, arg0, arg1) {
+  return arg0 == __
+    ? curry2ResolveArg0(baseFunc, arg1)
+    : curry2ResolveArg1(baseFunc, arg0)
+}
+
+// argument resolver for curry3
+const curry3ResolveArg0 = (
+  baseFunc, arg1, arg2,
+) => function arg0Resolver(arg0) {
+  return baseFunc(arg0, arg1, arg2)
+}
+
+// argument resolver for curry3
+const curry3ResolveArg1 = (
+  baseFunc, arg0, arg2,
+) => function arg1Resolver(arg1) {
+  return baseFunc(arg0, arg1, arg2)
+}
+
+// argument resolver for curry3
+const curry3ResolveArg2 = (
+  baseFunc, arg0, arg1,
+) => function arg2Resolver(arg2) {
+  return baseFunc(arg0, arg1, arg2)
+}
+
+const curry3 = function (baseFunc, arg0, arg1, arg2) {
+  if (arg0 == __) {
+    return curry3ResolveArg0(baseFunc, arg1, arg2)
+  }
+  if (arg1 == __) {
+    return curry3ResolveArg1(baseFunc, arg0, arg2)
+  }
+  return curry3ResolveArg2(baseFunc, arg0, arg1)
+}
 
 // argument resolver for curry4
 const curry4ResolveArg0 = (
@@ -150,7 +200,7 @@ const leftResolverRightValueCompare = function (args, comparator, left, right) {
 }
 
 // leftValueRightResolverCompare(
-//   args Array, comparator function, left any, right any,
+//   args Array, comparator function, left any, right function,
 // ) -> Promise|boolean
 const leftValueRightResolverCompare = function (args, comparator, left, right) {
   const rightResult = right(...args)
@@ -160,8 +210,26 @@ const leftValueRightResolverCompare = function (args, comparator, left, right) {
   return comparator(left, rightResult)
 }
 
+// leftValueRightValueCompare(
+//   comparator function, left any, right any,
+// ) -> Promise|boolean
+const leftValueRightValueCompare = function (comparator, left, right) {
+  if (isPromise(left) || isPromise(right)) {
+    return promiseAll([left, right]).then(spread2(comparator))
+  }
+  return comparator(left, right)
+}
+
 // ComparisonOperator(comparator function) -> operator function
 const ComparisonOperator = comparator => function operator(...args) {
+  if (args.length < 2) {
+    const left = args[0]
+    if (isPromise(left)) {
+      return curry3(leftValueRightValueCompare, comparator, left, __)
+    }
+    return curry2(ComparisonOperator(comparator), left, __)
+  }
+
   const right = args.pop()
   const left = args.pop()
   const isLeftResolver = typeof left == 'function',

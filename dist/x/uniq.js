@@ -6,7 +6,7 @@
   if (typeof module == 'object') (module.exports = uniq) // CommonJS
   else if (typeof define == 'function') define(() => uniq) // AMD
   else (root.uniq = uniq) // Browser
-}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+}(typeof globalThis == 'object' ? globalThis : this, (function () {
 
 const isArray = Array.isArray
 

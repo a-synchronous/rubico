@@ -6,7 +6,7 @@
   if (typeof module == 'object') (module.exports = isObject) // CommonJS
   else if (typeof define == 'function') define(() => isObject) // AMD
   else (root.isObject = isObject) // Browser
-}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+}(typeof globalThis == 'object' ? globalThis : this, (function () {
 
 const isObject = value => {
   if (value == null) {
