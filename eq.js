@@ -45,19 +45,19 @@ const equals = require('./_internal/equals')
  * If either of the two resolver functions is asynchronous, `eq` returns an asynchronous function.
  *
  * ```javascript [playground]
- * const userbase = new Map()
+ * const profilebase = new Map()
  *
- * userbase.set('example-id', { name: 'John', likes: 'bananas' })
+ * profilebase.set('example-id', { name: 'John', likes: 'bananas' })
  *
- * async function getUserNameById(id) {
- *   const user = userbase.get(id)
- *   if (user) {
- *     return user.name
+ * async function getProfileNameById(id) {
+ *   const profile = profilebase.get(id)
+ *   if (profile) {
+ *     return profile.name
  *   }
  *   return undefined
  * }
  *
- * const booleanResult = await eq('example-id', getUserNameById, 'John')
+ * const booleanResult = await eq('example-id', getProfileNameById, 'John')
  *
  * console.log(booleanResult)
  * ```

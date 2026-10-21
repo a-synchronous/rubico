@@ -89,8 +89,6 @@ const arrayMap3 = function (array, func) {
  *
  * @NOTE Bo5
  *
- * @NOTE https://reinteractive.net/posts/292-the-quirky-array-constructor-and-a-use-for-holey-arrays-in-es6
- *
  * @NOTE https://v8.dev/blog/elements-kinds#avoid-creating-holes
  */
 

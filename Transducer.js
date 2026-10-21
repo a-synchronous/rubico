@@ -19,7 +19,7 @@ const __ = require('./_internal/placeholder')
  * ```
  *
  * @description
- * A transducer is a function that takes a `Reducer` and returns another `Reducer`. Transducers enable function chains with reducers - pass a reducer to a transducer to create a reducer with chained functionality. A `Reducer` is a function that defines a relationship between an accumulator and an item in a transformation, and can be used in a reducing operation, such as with Rubico's [reduce](/docs/reduce) or vanilla JavaScript [Array.prototype.reduce](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce).
+ * A transducer is a function that takes a `Reducer` and returns another `Reducer`. Transducers enable function chains with reducers - pass a reducer to a transducer to create a reducer with chained functionality. A `Reducer` is a function that defines a relationship between an accumulator and an item in a transformation, and can be called in a reducing operation, such as with Rubico's [reduce](/docs/reduce) or vanilla JavaScript [Array.prototype.reduce](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce).
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -65,7 +65,7 @@ const Transducer = {}
  * ```
  *
  * @description
- * Creates a mapping [transducer](/blog/transducers-crash-course). Items of the transducer's reducing operation are transformed by the mapper function. It is possible to use an asynchronous mapper, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
+ * Creates a mapping [transducer](/blog/transducers-crash-course). Items of the transducer's reducing operation are transformed by the mapper function. It is possible to provide an asynchronous mapper, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
  *
  * ```javascript [playground]
  * const square = number => number ** 2
@@ -117,7 +117,7 @@ Transducer.map = function transducerMap(mapper) {
  * ```
  *
  * @description
- * Creates a filtering [transducer](/blog/transducers-crash-course). A filtering transducer filters out items of its reducing operation if they test false by the predicate. It is possible to use an asynchronous predicate, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
+ * Creates a filtering [transducer](/blog/transducers-crash-course). A filtering transducer filters out items of its reducing operation if they test false by the predicate. It is possible to provide an asynchronous predicate, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
  *
  * ```javascript [playground]
  * const isOdd = number => number % 2 == 1
@@ -162,7 +162,7 @@ Transducer.filter = function transducerFilter(predicate) {
  * ```
  *
  * @description
- * Creates a flatMapping [transducer](/blog/transducers-crash-course). A flatMapping transducer applies the flatMapper function to each item of its reducing operation, concatenating the results of the flatMapper execution onto the accumulator. It is possible to use an asynchronous flatMapper, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
+ * Creates a flatMapping [transducer](/blog/transducers-crash-course). A flatMapping transducer applies the flatMapper function to each item of its reducing operation, concatenating the results of the flatMapper execution onto the accumulator. It is possible to provide an asynchronous flatMapper, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
  *
  * ```javascript [playground]
  * const powers = number => [number, number ** 2, number ** 3]
@@ -200,7 +200,7 @@ Transducer.flatMap = function transducerFlatMap(flatMapper) {
  * ```
  *
  * @description
- * Creates an iterative [transducer](/blog/transducers-crash-course). Executes a callback function for each item of a reducing operation, leaving each item unmodified. It is possible to use an asynchronous callback function, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
+ * Creates an iterative [transducer](/blog/transducers-crash-course). Executes a callback function for each item of a reducing operation, leaving each item unmodified. It is possible to provide an asynchronous callback function, however the reducing operation must support asynchronous execution. This library provides such implementations as [reduce](/docs/reduce) and [transform](/docs/transform).
  *
  * ```javascript [playground]
  * const numbers = [1, 2, 3, 4, 5]
@@ -289,25 +289,25 @@ Transducer.passthrough = function transducerPassthrough(reducer) {
  * db.set('c', { id: 'c', name: 'Jill' })
  * db.set('e', { id: 'e', name: 'Jim' })
  *
- * const userIds = ['a', 'b', 'c', 'd', 'e']
+ * const ids = ['a', 'b', 'c', 'd', 'e']
  *
- * transform(userIds, Transducer.tryCatch(
+ * transform(ids, Transducer.tryCatch(
  *   compose(
- *     Transducer.map(async userId => {
- *       if (db.has(userId)) {
- *         return db.get(userId)
+ *     Transducer.map(async id => {
+ *       if (db.has(id)) {
+ *         return db.get(id)
  *       }
- *       throw new Error(`user ${userId} not found`)
+ *       throw new Error(`profile ${id} not found`)
  *     }),
  *
- *     Transducer.forEach(user => {
- *       console.log('Found', user.name)
+ *     Transducer.forEach(profile => {
+ *       console.log('Found', profile.name)
  *     })
  *   ),
- *   (error, userId) => {
+ *   (error, id) => {
  *     console.error(error)
- *     console.log('userId in catcher:', userId)
- *     // original userId for which the error was thrown is provided
+ *     console.log('id in catcher:', id)
+ *     // original id for which the error was thrown is provided
  *   }
  * ), null)
  * ```

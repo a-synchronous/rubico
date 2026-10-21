@@ -1,5 +1,3 @@
-'use strict'
-
 const isPromise = value => value != null && typeof value.then == 'function'
 
 const promiseRace = Promise.race.bind(Promise)

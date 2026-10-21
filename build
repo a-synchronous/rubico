@@ -408,7 +408,7 @@ ${license}
   if (typeof module == 'object') (module.exports = ${name}) // CommonJS
   else if (typeof define == 'function') define(() => ${name}) // AMD
   else (root.${name} = ${name}) // Browser
-}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+}(typeof globalThis == 'object' ? globalThis : this, (function () {
 ${baseCodeBundle}return ${name}
 }())))
 `.trimStart(),
@@ -423,7 +423,7 @@ ${(await minify(`(function (root, ${name}) {
   if (typeof module == 'object') (module.exports = ${name}) // CommonJS
   else if (typeof define == 'function') define(() => ${name}) // AMD
   else (root.${name} = ${name}) // Browser
-}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+}(typeof globalThis == 'object' ? globalThis : this, (function () {
 ${baseCodeBundle}return ${name}
 }())))`)).code}
 `.trimStart(),
@@ -438,7 +438,7 @@ ${license}
   for (const functionName in ${name}) {
     root[functionName] = ${name}[functionName]
   }
-}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+}(typeof globalThis == 'object' ? globalThis : this, (function () {
 ${baseCodeBundle}return ${name}
 }())))
 `.trimStart(),
@@ -453,7 +453,7 @@ ${(await minify(`(function (root, ${name}) {
   for (const functionName in ${name}) {
     root[functionName] = ${name}[functionName]
   }
-}(typeof globalThis == 'object' ? globalThis : this, (function () { 'use strict'
+}(typeof globalThis == 'object' ? globalThis : this, (function () {
 ${baseCodeBundle}return ${name}
 }())))`)).code}
 `.trimStart(),

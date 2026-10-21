@@ -18,14 +18,14 @@ const http = require('http')
 function runserver(options = {}) {
   const { port = 8080 } = options
 
-  const userDb = new Map()
+  const db = new Map()
 
-  const userTable = {
-    async put(userRecord) {
-      return userDb.set(userRecord.id, userRecord)
+  const profileTable = {
+    async put(profileRecord) {
+      return db.set(profileRecord.id, profileRecord)
     },
-    async getById(userId) {
-      return userDb.get(userId)
+    async getById(id) {
+      return db.get(id)
     },
   }
 
@@ -46,51 +46,51 @@ function runserver(options = {}) {
     response.end()
   }
 
-  // GET /user/:userId
-  // retrieves a user resource
-  async function getUserHandler(request, response) {
-    const userId = request.url.match(/\d+/)[0]
+  // GET /profile/:id
+  // retrieves a profile resource
+  async function getProfileHandler(request, response) {
+    const id = request.url.match(/\d+/)[0]
 
     // validate
-    if (isNaN(Number(userId))) {
+    if (isNaN(Number(id))) {
       const error = new Error('Bad Request')
       error.code = 400
       throw error
     }
 
-    // userTable is a theoretical client for a database
-    const user = await userTable.getById(userId)
+    // profileTable is a theoretical client for a database
+    const profile = await profileTable.getById(id)
 
     // handle not found
-    if (user == null) {
+    if (profile == null) {
       const error = new Error('Not Found')
       error.code = 404
       throw error
     }
 
-    // ensure no private user information is exposed
-    const publicUser = {
-      id: user.id,
-      name: user.name,
-      birthdate: user.birthdate,
-      profilePictureUrl: user.profilePictureUrl,
-      createTime: user.createTime,
+    // ensure no private profile information is exposed
+    const publicProfile = {
+      id: profile.id,
+      name: profile.name,
+      birthdate: profile.birthdate,
+      profilePictureUrl: profile.profilePictureUrl,
+      createTime: profile.createTime,
     }
 
-    // send back the user resource in the response body
+    // send back the profile resource in the response body
     response.writeHead(200, {
       'Access-Control-Allow-Origin': '*',
       'Content-Type': 'application/json',
     })
     response.end(JSON.stringify({
-      user: publicUser,
+      profile: publicProfile,
     }))
   }
 
-  // PUT /user/:userId
-  // creates or updates a user resource
-  async function putUserHandler(request, response) {
-    const userId = request.url.match(/\d+/)[0]
+  // PUT /profile/:id
+  // creates or updates a profile resource
+  async function putProfileHandler(request, response) {
+    const id = request.url.match(/\d+/)[0]
 
     const requestBodyBuffer = await new Promise(resolve => {
       const binaryArray = []
@@ -105,7 +105,7 @@ function runserver(options = {}) {
     const requestBodyJSON = JSON.parse(requestBodyString)
 
     // validate
-    if (isNaN(Number(userId))) {
+    if (isNaN(Number(id))) {
       const error = new Error('Bad Request')
       error.code = 400
       throw error
@@ -136,7 +136,7 @@ function runserver(options = {}) {
       throw error
     }
 
-    const user = {
+    const profile = {
       id: requestBodyJSON.id,
       name: requestBodyJSON.name,
       birthdate: requestBodyJSON.birthdate,
@@ -145,8 +145,8 @@ function runserver(options = {}) {
       createTime: Date.now(),
     }
 
-    // save user record to the db
-    await userTable.put(user)
+    // save profile record to the db
+    await profileTable.put(profile)
 
     // send back a successful response
     response.writeHead(200, {
@@ -185,11 +185,11 @@ function runserver(options = {}) {
       request => request.method == 'OPTIONS',
       optionsHandler,
 
-      request => request.method == 'GET' && /^\/user\/\d+$/.test(request.url),
-      getUserHandler,
+      request => request.method == 'GET' && /^\/profile\/\d+$/.test(request.url),
+      getProfileHandler,
 
-      request => request.method == 'PUT' && /^\/user\/\d+$/.test(request.url),
-      putUserHandler,
+      request => request.method == 'PUT' && /^\/profile\/\d+$/.test(request.url),
+      putProfileHandler,
 
       notFoundHandler,
     ]),

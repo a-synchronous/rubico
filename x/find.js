@@ -27,14 +27,14 @@ const asyncIteratorFind = require('../_internal/asyncIteratorFind')
  * ```javascript [playground]
  * import find from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/find.es.js'
  *
- * const users = [
+ * const profiles = [
  *   { name: 'John', age: 16 },
  *   { name: 'Jill', age: 32 },
  *   { name: 'John', age: 51 },
  * ]
  *
  * console.log(
- *   find(user => user.age > 50)(users),
+ *   find(profile => profile.age > 50)(profiles),
  * ) // { name: 'John', age: 51 }
  * ```
  */

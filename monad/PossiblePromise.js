@@ -2,8 +2,6 @@
  * rubico may be freely distributed under the CFOSS license.
  */
 
-'use strict'
-
 const isPromise = value => value != null && typeof value.then == 'function'
 
 const promiseAll = Promise.all.bind(Promise)

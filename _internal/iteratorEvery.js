@@ -11,8 +11,6 @@ const callPropUnary = require('./callPropUnary')
  * ```coffeescript [specscript]
  * iteratorEvery(iterator Iterator, predicate ...any=>boolean) -> boolean
  * ```
- *
- * @TODO use .next() calls
  */
 const iteratorEvery = function (iterator, predicate) {
   const promises = []

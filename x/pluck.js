@@ -24,15 +24,15 @@ const get = require('../get')
  * ```javascript [playground]
  * import pluck from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/pluck.es.js'
  *
- * const users = [
+ * const profiles = [
  *   { name: 'John', age: 33 },
  *   { name: 'Jane', age: 51 },
  *   { name: 'Jim', age: 22 },
  * ]
  *
- * const usernames = pluck(users, 'name')
+ * const profileNames = pluck(profiles, 'name')
  *
- * console.log(usernames) // ['John', 'Jane', 'Jim']
+ * console.log(profileNames) // ['John', 'Jane', 'Jim']
  * ```
  */
 const pluck = function (...args) {

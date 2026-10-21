@@ -103,7 +103,7 @@ import Transducer from "rubico/Transducer.mjs"
 ## Motivation
 
 A note from the author:
-> At a certain point in my career, I grew frustrated with the entanglement of my own code. While looking for something better, I found functional programming. I was excited by the idea of functional composition, but disillusioned by the redundancy of effectful types. I started Rubico to capitalize on the prior while rebuking the latter. Many iterations since then, the library has grown into something I personally enjoy using, and continue to use to this day.
+> At a certain point in my career, I grew frustrated with the entanglement of my own code. While looking for something better, I found functional programming. I was excited by the idea of functional composition, but disillusioned by the redundancy of effectful types. I started Rubico to capitalize on the prior while rebuking the latter.
 
 [A]synchronous functional programming is founded on the following principles:
  * Asynchronous code should be simple.
@@ -173,11 +173,11 @@ All Rubico operators support both immediate and lazy interfaces. The immediate i
 ```javascript [playground]
 const myObj = { a: 1, b: 2, c: 3 }
 
-// the first use of map is immediate
+// the first map call is immediate
 const myDuplicatedSquaredObject = map(myObj, pipe(
   number => [number, number],
 
-  // the second use of map is lazy
+  // the second map call is lazy
   map(number => number ** 2),
 ))
 
@@ -204,22 +204,22 @@ pipe(todoIDs, [
     tap(console.log),
   )),
 
-  // group the todos by userId in a new Map
-  function createUserTodosMap(todos) {
-    const userTodosMap = new Map()
+  // group the todos by id in a new Map
+  function createTodosMap(todos) {
+    const todosMap = new Map()
     for (const todo of todos) {
-      const { userId } = todo
-      if (userTodosMap.has(userId)) {
-        userTodosMap.get(userId).push(todo)
+      const { userId: id } = todo
+      if (todosMap.has(id)) {
+        todosMap.get(id).push(todo)
       } else {
-        userTodosMap.set(userId, [todo])
+        todosMap.set(id, [todo])
       }
     }
-    return userTodosMap
+    return todosMap
   },
 
   // filter for completed todos
-  // map iterates through each value (array of todos) of the userTodosMap
+  // map iterates through each value (array of todos) of the todosMap
   // filter iterates through each todo of the arrays of todos
   map(filter(function didComplete(todo) {
     return todo.completed
@@ -229,7 +229,7 @@ pipe(todoIDs, [
 ])
 ```
 
-Rubico offers transducers via the `Transducer` module, which can be used with Rubico's `transform` and `compose` operators. Use `compose` to chain a left-to-right composition of transducers.
+Rubico offers transducers via the `Transducer` module, which is combined with Rubico's `transform` and `compose` operators. The `transform` operator executes a `Transducer` with a variety of data types, and the `compose` operator chains a left-to-right composition of transducers.
 
 ```javascript [playground]
 const isOdd = number => number % 2 == 1
@@ -254,7 +254,7 @@ pipe(
 )
 ```
 
-For advanced asynchronous use cases, some of Rubico's operators have property operators that support varied asynchronous behavior, e.g.
+For advanced asynchronous expressions, some of Rubico's operators have property operators that support varied asynchronous behavior, e.g.
  * `map` - applies a mapper function concurrently
  * `map.pool` - applies a mapper function concurrently with a concurrency limit
  * `map.series` - applies a mapper function serially

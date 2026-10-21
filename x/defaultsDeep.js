@@ -103,17 +103,17 @@ function _defaultsDeep(data, defaults) {
  * ```
  *
  * @description
- * Deeply assign default values to an object or array `data` using an array or object of default values `defaults`. The keys or indices of each element of `defaults` are used to extend `data` where there is no existing value. Both `data` and `defaults` may have nested arrays or objects.
+ * Deeply assign default values to an object or array `data` using an array or object of default values `defaults`. The keys or indices of each element of `defaults` extend `data` where there is no existing value. Both `data` and `defaults` may have nested arrays or objects.
  *
  * ```javascript [playground]
  * import defaultsDeep from 'https://cdn.jsdelivr.net/npm/rubico/dist/x/defaultsDeep.es.js'
  *
- * const user = {
+ * const profile = {
  *   name: 'John',
  *   images: [{ url: 'https://placehold.co/600x400' }],
  * }
  *
- * const userWithDefaults = defaultsDeep(user, {
+ * const profileWithDefaults = defaultsDeep(profile, {
  *   name: 'placeholder',
  *   images: [
  *     { url: 'https://placehold.co/150' },
@@ -122,7 +122,7 @@ function _defaultsDeep(data, defaults) {
  *   ],
  * })
  *
- * console.log(userWithDefaults)
+ * console.log(profileWithDefaults)
  * // {
  * //   name: 'John',
  * //   images: [
@@ -133,7 +133,7 @@ function _defaultsDeep(data, defaults) {
  * // }
  * ```
  *
- * The `defaults` array or object may be provided to `defaultsDeep` without `data` to create a lazy version of `defaultsDeep` that accepts `data` as a single argument. This lazy interface can be used for function pipelines and function compositions.
+ * The `defaults` array or object may be provided to `defaultsDeep` without `data` to create a lazy version of `defaultsDeep` that accepts `data` as a single argument.
  *
  * ```javascript [playground]
  * pipe({ a: 1 }, [

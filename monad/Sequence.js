@@ -1,5 +1,3 @@
-'use strict'
-
 const symbolIterator = Symbol.iterator
 
 const symbolAsyncIterator = Symbol.asyncIterator

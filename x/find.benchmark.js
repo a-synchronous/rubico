@@ -9,7 +9,7 @@ const _ = require('lodash')
  * @benchmark
  * find(gt0)(array): 1e+6: 13.627ms
  * R.find(gt0, array): 1e+6: 94.086ms
- * gt0_findLodashHappyPath: 1e+6: 80.071ms
+ * gt0_findLodash: 1e+6: 80.071ms
  */
 
 const gt0 = x => x > 0

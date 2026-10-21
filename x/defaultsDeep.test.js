@@ -120,7 +120,7 @@ describe('defaultsDeep', () => {
       { obj: { a: '1' } },
     )
   })
-  it('nullish default element should use current element', async () => {
+  it('nullish default', async () => {
     assert.deepEqual(
       defaultsDeep([null, 1, 2, 3, 4])([0, 1, 2]),
       [0, 1, 2, 3, 4],

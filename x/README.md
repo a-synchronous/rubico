@@ -2,7 +2,7 @@
 
 a home for programs created with rubico that prefer the rubico namespace
 
-All modules in `rubico/x/` fall under the rubico namespace, which means you can use any `rubico/x/` module like
+All modules in `rubico/x/` fall under the `rubico` namespace.
 ```javascript
 const myUtil = require('rubico/x/my-util') // CommonJS
 
@@ -353,7 +353,7 @@ project structure
 ```
 x/
   yourUtilHere.js
-  yourUtilHere.test.js - uses mocha, run this with `npm test`
+  yourUtilHere.test.js
 ```
 
 Requirements for modules in `rubico/x/`

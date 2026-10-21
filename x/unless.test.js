@@ -4,14 +4,14 @@ const unless = require('./unless')
 const isEven = num => num % 2 === 0
 
 describe('unless', () => {
-  it('happy path', async () => {
+  it('execute a function when a predicate is not true', async () => {
     const doubleIfOdd = unless(isEven, num => num * 2)
 
     assert.strictEqual(doubleIfOdd(100), 100)
     assert.strictEqual(doubleIfOdd(101), 202)
   })
 
-  it('async happy path', async () => {
+  it('execute a function when an async predicate is not true', async () => {
     const asyncIsEven = async num => num % 2 == 0
     const asyncDoubleIfOdd = unless(asyncIsEven, num => num * 2)
 

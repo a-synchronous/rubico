@@ -27,8 +27,9 @@ community include:
 
 Examples of unacceptable behavior include:
 
-* The use of sexualized language or imagery, and sexual attention or
-  advances of any kind
+* Posting or sharing sexualized language or imagery
+* Soliciting sexual attention
+* Making sexual advances of any kind
 * Trolling, insulting or derogatory comments, and personal or political attacks
 * Public or private harassment
 * Publishing others' private information, such as a physical or email
@@ -73,7 +74,7 @@ the consequences for any action they deem in violation of this Code of Conduct:
 
 ### 1. Correction
 
-**Community Impact**: Use of inappropriate language or other behavior deemed
+**Community Impact**: Posting, commenting, or speaking with inappropriate language or other behavior deemed
 unprofessional or unwelcome in the community.
 
 **Consequence**: A private, written warning from community leaders, providing

@@ -89,22 +89,22 @@ const _allValues = function (values) {
  * ```javascript [playground]
  * const identity = value => value
  *
- * const userbase = new Map()
- * userbase.set('1', { id: 1, name: 'John' })
+ * const profilebase = new Map()
+ * profilebase.set('1', { id: 1, name: 'John' })
  *
- * const getUserByID = async id => userbase.get(id)
+ * const getProfileByID = async id => profilebase.get(id)
  *
- * const getAndLogUserById = pipe([
+ * const getAndLogProfileById = pipe([
  *   all({
  *     id: identity,
- *     user: getUserByID,
+ *     profile: getProfileByID,
  *   }),
- *   tap(({ id, user }) => {
- *     console.log(`Got user ${JSON.stringify(user)} by id ${id}`)
+ *   tap(({ id, profile }) => {
+ *     console.log(`Got profile ${JSON.stringify(profile)} by id ${id}`)
  *   }),
  * ])
  *
- * getAndLogUserById('1')
+ * getAndLogProfileById('1')
  * ```
  *
  * Any promises in `arguments` are resolved for their values before further execution for the immediate interface only.

@@ -36,11 +36,8 @@ import __ from './__.mjs'
  * rubico is a module, not a grab bag
  * functional code should not care about async
  * exported methods are time and space optimal
- * memory used by exported methods is properly garbage collected
- * no special types; use built-in types
- * avoid variadic functions; use lists
- * avoid anonymous function creation; use names and factory functions
- * avoid creating functions inside functions
+ * memory taken up by exported methods is properly garbage collected
+ * avoid anonymous function creation
  */
 
 const rubico = {

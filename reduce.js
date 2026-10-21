@@ -52,7 +52,7 @@ const _reduce = function (collection, reducer, initial) {
  * console.log(result)
  * ```
  *
- * `reduce` executes a reducer function for each item of a foldable in order. If an initial value is provided, `reduce` starts iterating from the first item of the foldable. If no initial value is provided, `reduce` uses the first item of the foldable as the initial value and starts iterating from the second item of the foldable.
+ * `reduce` executes a reducer function for each item of a foldable in order. If an initial value is provided, `reduce` starts iterating from the first item of the foldable. If no initial value is provided, `reduce` starts iteration from the first item of the foldable.
  *
  * ```javascript [playground]
  * const add = (a, b) => a + b

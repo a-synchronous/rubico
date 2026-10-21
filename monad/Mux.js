@@ -2,8 +2,6 @@
  * rubico may be freely distributed under the CFOSS license.
  */
 
-'use strict'
-
 const Instance = require('./Instance')
 
 const { isArray, isObject, isSet, isIterable, isAsyncIterable, isFunction } = Instance

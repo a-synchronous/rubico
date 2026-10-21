@@ -138,7 +138,7 @@ const _transform = function (collection, transducer, initialValue) {
  * nextAccumulator = ({ ...accumulator, ...values })
  * ```
  *
- * Any object that implements concat may be used as the semigroup for `transform`.
+ * Any object that implements concat may be the semigroup for `transform`.
  *
  * ```javascript [playground]
  * const square = number => number ** 2
@@ -153,7 +153,7 @@ const _transform = function (collection, transducer, initialValue) {
  * transform([1, 2, 3, 4, 5], Transducer.map(square), Stdout)
  * ```
  *
- * Node.js `process.stdout`, a writable stream (implements the `write` method), may be used as the semigroup for `transform`
+ * Node.js `process.stdout`, a writable stream (implements the `write` method), may be the semigroup for `transform`
  *
  * ```javascript
  * const { pipe, compose, transform } = rubico
