@@ -4709,6 +4709,25 @@ flatMap(
   })
 
   describe('eq', () => {
+    it("eq(promise, resolver)", async () => {
+      const x = eq(Promise.resolve(1), x => x)
+      const p = x(1)
+      assert(p instanceof Promise)
+      assert.strictEqual(await p, true)
+    })
+    it("eq(promise)(value)", async () => {
+      const f = eq(Promise.resolve(1))
+      assert.equal(typeof f, "function")
+      const promise0 = f(1)
+      assert(promise0 instanceof Promise)
+      assert.equal(await promise0, true)
+      const promise1 = f(0)
+      assert(promise1 instanceof Promise)
+      assert.equal(await promise1, false)
+    })
+    it("eq(value)(value)", async () => {
+      assert.ok(eq(2)(2))
+    })
     it('coverage', async () => {
       aok(eq(2, 2))
       aok(await eq(Promise.resolve(2), 2))
@@ -4760,12 +4779,28 @@ flatMap(
       ase(eq('hey', 'hey'), true)
       ase(eq('hey', 'ho'), false)
     })
-    it('false for eq(string,)', () => {
-      assert.strictEqual(eq('hey',), false)
-    })
   })
 
   describe('gt', () => {
+    it("gt(promise, resolver)", async () => {
+      const x = gt(Promise.resolve(2), x => x)
+      const p = x(1)
+      assert(p instanceof Promise)
+      assert.strictEqual(await p, true)
+    })
+    it("gt(promise)(value)", async () => {
+      const f = gt(Promise.resolve(1))
+      assert.equal(typeof f, "function")
+      const promise0 = f(1)
+      assert(promise0 instanceof Promise)
+      assert.equal(await promise0, false)
+      const promise1 = f(0)
+      assert(promise1 instanceof Promise)
+      assert.equal(await promise1, true)
+    })
+    it("gt(value)(value)", async () => {
+      assert.ok(gt(2)(1))
+    })
     it('coverage', async () => {
       aok(
         gt(1, number => number, number => number * 0)
@@ -4813,12 +4848,28 @@ flatMap(
       ase(gt(1, 1), false)
       ase(gt(0, 1), false)
     })
-    it('throws RangeError on not enough arguments', async () => {
-      assert.strictEqual(gt('hey'), false)
-    })
   })
 
   describe('lt', () => {
+    it("lt(promise, resolver)", async () => {
+      const x = lt(Promise.resolve(0), x => x)
+      const p = x(1)
+      assert(p instanceof Promise)
+      assert.strictEqual(await p, true)
+    })
+    it("lt(promise)(value)", async () => {
+      const f = lt(Promise.resolve(0))
+      assert.equal(typeof f, "function")
+      const promise0 = f(1)
+      assert(promise0 instanceof Promise)
+      assert.equal(await promise0, true)
+      const promise1 = f(0)
+      assert(promise1 instanceof Promise)
+      assert.equal(await promise1, false)
+    })
+    it("lt(value)(value)", async () => {
+      assert.ok(lt(1)(2))
+    })
     it('coverage', async () => {
       aok(
         lt(5, number => number - 3, number => number + 3)
@@ -4866,12 +4917,28 @@ flatMap(
       ase(lt(1, 1), false)
       ase(lt(0, 1), true)
     })
-    it('throws RangeError on not enough arguments', () => {
-      assert.strictEqual(lt('hey'), false)
-    })
   })
 
   describe('gte', () => {
+    it("gte(promise, resolver)", async () => {
+      const x = gte(Promise.resolve(1), x => x)
+      const p = x(1)
+      assert(p instanceof Promise)
+      assert.strictEqual(await p, true)
+    })
+    it("gte(promise)(value)", async () => {
+      const f = gte(Promise.resolve(0))
+      assert.equal(typeof f, "function")
+      const promise0 = f(1)
+      assert(promise0 instanceof Promise)
+      assert.equal(await promise0, false)
+      const promise1 = f(0)
+      assert(promise1 instanceof Promise)
+      assert.equal(await promise1, true)
+    })
+    it("gte(value)(value)", async () => {
+      assert.ok(gte(1)(1))
+    })
     it('coverage', async () => {
       aok(
         gte(5, number => number + 3, number => number + 3)
@@ -4919,12 +4986,28 @@ flatMap(
       ase(gte(1, 1), true)
       ase(gte(0, 1), false)
     })
-    it('throws RangeError on not enough arguments', () => {
-      assert.strictEqual(gte('hey'), false)
-    })
   })
 
   describe('lte', () => {
+    it("lte(promise, resolver)", async () => {
+      const x = lte(Promise.resolve(1), x => x)
+      const p = x(1)
+      assert(p instanceof Promise)
+      assert.strictEqual(await p, true)
+    })
+    it("lte(promise)(value)", async () => {
+      const f = lte(Promise.resolve(0))
+      assert.equal(typeof f, "function")
+      const promise0 = f(1)
+      assert(promise0 instanceof Promise)
+      assert.equal(await promise0, true)
+      const promise1 = f(0)
+      assert(promise1 instanceof Promise)
+      assert.equal(await promise1, true)
+    })
+    it("lte(value)(value)", async () => {
+      assert.ok(lte(1)(1))
+    })
     it('coverage', async () => {
       aok(
         lte(5, number => number + 3, number => number + 3)
@@ -4971,9 +5054,6 @@ flatMap(
       ase(lte(1, 0), false)
       ase(lte(1, 1), true)
       ase(lte(0, 1), true)
-    })
-    it('throws RangeError on not enough arguments', () => {
-      assert.strictEqual(lte('hey'), false)
     })
   })
 

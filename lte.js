@@ -9,6 +9,7 @@ const lessThanOrEqual = require('./_internal/lessThanOrEqual')
  * type Resolver = (...arguments)=>Promise|any
  *
  * lte(leftValue Promise|any, rightValue Promise|any) -> booleanResult Promise|boolean
+ * lte(leftValue Promise|any)(rightValue any) -> booleanResult Promise|boolean
  * lte(...arguments, leftResolver Resolver, rightValue Promise|any) -> booleanResult Promise|boolean
  * lte(...arguments, leftValue Promise|any, rightResolver Resolver) -> booleanResult Promise|boolean
  * lte(...arguments, leftResolver Resolver, rightResolver Resolver) -> booleanResult Promise|boolean
@@ -54,6 +55,9 @@ const lessThanOrEqual = require('./_internal/lessThanOrEqual')
  * `lte` supports a lazy interface for composability.
  *
  * ```javascript [playground]
+ * const bool = lte(0)(1)
+ * console.log(bool)
+ *
  * pipe({ value: 1 }, [
  *   lte(1, get('value')),
  *   console.log,

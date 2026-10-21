@@ -1,3 +1,4 @@
+const __ = require('./_internal/placeholder')
 const ComparisonOperator = require('./_internal/ComparisonOperator')
 const equals = require('./_internal/equals')
 
@@ -9,6 +10,7 @@ const equals = require('./_internal/equals')
  * type Resolver = (...arguments)=>Promise|any
  *
  * eq(leftValue Promise|any, rightValue Promise|any) -> booleanResult Promise|boolean
+ * eq(leftValue Promise|any)(rightValue any) -> booleanResult Promise|boolean
  * eq(...arguments, leftResolver Resolver, rightValue Promise|any) -> booleanResult Promise|boolean
  * eq(...arguments, leftValue Promise|any, rightResolver Resolver) -> booleanResult Promise|boolean
  * eq(...arguments, leftResolver Resolver, rightResolver Resolver) -> booleanResult Promise|boolean
@@ -63,6 +65,9 @@ const equals = require('./_internal/equals')
  * `eq` supports a lazy interface for composability.
  *
  * ```javascript [playground]
+ * const bool = eq(1)(1)
+ * console.log(bool)
+ *
  * pipe({ name: 'John' }, [
  *   eq('John', get('name')),
  *   console.log,

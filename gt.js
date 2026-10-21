@@ -9,6 +9,7 @@ const greaterThan = require('./_internal/greaterThan')
  * type Resolver = (...arguments)=>Promise|any
  *
  * gt(leftValue Promise|any, rightValue Promise|any) -> booleanResult Promise|boolean
+ * gt(leftValue Promise|any)(rightValue any) -> booleanResult Promise|boolean
  * gt(...arguments, leftResolver Resolver, rightValue Promise|any) -> booleanResult Promise|boolean
  * gt(...arguments, leftValue Promise|any, rightResolver Resolver) -> booleanResult Promise|boolean
  * gt(...arguments, leftResolver Resolver, rightResolver Resolver) -> booleanResult Promise|boolean
@@ -52,6 +53,9 @@ const greaterThan = require('./_internal/greaterThan')
  * `gt` supports a lazy interface for composability.
  *
  * ```javascript [playground]
+ * const bool = gt(2)(1)
+ * console.log(bool)
+ *
  * pipe({ value: 1 }, [
  *   gt(5, get('value')),
  *   console.log,

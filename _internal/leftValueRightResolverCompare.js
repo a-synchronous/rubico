@@ -3,7 +3,7 @@ const isPromise = require('./isPromise')
 const promiseAll = require('./promiseAll')
 
 // leftValueRightResolverCompare(
-//   args Array, comparator function, left any, right any,
+//   args Array, comparator function, left any, right function,
 // ) -> Promise|boolean
 const leftValueRightResolverCompare = function (args, comparator, left, right) {
   const rightResult = right(...args)

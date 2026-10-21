@@ -9,6 +9,7 @@ const lessThan = require('./_internal/lessThan')
  * type Resolver = (...arguments)=>Promise|any
  *
  * lt(leftValue Promise|any, rightValue Promise|any) -> booleanResult Promise|boolean
+ * lt(leftValue Promise|any)(rightValue any) -> booleanResult Promise|boolean
  * lt(...arguments, leftResolver Resolver, rightValue Promise|any) -> booleanResult Promise|boolean
  * lt(...arguments, leftValue Promise|any, rightResolver Resolver) -> booleanResult Promise|boolean
  * lt(...arguments, leftResolver Resolver, rightResolver Resolver) -> booleanResult Promise|boolean
@@ -54,6 +55,9 @@ const lessThan = require('./_internal/lessThan')
  * `lt` supports a lazy interface for composability.
  *
  * ```javascript [playground]
+ * const bool = lt(1)(2)
+ * console.log(bool)
+ *
  * pipe({ value: 1 }, [
  *   lt(0, get('value')),
  *   console.log,

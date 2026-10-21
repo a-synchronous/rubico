@@ -9,6 +9,7 @@ const greaterThanOrEqual = require('./_internal/greaterThanOrEqual')
  * type Resolver = (...arguments)=>Promise|any
  *
  * gte(leftValue Promise|any, rightValue Promise|any) -> booleanResult Promise|boolean
+ * gte(leftValue Promise|any)(rightValue any) -> booleanResult Promise|boolean
  * gte(...arguments, leftResolver Resolver, rightValue Promise|any) -> booleanResult Promise|boolean
  * gte(...arguments, leftValue Promise|any, rightResolver Resolver) -> booleanResult Promise|boolean
  * gte(...arguments, leftResolver Resolver, rightResolver Resolver) -> booleanResult Promise|boolean
@@ -56,6 +57,9 @@ const greaterThanOrEqual = require('./_internal/greaterThanOrEqual')
  * `gte` supports a lazy interface for composability.
  *
  * ```javascript [playground]
+ * const bool = gte(0)(0)
+ * console.log(bool)
+ *
  * pipe({ value: 1 }, [
  *   gte(1, get('value')),
  *   console.log,

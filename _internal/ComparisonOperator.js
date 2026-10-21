@@ -1,6 +1,8 @@
 const isPromise = require('./isPromise')
 const areAnyValuesPromises = require('./areAnyValuesPromises')
 const __ = require('./placeholder')
+const curry2 = require('./curry2')
+const curry3 = require('./curry3')
 const curry4 = require('./curry4')
 const curryArgs4 = require('./curryArgs4')
 const spread2 = require('./spread2')
@@ -8,9 +10,18 @@ const promiseAll = require('./promiseAll')
 const leftResolverRightResolverCompare = require('./leftResolverRightResolverCompare')
 const leftResolverRightValueCompare = require('./leftResolverRightValueCompare')
 const leftValueRightResolverCompare = require('./leftValueRightResolverCompare')
+const leftValueRightValueCompare = require('./leftValueRightValueCompare')
 
 // ComparisonOperator(comparator function) -> operator function
 const ComparisonOperator = comparator => function operator(...args) {
+  if (args.length < 2) {
+    const left = args[0]
+    if (isPromise(left)) {
+      return curry3(leftValueRightValueCompare, comparator, left, __)
+    }
+    return curry2(ComparisonOperator(comparator), left, __)
+  }
+
   const right = args.pop()
   const left = args.pop()
   const isLeftResolver = typeof left == 'function',
