@@ -1,7 +1,9 @@
 /**
  * rubico may be freely distributed under the CFOSS license.
  */
-const __ = Symbol.for('placeholder')
+function __(argument) {
+  return argument
+}
 
 // argument resolver for curry2
 const curry2ResolveArg0 = (

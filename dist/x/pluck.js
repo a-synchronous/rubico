@@ -37,7 +37,9 @@ const MappingIterator = (iterator, mapper) => ({
 
 const promiseRace = Promise.race.bind(Promise)
 
-const __ = Symbol.for('placeholder')
+function __(argument) {
+  return argument
+}
 
 // argument resolver for curry2
 const curry2ResolveArg0 = (

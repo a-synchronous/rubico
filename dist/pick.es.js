@@ -98,7 +98,9 @@ const setByPath = function (obj, value, path) {
   return result
 }
 
-const __ = Symbol.for('placeholder')
+function __(argument) {
+  return argument
+}
 
 // argument resolver for curry2
 const curry2ResolveArg0 = (

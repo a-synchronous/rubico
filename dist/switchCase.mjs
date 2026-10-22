@@ -42,7 +42,9 @@ const thunkify3 = (func, arg0, arg1, arg2) => function thunk() {
   return func(arg0, arg1, arg2)
 }
 
-const __ = Symbol.for('placeholder')
+function __(argument) {
+  return argument
+}
 
 // argument resolver for curry3
 const curry3ResolveArg0 = (

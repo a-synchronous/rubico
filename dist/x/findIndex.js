@@ -16,7 +16,9 @@ const thunkConditional = (
   conditionalExpression, thunkOnTruthy, thunkOnFalsy,
 ) => conditionalExpression ? thunkOnTruthy() : thunkOnFalsy()
 
-const __ = Symbol.for('placeholder')
+function __(argument) {
+  return argument
+}
 
 const always = value => function getter() { return value }
 

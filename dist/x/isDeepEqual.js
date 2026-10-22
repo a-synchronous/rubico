@@ -7,7 +7,9 @@
   else if (typeof define == 'function') define(() => isDeepEqual) // AMD
   else (root.isDeepEqual = isDeepEqual) // Browser
 }(typeof globalThis == 'object' ? globalThis : this, (function () {
-const __ = Symbol.for('placeholder')
+function __(argument) {
+  return argument
+}
 
 const isArray = Array.isArray
 

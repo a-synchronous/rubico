@@ -138,7 +138,9 @@ const copyDeep = function (value) {
   return value
 }
 
-const __ = Symbol.for('placeholder')
+function __(argument) {
+  return argument
+}
 
 // argument resolver for curry2
 const curry2ResolveArg0 = (

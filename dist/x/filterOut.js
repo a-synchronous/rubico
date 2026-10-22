@@ -7,7 +7,9 @@
   else if (typeof define == 'function') define(() => filterOut) // AMD
   else (root.filterOut = filterOut) // Browser
 }(typeof globalThis == 'object' ? globalThis : this, (function () {
-const __ = Symbol.for('placeholder')
+function __(argument) {
+  return argument
+}
 
 // argument resolver for curry2
 const curry2ResolveArg0 = (

@@ -36,7 +36,9 @@ const areAnyValuesPromises = function (values) {
 
 const promiseAll = Promise.all.bind(Promise)
 
-const __ = Symbol.for('placeholder')
+function __(argument) {
+  return argument
+}
 
 // argument resolver for curry3
 const curry3ResolveArg0 = (

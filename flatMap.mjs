@@ -22,7 +22,9 @@ const asyncGeneratorFunctionTag = '[object AsyncGeneratorFunction]'
 
 const isAsyncGeneratorFunction = value => objectToString(value) == asyncGeneratorFunctionTag
 
-const __ = Symbol.for('placeholder')
+function __(argument) {
+  return argument
+}
 
 // argument resolver for curry3
 const curry3ResolveArg0 = (

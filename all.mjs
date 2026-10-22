@@ -75,7 +75,9 @@ const promiseObjectAllExecutor = object => function executor(resolve) {
 
 const promiseObjectAll = object => new Promise(promiseObjectAllExecutor(object))
 
-const __ = Symbol.for('placeholder')
+function __(argument) {
+  return argument
+}
 
 // argument resolver for curry2
 const curry2ResolveArg0 = (

@@ -7,7 +7,9 @@
   else if (typeof define == 'function') define(() => __) // AMD
   else (root.__ = __) // Browser
 }(typeof globalThis == 'object' ? globalThis : this, (function () {
-const __ = Symbol.for('placeholder')
+function __(argument) {
+  return argument
+}
 
 return __
 }())))

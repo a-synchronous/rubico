@@ -7,7 +7,9 @@
   else if (typeof define == 'function') define(() => eq) // AMD
   else (root.eq = eq) // Browser
 }(typeof globalThis == 'object' ? globalThis : this, (function () {
-const __ = Symbol.for('placeholder')
+function __(argument) {
+  return argument
+}
 
 const isPromise = value => value != null && typeof value.then == 'function'
 

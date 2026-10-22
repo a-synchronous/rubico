@@ -10,7 +10,9 @@
 
 const isPromise = value => value != null && typeof value.then == 'function'
 
-const __ = Symbol.for('placeholder')
+function __(argument) {
+  return argument
+}
 
 // argument resolver for curry3
 const curry3ResolveArg0 = (
