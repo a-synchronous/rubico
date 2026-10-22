@@ -4726,7 +4726,7 @@ flatMap(
       assert.equal(await promise1, false)
     })
     it("eq(value)(value)", async () => {
-      assert.ok(eq(2)(2))
+      assert.strictEqual(eq(2)(2), true)
     })
     it('coverage', async () => {
       aok(eq(2, 2))
@@ -4799,7 +4799,7 @@ flatMap(
       assert.equal(await promise1, true)
     })
     it("gt(value)(value)", async () => {
-      assert.ok(gt(2)(1))
+      assert.strictEqual(gt(2)(1), true)
     })
     it('coverage', async () => {
       aok(
@@ -4868,7 +4868,7 @@ flatMap(
       assert.equal(await promise1, false)
     })
     it("lt(value)(value)", async () => {
-      assert.ok(lt(1)(2))
+      assert.strictEqual(lt(1)(2), true)
     })
     it('coverage', async () => {
       aok(
@@ -4937,7 +4937,7 @@ flatMap(
       assert.equal(await promise1, true)
     })
     it("gte(value)(value)", async () => {
-      assert.ok(gte(1)(1))
+      assert.strictEqual(gte(1)(1), true)
     })
     it('coverage', async () => {
       aok(
@@ -5006,7 +5006,7 @@ flatMap(
       assert.equal(await promise1, true)
     })
     it("lte(value)(value)", async () => {
-      assert.ok(lte(1)(1))
+      assert.strictEqual(lte(1)(1), true)
     })
     it('coverage', async () => {
       aok(

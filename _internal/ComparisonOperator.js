@@ -15,11 +15,7 @@ const leftValueRightValueCompare = require('./leftValueRightValueCompare')
 // ComparisonOperator(comparator function) -> operator function
 const ComparisonOperator = comparator => function operator(...args) {
   if (args.length < 2) {
-    const left = args[0]
-    if (isPromise(left)) {
-      return curry3(leftValueRightValueCompare, comparator, left, __)
-    }
-    return curry2(ComparisonOperator(comparator), left, __)
+    return curry3(leftValueRightValueCompare, comparator, args[0], __)
   }
 
   const right = args.pop()
