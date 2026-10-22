@@ -5265,8 +5265,8 @@ flatMap(
   })
 
   describe('__', () => {
-    it('is Symbol(placeholder)', async () => {
-      assert.strictEqual(typeof __, 'symbol')
+    it('is an identity function named __', async () => {
+      assert.strictEqual(typeof __, 'function')
     })
   })
 
