@@ -21,7 +21,7 @@ const funcConcat = (
 
 const symbolIterator = Symbol.iterator
 
-const MappingIterator = (iterator, mapper) => ({
+const MappingIterator = (iterator, mapper, context) => ({
   toString() {
     return '[object MappingIterator]'
   },
@@ -31,7 +31,7 @@ const MappingIterator = (iterator, mapper) => ({
   next() {
     const iteration = iterator.next()
     return iteration.done ? iteration
-      : { value: mapper(iteration.value), done: false }
+      : { value: mapper.call(context, iteration.value), done: false }
   },
 })
 
@@ -117,7 +117,7 @@ const sleep = time => new Promise(resolve => {
   setTimeout(resolve, time)
 })
 
-const MappingAsyncIterator = (asyncIterator, mapper) => {
+const MappingAsyncIterator = (asyncIterator, mapper, context) => {
   const buffer = new LinkedList()
 
   let index = -1
@@ -133,7 +133,7 @@ const MappingAsyncIterator = (asyncIterator, mapper) => {
     async _consumeAsyncIterator() {
       for await (const item of asyncIterator) {
         index += 1
-        const mappedItem = mapper(item)
+        const mappedItem = mapper.call(context, item)
         buffer.append(mappedItem)
       }
       isAsyncIteratorDone = true
@@ -264,14 +264,14 @@ const isObject = value => {
 
 const promiseAll = Promise.all.bind(Promise)
 
-const arrayMap = function (array, mapper) {
+const arrayMap = function (array, mapper, context) {
   const arrayLength = array.length,
     result = Array(arrayLength)
   let index = -1,
     isAsync = false
 
   while (++index < arrayLength) {
-    const resultElement = mapper(array[index], index, array)
+    const resultElement = mapper.call(context, array[index], index, array)
     if (isPromise(resultElement)) {
       isAsync = true
     }
@@ -282,8 +282,8 @@ const arrayMap = function (array, mapper) {
 
 const callPropUnary = (value, property, arg0) => value[property](arg0)
 
-const stringMap = function (string, mapper) {
-  const result = arrayMap(string, mapper)
+const stringMap = function (string, mapper, context) {
+  const result = arrayMap(string, mapper, context)
   return isPromise(result)
     ? result.then(curry3(callPropUnary, __, 'join', ''))
     : result.join('')
@@ -291,11 +291,11 @@ const stringMap = function (string, mapper) {
 
 const always = value => function getter() { return value }
 
-const setMap = function (set, mapper) {
+const setMap = function (set, mapper, context) {
   const result = new Set(),
     promises = []
   for (const element of set) {
-    const resultElement = mapper(element, element, set)
+    const resultElement = mapper.call(context, element, element, set)
     if (isPromise(resultElement)) {
       promises.push(resultElement.then(curry3(callPropUnary, result, 'add', __)))
     } else {
@@ -350,11 +350,11 @@ const curry4 = function (baseFunc, arg0, arg1, arg2, arg3) {
 
 const callPropBinary = (value, property, arg0, arg1) => value[property](arg0, arg1)
 
-const mapMap = function (value, mapper) {
+const mapMap = function (value, mapper, context) {
   const result = new Map(),
     promises = []
   for (const [key, element] of value) {
-    const resultElement = mapper(element, key, value)
+    const resultElement = mapper.call(context, element, key, value)
     if (isPromise(resultElement)) {
       promises.push(resultElement.then(
         curry4(callPropBinary, result, 'set', key, __)))
@@ -392,11 +392,11 @@ const promiseObjectAllExecutor = object => function executor(resolve) {
 
 const promiseObjectAll = object => new Promise(promiseObjectAllExecutor(object))
 
-const objectMap = function (object, mapper) {
+const objectMap = function (object, mapper, context) {
   const result = {}
   let isAsync = false
   for (const key in object) {
-    const resultElement = mapper(object[key], key, object)
+    const resultElement = mapper.call(context, object[key], key, object)
     if (isPromise(resultElement)) {
       isAsync = true
     }
@@ -910,9 +910,9 @@ const mapMapEntries = function (source, mapper) {
     : promiseAll(promises).then(always(result))
 }
 
-const _map = function (value, f) {
+const _map = function (value, f, context) {
   if (isArray(value)) {
-    return arrayMap(value, f)
+    return arrayMap(value, f, context)
   }
   if (value == null) {
     return value
@@ -922,25 +922,25 @@ const _map = function (value, f) {
     return value.then(f)
   }
   if (typeof value == 'string' || value.constructor == String) {
-    return stringMap(value, f)
+    return stringMap(value, f, context)
   }
   if (value.constructor == Set) {
-    return setMap(value, f)
+    return setMap(value, f, context)
   }
   if (value.constructor == Map) {
-    return mapMap(value, f)
+    return mapMap(value, f, context)
   }
   if (typeof value[symbolIterator] == 'function') {
-    return MappingIterator(value[symbolIterator](), f)
+    return MappingIterator(value[symbolIterator](), f, context)
   }
   if (typeof value[symbolAsyncIterator] == 'function') {
-    return MappingAsyncIterator(value[symbolAsyncIterator](), f)
+    return MappingAsyncIterator(value[symbolAsyncIterator](), f, context)
   }
   if (typeof value.map == 'function') {
     return value.map(f)
   }
   if (value.constructor == Object) {
-    return objectMap(value, f)
+    return objectMap(value, f, context)
   }
   return f(value)
 }
@@ -952,6 +952,15 @@ const map = function (arg0, arg1) {
   return isPromise(arg0)
     ? arg0.then(curry2(_map, __, arg1))
     : _map(arg0, arg1)
+}
+
+map.call = function call(arg0, arg1, arg2) {
+  if (arg2 == null) {
+    return curry3(_map, __, arg0, arg1)
+  }
+  return isPromise(arg0)
+    ? arg0.then(curry3(_map, __, arg1, arg2))
+    : _map(arg0, arg1, arg2)
 }
 
 // _mapEntries(value Object|Map, f function) -> Object|Map

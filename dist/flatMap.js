@@ -587,14 +587,14 @@ const arrayFlatten = function (array) {
     : promiseAll(promises).then(always(result))
 }
 
-const arrayMap = function (array, mapper) {
+const arrayMap = function (array, mapper, context) {
   const arrayLength = array.length,
     result = Array(arrayLength)
   let index = -1,
     isAsync = false
 
   while (++index < arrayLength) {
-    const resultElement = mapper(array[index], index, array)
+    const resultElement = mapper.call(context, array[index], index, array)
     if (isPromise(resultElement)) {
       isAsync = true
     }
@@ -635,11 +635,11 @@ const promiseObjectAllExecutor = object => function executor(resolve) {
 
 const promiseObjectAll = object => new Promise(promiseObjectAllExecutor(object))
 
-const objectMap = function (object, mapper) {
+const objectMap = function (object, mapper, context) {
   const result = {}
   let isAsync = false
   for (const key in object) {
-    const resultElement = mapper(object[key], key, object)
+    const resultElement = mapper.call(context, object[key], key, object)
     if (isPromise(resultElement)) {
       isAsync = true
     }
@@ -702,11 +702,11 @@ const objectFlatMap = function (object, flatMapper) {
 
 const callPropUnary = (value, property, arg0) => value[property](arg0)
 
-const setMap = function (set, mapper) {
+const setMap = function (set, mapper, context) {
   const result = new Set(),
     promises = []
   for (const element of set) {
-    const resultElement = mapper(element, element, set)
+    const resultElement = mapper.call(context, element, element, set)
     if (isPromise(resultElement)) {
       promises.push(resultElement.then(curry3(callPropUnary, result, 'add', __)))
     } else {
