@@ -279,6 +279,7 @@ const map = function (arg0, arg1) {
  * map.call(mapper Mapper, context object)(functor Functor) -> mappedFunctor Promise|Functor
  * ```
  *
+ * @description
  * [map](/docs/map) with the specified context.
  *
  * ```javascript [playground]
