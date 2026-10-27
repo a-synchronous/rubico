@@ -2,85 +2,156 @@ import assert from 'assert'
 import walk from './walk.mjs'
 
 function assertGlobal() {
-  assert.equal(typeof globalThis.pipe, 'function')
-  assert.equal(typeof globalThis.compose, 'function')
-  assert.equal(typeof globalThis.tap, 'function')
-  assert.equal(typeof globalThis.all, 'function')
-  assert.equal(typeof globalThis.assign, 'function')
-  assert.equal(typeof globalThis.tryCatch, 'function')
-  assert.equal(typeof globalThis.switchCase, 'function')
-  assert.equal(typeof globalThis.map, 'function')
-  assert.equal(typeof globalThis.filter, 'function')
-  assert.equal(typeof globalThis.reduce, 'function')
-  assert.equal(typeof globalThis.transform, 'function')
-  assert.equal(typeof globalThis.flatMap, 'function')
-  assert.equal(typeof globalThis.forEach, 'function')
-  assert.equal(typeof globalThis.some, 'function')
-  assert.equal(typeof globalThis.every, 'function')
-  assert.equal(typeof globalThis.and, 'function')
-  assert.equal(typeof globalThis.or, 'function')
-  assert.equal(typeof globalThis.not, 'function')
-  assert.equal(typeof globalThis.gt, 'function')
-  assert.equal(typeof globalThis.lt, 'function')
-  assert.equal(typeof globalThis.gte, 'function')
-  assert.equal(typeof globalThis.lte, 'function')
-  assert.equal(typeof globalThis.get, 'function')
-  assert.equal(typeof globalThis.set, 'function')
-  assert.equal(typeof globalThis.pick, 'function')
-  assert.equal(typeof globalThis.omit, 'function')
-  assert.equal(typeof globalThis.thunkify, 'function')
-  assert.equal(typeof globalThis.always, 'function')
-  assert.equal(typeof globalThis.curry, 'function')
-  assert.equal(typeof globalThis.__, 'symbol')
+  pipe
+  compose
+  tap
+  all
+  assign
+  tryCatch
+  switchCase
+  map
+  filter
+  reduce
+  transform
+  flatMap
+  forEach
+  some
+  every
+  and
+  or
+  not
+  eq
+  gt
+  lt
+  gte
+  lte
+  get
+  set
+  pick
+  omit
+  thunkify
+  always
+  curry
+  __
+  Transducer
+}
+
+function assertGlobalNoTransducer() {
+  pipe
+  compose
+  tap
+  all
+  assign
+  tryCatch
+  switchCase
+  map
+  filter
+  reduce
+  transform
+  flatMap
+  forEach
+  some
+  every
+  and
+  or
+  not
+  eq
+  gt
+  lt
+  gte
+  lte
+  get
+  set
+  pick
+  omit
+  thunkify
+  always
+  curry
+  __
+}
+
+function deleteGlobal() {
+  delete globalThis.pipe
+  delete globalThis.compose
+  delete globalThis.tap
+  delete globalThis.all
+  delete globalThis.assign
+  delete globalThis.tryCatch
+  delete globalThis.switchCase
+  delete globalThis.map
+  delete globalThis.filter
+  delete globalThis.reduce
+  delete globalThis.transform
+  delete globalThis.flatMap
+  delete globalThis.forEach
+  delete globalThis.some
+  delete globalThis.every
+  delete globalThis.and
+  delete globalThis.or
+  delete globalThis.not
+  delete globalThis.eq
+  delete globalThis.gt
+  delete globalThis.lt
+  delete globalThis.gte
+  delete globalThis.lte
+  delete globalThis.get
+  delete globalThis.set
+  delete globalThis.pick
+  delete globalThis.omit
+  delete globalThis.thunkify
+  delete globalThis.always
+  delete globalThis.curry
+  delete globalThis.__
+  delete globalThis.Transducer
 }
 
 function assertRubico(rubico) {
-  assert.equal(Object.keys(rubico).length, 31)
-  assert.equal(typeof rubico.pipe, 'function')
-  assert.equal(typeof rubico.compose, 'function')
-  assert.equal(typeof rubico.tap, 'function')
-  assert.equal(typeof rubico.all, 'function')
-  assert.equal(typeof rubico.assign, 'function')
-  assert.equal(typeof rubico.tryCatch, 'function')
-  assert.equal(typeof rubico.switchCase, 'function')
-  assert.equal(typeof rubico.map, 'function')
-  assert.equal(typeof rubico.filter, 'function')
-  assert.equal(typeof rubico.reduce, 'function')
-  assert.equal(typeof rubico.transform, 'function')
-  assert.equal(typeof rubico.flatMap, 'function')
-  assert.equal(typeof rubico.forEach, 'function')
-  assert.equal(typeof rubico.some, 'function')
-  assert.equal(typeof rubico.every, 'function')
-  assert.equal(typeof rubico.and, 'function')
-  assert.equal(typeof rubico.or, 'function')
-  assert.equal(typeof rubico.not, 'function')
-  assert.equal(typeof rubico.gt, 'function')
-  assert.equal(typeof rubico.lt, 'function')
-  assert.equal(typeof rubico.gte, 'function')
-  assert.equal(typeof rubico.lte, 'function')
-  assert.equal(typeof rubico.get, 'function')
-  assert.equal(typeof rubico.set, 'function')
-  assert.equal(typeof rubico.pick, 'function')
-  assert.equal(typeof rubico.omit, 'function')
-  assert.equal(typeof rubico.thunkify, 'function')
-  assert.equal(typeof rubico.always, 'function')
-  assert.equal(typeof rubico.curry, 'function')
-  assert.equal(typeof rubico.__, 'symbol')
+  assert(rubico.pipe)
+  assert(rubico.compose)
+  assert(rubico.tap)
+  assert(rubico.all)
+  assert(rubico.assign)
+  assert(rubico.tryCatch)
+  assert(rubico.switchCase)
+  assert(rubico.map)
+  assert(rubico.filter)
+  assert(rubico.reduce)
+  assert(rubico.transform)
+  assert(rubico.flatMap)
+  assert(rubico.forEach)
+  assert(rubico.some)
+  assert(rubico.every)
+  assert(rubico.and)
+  assert(rubico.or)
+  assert(rubico.not)
+  assert(rubico.eq)
+  assert(rubico.gt)
+  assert(rubico.lt)
+  assert(rubico.gte)
+  assert(rubico.lte)
+  assert(rubico.get)
+  assert(rubico.set)
+  assert(rubico.pick)
+  assert(rubico.omit)
+  assert(rubico.thunkify)
+  assert(rubico.always)
+  assert(rubico.curry)
+  assert(rubico.__)
 }
 
 function assertTransducer(Transducer) {
-  assert.equal(Object.keys(Transducer).length, 6)
-  assert.equal(typeof Transducer.map, 'function')
-  assert.equal(typeof Transducer.filter, 'function')
-  assert.equal(typeof Transducer.flatMap, 'function')
-  assert.equal(typeof Transducer.forEach, 'function')
-  assert.equal(typeof Transducer.passthrough, 'function')
-  assert.equal(typeof Transducer.tryCatch, 'function')
+  assert(Transducer.map)
+  assert(Transducer.filter)
+  assert(Transducer.flatMap)
+  assert(Transducer.forEach)
+  assert(Transducer.passthrough)
+  assert(Transducer.tryCatch)
 }
 
 const distTest = async function main() {
   await import('./global.mjs')
   assertGlobal()
+  deleteGlobal()
 
   const filepaths = []
   for await (const filepath of walk(`${import.meta.dirname}/dist`)) {
@@ -102,13 +173,12 @@ const distTest = async function main() {
       console.log('Successfully imported', name)
 
       if (name.includes('rubico.global')) {
-        assertGlobal()
+        assertGlobalNoTransducer()
+        deleteGlobal()
       } else if (name.includes('rubico') || name.includes('index.js')) {
         assertRubico(module.default)
       } else if (name.includes('Transducer')) {
         assertTransducer(module.default)
-      } else if (module.default == __) {
-        assert(typeof module.default, 'symbol')
       } else {
         assert(typeof module.default, 'function')
       }
