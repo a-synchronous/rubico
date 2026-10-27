@@ -12,18 +12,19 @@ const callPropBinary = require('./callPropBinary')
  * ```coffeescript [specscript]
  * mapMap(
  *   value Map,
- *   mapper (element any, key any, value)=>Promise|any
+ *   mapper (element any, key any, value)=>Promise|any,
+ *   context object
  * ) -> Promise|Map<any=>any>
  * ```
  *
  * @description
  * Apply a mapper concurrently to each value (not entry) of a Map, returning a Map of results. `mapper` may be asynchronous.
  */
-const mapMap = function (value, mapper) {
+const mapMap = function (value, mapper, context) {
   const result = new Map(),
     promises = []
   for (const [key, element] of value) {
-    const resultElement = mapper(element, key, value)
+    const resultElement = mapper.call(context, element, key, value)
     if (isPromise(resultElement)) {
       promises.push(resultElement.then(
         curry4(callPropBinary, result, 'set', key, __)))

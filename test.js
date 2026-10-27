@@ -1395,6 +1395,61 @@ describe('rubico', () => {
     })
   })
 
+  describe('map.call', () => {
+    it('immediate', async () => {
+      function parseString(s) {
+        if (s.includes(this.delimiter)) {
+          return s.split(this.delimiter)
+        }
+        return s
+      }
+      const array = ["a", "a,b", "a,b,c"]
+      class Parser {
+        constructor(options) {
+          this.delimiter = options.delimiter
+        }
+      }
+
+      const parser = new Parser({ delimiter: "," })
+      const parsed1 = map.call(array, parseString, parser)
+      assert.deepEqual(parsed1, [
+        "a",
+        ["a", "b"],
+        ["a", "b", "c"],
+      ])
+
+      const parsed2 = await map.call(Promise.resolve(array), parseString, parser)
+      assert.deepEqual(parsed2, [
+        "a",
+        ["a", "b"],
+        ["a", "b", "c"],
+      ])
+    })
+
+    it('lazy', async () => {
+      function parseString(s) {
+        if (s.includes(this.delimiter)) {
+          return s.split(this.delimiter)
+        }
+        return s
+      }
+      const array = ["a", "a,b", "a,b,c"]
+      class Parser {
+        constructor(options) {
+          this.delimiter = options.delimiter
+        }
+      }
+
+      const parser = new Parser({ delimiter: "," })
+      const parsed = map.call(parseString, parser)(array)
+      assert.deepEqual(parsed, [
+        "a",
+        ["a", "b"],
+        ["a", "b", "c"],
+      ])
+    })
+  })
+
   describe('map.entries', () => {
     it('immediate', async () => {
       assert.deepEqual(

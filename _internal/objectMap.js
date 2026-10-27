@@ -10,17 +10,18 @@ const promiseObjectAll = require('./promiseObjectAll')
  *   T any,
  *   object Object<T>,
  *   mapper T=>Promise|any,
- * >(object, mapper) -> Promise|Object
+ *   context object
+ * >(object, mapper, context) -> Promise|Object
  * ```
  *
  * @description
  * Apply a mapper concurrently to each value of an object, returning an object of results. Mapper may be asynchronous.
  */
-const objectMap = function (object, mapper) {
+const objectMap = function (object, mapper, context) {
   const result = {}
   let isAsync = false
   for (const key in object) {
-    const resultElement = mapper(object[key], key, object)
+    const resultElement = mapper.call(context, object[key], key, object)
     if (isPromise(resultElement)) {
       isAsync = true
     }

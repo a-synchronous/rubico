@@ -9,7 +9,8 @@ const symbolIterator = require('./symbolIterator')
  *   T any,
  *   iterator Iterator<T>,
  *   mapper T=>any,
- * >(iterator, mapper) -> mappingIterator Object
+ *   context object
+ * >(iterator, mapper, context) -> mappingIterator Object
  *
  * mappingIterator.next() -> nextIteration { value: any, done: boolean }
  * ```
@@ -19,7 +20,7 @@ const symbolIterator = require('./symbolIterator')
  *
  * Note: consuming the mapping iterator also consumes the source iterator.
  */
-const MappingIterator = (iterator, mapper) => ({
+const MappingIterator = (iterator, mapper, context) => ({
   toString() {
     return '[object MappingIterator]'
   },
@@ -29,7 +30,7 @@ const MappingIterator = (iterator, mapper) => ({
   next() {
     const iteration = iterator.next()
     return iteration.done ? iteration
-      : { value: mapper(iteration.value), done: false }
+      : { value: mapper.call(context, iteration.value), done: false }
   },
 })
 

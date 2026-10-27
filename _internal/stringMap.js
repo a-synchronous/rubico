@@ -13,7 +13,8 @@ const callPropUnary = require('./callPropUnary')
  *   character string,
  *   str String<character>,
  *   mapper character=>Promise|string|any,
- * >(str, mapper) -> stringWithCharactersMapped string
+ *   context object
+ * >(str, mapper, context) -> stringWithCharactersMapped string
  * ```
  *
  * @description
@@ -21,8 +22,8 @@ const callPropUnary = require('./callPropUnary')
  *
  * @related stringFlatMap
  */
-const stringMap = function (string, mapper) {
-  const result = arrayMap(string, mapper)
+const stringMap = function (string, mapper, context) {
+  const result = arrayMap(string, mapper, context)
   return isPromise(result)
     ? result.then(curry3(callPropUnary, __, 'join', ''))
     : result.join('')

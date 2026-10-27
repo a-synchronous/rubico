@@ -15,12 +15,13 @@ const sleep = require('./sleep')
  * mappingAsyncIterator = new MappingAsyncIterator(
  *   asyncIter AsyncIterator<T>,
  *   mapper T=>Promise|any,
+ *   context object
  * ) -> mappingAsyncIterator AsyncIterator
  *
  * mappingAsyncIterator.next() -> Promise<{ value: any, done: boolean }>
  * ```
  */
-const MappingAsyncIterator = (asyncIterator, mapper) => {
+const MappingAsyncIterator = (asyncIterator, mapper, context) => {
   const buffer = new LinkedList()
 
   let index = -1
@@ -36,7 +37,7 @@ const MappingAsyncIterator = (asyncIterator, mapper) => {
     async _consumeAsyncIterator() {
       for await (const item of asyncIterator) {
         index += 1
-        const mappedItem = mapper(item)
+        const mappedItem = mapper.call(context, item)
         buffer.append(mappedItem)
       }
       isAsyncIteratorDone = true

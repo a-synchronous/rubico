@@ -123,7 +123,7 @@ curry.arity = function curryArity_(arity, func, ...args) {
  * ```
  *
  * @description
- * [curry](/docs/curry) with specified context.
+ * [curry](/docs/curry) with the specified context.
  *
  * ```javascript [playground]
  * class Point {

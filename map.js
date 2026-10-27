@@ -54,9 +54,9 @@ const symbolAsyncIterator = require('./_internal/symbolAsyncIterator')
  * ```
  */
 
-const _map = function (value, f) {
+const _map = function (value, f, context) {
   if (isArray(value)) {
-    return arrayMap(value, f)
+    return arrayMap(value, f, context)
   }
   if (value == null) {
     return value
@@ -66,25 +66,25 @@ const _map = function (value, f) {
     return value.then(f)
   }
   if (typeof value == 'string' || value.constructor == String) {
-    return stringMap(value, f)
+    return stringMap(value, f, context)
   }
   if (value.constructor == Set) {
-    return setMap(value, f)
+    return setMap(value, f, context)
   }
   if (value.constructor == Map) {
-    return mapMap(value, f)
+    return mapMap(value, f, context)
   }
   if (typeof value[symbolIterator] == 'function') {
-    return MappingIterator(value[symbolIterator](), f)
+    return MappingIterator(value[symbolIterator](), f, context)
   }
   if (typeof value[symbolAsyncIterator] == 'function') {
-    return MappingAsyncIterator(value[symbolAsyncIterator](), f)
+    return MappingAsyncIterator(value[symbolAsyncIterator](), f, context)
   }
   if (typeof value.map == 'function') {
     return value.map(f)
   }
   if (value.constructor == Object) {
-    return objectMap(value, f)
+    return objectMap(value, f, context)
   }
   return f(value)
 }
@@ -239,6 +239,7 @@ const _map = function (value, f) {
  *
  * See also:
  *  * [forEach](/docs/forEach)
+ *  * [map.call](/docs/map.call)
  *  * [map.entries](/docs/map.entries)
  *  * [map.series](/docs/map.series)
  *  * [map.pool](/docs/map.pool)
@@ -259,6 +260,72 @@ const map = function (arg0, arg1) {
   return isPromise(arg0)
     ? arg0.then(curry2(_map, __, arg1))
     : _map(arg0, arg1)
+}
+
+/**
+ * @name map.call
+ *
+ * @synopsis
+ * ```coffeescript [specscript]
+ * type Functor = Array|Set|Map|Generator|AsyncGenerator|{ map: function }|Object
+ *
+ * type Mapper = (
+ *   item any,
+ *   indexOrKey number|string|any,
+ *   functor Functor
+ * )=>(mappedItem Promise|any)
+ *
+ * map.call(functor Promise|Functor, mapper Mapper, context object) -> mappedFunctor Promise|Functor
+ * map.call(mapper Mapper, context object)(functor Functor) -> mappedFunctor Promise|Functor
+ * ```
+ *
+ * [map](/docs/map) with the specified context.
+ *
+ * ```javascript [playground]
+ * function parseString(s) {
+ *   if (s.includes(this.delimiter)) {
+ *     return s.split(this.delimiter)
+ *   }
+ *   return s
+ * }
+ *
+ * const array = [
+ *   "a",
+ *   "a,b",
+ *   "a,b,c",
+ * ]
+ *
+ * class Parser {
+ *   constructor(options) {
+ *     this.delimiter = options.delimiter
+ *   }
+ * }
+ *
+ * const parser = new Parser({ delimiter: "," })
+ *
+ * const parsed = map.call(array, parseString, parser)
+ *
+ * console.log(parsed)
+ * ```
+ *
+ * See also:
+ *  * [map](/docs/map)
+ *  * [map.entries](/docs/map.entries)
+ *  * [map.series](/docs/map.series)
+ *  * [map.pool](/docs/map.pool)
+ *  * [filter](/docs/filter)
+ *  * [reduce](/docs/reduce)
+ *  * [transform](/docs/transform)
+ *  * [flatMap](/docs/flatMap)
+ *  * [some](/docs/some)
+ */
+map.call = function call(arg0, arg1, arg2) {
+  if (arg2 == null) {
+    return curry3(_map, __, arg0, arg1)
+  }
+  return isPromise(arg0)
+    ? arg0.then(curry3(_map, __, arg1, arg2))
+    : _map(arg0, arg1, arg2)
 }
 
 // _mapEntries(value Object|Map, f function) -> Object|Map
