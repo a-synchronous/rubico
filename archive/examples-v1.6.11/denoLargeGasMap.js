@@ -4,7 +4,7 @@ import {
   pipe, fork, tap, map, filter, reduce, transform, get, not,
 } from '../rubico.js'
 
-const apiKey = "709a7d013e4fda8f3e21166c33a1a691"
+const apiKey = Deno.env.get('AGSI_API_KEY')
 
 const urls = [
   'https://cors-anywhere.herokuapp.com/https://agsi.gie.eu/api/data/21X000000001160J/DE',
