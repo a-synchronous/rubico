@@ -4617,6 +4617,17 @@ flatMap(
   })
 
   describe('and', () => {
+    it('and(...predicates)', async () => {
+      const test1 = and(
+        x => x ** 2 == x * 2,
+        x => x + 2 == x * 2,
+      )
+      assert.strictEqual(test1(0), false)
+      assert.strictEqual(test1(1), false)
+      assert.strictEqual(test1(2), true)
+      assert.strictEqual(test1(3), false)
+      assert.strictEqual(test1(4), false)
+    })
     it('coverage', async () => {
       aok(
         and(1, 2, 3, [
@@ -4694,6 +4705,16 @@ flatMap(
   })
 
   describe('or', () => {
+    it('or(...predicates)', async () => {
+      const test1 = or(
+        x => x == 1,
+        x => x == 2,
+      )
+      assert.strictEqual(test1(0), false)
+      assert.strictEqual(test1(1), true)
+      assert.strictEqual(test1(2), true)
+      assert.strictEqual(test1(3), false)
+    })
     it('coverage', async () => {
       aok(
         or(1, 2, 3, [

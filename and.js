@@ -103,16 +103,17 @@ const areAllPredicatesTruthy = function (args, predicates) {
  * and(...arguments, predicatesOrValues Array<Predicate|Promise|boolean|any>) -> booleanResult Promise|boolean
  * and(argument, ...predicatesOrValues Arguments<Predicate|Promise|boolean|any>) -> booleanResult Promise|boolean
  * and(predicatesOrValues Array<Predicate|Promise|boolean|any>)(...arguments) -> booleanResult Promise|boolean
+ * and(...predicatesOrValues Array<Predicate|Promise|boolean|any>)(...arguments) -> booleanResult Promise|boolean
  * ```
  *
  * @description
  * Logical operator. Tests an array of predicate functions, promises, or values, returning true if all predicates test true and all values are truthy.
  *
  * ```javascript [playground]
- * const isOddAndGreaterThan3 = and([
+ * const isOddAndGreaterThan3 = and(
  *   n => n % 2 == 1,
- *   n => n > 3,
- * ])
+ *   n => n > 3
+ * )
  *
  * console.log(isOddAndGreaterThan3(5))
  * console.log(isOddAndGreaterThan3(3))
@@ -187,6 +188,9 @@ const areAllPredicatesTruthy = function (args, predicates) {
  * @note ...args slows down here by an order of magnitude
  */
 const and = function (...args) {
+  if (typeof args[0] == 'function') {
+    return curryArgs2(areAllPredicatesTruthy, __, args)
+  }
   if (typeof args[1] == 'function') {
     const arg = args.shift()
     return isPromise(arg)
