@@ -127,12 +127,12 @@ const areAnyPredicatesTruthy = function (args, predicates) {
  * const isNegative = number => number < 0
  * const asyncIsGreaterThan3 = async number => number > 3
  *
- * const aggregatePredicate = or([
+ * const aggregatePredicate = or(
  *   false,
  *   isOdd,
  *   isNegative,
  *   asyncIsGreaterThan3,
- * ])
+ * )
  *
  * const booleanResult = await aggregatePredicate(2)
  *
@@ -146,34 +146,34 @@ const areAnyPredicatesTruthy = function (args, predicates) {
  * const oneIsGreaterThanTwo = 1 > 2
  * const threeIsNotEqualToThree = 3 !== 3
  *
- * const booleanResult = or([
+ * const booleanResult = or(
  *   oneIsLessThanZero,
  *   oneIsGreaterThanTwo,
  *   threeIsNotEqualToThree
- * ])
+ * )
  *
  * console.log(booleanResult)
  * ```
  *
- * A single argument and one or more predicate functions passed to `or` executes immediately.
+ * Predicates may be passed to `or` as an array.
  *
  * ```javascript [playground]
- * const bool = or(
- *   2,
+ * const test = or([
  *   n => n > 1,
  *   n => n % 2 == 0,
- * )
+ * ])
  *
- * console.log(bool)
+ * console.log(test(2))
  * ```
  *
  * Any promises in the array are resolved for their values before further execution.
  *
  * ```javascript [playground]
- * or(Promise.resolve('aaa'), [
+ * or(
+ *   Promise.resolve('aaa'),
  *   s => s.startsWith('b'),
- *   s => s.endsWith('a'),
- * ]).then(console.log)
+ *   s => s.endsWith('a')
+ * ).then(console.log)
  * ```
  *
  * See also:

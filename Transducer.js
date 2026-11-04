@@ -207,7 +207,7 @@ Transducer.flatMap = function transducerFlatMap(flatMapper) {
  *
  * transform(numbers, compose(
  *   Transducer.map(number => number ** 2),
- *   Transducer.forEach(console.log),
+ *   Transducer.forEach(console.log)
  * ), null)
  * ```
  *

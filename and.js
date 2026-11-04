@@ -127,12 +127,12 @@ const areAllPredicatesTruthy = function (args, predicates) {
  * const isPositive = number => number > 0
  * const asyncIsLessThan3 = async number => number < 3
  *
- * const aggregatePredicate = and([
+ * const aggregatePredicate = and(
  *   true,
  *   isOdd,
  *   isPositive,
  *   asyncIsLessThan3,
- * ])
+ * )
  *
  * const booleanResult = await aggregatePredicate(1)
  *
@@ -146,35 +146,35 @@ const areAllPredicatesTruthy = function (args, predicates) {
  * const twoIsGreaterThanOne = 2 > 1
  * const threeIsEqualToThree = 3 === 3
  *
- * const booleanResult = and([
+ * const booleanResult = and(
  *   oneIsLessThanThree,
  *   twoIsGreaterThanOne,
  *   threeIsEqualToThree
- * ])
+ * )
  *
  * console.log(booleanResult)
  * ```
  *
- * A single argument and one or more predicate functions passed to `and` executes immediately.
+ * Predicates may be passed to `and` as an array.
  *
  * ```javascript [playground]
- * const bool = and(
- *   3,
+ * const test = and([
  *   n => n > 1,
  *   n => n % 2 == 1,
  *   n => n / 3 == 1,
- * )
+ * ])
  *
- * console.log(bool)
+ * console.log(test(3))
  * ```
  *
  * Any promises in the array are resolved for their values before further execution.
  *
  * ```javascript [playground]
- * and(Promise.resolve(5), [
+ * and(
+ *   Promise.resolve(5),
  *   n => n > 0,
- *   n => n < 10,
- * ]).then(console.log)
+ *   n => n < 10
+ * ).then(console.log)
  * ```
  *
  * See also:

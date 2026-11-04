@@ -72,10 +72,11 @@ const _some = function (collection, predicate) {
  * `some` supports a lazy interface for composability.
  *
  * ```javascript [playground]
- * pipe([1, 2, 3], [
+ * pipe(
+ *   [1, 2, 3],
  *   some(number => number < 5),
- *   console.log,
- * ])
+ *   console.log
+ * )
  * ```
  *
  * If the foldable is a promise, it is resolved for its value before further execution for the immediate interface only.

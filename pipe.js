@@ -32,10 +32,7 @@ const __ = require('./_internal/placeholder')
  *   return a + b + c
  * }
  *
- * const pipeline = pipe([
- *   add,
- *   console.log,
- * ])
+ * const pipeline = pipe(add, console.log)
  *
  * pipeline(1, 2, 3)
  * ```

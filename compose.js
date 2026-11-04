@@ -31,7 +31,7 @@ const funcConcat = require('./_internal/funcConcat')
  * const f = x => x * 2
  * const g = x => x + 3
  *
- * const result = compose(5, [f, g])
+ * const result = compose(5, f, g)
  *
  * console.log(result)
  * ```
@@ -45,17 +45,6 @@ const funcConcat = require('./_internal/funcConcat')
  * const composition = compose(f, g)
  *
  * console.log(composition(1))
- * ```
- *
- * A single argument and one or more functions passed to `compose` executes immediately.
- *
- * ```javascript [playground]
- * const f = x => x * 2
- * const g = x => x + 1
- *
- * const result = compose(1, f, g)
- *
- * console.log(result)
  * ```
  *
  * Any promises in `arguments` are resolved for their values before further execution for the immediate interface only.

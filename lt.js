@@ -58,10 +58,11 @@ const lessThan = require('./_internal/lessThan')
  * const bool = lt(1)(2)
  * console.log(bool)
  *
- * pipe({ value: 1 }, [
+ * pipe(
+ *   { value: 1 },
  *   lt(0, get('value')),
- *   console.log,
- * ])
+ *   console.log
+ * )
  * ```
  *
  * Any promises in `arguments` are resolved for their values before further execution for the immediate interface only.

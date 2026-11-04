@@ -58,10 +58,11 @@ const lessThanOrEqual = require('./_internal/lessThanOrEqual')
  * const bool = lte(0)(1)
  * console.log(bool)
  *
- * pipe({ value: 1 }, [
+ * pipe(
+ *   { value: 1 },
  *   lte(1, get('value')),
- *   console.log,
- * ])
+ *   console.log
+ * )
  * ```
  *
  * Any promises in `arguments` are resolved for their values before further execution for the immediate interface only.

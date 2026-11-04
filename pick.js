@@ -39,7 +39,7 @@ const _pick = function (source, keys) {
  * ```javascript [playground]
  * const argumentObject = { goodbye: 1, world: 2 }
  *
- * const newObject = pick(argumentObject, ['hello', 'world'])
+ * const newObject = pick(argumentObject, 'hello', 'world')
  *
  * console.log(newObject)
  * ```
@@ -53,23 +53,24 @@ const _pick = function (source, keys) {
  * ```javascript [playground]
  * const nested = { a: { b: { c: { d: 1, e: [2, 3] } } } }
  *
- * console.log(pick(nested, ['a.b.c.d']))
+ * console.log(pick(nested, 'a.b.c.d'))
  * ```
  *
  * `pick` supports a lazy interface for composability.
  *
  * ```javascript [playground]
- * pipe({ a: 1, b: 2, c: 3 }, [
+ * pipe(
+ *   { a: 1, b: 2, c: 3 },
  *   map(number => number ** 2),
- *   pick(['a', 'c']),
- *   console.log,
- * ])
+ *   pick('a', 'c'),
+ *   console.log
+ * )
  * ```
  *
- * The keys of the constructed object may be provided to `pick` as arguments. The object is immediately constructed if the argument object is provided along with the keys.
+ * The keys of the constructed object may be provided to `pick` as an array.
  *
  * ```javascript [playground]
- * const objectAC = pick({ a: 1, b: 2, c: 3 }, 'a', 'c')
+ * const objectAC = pick({ a: 1, b: 2, c: 3 }, ['a', 'c'])
  * console.log(objectAC)
  * ```
  *
@@ -84,7 +85,7 @@ const _pick = function (source, keys) {
  * If the argument object is a promise, it is resolved for its value before further execution for the immediate interface only.
  *
  * ```javascript [playground]
- * pick(Promise.resolve({ a: 1, b: 2, c: 3 }), ['a', 'b']).then(console.log)
+ * pick(Promise.resolve({ a: 1, b: 2, c: 3 }), 'a', 'b').then(console.log)
  * ```
  *
  * See also:

@@ -56,10 +56,11 @@ const greaterThan = require('./_internal/greaterThan')
  * const bool = gt(2)(1)
  * console.log(bool)
  *
- * pipe({ value: 1 }, [
+ * pipe(
+ *   { value: 1 },
  *   gt(5, get('value')),
  *   console.log,
- * ])
+ * )
  * ```
  *
  * Any promises in `arguments` are resolved for their values before further execution for the immediate interface only.

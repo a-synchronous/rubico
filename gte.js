@@ -60,10 +60,11 @@ const greaterThanOrEqual = require('./_internal/greaterThanOrEqual')
  * const bool = gte(0)(0)
  * console.log(bool)
  *
- * pipe({ value: 1 }, [
+ * pipe(
+ *   { value: 1 },
  *   gte(1, get('value')),
- *   console.log,
- * ])
+ *   console.log
+ * )
  * ```
  *
  * Any promises in `arguments` are resolved for their values before further execution for the immediate interface only.

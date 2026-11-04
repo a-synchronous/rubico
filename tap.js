@@ -32,11 +32,11 @@ const _tap = function (args, f) {
  * Calls a function with provided arguments, returning the first argument. The return value of the function call is discarded.
  *
  * ```javascript [playground]
- * const pipeline = pipe([
+ * const pipeline = pipe(
  *   tap(value => console.log(value)),
  *   tap(value => console.log(value + 'b')),
  *   tap(value => console.log(value + 'bc')),
- * ])
+ * )
  *
  * pipeline('a')
  * ```

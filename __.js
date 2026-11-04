@@ -9,12 +9,14 @@ const __ = require('./_internal/placeholder')
  * ```
  *
  * @description
- * A special placeholder value `__` (two underscores) that denotes the position of an argument in a curried function.
+ * A special placeholder value `__` (two underscores) that denotes the position of an argument in a curried function. Doubles as the identity function.
  *
  * ```javascript [playground]
  * const curriedFunction = curry.arity(3, Array.of, __, 2, 3)
  *
  * console.log(curriedFunction(1))
+ *
+ * console.log(__(1))
  * ```
  *
  * See also:

@@ -24,21 +24,30 @@ const equals = require('./_internal/equals')
  * Comparison operator. Tests for equality (`==`) between two values.
  *
  * ```javascript [playground]
- * const areNamesEqual = eq('Ted', 'John')
+ * const myVar = "z"
  *
- * console.log(areNamesEqual)
+ * const log = x => thunkify(console.log, x)
+ *
+ * switchCase(
+ *   myVar,
+ *   eq("a"), log("first"),
+ *   eq("b"), log("second"),
+ *   eq("c"), log("third"),
+ *   eq("z"), log("last"),
+ *   log("unknown"),
+ * )
  * ```
  *
  * If either of the two values are resolver functions, `eq` returns a function that resolves the values to compare.
  *
  * ```javascript [playground]
- * const personIsJohn = eq(get('name'), 'John')
+ * const personIsJohn = eq(get('name'), 'Jim')
  * const personLikesBananas = eq(get('likes'), 'bananas')
  *
- * const person = { name: 'John', likes: 'bananas' }
+ * const person = { name: 'Jim', likes: 'bananas' }
  *
  * if (personIsJohn(person) && personLikesBananas(person)) {
- *   console.log('John likes bananas.')
+ *   console.log('Jim likes bananas.')
  * }
  * ```
  *
@@ -47,7 +56,7 @@ const equals = require('./_internal/equals')
  * ```javascript [playground]
  * const profilebase = new Map()
  *
- * profilebase.set('example-id', { name: 'John', likes: 'bananas' })
+ * profilebase.set('example-id', { name: 'Jim', likes: 'bananas' })
  *
  * async function getProfileNameById(id) {
  *   const profile = profilebase.get(id)
@@ -57,7 +66,7 @@ const equals = require('./_internal/equals')
  *   return undefined
  * }
  *
- * const booleanResult = await eq('example-id', getProfileNameById, 'John')
+ * const booleanResult = await eq('example-id', getProfileNameById, 'Jim')
  *
  * console.log(booleanResult)
  * ```
@@ -68,10 +77,11 @@ const equals = require('./_internal/equals')
  * const bool = eq(1)(1)
  * console.log(bool)
  *
- * pipe({ name: 'John' }, [
- *   eq('John', get('name')),
- *   console.log,
- * ])
+ * pipe(
+ *   { name: 'Jim' },
+ *   eq('Jim', get('name')),
+ *   console.log
+ * )
  * ```
  *
  * Any promises in `arguments` are resolved for their values before further execution for the immediate interface only.

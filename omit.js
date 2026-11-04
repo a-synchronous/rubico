@@ -32,7 +32,7 @@ const _omit = function (source, paths) {
  * ```javascript [playground]
  * const argumentObject = { _id: '1', name: 'John' }
  *
- * const newObject = omit(argumentObject, ['_id'])
+ * const newObject = omit(argumentObject, '_id')
  *
  * console.log(newObject)
  * ```
@@ -44,7 +44,7 @@ const _omit = function (source, paths) {
  *  * an array of keys or indices - `['a', 0, 'value']`
  *
  * ```javascript [playground]
- * const omittedABD = omit(['a.b.d'])({
+ * const omittedABD = omit('a.b.d')({
  *   a: {
  *     b: {
  *       c: 'hello',
@@ -59,17 +59,18 @@ const _omit = function (source, paths) {
  * `omit` supports a lazy interface for composability.
  *
  * ```javascript [playground]
- * pipe({ a: 1, b: 2, c: 3 }, [
+ * pipe(
+ *   { a: 1, b: 2, c: 3 },
  *   map(number => number ** 2),
- *   omit(['a', 'b']),
- *   console.log,
- * ])
+ *   omit('a', 'b'),
+ *   console.log
+ * )
  * ```
  *
- * The keys of the constructed object may be provided to `omit` as arguments. The object is immediately constructed if the argument object is provided along with the keys.
+ * The keys of the constructed object may be provided to `omit` as an array.
  *
  * ```javascript [playground]
- * const objectA = omit({ a: 1, b: 2, c: 3 }, 'b', 'c')
+ * const objectA = omit({ a: 1, b: 2, c: 3 }, ['b', 'c'])
  * console.log(objectA)
  * ```
  *
@@ -84,7 +85,7 @@ const _omit = function (source, paths) {
  * If the argument object is a promise, it is resolved for its value before further execution for the immediate interface only.
  *
  * ```javascript [playground]
- * omit(Promise.resolve({ a: 1, b: 2, c: 3 }), ['a', 'b']).then(console.log)
+ * omit(Promise.resolve({ a: 1, b: 2, c: 3 }), 'a', 'b').then(console.log)
  * ```
  *
  * See also:

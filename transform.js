@@ -44,10 +44,10 @@ const _transform = function (collection, transducer, initialValue) {
  *
  * const isOdd = number => number % 2 == 1
  *
- * const squaredOdds = compose([
+ * const squaredOdds = compose(
  *   Transducer.filter(isOdd),
- *   Transducer.map(square),
- * ])
+ *   Transducer.map(square)
+ * )
  *
  * const array = [1, 2, 3, 4, 5]
  *
@@ -156,7 +156,7 @@ const _transform = function (collection, transducer, initialValue) {
  * Node.js `process.stdout`, a writable stream (implements the `write` method), may be the semigroup for `transform`
  *
  * ```javascript
- * const { pipe, compose, transform } = rubico
+ * const { compose, transform } = rubico
  * // global Transducer
  *
  * const square = number => number ** 2
@@ -175,10 +175,10 @@ const _transform = function (collection, transducer, initialValue) {
  *
  * transform(
  *   streamRandomInts(10),
- *   compose([
+ *   compose(
  *     Transducer.map(square),
- *     Transducer.map(toString),
- *   ]),
+ *     Transducer.map(toString)
+ *   ),
  *   process.stdout // 2893600784289441449001600409684644624324923044411225
  * )
  * ```
