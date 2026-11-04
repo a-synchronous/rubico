@@ -83,10 +83,11 @@ const _set = function (obj, path, value) {
  * `set` supports a lazy interface for composability.
  *
  * ```javascript [playground]
- * pipe({ a: 1 }, [
+ * pipe(
+ *   { a: 1 },
  *   set('b', 2),
- *   console.log,
- * ])
+ *   console.log
+ * )
  * ```
  *
  * If the argument object is a promise, it is resolved for its value before further execution for the immediate interface only.
