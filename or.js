@@ -128,7 +128,6 @@ const areAnyPredicatesTruthy = function (args, predicates) {
  * const asyncIsGreaterThan3 = async number => number > 3
  *
  * const aggregatePredicate = or(
- *   false,
  *   isOdd,
  *   isNegative,
  *   asyncIsGreaterThan3,
@@ -153,6 +152,23 @@ const areAnyPredicatesTruthy = function (args, predicates) {
  * )
  *
  * console.log(booleanResult)
+ * ```
+ *
+ * An argument may be passed to `or` for immediate execution.
+ *
+ * ```javascript [playground]
+ * const isOdd = number => number % 2 == 1
+ * const isNegative = number => number < 0
+ * const asyncIsGreaterThan3 = async number => number > 3
+ *
+ * const aggregatePredicate = or(
+ *   false,
+ *   isOdd,
+ *   isNegative,
+ *   asyncIsGreaterThan3
+ * )
+ *
+ * booleanResult.then(console.log)
  * ```
  *
  * Predicates may be passed to `or` as an array.
