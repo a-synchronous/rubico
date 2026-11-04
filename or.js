@@ -161,7 +161,7 @@ const areAnyPredicatesTruthy = function (args, predicates) {
  * const isNegative = number => number < 0
  * const asyncIsGreaterThan3 = async number => number > 3
  *
- * const aggregatePredicate = or(
+ * const booleanResult = or(
  *   false,
  *   isOdd,
  *   isNegative,
