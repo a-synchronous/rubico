@@ -128,7 +128,6 @@ const areAllPredicatesTruthy = function (args, predicates) {
  * const asyncIsLessThan3 = async number => number < 3
  *
  * const aggregatePredicate = and(
- *   true,
  *   isOdd,
  *   isPositive,
  *   asyncIsLessThan3,
@@ -150,6 +149,23 @@ const areAllPredicatesTruthy = function (args, predicates) {
  *   oneIsLessThanThree,
  *   twoIsGreaterThanOne,
  *   threeIsEqualToThree
+ * )
+ *
+ * console.log(booleanResult)
+ * ```
+ *
+ * An argument may be passed to `and` for immediate execution.
+ *
+ * ```javascript [playground]
+ * const isOdd = number => number % 2 == 1
+ * const isPositive = number => number > 0
+ * const asyncIsLessThan3 = async number => number < 3
+ *
+ * const booleanResult = and(
+ *   1,
+ *   isOdd,
+ *   isPositive,
+ *   asyncIsLessThan3,
  * )
  *
  * console.log(booleanResult)
