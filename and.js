@@ -168,7 +168,7 @@ const areAllPredicatesTruthy = function (args, predicates) {
  *   asyncIsLessThan3,
  * )
  *
- * console.log(booleanResult)
+ * booleanResult.then(console.log)
  * ```
  *
  * Predicates may be passed to `and` as an array.
