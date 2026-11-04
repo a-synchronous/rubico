@@ -3050,6 +3050,9 @@ const areAllPredicatesTruthy = function (args, predicates) {
 }
 
 const and = function (...args) {
+  if (typeof args[0] == 'function') {
+    return curryArgs2(areAllPredicatesTruthy, __, args)
+  }
   if (typeof args[1] == 'function') {
     const arg = args.shift()
     return isPromise(arg)
@@ -3136,6 +3139,9 @@ const areAnyPredicatesTruthy = function (args, predicates) {
 }
 
 const or = function (...args) {
+  if (typeof args[0] == 'function') {
+    return curryArgs2(areAnyPredicatesTruthy, __, args)
+  }
   if (typeof args[1] == 'function') {
     const arg = args.shift()
     return isPromise(arg)
