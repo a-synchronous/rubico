@@ -4810,13 +4810,13 @@ flatMap(
       aok(await eq(2, Promise.resolve(2)))
       aok(await eq(Promise.resolve(2), Promise.resolve(2)))
       aok(
-        eq(2, number => number * 2, number => number + 2)
+        eq(2, 2, number => number * 2, number => number + 2)
       )
       aok(
-        eq(number => number * 2, number => number + 2)(2)
+        eq(number => number * 2, number => number + 2)(2, 2)
       )
       aok(
-        await eq(Promise.resolve(2), number => number * 2, number => number + 2)
+        await eq(Promise.resolve(2), Promise.resolve(2), number => number * 2, number => number + 2)
       )
       aok(eq(2, number => number * 2, 4))
       aok(await eq(Promise.resolve(2), number => number * 2, 4))
@@ -4825,13 +4825,13 @@ flatMap(
     })
 
     it('[sync] eq(f, g)(x) == (f(x) == g(x))', async () => {
-      ase(eq(x => `${x}`, x => x)('hey'), true)
-      ase(eq(x => `${x}`, x => x)(1), true)
+      ase(eq(x => `${x}`, x => x)('hey', 'hey'), true)
+      ase(eq(x => `${x}`, x => x)(1, 1), true)
     })
     it('[async] eq(f, g)(x) == (f(x) == g(x))', async () => {
-      aok(eq(x => `${x}`, async x => x)('hey') instanceof Promise)
-      ase(await eq(async x => `${x}`, async x => x)('hey'), true)
-      ase(await eq(async x => `${x}`, async x => x)(1), true)
+      aok(eq(x => `${x}`, async x => x)('hey', 'hey') instanceof Promise)
+      ase(await eq(async x => `${x}`, async x => x)('hey', 'hey'), true)
+      ase(await eq(async x => `${x}`, async x => x)(1, 1), true)
     })
     it('[sync] eq(f, value)(x) == (valueA == valueB)', async () => {
       ase(eq(() => 'hey', 'hey')('abc'), true)
@@ -4879,10 +4879,10 @@ flatMap(
     })
     it('coverage', async () => {
       aok(
-        gt(1, number => number, number => number * 0)
+        gt(1, 0, number => number, number => number * 0)
       )
       aok(
-        await gt(Promise.resolve(1), number => number, number => number * 0)
+        await gt(Promise.resolve(1), Promise.resolve(0), number => number, number => number * 0)
       )
       aok(gt(1, number => number, 0))
       aok(await gt(Promise.resolve(1), number => number, 0))
@@ -4890,15 +4890,15 @@ flatMap(
       aok(await gt(Promise.resolve(1), 3, number => number * 0))
     })
     it('[sync] gt(f, g)(x) === (f(x) > g(x))', async () => {
-      ase(gt(x => x + 1, x => x)(1), true)
-      ase(gt(x => x, x => x)(1), false)
-      ase(gt(x => x, x => x + 1)(1), false)
+      ase(gt(x => x + 1, x => x)(1, 1), true)
+      ase(gt(x => x, x => x)(1, 1), false)
+      ase(gt(x => x, x => x + 1)(1, 1), false)
     })
     it('[async] gt(f, g)(x) === (f(x) > g(x))', async () => {
-      aok(gt(x => x + 1, async x => x)(1) instanceof Promise)
-      ase(await gt(x => x + 1, async x => x)(1), true)
-      ase(await gt(async x => x, x => x)(1), false)
-      ase(await gt(async x => x, async x => x + 1)(1), false)
+      aok(gt(x => x + 1, async x => x)(1, 1) instanceof Promise)
+      ase(await gt(x => x + 1, async x => x)(1, 1), true)
+      ase(await gt(async x => x, x => x)(1, 1), false)
+      ase(await gt(async x => x, async x => x + 1)(1, 1), false)
     })
     it('[sync] gt(f, value)(x) === (valueA > valueB)', async () => {
       ase(gt(() => 1, 0)('abc'), true)
@@ -4948,10 +4948,10 @@ flatMap(
     })
     it('coverage', async () => {
       aok(
-        lt(5, number => number - 3, number => number + 3)
+        lt(5, 5, number => number - 3, number => number + 3)
       )
       aok(
-        await lt(Promise.resolve(5), number => number - 3, number => number + 3)
+        await lt(Promise.resolve(5), Promise.resolve(5), number => number - 3, number => number + 3)
       )
       aok(lt(5, 2, number => number + 3))
       aok(await lt(Promise.resolve(5), 2, number => number + 3))
@@ -4959,15 +4959,15 @@ flatMap(
       aok(await lt(Promise.resolve(5), number => number - 3, 5))
     })
     it('[sync] lt(f, g)(x) === (f(x) < g(x))', async () => {
-      ase(lt(x => x + 1, x => x)(1), false)
-      ase(lt(x => x, x => x)(1), false)
-      ase(lt(x => x, x => x + 1)(1), true)
+      ase(lt(x => x + 1, x => x)(1, 1), false)
+      ase(lt(x => x, x => x)(1, 1), false)
+      ase(lt(x => x, x => x + 1)(1, 1), true)
     })
     it('[async] lt(f, g)(x) === (f(x) < g(x))', async () => {
-      aok(lt(x => x + 1, async x => x)(1) instanceof Promise)
-      ase(await lt(x => x + 1, async x => x)(1), false)
-      ase(await lt(async x => x, x => x)(1), false)
-      ase(await lt(async x => x, async x => x + 1)(1), true)
+      aok(lt(x => x + 1, async x => x)(1, 1) instanceof Promise)
+      ase(await lt(x => x + 1, async x => x)(1, 1), false)
+      ase(await lt(async x => x, x => x)(1, 1), false)
+      ase(await lt(async x => x, async x => x + 1)(1, 1), true)
     })
     it('[sync] lt(f, value)(x) === (valueA < valueB)', async () => {
       ase(lt(() => 1, 0)('abc'), false)
@@ -5017,10 +5017,10 @@ flatMap(
     })
     it('coverage', async () => {
       aok(
-        gte(5, number => number + 3, number => number + 3)
+        gte(5, 5, number => number + 3, number => number + 3)
       )
       aok(
-        await gte(Promise.resolve(5), number => number + 3, number => number + 3)
+        await gte(Promise.resolve(5), Promise.resolve(5), number => number + 3, number => number + 3)
       )
       aok(gte(5, 10, number => number + 3))
       aok(await gte(Promise.resolve(5), 10, number => number + 3))
@@ -5028,15 +5028,15 @@ flatMap(
       aok(await gte(Promise.resolve(5), number => number + 3, 5))
     })
     it('[sync] gte(f, g)(x) === (f(x) >= g(x))', async () => {
-      ase(gte(x => x + 1, x => x)(1), true)
-      ase(gte(x => x, x => x)(1), true)
-      ase(gte(x => x, x => x + 1)(1), false)
+      ase(gte(x => x + 1, x => x)(1, 1), true)
+      ase(gte(x => x, x => x)(1, 1), true)
+      ase(gte(x => x, x => x + 1)(1, 1), false)
     })
     it('[async] gte(f, g)(x) === (f(x) >= g(x))', async () => {
-      aok(gte(x => x + 1, async x => x)(1) instanceof Promise)
-      ase(await gte(x => x + 1, async x => x)(1), true)
-      ase(await gte(async x => x, x => x)(1), true)
-      ase(await gte(async x => x, async x => x + 1)(1), false)
+      aok(gte(x => x + 1, async x => x)(1, 1) instanceof Promise)
+      ase(await gte(x => x + 1, async x => x)(1, 1), true)
+      ase(await gte(async x => x, x => x)(1, 1), true)
+      ase(await gte(async x => x, async x => x + 1)(1, 1), false)
     })
     it('[sync] gte(f, value)(x) === (valueA >= valueB)', async () => {
       ase(gte(() => 1, 0)('abc'), true)
@@ -5086,10 +5086,10 @@ flatMap(
     })
     it('coverage', async () => {
       aok(
-        lte(5, number => number + 3, number => number + 3)
+        lte(5, 5, number => number + 3, number => number + 3)
       )
       aok(
-        await lte(Promise.resolve(5), number => number + 3, number => number + 3)
+        await lte(Promise.resolve(5), Promise.resolve(5), number => number + 3, number => number + 3)
       )
       aok(lte(5, 0, number => number + 3))
       aok(await lte(Promise.resolve(5), 0, number => number + 3))
@@ -5097,15 +5097,15 @@ flatMap(
       aok(await lte(Promise.resolve(5), number => number + 3, 10))
     })
     it('[sync] lte(f, g)(x) === (f(x) <= g(x))', async () => {
-      ase(lte(x => x + 1, x => x)(1), false)
-      ase(lte(x => x, x => x)(1), true)
-      ase(lte(x => x, x => x + 1)(1), true)
+      ase(lte(x => x + 1, x => x)(1, 1), false)
+      ase(lte(x => x, x => x)(1, 1), true)
+      ase(lte(x => x, x => x + 1)(1, 1), true)
     })
     it('[async] lte(f, g)(x) === (f(x) <= g(x))', async () => {
-      aok(lte(x => x + 1, async x => x)(1) instanceof Promise)
-      ase(await lte(x => x + 1, async x => x)(1), false)
-      ase(await lte(async x => x, x => x)(1), true)
-      ase(await lte(async x => x, async x => x + 1)(1), true)
+      aok(lte(x => x + 1, async x => x)(1, 1) instanceof Promise)
+      ase(await lte(x => x + 1, async x => x)(1, 1), false)
+      ase(await lte(async x => x, x => x)(1, 1), true)
+      ase(await lte(async x => x, async x => x + 1)(1, 1), true)
     })
     it('[sync] lte(f, value)(x) === (valueA <= valueB)', async () => {
       ase(lte(() => 1, 0)('abc'), false)
