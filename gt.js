@@ -35,7 +35,7 @@ const greaterThan = require('./_internal/greaterThan')
  * One of the arguments to `gt` may be a resolver.
  *
  * ```javascript [playground]
- * const isOfLegalAge = gt(get('age'), 21)
+ * const isOfLegalAge = gt(get("age"), 21)
  *
  * const juvenile = { age: 16 }
  *
@@ -60,7 +60,7 @@ const greaterThan = require('./_internal/greaterThan')
  *
  * pipe(
  *   { value: 1 },
- *   gt(5, get('value')),
+ *   gt(5, get("value")),
  *   console.log
  * )
  * ```
