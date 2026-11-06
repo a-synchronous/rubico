@@ -176,8 +176,8 @@ const promiseAll = Promise.all.bind(Promise)
 const leftResolverRightResolverCompare = function (
   args, comparator, left, right,
 ) {
-  const leftResult = left(...args),
-    rightResult = right(...args)
+  const leftResult = left(args[0]),
+    rightResult = right(args[1])
   if (isPromise(leftResult) || isPromise(rightResult)) {
     return promiseAll([leftResult, rightResult]).then(spread2(comparator))
   }

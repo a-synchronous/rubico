@@ -3238,8 +3238,8 @@ const curryArgs4 = function (baseFunc, arg0, arg1, arg2, arg3) {
 const leftResolverRightResolverCompare = function (
   args, comparator, left, right,
 ) {
-  const leftResult = left(...args),
-    rightResult = right(...args)
+  const leftResult = left(args[0]),
+    rightResult = right(args[1])
   if (isPromise(leftResult) || isPromise(rightResult)) {
     return promiseAll([leftResult, rightResult]).then(spread2(comparator))
   }
