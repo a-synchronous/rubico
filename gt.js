@@ -23,14 +23,16 @@ const greaterThan = require('./_internal/greaterThan')
  * Comparison operator. Tests if a value is greater than (`>`) another value.
  *
  * ```javascript [playground]
- * const age = 40
+ * const array = [{ value: 3 }, { value: 1 }, { value: 5 }, { value: 4 }, { value: 2 }]
  *
- * const isAgeGreaterThan21 = gt(age, 21)
+ * const comparator = gt(get("value"), get("value"))
  *
- * console.log(isAgeGreaterThan21)
+ * array.sort(switchCase(comparator, 1, -1))
+ *
+ * console.log(array)
  * ```
  *
- * If either of the two values are resolver functions, `gt` returns a function that resolves the values to compare.
+ * One of the arguments to `gt` may be a resolver.
  *
  * ```javascript [playground]
  * const isOfLegalAge = gt(get('age'), 21)
@@ -40,7 +42,7 @@ const greaterThan = require('./_internal/greaterThan')
  * console.log(isOfLegalAge(juvenile))
  * ```
  *
- * If either of the resolver functions is asynchronous, `gt` returns an asynchronous function.
+ * A function passed to `gt` can be asynchronous.
  *
  * ```javascript [playground]
  * const asyncIsOfLegalAge = gt(async person => person.age, 21)
@@ -59,14 +61,14 @@ const greaterThan = require('./_internal/greaterThan')
  * pipe(
  *   { value: 1 },
  *   gt(5, get('value')),
- *   console.log,
+ *   console.log
  * )
  * ```
  *
- * Any promises in `arguments` are resolved for their values before further execution for the immediate interface only.
+ * Promises are resolved before comparing their values.
  *
  * ```javascript [playground]
- * gt(Promise.resolve({ a: 2, b: 1 }), get('a'), get('b')).then(console.log)
+ * gt(Promise.resolve(2), Promise.resolve(1)).then(console.log)
  * ```
  *
  * See also:

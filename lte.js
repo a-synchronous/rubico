@@ -65,10 +65,10 @@ const lessThanOrEqual = require('./_internal/lessThanOrEqual')
  * )
  * ```
  *
- * Any promises in `arguments` are resolved for their values before further execution for the immediate interface only.
+ * Promises are resolved before comparing their values.
  *
  * ```javascript [playground]
- * lte(Promise.resolve({ a: 1, b: 1 }), get('a'), get('b')).then(console.log)
+ * gte(Promise.resolve(2), Promise.resolve(1)).then(console.log)
  * ```
  *
  * See also:

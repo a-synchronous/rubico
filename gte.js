@@ -67,10 +67,10 @@ const greaterThanOrEqual = require('./_internal/greaterThanOrEqual')
  * )
  * ```
  *
- * Any promises in `arguments` are resolved for their values before further execution for the immediate interface only.
+ * Promises are resolved before comparing their values.
  *
  * ```javascript [playground]
- * gte(Promise.resolve({ a: 1, b: 1 }), get('a'), get('b')).then(console.log)
+ * gte(Promise.resolve(2), Promise.resolve(1)).then(console.log)
  * ```
  *
  * See also:

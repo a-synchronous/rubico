@@ -1,14 +1,9 @@
 require("./global.js")
 
-const myVar = "z"
+const array = [{ value: 3 }, { value: 1 }, { value: 5 }, { value: 4 }, { value: 2 }]
 
-const log = x => thunkify(console.log, x)
+const comparator = gt(get("value"), get("value"))
 
-switchCase(
-  myVar,
-  eq("a"), log("first"),
-  eq("b"), log("second"),
-  eq("c"), log("third"),
-  eq("z"), log("last"),
-  log("unknown"),
-)
+array.sort(switchCase(comparator, 1, -1))
+
+console.log(array)
